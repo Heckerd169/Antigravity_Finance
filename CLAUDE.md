@@ -16,6 +16,8 @@ für einen einzelnen Power-User (Wirtschaftsmathematiker, Controlling-Hintergrun
 **Sprache:** UI komplett deutsch, Code-Identifier englisch.
 **Mapping zwischen beiden:** Design-Doku §2.6.
 
+**Repo-Name:** `Antigravity_Finance`
+
 ---
 
 ## 2. Tech-Stack (freigegeben 3. Mai 2026)
@@ -40,24 +42,21 @@ für einen einzelnen Power-User (Wirtschaftsmathematiker, Controlling-Hintergrun
 ## 3. Dateistruktur (Soll-Stand)
 
 ```
-antigravity-finance/
-├── CLAUDE.md                          ← diese Datei
-├── docs/
-│   ├── design_dokument_v3.md          ← Design-Bibel (read-only)
-│   ├── schema_summary_v2.md           ← Schema-Bibel (read-only)
-│   ├── persona_jobs.md                ← Design-Direktor-Persona (Referenz)
-│   ├── persona_architect.md           ← Architekt-Persona (Referenz)
-│   └── sprints/
-│       ├── sprint_00_briefing.md
-│       ├── sprint_00_review.md
-│       ├── sprint_01_briefing.md
-│       └── ...
+Antigravity_Finance/
+├── CLAUDE.md                                          ← diese Datei
+├── antigravity_finance_design_dokument_v3.md          ← Design-Bibel (read-only)
+├── antigravity_finance_schema_summary_v2.md           ← Schema-Bibel (read-only)
+├── sprints/
+│   ├── sprint_00_briefing.md
+│   ├── sprint_00_review.md
+│   ├── sprint_01_briefing.md
+│   └── ...
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx
-│   │   ├── page.tsx                   ← Single Surface Dashboard
+│   │   ├── page.tsx                                   ← Single Surface Dashboard
 │   │   ├── onboarding/page.tsx
-│   │   └── api/                       ← nur falls Server-Routes nötig
+│   │   └── api/                                       ← nur falls Server-Routes nötig
 │   ├── components/
 │   │   ├── singularity-ring/
 │   │   ├── header-timeline/
@@ -66,19 +65,24 @@ antigravity-finance/
 │   │   └── treppe/
 │   ├── lib/
 │   │   ├── supabase/
-│   │   │   ├── client.ts              ← Browser Client
-│   │   │   ├── server.ts              ← SSR Client
-│   │   │   └── types.ts               ← gen via supabase gen types
-│   │   ├── rpc.ts                     ← typed RPC-Wrapper
-│   │   └── tokens.ts                  ← Token-Konstanten als TS-Objekt
+│   │   │   ├── client.ts                              ← Browser Client
+│   │   │   ├── server.ts                              ← SSR Client
+│   │   │   └── types.ts                               ← gen via supabase gen types
+│   │   ├── rpc.ts                                     ← typed RPC-Wrapper
+│   │   └── tokens.ts                                  ← Token-Konstanten als TS-Objekt
 │   └── styles/
-│       └── tokens.css                 ← Design-Tokens als CSS-Variablen
+│       └── tokens.css                                 ← Design-Tokens als CSS-Variablen
 ├── public/
-│   └── prototypes/                    ← die HTML-Prototypen als Referenz
+│   └── prototypes/                                    ← die HTML-Prototypen als Referenz
 ├── package.json
 ├── tsconfig.json
-└── .env.local                         ← SUPABASE_URL, SUPABASE_ANON_KEY
+├── .env.local                                         ← SUPABASE_URL, SUPABASE_ANON_KEY (NICHT committen)
+└── .env.example                                       ← Template ohne Werte (committen)
 ```
+
+**Hinweis:** Die Personas (`persona_jobs.md`, `persona_architect.md`) liegen im
+Project-Knowledge-Bereich von Claude.ai und sind als PM-/Review-Referenz gedacht.
+Sie gehören NICHT ins Code-Repo.
 
 ---
 
@@ -86,7 +90,7 @@ antigravity-finance/
 
 | Sprint | Komponente | Status | Sprint-Briefing | Approval-Datum |
 |---|---|---|---|---|
-| 0 | Projekt-Setup | ⏳ TBD | docs/sprints/sprint_00_briefing.md | — |
+| 0 | Projekt-Setup | ⏳ TBD | sprints/sprint_00_briefing.md | — |
 | 1 | Onboarding + Income/Partner-Split (§10) | — | — | — |
 | 2 | Singularity Ring (§5) | — | — | — |
 | 3 | Header / Timeline-Navigation (§6) | — | — | — |
@@ -107,9 +111,9 @@ nicht weiter.
 
 ## 5. Designreferenzen
 
-Das **Design-Dokument v3** (`docs/design_dokument_v3.md`) ist die einzige Wahrheits-Quelle
-für UI, Zustände, Tokens und UI-Copy. Bei Konflikt zwischen HTML-Prototyp und Design-Doku
-gewinnt **immer** die Design-Doku.
+Das **Design-Dokument v3** (`antigravity_finance_design_dokument_v3.md` im Repo-Root)
+ist die einzige Wahrheits-Quelle für UI, Zustände, Tokens und UI-Copy. Bei Konflikt
+zwischen HTML-Prototyp und Design-Doku gewinnt **immer** die Design-Doku.
 
 **Bekannte Abweichungen Prototyp ↔ Design-Doku:**
 - `singularity_ring_v3.html` zeigt einen Slider oben — Design-Doku §5 schließt den Slider
@@ -137,7 +141,8 @@ gewinnt **immer** die Design-Doku.
 
 Das Datenbank-Schema ist **vollständig implementiert in Supabase**. Frontend schreibt
 keine Migrationen. Frontend ruft RPCs und macht CRUD über die `@supabase/supabase-js`-API
-gegen die in `schema_summary_v2.md` dokumentierten Tabellen.
+gegen die in `antigravity_finance_schema_summary_v2.md` (im Repo-Root) dokumentierten
+Tabellen.
 
 **Supabase-Projekt:**
 - Project ID: `nflkobdfdhncrtjncpmq`
@@ -164,7 +169,8 @@ estimate_net_monthly
 **RPCs (Lösch-Pattern):**
 schedule_deletion · restore_deletion
 
-**Interaktions-Mapping User-Aktion → DB-Operation:** schema_summary_v2.md §5.
+**Interaktions-Mapping User-Aktion → DB-Operation:**
+`antigravity_finance_schema_summary_v2.md` §5.
 
 **TypeScript-Typen generieren** (einmal pro Schema-Änderung — in V1 vermutlich nie nötig):
 ```bash
@@ -211,7 +217,7 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
 - Keine Änderungen am Design-Dokument oder Schema-Dokument
 
 ### Sprint-Output-Format
-Am Ende jedes Sprints liefert Claude Code (in `sprint_NN_review.md`):
+Am Ende jedes Sprints liefert Claude Code (in `sprints/sprint_NN_review.md`):
 1. **Code-Diff** als git-Status-Übersicht (`git status` + Datei-Liste)
 2. **Screenshots** der wichtigsten Zustände (mind. die im Briefing genannten)
 3. **Selbst-Review-Liste:** für jeden Akzeptanz-Punkt im Briefing — implementiert?
@@ -229,17 +235,17 @@ Pro Sprint wird ein neuer Claude Code Chat geöffnet, um Token-Limits zu schonen
 
 **Beim Start eines Sprints lädt Claude Code:**
 1. CLAUDE.md (diese Datei) — der Status
-2. docs/design_dokument_v3.md — die Design-Bibel
-3. docs/schema_summary_v2.md — das Schema
-4. docs/sprints/sprint_NN_briefing.md — der konkrete Auftrag
+2. antigravity_finance_design_dokument_v3.md — die Design-Bibel
+3. antigravity_finance_schema_summary_v2.md — das Schema
+4. sprints/sprint_NN_briefing.md — der konkrete Auftrag
 
 **Nach Sprint-Ende:**
 - Claude Code commitet auf Branch `sprint/NN-<komponente>`
-- Claude Code schreibt `docs/sprints/sprint_NN_review.md`
+- Claude Code schreibt `sprints/sprint_NN_review.md`
 - PM (Opus 4.7) reviewt im PM-Chat gegen Design-Doku + PNG-Referenzen
 - Bei Approval: PM liefert dem User den aktualisierten CLAUDE.md-Inhalt
   (geänderte Status-Tabelle in §4 + neuer Eintrag in §10) — User commitet
-- Bei Korrektur: Korrektur-Briefing als Append an `sprint_NN_briefing.md`,
+- Bei Korrektur: Korrektur-Briefing als Append an `sprints/sprint_NN_briefing.md`,
   Sprint bleibt offen, eventuell neuer Claude-Code-Chat falls Token-Budget des
   bestehenden Chats knapp wird
 
@@ -263,12 +269,16 @@ Pro Sprint wird ein neuer Claude Code Chat geöffnet, um Token-Limits zu schonen
 > Dieser Abschnitt wächst mit jedem Sprint. Der PM trägt nach Approval ein.
 
 ### Initial · 3. Mai 2026
+- **Repo-Setup:** Lokales Repo `Antigravity_Finance` existiert, Doku-Dateien
+  (`antigravity_finance_design_dokument_v3.md`, `antigravity_finance_schema_summary_v2.md`,
+  `CLAUDE.md`) liegen im Root. Working tree clean (`* main...origin/main`).
 - **Schema verifiziert:** alle 10 Tabellen vorhanden, RLS aktiv, Seed-Daten vorhanden
   (`app_config` 7 rows, `net_estimation_brackets` 33 rows)
 - **Tech-Stack festgelegt:** Next.js 14 + Supabase + plain CSS + pnpm + Vercel
-- **Sprint-Plan freigegeben:** 10 Sprints (0–9) gemäß Design-Doku §14 Implementierungsreihenfolge
-- **Übersetzer-Persona aus dem Projekt entfernt** — Übersetzungs-Funktion übernimmt PM
-  via Sprint-Briefings direkt aus Design-Doku v3
-- **rtk-ai installiert** (lokaler Bash-Output-Filter, kein API-Proxy) — Token-Ersparnis
-  bei Routine-Bash-Calls 75–90 %, Telemetrie deaktiviert
+- **Sprint-Plan freigegeben:** 10 Sprints (0–9) gemäß Design-Doku §14
+  Implementierungsreihenfolge
+- **Übersetzer-Persona aus dem Project Knowledge entfernt** — Übersetzungs-Funktion
+  übernimmt PM via Sprint-Briefings direkt aus Design-Doku v3
+- **rtk-ai installiert UND verifiziert** (lokaler Bash-Output-Filter, kein API-Proxy) —
+  Token-Ersparnis bei Routine-Bash-Calls 75–90 %, Telemetrie deaktiviert
 - **Erste Modell-Empfehlung:** Sprint 0 läuft mit Opus 4.7
