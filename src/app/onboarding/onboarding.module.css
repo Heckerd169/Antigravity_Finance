@@ -1,0 +1,210 @@
+.main {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  color: var(--text-ghost);
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
+  text-transform: uppercase;
+}
+
+.taxClassRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.taxClassButton {
+  flex: 1;
+  min-width: 48px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 10px 0;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.taxClassButton:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.taxClassButtonActive {
+  color: var(--text-primary);
+  border-color: var(--color-teal);
+  background: rgba(62, 207, 175, 0.08);
+}
+
+.sliderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sliderValue {
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 200;
+  letter-spacing: -1.2px;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--color-teal);
+}
+
+.sliderMeta {
+  color: var(--text-ghost);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.netSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input {
+  background: var(--bg-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition: border-color 0.12s linear;
+}
+
+.input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.inputManual {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.inputError {
+  border-color: rgba(255, 69, 58, 0.4);
+}
+
+.hintDefault {
+  color: var(--text-ghost);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.hintTeal {
+  color: var(--color-teal);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.hintError {
+  color: var(--color-red);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.partnerToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.partnerToggle input {
+  accent-color: var(--color-teal);
+}
+
+.partnerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.button {
+  background: var(--color-teal);
+  color: var(--bg-primary);
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover:enabled {
+  filter: brightness(1.05);
+}
+
+.button:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-ghost);
+  cursor: not-allowed;
+}
+
+.formError {
+  margin: 0;
+  color: var(--color-red);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}

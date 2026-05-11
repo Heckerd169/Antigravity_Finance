@@ -32,14 +32,36 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isLoginRoute = pathname === "/login";
+  const isOnboardingRoute = pathname === "/onboarding";
 
-  if (!user && !isLoginRoute) {
+  if (!user) {
+    if (isLoginRoute) return supabaseResponse;
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  if (user && isLoginRoute) {
+  // User eingeloggt — Onboarding-Guard.
+  // maybeSingle() statt single(), damit ein fehlender profiles-Eintrag
+  // (Alt-User aus der Zeit vor dem on_auth_user_created-Trigger) kein Error
+  // wird sondern als "noch nicht onboarded" behandelt wird.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isOnboarded = Boolean(profile?.onboarded_at);
+
+  if (!isOnboarded) {
+    if (isOnboardingRoute) return supabaseResponse;
+    const url = request.nextUrl.clone();
+    url.pathname = "/onboarding";
+    return NextResponse.redirect(url);
+  }
+
+  // Onboarded — Login + Onboarding sind nicht mehr erreichbar.
+  if (isLoginRoute || isOnboardingRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
