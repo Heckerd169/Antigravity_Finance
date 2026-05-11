@@ -340,4 +340,59 @@ Sprint NICHT „durchwurschteln". Stattdessen:
 
 ---
 
+---
+
+## Korrektur-Briefing — angehängt 11. Mai 2026 nach Sprint-1-Review
+
+Drei PM-Entscheidungen aus dem Review:
+
+### Korrektur K1 — Open Question #1: UPSERT statt INSERT für income_timeline
+
+**Entscheidung: Option B.** Begründung: UNIQUE-Constraint definiert einen Slot pro
+Monat-Person; Snapshot-Integrität bleibt gewahrt, weil vergangene Monate UI-seitig
+gesperrt sind. Re-Save desselben Monats für denselben Person muss möglich sein.
+
+**Konkret:**
+- In `src/components/income-split/actions.ts`: INSERT → UPSERT mit
+  `onConflict: "user_id,person,effective_month"`. Friendly-Error für `23505` kann
+  entfernt werden (wird durch ON CONFLICT obsolet — außer für andere
+  Constraint-Verletzungen, dann generischer Fehler).
+- In `src/app/onboarding/actions.ts`: ebenso UPSERT statt INSERT. Onboarding läuft
+  bei einem unvollständig abgebrochenen Versuch dann sauber durch.
+- Sicherheitscheck Vergangenheit: Server Action prüft `effective_month >=
+  date_trunc('month', now())` (oder via `is_past` aus dem Frontend übergeben).
+  Falls vergangener Monat: 403 / „Vergangene Monate sind eingefroren". Das ist
+  Belt-and-Suspenders zur UI-Sperre — kein Trust auf Client-State.
+
+### Korrektur K2 — Open Question #3: Manueller Wert bleibt bei Brutto-Änderung erhalten
+
+**Entscheidung: Alternative.** Der useEffect, der den Estimate ins Netto-Feld
+schreibt, muss bei `manualOverride === true` no-op werden.
+
+**Konkret:**
+- In `onboarding-form.tsx`: useEffect-Body um `if (manualOverride) return;` ergänzen
+- In `income-split/index.tsx`: ebenso
+- `manualOverride` wird nur durch zwei User-Aktionen verändert:
+  - `true` bei jeder manuellen Eingabe ins Netto-Feld
+  - `false` durch Selbstheilung (Feld leeren + Blur → Vorschlag kehrt zurück)
+- Hinweistext „Manuell angepasst" in Teal bleibt korrekt, solange manualOverride
+
+### Open Question #2 — keine Code-Änderung
+
+`taxClass: 1` als Default für PARTNER bleibt. V1-Limitation, kein Spec-Bruch.
+V2-Backlog: Partner-Steuerklasse-Mapping bei verheirateten Paaren.
+
+### Output
+
+Ein zusätzlicher `fix:`-Commit auf `sprint/01-income`. Falls die Review-Datei
+durch die Korrekturen nicht-aktuell wird (z. B. weil der Friendly-Error-Hinweis
+in §8 Open Question #1 jetzt obsolet ist): kurzer `docs:`-Folgecommit mit
+„docs: Sprint 1 review — post-correction note" und ergänze in `sprint_01_review.md`
+einen kurzen Abschnitt „§10 Korrektur-Notiz" mit den drei Bullet-Punkten oben.
+
+**Nicht-Aufgaben dieses Korrektur-Sprints:**
+- Keine neuen Features
+- Keine Browser-Tests durch Claude Code (übernimmt der User)
+- Keine CLAUDE.md-Änderung (übernimmt PM nach finalem Approval)
+
 **Ende des Sprint-1-Briefings.**
