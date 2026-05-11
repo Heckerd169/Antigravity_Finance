@@ -32,36 +32,40 @@ export async function submitOnboarding(input: {
 
   const effectiveMonth = firstOfCurrentMonth();
 
-  // 1) Income ICH
-  const { error: incomeError } = await supabase.from("income_timeline").insert({
-    user_id: user.id,
-    person: "ICH",
-    effective_month: effectiveMonth,
-    gross_annual: input.grossAnnual,
-    net_monthly: input.netMonthly,
-  });
+  // UPSERT (Korrektur K1): wenn ein vorheriger Onboarding-Versuch
+  // unvollstaendig abgebrochen wurde (z. B. ICH inserted, profiles-Update
+  // failed), laeuft der zweite Versuch sauber durch — der Slot
+  // (user_id, person, effective_month) wird ueberschrieben.
+  const { error: incomeError } = await supabase.from("income_timeline").upsert(
+    {
+      user_id: user.id,
+      person: "ICH",
+      effective_month: effectiveMonth,
+      gross_annual: input.grossAnnual,
+      net_monthly: input.netMonthly,
+    },
+    { onConflict: "user_id,person,effective_month" },
+  );
   if (incomeError) {
     return { ok: false, error: `Einkommen ICH konnte nicht gespeichert werden: ${incomeError.message}` };
   }
 
-  // 2) Optional: Partner
   if (input.partner) {
-    const { error: partnerError } = await supabase.from("income_timeline").insert({
-      user_id: user.id,
-      person: "PARTNER",
-      effective_month: effectiveMonth,
-      gross_annual: input.partner.grossAnnual,
-      net_monthly: input.partner.netMonthly,
-    });
+    const { error: partnerError } = await supabase.from("income_timeline").upsert(
+      {
+        user_id: user.id,
+        person: "PARTNER",
+        effective_month: effectiveMonth,
+        gross_annual: input.partner.grossAnnual,
+        net_monthly: input.partner.netMonthly,
+      },
+      { onConflict: "user_id,person,effective_month" },
+    );
     if (partnerError) {
-      // ICH-Eintrag bleibt bestehen — User kann erneut versuchen, Partner ueber das
-      // Dashboard nachzutragen. Wird im Sprint-1-Review als bekannter Edge-Case
-      // dokumentiert (kein Frontend-Rollback ueber Tabellen hinweg in V1).
       return { ok: false, error: `Einkommen Partner konnte nicht gespeichert werden: ${partnerError.message}` };
     }
   }
 
-  // 3) Profile finalisieren
   const { error: profileError } = await supabase
     .from("profiles")
     .update({

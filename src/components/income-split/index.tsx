@@ -69,14 +69,15 @@ function PopupBody({
       });
       if (reqId !== lastEstimateReq.current) return;
       setEstimate(result);
-      if (!manualOverride.current) {
-        if (result === null) {
-          setNetInput("");
-          setNetState("no_estimate");
-        } else {
-          setNetInput(formatNetForInput(result));
-          setNetState("default");
-        }
+      // K2 (Briefing-Korrektur): bei manualOverride bleibt der Estimate nur
+      // im Hint sichtbar — das Netto-Feld wird nicht ueberschrieben.
+      if (manualOverride.current) return;
+      if (result === null) {
+        setNetInput("");
+        setNetState("no_estimate");
+      } else {
+        setNetInput(formatNetForInput(result));
+        setNetState("default");
       }
     }, 150);
     return () => window.clearTimeout(t);

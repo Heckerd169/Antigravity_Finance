@@ -43,14 +43,15 @@ export function OnboardingForm() {
       const result = await estimateNetMonthly(supabase, { grossAnnual, taxClass, taxYear });
       if (reqId !== lastIchReq.current) return;
       setEstimate(result);
-      if (!ichManualOverride.current) {
-        if (result === null) {
-          setNetInput("");
-          setNetState("no_estimate");
-        } else {
-          setNetInput(formatNetForInput(result));
-          setNetState("default");
-        }
+      // K2 (Briefing-Korrektur): bei manualOverride bleibt der Estimate nur
+      // im Hint sichtbar — das Netto-Feld wird nicht ueberschrieben.
+      if (ichManualOverride.current) return;
+      if (result === null) {
+        setNetInput("");
+        setNetState("no_estimate");
+      } else {
+        setNetInput(formatNetForInput(result));
+        setNetState("default");
       }
     }, 150);
     return () => window.clearTimeout(t);
@@ -65,9 +66,9 @@ export function OnboardingForm() {
       const result = await estimateNetMonthly(supabase, { grossAnnual: partnerGross, taxClass: 1, taxYear });
       if (reqId !== lastPartnerReq.current) return;
       setPartnerEstimate(result);
-      if (!partnerManualOverride.current) {
-        setPartnerNetInput(result === null ? "" : formatNetForInput(result));
-      }
+      // K2: manualOverride sperrt das Schreiben ins Feld.
+      if (partnerManualOverride.current) return;
+      setPartnerNetInput(result === null ? "" : formatNetForInput(result));
     }, 150);
     return () => window.clearTimeout(t);
   }, [supabase, partnerActive, partnerGross, taxYear]);

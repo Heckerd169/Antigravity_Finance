@@ -6,7 +6,7 @@ import type { Person } from "./income-split.types";
 
 export type SaveIncomeChangeResult =
   | { ok: true }
-  | { ok: false; error: string; code?: "DUPLICATE_MONTH" | "OTHER" };
+  | { ok: false; error: string; code?: "PAST_MONTH" | "OTHER" };
 
 export async function saveIncomeChange(input: {
   person: Person;
@@ -30,29 +30,36 @@ export async function saveIncomeChange(input: {
     return { ok: false, error: "Monatliches Netto ungueltig.", code: "OTHER" };
   }
 
+  // Past-Month-Guard server-seitig (Belt-and-Suspenders zur UI-Sperre — kein
+  // Trust auf Client-State). Briefing Korrektur K1.
+  if (isPastMonth(input.effectiveMonth)) {
+    return {
+      ok: false,
+      error: "Vergangene Monate sind eingefroren.",
+      code: "PAST_MONTH",
+    };
+  }
+
   const effectiveMonth = `${input.effectiveMonth.year}-${String(input.effectiveMonth.month).padStart(2, "0")}-01`;
 
-  const { error } = await supabase.from("income_timeline").insert({
-    user_id: user.id,
-    person: input.person,
-    effective_month: effectiveMonth,
-    gross_annual: input.grossAnnual,
-    net_monthly: input.netMonthly,
-  });
+  // UPSERT (Korrektur K1): UNIQUE(user_id, person, effective_month) definiert
+  // einen Slot pro Monat-Person; Re-Save desselben Monats fuer dieselbe Person
+  // ueberschreibt den Slot. Snapshot-Integritaet bleibt gewahrt, weil
+  // vergangene Monate ueber den Past-Month-Guard oben gesperrt sind.
+  const { error } = await supabase
+    .from("income_timeline")
+    .upsert(
+      {
+        user_id: user.id,
+        person: input.person,
+        effective_month: effectiveMonth,
+        gross_annual: input.grossAnnual,
+        net_monthly: input.netMonthly,
+      },
+      { onConflict: "user_id,person,effective_month" },
+    );
 
   if (error) {
-    // Postgres unique_violation = 23505. Schema hat
-    // UNIQUE(user_id, person, effective_month).
-    // §8.2 des Briefings: "Falls Constraint vorhanden ist und blockt: in
-    // Review als offene Frage melden". Kein UPDATE-Pfad in V1 (Schema §6:
-    // append-only).
-    if (error.code === "23505") {
-      return {
-        ok: false,
-        error: "Für diesen Monat und diese Person existiert bereits ein Eintrag. (V1: keine Korrektur über die UI möglich — siehe Sprint-1-Review §8.2.)",
-        code: "DUPLICATE_MONTH",
-      };
-    }
     return { ok: false, error: `Speichern fehlgeschlagen: ${error.message}`, code: "OTHER" };
   }
 
@@ -75,4 +82,13 @@ export async function saveIncomeChange(input: {
 
   revalidatePath("/");
   return { ok: true };
+}
+
+function isPastMonth(am: { year: number; month: number }): boolean {
+  const now = new Date();
+  const currentYear = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth() + 1;
+  if (am.year < currentYear) return true;
+  if (am.year > currentYear) return false;
+  return am.month < currentMonth;
 }
