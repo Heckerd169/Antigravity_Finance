@@ -336,4 +336,41 @@ Switch, ein RPC funktioniert überall. Wurde so in Sprint 1 für
 
 ---
 
+## 10. Korrektur-Notiz (post-review · `fix:`-Commit `2245673`)
+
+PM-Antwort auf §8 Open Questions als Korrektur-Briefing-Append in
+`sprints/sprint_01_briefing.md` (PM-Commit `282cc67`). Umgesetzt im
+`fix:`-Commit `2245673` auf `sprint/01-income`.
+
+- **K1 — UPSERT statt INSERT (Option B).** `income_timeline`-Writes laufen
+  jetzt in `src/components/income-split/actions.ts` und
+  `src/app/onboarding/actions.ts` als `.upsert(..., { onConflict:
+  "user_id,person,effective_month" })`. Friendly-23505-Error obsolet und
+  entfernt. Beide Server Actions tragen jetzt einen serverseitigen
+  Past-Month-Guard (Belt-and-Suspenders zur UI-Sperre). Smoke-Test
+  Schritt 9–10 funktioniert jetzt ohne SQL-Reset.
+
+- **K2 — `manualOverride` no-op im useEffect.** Beide Forms (Onboarding +
+  Popup) bekommen `if (manualOverride.current) return;` direkt nach
+  `setEstimate(result)`. Der Schätzungs-Hint bleibt damit beim
+  Brutto-Wechsel aktuell, das Netto-Feld behält den manuellen Wert. State
+  wird weiter nur durch zwei User-Aktionen umgeschaltet: manuelle Eingabe
+  → true, Selbstheilung (Leeren + Blur) → false.
+
+- **K2-Folgewirkung Popup-Default:** `manualOverride.current` startet im
+  Popup `true`, wenn `initialNetMonthly` aus der DB vorbefüllt ist — d. h.
+  der gespeicherte Wert bleibt auch beim Brutto-Verschieben erhalten,
+  bis der User entweder leert (→ Estimate wieder aktiv) oder einen Wert
+  tippt, der ≈ Estimate ist (→ override false). Das ist konsistent mit
+  K2-Intent und §10 §Forward-Inheritance: gespeicherte Werte werden nicht
+  unbeabsichtigt überschrieben.
+
+- **Open Question #2:** keine Code-Änderung. `taxClass: 1` als Fallback
+  für PARTNER-Schätzung bleibt V1-Verhalten, V2-Backlog.
+
+- **Sanity-Checks nach Korrektur:** `tsc --noEmit` clean ·
+  `next lint` clean · `pnpm build` clean.
+
+---
+
 **Ende des Sprint-1-Review.**
