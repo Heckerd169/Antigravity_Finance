@@ -1,0 +1,69 @@
+/*
+ * Antigravity Finance — Globale Design-Tokens
+ * Quelle: antigravity_finance_design_dokument_v3.md §3
+ * Token-Namen 1:1 aus der Design-Doku übernommen.
+ */
+
+:root {
+  /* ── Farben (§3 Tabelle „Farben") ─────────────────────────────── */
+  --bg-primary: #0D0D0F;
+  --bg-card: #141416;
+  --bg-card-open: #160D0D;
+  --bg-card-paid: #0A140E;
+  --bg-card-over: #160A08;
+  --bg-card-ghost: #181818;
+
+  --color-teal: #3ECFAF;
+  --color-red: #FF453A;
+  --color-gold: rgba(255, 200, 60, 0.6);
+  --color-blue-dot: rgba(100, 168, 240, 0.38);
+
+  --text-primary: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.45);
+  --text-ghost: rgba(255, 255, 255, 0.22);
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-teal: rgba(62, 207, 175, 0.22);
+  --border-red: rgba(255, 69, 58, 0.18);
+
+  /* ── Typografie (§3 Tabelle „Typographie") ────────────────────── */
+  /* System-Font-Stack — bewusste Designentscheidung (PM, Sprint 0) */
+  --font-stack-system: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+
+  /* Primärzahl (Ring) */
+  --typo-ring-size: 34px;
+  --typo-ring-weight: 200;
+  --typo-ring-tracking: -1.8px;
+
+  /* Aktiver Monat (Header) */
+  --typo-month-active-size: 17px;
+  --typo-month-active-weight: 600;
+  --typo-month-active-tracking: -0.5px;
+
+  /* Kartenname */
+  --typo-card-name-size: 13px;
+  --typo-card-name-weight: 500;
+  --typo-card-name-tracking: -0.2px;
+
+  /* Kartenbetrag */
+  --typo-card-amount-size: 22px;
+  --typo-card-amount-weight: 200;
+  --typo-card-amount-tracking: -1.2px;
+
+  /* Flanken-Monat */
+  --typo-month-flank-size: 13px;
+  --typo-month-flank-weight: 500;
+  --typo-month-flank-tracking: -0.2px;
+
+  /* Labels / Meta — Split der „9–10px"-Range aus §3 */
+  --typo-label-small-size: 9px;
+  --typo-label-small-weight: 600;
+  --typo-label-small-tracking: 1.1px;
+
+  --typo-label-meta-size: 10px;
+  --typo-label-meta-weight: 500;
+  --typo-label-meta-tracking: 0.6px;
+
+  /* Alle Zahlen */
+  --typo-numeric-variant: tabular-nums;
+}
