@@ -83,14 +83,14 @@ function PopupBody({
     return () => window.clearTimeout(t);
   }, [supabase, grossAnnual, estimationTaxClass, taxYear, isPastMonth]);
 
-  const splitFactor = (() => {
-    if (counterpartGrossAnnual == null || counterpartGrossAnnual + grossAnnual === 0) return 1;
-    if (person === "ICH") {
-      return grossAnnual / (grossAnnual + counterpartGrossAnnual);
-    }
-    return counterpartGrossAnnual / (counterpartGrossAnnual + grossAnnual);
-  })();
-  const ichPercent = Math.round((person === "ICH" ? splitFactor : 1 - splitFactor) * 100);
+  // K4 (Briefing-Korrektur #2): Split-Labels explizit person-orientiert
+  // zuordnen. Vorher wurde im PARTNER-Popup doppelt invertiert
+  // (Slider-Wert galt als ICH-Anteil), Labels waren gespiegelt.
+  const ichGrossForSplit = person === "ICH" ? grossAnnual : (counterpartGrossAnnual ?? 0);
+  const partnerGrossForSplit = person === "PARTNER" ? grossAnnual : (counterpartGrossAnnual ?? 0);
+  const splitTotal = ichGrossForSplit + partnerGrossForSplit;
+  const ichRatio = splitTotal > 0 ? ichGrossForSplit / splitTotal : 1;
+  const ichPercent = Math.round(ichRatio * 100);
   const partnerPercent = 100 - ichPercent;
 
   const netNumber = parseGermanNumber(netInput);

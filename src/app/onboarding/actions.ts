@@ -66,14 +66,23 @@ export async function submitOnboarding(input: {
     }
   }
 
+  // K3 (Briefing-Korrektur #2): UPSERT statt UPDATE.
+  // Edge-Case: wenn der profiles-Row beim Onboarding fehlt (z. B. Login-Upsert
+  // hat nicht gegriffen — Pre-Trigger-User, Cookie-Loss, etc.), trifft UPDATE
+  // 0 Rows ohne Error → onboarded_at wird nie gesetzt → endlose
+  // /onboarding-Redirects. UPSERT macht den Flow idempotent und deckt den
+  // Edge-Case ab.
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({
-      tax_class: input.taxClass,
-      tax_year: input.taxYear,
-      onboarded_at: new Date().toISOString(),
-    })
-    .eq("user_id", user.id);
+    .upsert(
+      {
+        user_id: user.id,
+        tax_class: input.taxClass,
+        tax_year: input.taxYear,
+        onboarded_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
   if (profileError) {
     return { ok: false, error: `Profil konnte nicht aktualisiert werden: ${profileError.message}` };
   }
