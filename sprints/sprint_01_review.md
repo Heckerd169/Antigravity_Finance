@@ -373,4 +373,43 @@ PM-Antwort auf §8 Open Questions als Korrektur-Briefing-Append in
 
 ---
 
+## 11. Korrektur-Notiz #2 (post-browser-test · `fix:`-Commit `b32f5bb`)
+
+Browser-Smoke-Test durch User abgeschlossen: A13 sowie K1/K2 grün, A14
+PARTNER-Popup zeigte gespiegelte Split-Labels. PM-Antwort als
+Korrektur-Briefing #2 in `sprints/sprint_01_briefing.md` (PM-Commit
+`ba882c3`). Umgesetzt im `fix:`-Commit `b32f5bb` auf `sprint/01-income`.
+
+- **K3 — Onboarding profiles UPDATE → UPSERT.**
+  `src/app/onboarding/actions.ts`: Profile-Write läuft jetzt als
+  `.upsert(..., { onConflict: "user_id" })`. Hintergrund: wenn beim
+  Onboarding kein `profiles`-Row existiert (z. B. Pre-Trigger-User, der
+  Login-Upsert nicht durchlaufen hat), traf das vorherige UPDATE
+  0 Rows ohne Error — `onboarded_at` blieb NULL, User landete endlos
+  auf `/onboarding`. Im Browser-Test exakt so passiert, dort durch
+  Cookies-Reset umgangen. Mit UPSERT ist der Flow idempotent gegen den
+  Edge-Case. Happy-Path identisch zum UPDATE-Verhalten.
+
+- **K4 — Split-Labels im PARTNER-Popup korrekt zugeordnet.**
+  `src/components/income-split/index.tsx`: Split-Berechnung jetzt
+  explizit person-orientiert. `ichGrossForSplit` / `partnerGrossForSplit`
+  werden je nach `person`-Prop aus Slider-Wert + Counterpart belegt;
+  `ichRatio = ichGrossForSplit / (ich + partner)`. Vorher: im
+  PARTNER-Popup wurde der Slider-Wert intern als ICH-Anteil
+  interpretiert und dann mit `1 - splitFactor` „korrigiert" — doppelte
+  Inversion, Labels gespiegelt.
+
+  Validierung (zur Re-Test durch User):
+  - ICH-Popup, Slider 85k, Counterpart 40k: ICH 68 % · PARTNER 32 %
+    → unverändert ✓
+  - PARTNER-Popup, Slider 40k, Counterpart 75k: ICH 65 % · PARTNER 35 %
+    (vorher 35 / 65, jetzt korrekt) — A14-Re-Test
+
+- **Open Question #2:** weiterhin keine Code-Änderung. V2-Backlog.
+
+- **Sanity-Checks nach Korrektur:** `tsc --noEmit` clean ·
+  `next lint` clean · `pnpm build` clean.
+
+---
+
 **Ende des Sprint-1-Review.**
