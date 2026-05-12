@@ -1,9 +1,15 @@
 .main {
   min-height: 100dvh;
   display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 32px;
+}
+
+.topRow {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 32px;
 }
 
 .email {
@@ -31,4 +37,40 @@
 
 .logout:hover {
   color: var(--text-primary);
+}
+
+.devPanel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(255, 200, 60, 0.4);
+  border-radius: 8px;
+  background: rgba(255, 200, 60, 0.04);
+  align-self: flex-start;
+}
+
+.devLabel {
+  color: var(--color-gold);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.devButton {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.devButton:hover {
+  border-color: rgba(255, 255, 255, 0.18);
 }
