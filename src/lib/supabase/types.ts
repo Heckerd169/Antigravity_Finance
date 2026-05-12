@@ -436,6 +436,10 @@ export type Database = {
         Args: { p_card_id: string; p_fragment_id: string }
         Returns: number
       }
+      calculate_planned_sparrate_for_month: {
+        Args: { p_month: string; p_user_id: string }
+        Returns: number
+      }
       calculate_sparrate_for_month: {
         Args: { p_month: string; p_user_id: string }
         Returns: number
@@ -640,4 +644,3 @@ export const Constants = {
     },
   },
 } as const
-
