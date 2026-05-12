@@ -369,3 +369,14 @@ UPSERT-Regel für Forward-Inheritance, Defense-in-Depth-UPSERT für Profile-
 Writes, `effective_month`-String-Konstruktion, RPC-Wrapper-Konvention mit
 explizitem SupabaseClient-Parameter, Sprint-Output-Commit-Reihenfolge,
 `.DS_Store`-Hygiene.
+
+### Pre-Sprint 2 · 12. Mai 2026
+**RPC `calculate_planned_sparrate_for_month` hinzugefügt** (Migration
+`add_calculate_planned_sparrate_for_month`). Versorgt den Singularity-Ring-Arc
+mit dem Plan-Nenner. Logik: Prioritätskette `adjusted_amount → planned`, ohne
+Realität-Pfad (Fragmente ignoriert). Schema-Doku §4 aktualisiert.
+
+**Tech-Debt-Notiz:** Plan-Pfad-Berechnung wurde inline implementiert. Spätere
+Cleanup-Session könnte einen gemeinsamen Helper `calculate_card_planned_amount_for_month`
+einführen, den dann `calculate_sparrate_for_month` und der neue RPC gemeinsam
+konsumieren. Nicht jetzt, nicht in Sprint 2 — nur dokumentiert.

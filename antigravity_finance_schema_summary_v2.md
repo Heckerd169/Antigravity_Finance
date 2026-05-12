@@ -100,6 +100,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert | `numeric` (NULL falls Onboarding offen) |
+| `calculate_planned_sparrate_for_month(user_id, month)` | Ring-Arc-Nenner (Plan-Sparrate ohne Realität-Pfad) | `numeric` (NULL falls Onboarding offen) |
 | `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte | `numeric` (immer ≥ 0) |
 | `is_card_active_in_month(card_id, month)` | Karte rendern oder nicht? | `boolean` |
 | `get_planned_amount_for_month(card_id, month)` | Plan-Anzeige | `numeric` |
