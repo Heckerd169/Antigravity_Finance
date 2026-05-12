@@ -395,4 +395,97 @@ einen kurzen Abschnitt „§10 Korrektur-Notiz" mit den drei Bullet-Punkten oben
 - Keine Browser-Tests durch Claude Code (übernimmt der User)
 - Keine CLAUDE.md-Änderung (übernimmt PM nach finalem Approval)
 
+---
+
+## Korrektur-Briefing #2 — angehängt 11. Mai 2026 nach Browser-Smoke-Test
+
+Zwei zusätzliche Korrekturen aus dem Browser-Test:
+
+### Korrektur K3 — Onboarding-Action: UPDATE → UPSERT auf profiles
+
+**Befund:** Wenn beim Onboarding kein profiles-Row existiert (Edge-Case: Login-Upsert
+hat nicht gegriffen, z. B. wenn User aus Pre-Trigger-Zeit nie neu eingeloggt hat),
+schlägt der Onboarding-Submit silent fehl: `UPDATE profiles WHERE user_id = X` trifft
+0 Rows, kein Error, aber `onboarded_at` wird nie gesetzt → User landet endlos auf
+`/onboarding`.
+
+**Im Browser-Smoke-Test exakt so passiert:** Bug umgangen durch Cookies-Löschen +
+Re-Login (das hat den Login-Upsert getriggert). Der Code muss aber robust gegen
+diesen Edge-Case sein, sonst kommt der Bug bei neuen Test-Usern oder Migrations-
+Szenarien wieder.
+
+**Konkret:** In `src/app/onboarding/actions.ts`, der Profile-Write am Ende des
+Submit-Flows:
+
+```ts
+// VORHER (silent failure möglich):
+await supabase
+  .from("profiles")
+  .update({
+    tax_class: data.tax_class,
+    tax_year: data.tax_year,
+    onboarded_at: new Date().toISOString(),
+  })
+  .eq("user_id", user.id);
+
+// NACHHER (robust):
+await supabase
+  .from("profiles")
+  .upsert(
+    {
+      user_id: user.id,
+      tax_class: data.tax_class,
+      tax_year: data.tax_year,
+      onboarded_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+```
+
+Begründung: idempotent, deckt Edge-Case ab. Im Happy-Path identisches Verhalten
+(UPSERT überschreibt einen vorhandenen Row, was funktional einem UPDATE entspricht).
+
+### Korrektur K4 — Split-Labels im PARTNER-Popup korrekt zuordnen
+
+**Befund:** Im PARTNER-Popup zeigt die Split-Vorschau die Prozente invertiert.
+Beispiel mit DB-Stand ICH=75k, PARTNER=40k:
+- Angezeigt: „ICH 35% · PARTNER 65%" und „ICH-Anteil 420 €" ❌
+- Korrekt: „ICH 65% · PARTNER 35%" und „ICH-Anteil 780 €" ✅
+
+**Vermutete Ursache:** Die Split-Faktor-Berechnung verwendet `currentSliderGross` als
+„person-Anteil" und ordnet diesen ungeachtet des aktiven `person`-Props dem
+ICH-Label zu. Im ICH-Popup ist das zufällig korrekt; im PARTNER-Popup ergibt es das
+gespiegelte Bild.
+
+**Konkret:** In `src/components/income-split/index.tsx` (oder wo immer die
+Split-Vorschau berechnet wird) muss die Zuordnung von Slider-Wert zu Person
+explizit über das `person`-Prop erfolgen:
+
+```ts
+// Slider-Wert ist immer das Brutto der GERADE BEARBEITETEN Person
+// Other-Gross ist das Brutto der ANDEREN Person (aus DB)
+const ichGross = person === "ICH" ? sliderGross : otherGross;
+const partnerGross = person === "PARTNER" ? sliderGross : otherGross;
+
+const total = ichGross + partnerGross;
+const ichRatio = total > 0 ? ichGross / total : 1;
+const partnerRatio = 1 - ichRatio;
+```
+
+Label-Rendering bleibt unverändert (`ICH {ichRatio}%`, `PARTNER {partnerRatio}%`),
+aber die zugrundeliegenden Variablen sind jetzt korrekt zugeordnet.
+
+**Validierungs-Test nach Fix:**
+- ICH-Popup, Slider auf 85k (mit PARTNER 40k aus DB): „ICH 68% · PARTNER 32%" → unverändert ✓
+- PARTNER-Popup, Slider auf 40k (mit ICH 75k aus DB): „ICH 65% · PARTNER 35%" → war 35/65, soll 65/35
+
+### Output
+
+Ein `fix:`-Commit (K3 + K4 zusammen, weil verwandt: beide räumen Edge-Cases im
+Onboarding/Income-Flow auf). Anschließend `docs:`-Commit, der die Review-Datei
+um eine §11 „Korrektur-Notiz #2" ergänzt.
+
+**Nicht-Aufgaben:** Keine UI-Änderungen über die invertierten Labels hinaus.
+Keine Tests. Keine CLAUDE.md-Änderung.
+
 **Ende des Sprint-1-Briefings.**
