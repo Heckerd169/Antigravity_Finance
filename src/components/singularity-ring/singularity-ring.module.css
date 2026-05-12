@@ -1,0 +1,99 @@
+.ringStage {
+  --ring-track: rgba(255, 255, 255, 0.05);
+  --ring-label: rgba(255, 255, 255, 0.20);
+  --ring-subtext-muted: rgba(255, 255, 255, 0.28);
+
+  position: relative;
+  width: 248px;
+  height: 248px;
+}
+
+.svg {
+  width: 248px;
+  height: 248px;
+  display: block;
+  overflow: visible;
+}
+
+.track {
+  stroke: var(--ring-track);
+}
+
+.arc {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.72s cubic-bezier(0.22, 0, 0.08, 1);
+}
+
+.arcPos {
+  stroke: var(--color-teal);
+}
+
+.arcNeg {
+  stroke: var(--color-red);
+}
+
+.dot {
+  fill: var(--text-ghost);
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.centerValue {
+  font-size: var(--typo-ring-size);
+  font-weight: var(--typo-ring-weight);
+  letter-spacing: var(--typo-ring-tracking);
+  font-variant-numeric: var(--typo-numeric-variant);
+  line-height: 1;
+}
+
+.centerValue[data-color="red"] {
+  color: var(--color-red);
+}
+
+.centerValue[data-color="white"] {
+  color: var(--text-primary);
+}
+
+.centerValue[data-color="teal"] {
+  color: var(--color-teal);
+}
+
+.label {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 2px;
+  color: var(--ring-label);
+  text-transform: uppercase;
+}
+
+.subtext {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  font-variant-numeric: var(--typo-numeric-variant);
+  line-height: 1;
+  min-height: 11px;
+}
+
+.subtext[data-color="red"] {
+  color: var(--color-red);
+}
+
+.subtext[data-color="teal"] {
+  color: var(--color-teal);
+}
+
+.subtext[data-color="muted"] {
+  color: var(--ring-subtext-muted);
+}

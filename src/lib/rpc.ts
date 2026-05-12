@@ -20,3 +20,35 @@ export async function estimateNetMonthly(
 
   return data;
 }
+
+export async function calculateSparrateForMonth(
+  client: AppSupabaseClient,
+  args: { userId: string; month: string },
+): Promise<number | null> {
+  const { data, error } = await client.rpc("calculate_sparrate_for_month", {
+    p_user_id: args.userId,
+    p_month: args.month,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function calculatePlannedSparrateForMonth(
+  client: AppSupabaseClient,
+  args: { userId: string; month: string },
+): Promise<number | null> {
+  const { data, error } = await client.rpc("calculate_planned_sparrate_for_month", {
+    p_user_id: args.userId,
+    p_month: args.month,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}

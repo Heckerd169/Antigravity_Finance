@@ -1,7 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  calculatePlannedSparrateForMonth,
+  calculateSparrateForMonth,
+} from "@/lib/rpc";
+import { DashboardRingStage } from "@/components/dashboard-ring-stage";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
 import styles from "./page.module.css";
+
+function currentMonthYYYYMM01(): string {
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
+  return `${yyyy}-${mm}-01`;
+}
 
 export default async function Home() {
   const supabase = createClient();
@@ -45,7 +57,18 @@ export default async function Home() {
   const taxYear = profile?.tax_year ?? activeMonth.year;
   const taxClass = profile?.tax_class ?? 1;
 
-  // Dev-Triggers nur in Development sichtbar — niemals in Production.
+  const month = currentMonthYYYYMM01();
+  let realCurrent: number | null = null;
+  let realPlanned: number | null = null;
+  try {
+    [realCurrent, realPlanned] = await Promise.all([
+      calculateSparrateForMonth(supabase, { userId: user!.id, month }),
+      calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month }),
+    ]);
+  } catch (err) {
+    console.error("Sparrate-RPCs fehlgeschlagen", err);
+  }
+
   const showDevTriggers = process.env.NODE_ENV === "development";
 
   return (
@@ -58,6 +81,8 @@ export default async function Home() {
           </button>
         </form>
       </div>
+
+      <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
 
       {showDevTriggers && (
         <DashboardDevPanel
