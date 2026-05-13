@@ -1,0 +1,80 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.devPanel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px dashed rgba(255, 200, 60, 0.4);
+  border-radius: 8px;
+  background: rgba(255, 200, 60, 0.04);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.devLabel {
+  color: var(--color-gold);
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+}
+
+.input {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-size: 12px;
+  width: 132px;
+  font-variant-numeric: var(--typo-numeric-variant);
+}
+
+.input::placeholder {
+  color: var(--text-ghost);
+}
+
+.resetButton {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.resetButton:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.resetButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
