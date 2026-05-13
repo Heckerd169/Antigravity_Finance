@@ -104,7 +104,7 @@ Antigravity_Finance/
 |---|---|---|---|---|
 | 0 | Projekt-Setup | 🟢 Done | sprints/sprint_00_briefing.md | 11. Mai 2026 |
 | 1 | Onboarding + Income/Partner-Split (§10) | 🟢 Done | sprints/sprint_01_briefing.md | 11. Mai 2026 |
-| 2 | Singularity Ring (§5) | ⏳ TBD | — | — |
+| 2 | Singularity Ring (§5) | 🟢 Done | sprints/sprint_02_briefing.md | 12. Mai 2026 |
 | 3 | Header / Timeline-Navigation (§6) | — | — | — |
 | 4 | Karten — alle 3 Typen × alle Zustände (§7) | — | — | — |
 | 5 | Untere Interaktionszone (§8) | — | — | — |
@@ -216,8 +216,16 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
 - RPC-Aufrufe immer typisiert über `lib/rpc.ts`. **Wrapper-Konvention:** Jede
   RPC-Funktion akzeptiert einen `SupabaseClient` als ersten Parameter, statt intern
   zwischen `server.ts`/`client.ts` zu wählen. Vorteil: kein versteckter Server-/Client-
-  Switch, ein RPC funktioniert überall.
+  Switch, ein RPC funktioniert überall. **Default ist Throw-on-Error**: Wrapper
+  geben bei DB-`null` legitim `null` zurück, werfen aber bei Supabase-Errors
+  (Network, RLS, etc.). Schluckende Variante (`null` auch bei Errors) nur, wenn
+  der Aufrufer „kein Datum" und „Fehler" nicht unterscheiden muss und ein Crash
+  UX-schädlich wäre — diese Ausnahme im Wrapper-Kommentar dokumentieren.
 - Keine globalen CSS-Klassen außerhalb `tokens.css` + `globals.css`
+- **SVG-Transform-Properties inline erlaubt:** `transform-box: fill-box` und
+  `transform-origin: center` dürfen als `style=`-Attribut auf SVG-Elementen
+  stehen, da CSS-Module-Spezifität hier inkonsistent wirken kann. Farben und
+  alle anderen Properties gehen weiterhin über Tokens / CSS-Modules.
 - Branch pro Sprint: `sprint/NN-<komponente>`
 
 ### Was Claude Code NIE macht
@@ -370,13 +378,49 @@ Writes, `effective_month`-String-Konstruktion, RPC-Wrapper-Konvention mit
 explizitem SupabaseClient-Parameter, Sprint-Output-Commit-Reihenfolge,
 `.DS_Store`-Hygiene.
 
-### Pre-Sprint 2 · 12. Mai 2026
-**RPC `calculate_planned_sparrate_for_month` hinzugefügt** (Migration
-`add_calculate_planned_sparrate_for_month`). Versorgt den Singularity-Ring-Arc
-mit dem Plan-Nenner. Logik: Prioritätskette `adjusted_amount → planned`, ohne
-Realität-Pfad (Fragmente ignoriert). Schema-Doku §4 aktualisiert.
+### Sprint 2 · APPROVED 12. Mai 2026
+**Komponente:** Singularity Ring (Design-Doku §5) — Dashboard-Herzstück
 
-**Tech-Debt-Notiz:** Plan-Pfad-Berechnung wurde inline implementiert. Spätere
-Cleanup-Session könnte einen gemeinsamen Helper `calculate_card_planned_amount_for_month`
-einführen, den dann `calculate_sparrate_for_month` und der neue RPC gemeinsam
-konsumieren. Nicht jetzt, nicht in Sprint 2 — nur dokumentiert.
+**Voraussetzung:** Architekt-RPC `calculate_planned_sparrate_for_month` aus
+Pre-Sprint-2-Eintrag (Plan-Nenner für den Arc, ohne Realität-Pfad). Supabase-
+Typen regeneriert + committet (`chore: regenerate supabase types after
+planned-sparrate RPC`).
+
+**Implementierung (2 Commits):**
+- `src/lib/rpc.ts` erweitert um `calculateSparrateForMonth` +
+  `calculatePlannedSparrateForMonth` (beide werfen Errors — siehe LL-2 unten).
+- `src/components/singularity-ring/` — Client-Component mit SVG-Geometrie
+  (R=98, stroke 9, linecap round), Track + Dots + Teal/Rot-Arcs.
+  Post-Mount-Animation via `useState(C)` + `useEffect` + `requestAnimationFrame`,
+  CSS-Transition `.72s cubic-bezier(.22, 0, .08, 1)`. Pure-Function
+  `computeRingState` für Mathematik + Subtext + Farben.
+- `src/components/dashboard-ring-stage/` — Client-Wrapper, hält Force-Override-
+  State (`useState`), rendert Ring + NODE_ENV-gated Force-Dev-Panel.
+  Tree-Shaking sauber: Production-Bundle 0 Treffer für „Force currentSparrate".
+- `src/app/page.tsx` — lädt beide Sparraten via `Promise.all` mit defensivem
+  `try/catch` für RPC-Fehler.
+
+**Browser-Smoke-Test (User):** S1–S11 alle grün — Real-State, alle 6 Grenzwert-
+Szenarien via Force-Override (`0`, `1500`, `5000`, `8000`, `-500`, `-3500`),
+Animation weich, plan=0-Edge-Case, Production-Build elidiert das Dev-Panel
+vollständig (visuell bestätigt).
+
+**Lessons Learned in CLAUDE.md integriert** (§7 Datei-Konventionen):
+- **LL-2**: RPC-Wrapper-Default ist Throw-on-Error. `estimateNetMonthly`
+  (Sprint 1) ist inkonsistent (schluckt Errors) — bekannte Inkonsistenz, **kein
+  eigener Fix-Sprint**. Wird mitgefixt bei nächster Sprint-Berührung des
+  Wrappers, sonst bleibt stehen.
+- **LL-3**: SVG-Transform-Properties (`transform-box`, `transform-origin`)
+  dürfen inline als `style=`-Attribut stehen.
+
+**Pre-Sprint-6-Notiz** (LL-1, beobachtet von Claude Code): Wenn die Sparrate-
+Verifikation in Sprint 6 divergierende Ergebnisse zwischen Ring-Center
+(Ist-RPC) und Ring-Arc (Plan-RPC) zeigt, ist der Helper-Refactor
+`calculate_card_planned_amount_for_month` der erste Verdacht. Beide RPCs
+implementieren Plan-Pfad-Logik aktuell parallel — gemeinsame Helper-Extraktion
+ist die Lösung.
+
+**Offene Frage zur Beobachtung in Sprint 3:** Sublabel SPARRATE bleibt im
+Leer-Zustand (current/plan = null) sichtbar. Im Smoke-Test war dieser Zustand
+nicht beobachtbar (Onboarding-Guard). Sobald Timeline-Nav vergangene Monate
+ohne Income zeigen kann, visuell bewerten und ggf. Korrektur.
