@@ -1,0 +1,159 @@
+.headerTimeline {
+  /* Komponent-lokale Farb-Vars aus Design-Doku §6 (analog Sprint-2-Ring-Pattern). */
+  --pill-bg-running: rgba(255, 255, 255, 0.06);
+  --pill-fg-running: rgba(255, 255, 255, 0.35);
+  --pill-bg-past: rgba(62, 207, 175, 0.08);
+  --pill-fg-past: rgba(62, 207, 175, 0.6);
+  --pill-bg-future: rgba(255, 255, 255, 0.03);
+  --pill-fg-future: rgba(255, 255, 255, 0.15);
+  --flank-text: rgba(255, 255, 255, 0.38);
+  --flank-sub: rgba(255, 255, 255, 0.18);
+  --chev-stroke: rgba(255, 255, 255, 0.55);
+  --chev-bg-hover: rgba(255, 255, 255, 0.07);
+  --divider: rgba(255, 255, 255, 0.06);
+
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 22px 20px 20px;
+  position: relative;
+  border-bottom: 0.5px solid var(--divider);
+  user-select: none;
+}
+
+.flank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  padding: 4px 0;
+  min-width: 0;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+  color: var(--flank-text);
+  text-decoration: none;
+}
+
+.flank:hover {
+  opacity: 1;
+}
+
+.flank.left {
+  justify-content: flex-start;
+}
+
+.flank.right {
+  justify-content: flex-end;
+}
+
+.flankDisabled {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.flankText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.flank.right .flankText {
+  align-items: flex-end;
+}
+
+.flankMonth {
+  font-size: var(--typo-month-flank-size);
+  font-weight: var(--typo-month-flank-weight);
+  letter-spacing: var(--typo-month-flank-tracking);
+  color: var(--flank-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flankSub {
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--flank-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chev {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.headerTimeline:hover .chev,
+.headerTimeline:focus-within .chev {
+  opacity: 1;
+}
+
+.flank:hover .chev {
+  background: var(--chev-bg-hover);
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 16px;
+  gap: 4px;
+}
+
+.monthLabel {
+  font-size: var(--typo-month-active-size);
+  font-weight: var(--typo-month-active-weight);
+  letter-spacing: var(--typo-month-active-tracking);
+  color: var(--text-primary);
+  white-space: nowrap;
+  animation: monthFade 0.22s ease-out;
+}
+
+@keyframes monthFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 2px;
+}
+
+.pillRunning {
+  background: var(--pill-bg-running);
+  color: var(--pill-fg-running);
+}
+
+.pillPast {
+  background: var(--pill-bg-past);
+  color: var(--pill-fg-past);
+}
+
+.pillFuture {
+  background: var(--pill-bg-future);
+  color: var(--pill-fg-future);
+}

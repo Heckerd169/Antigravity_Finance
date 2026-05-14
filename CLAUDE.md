@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom PM (Opus 4.7) nach jedem abgeschlossenen Sprint aktualisiert.
-> **Letzte Aktualisierung:** 11. Mai 2026 · **Nach Sprint:** 1 (Approved)
+> **Letzte Aktualisierung:** 14. Mai 2026 · **Nach Sprint:** 3 (Approved)
 
 ---
 
@@ -105,7 +105,7 @@ Antigravity_Finance/
 | 0 | Projekt-Setup | 🟢 Done | sprints/sprint_00_briefing.md | 11. Mai 2026 |
 | 1 | Onboarding + Income/Partner-Split (§10) | 🟢 Done | sprints/sprint_01_briefing.md | 11. Mai 2026 |
 | 2 | Singularity Ring (§5) | 🟢 Done | sprints/sprint_02_briefing.md | 12. Mai 2026 |
-| 3 | Header / Timeline-Navigation (§6) | — | — | — |
+| 3 | Header / Timeline-Navigation (§6) | 🟢 Done | sprints/sprint_03_briefing.md | 14. Mai 2026 |
 | 4 | Karten — alle 3 Typen × alle Zustände (§7) | — | — | — |
 | 5 | Untere Interaktionszone (§8) | — | — | — |
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | — | — | — |
@@ -304,8 +304,9 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | PM-Chat | **Opus 4.7** |
 | Sprint 0 (Setup) | ~~Opus 4.7~~ ✓ erledigt |
 | Sprint 1 (Onboarding + Income) | ~~Opus 4.7~~ ✓ erledigt |
-| Sprint 2 (Singularity Ring) | **Opus 4.7** — SVG-Mathe, Animation, RPC-Integration |
-| Sprints 3, 4, 5, 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
+| Sprint 2 (Singularity Ring) | ~~Opus 4.7~~ ✓ erledigt |
+| Sprint 3 (Header / Timeline-Navigation) | ~~Sonnet 4.6~~ ✓ erledigt |
+| Sprints 4, 5, 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
 | Sprint 6 (Sparrate-Verifikation) | **Opus 4.7** — harter Gate, §4-Konflikte |
 | Sprint 7 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
 
@@ -424,3 +425,78 @@ ist die Lösung.
 Leer-Zustand (current/plan = null) sichtbar. Im Smoke-Test war dieser Zustand
 nicht beobachtbar (Onboarding-Guard). Sobald Timeline-Nav vergangene Monate
 ohne Income zeigen kann, visuell bewerten und ggf. Korrektur.
+**→ In Sprint 3 (Smoke-Schritt 6, April 2026) bewertet — Sublabel wirkt
+ausgewogen, OQ#2 geschlossen.**
+
+### Sprint 3 · APPROVED 14. Mai 2026
+**Komponente:** Header / Timeline-Navigation (Design-Doku §6) — entkoppelt
+den angezeigten Monat vom „heute" per URL-Search-Param.
+
+**Voraussetzungen erfüllt:** Sprint 2 grün auf `main`. Keine neuen RPCs,
+keine Migration, keine Architekten-Vorarbeit. Branch `sprint/03-header-timeline`.
+
+**Implementierung (1 feat-Commit + 1 docs-Commit, 411 LOC +, 10 LOC −):**
+- `src/lib/months.ts` (NEU) — 6 pure Functions (`getCurrentMonthYM`,
+  `parseMonthParam`, `addMonths`, `compareMonths`, `ymToDbDate`,
+  `formatMonthLabel`) + V1-Boundary-Konstanten `MIN/MAX_NAVIGABLE_YM`.
+  String-basierte Monat-Arithmetik ohne `new Date()`-Konstruktor (CLAUDE.md
+  §7 Regel 9).
+- `src/components/header-timeline/` (NEU, 3 Dateien) — Server-Component
+  (kein `"use client"`), `<Link>`-basierte Navigation ohne `useRouter`,
+  Status-Pill aus `compareMonths(targetMonth, currentMonth)`, Cross-Fade
+  via React `key={targetMonth}` + CSS-`@keyframes`. Beide Flanken-Subzeilen
+  V1 hardcoded (`Alles erledigt` / `Kein Ausreißer`) mit Pflicht-TODO-
+  Kommentaren für Sprint 7 (Fragments-Wiring) und post-Sprint-4 (Ausreißer-
+  Definition).
+- `src/app/page.tsx` (MODIFIED) — `searchParams.month` → `targetMonth` →
+  `ymToDbDate` → beide Sprint-2-RPCs. Sprint-1-Helper `currentMonthYYYYMM01`
+  obsolet, ersetzt durch `getCurrentMonthYM()`.
+
+**Architektur-Entscheidungen:**
+- **E1**: Animation = reiner Cross-Fade ohne Direktionalität. Eine click-
+  direction-basierte Animation hätte einen Client-Sub-Component mit
+  `useSearchParams` + `useRef` erfordert; positions-basierte Direktion
+  (`compareMonths(target, current)`) ist semantisch falsch (Position-relativ-
+  zu-heute ≠ Klick-Richtung). §3.6 + Stolperfalle 6 erlauben beide Varianten.
+- **E2**: 12 RGBA-Werte als Header-lokale CSS-Custom-Properties am
+  `.headerTimeline`-Root, NICHT in globale `tokens.css` (analog Sprint-2-
+  Ring-Pattern für komponenten-spezifische Farben).
+- **E3**: `currentMonthYYYYMM01`-Inline-Helper aus `page.tsx` entfernt, DRY
+  mit der neuen `lib/months.ts`. Verhalten Timezone-stabil erhalten.
+- **E4**: `useSearchParams`-Hook bewusst NICHT verwendet. Würde Client-
+  Boundary erzwingen. Server-Component liest `searchParams` direkt als Prop.
+
+**Browser-Smoke-Test (User):** 16/16 Schritte grün. OQ#2 geschlossen
+(Sublabel SPARRATE im April-2026-Leer-Zustand wirkt ausgewogen). Schritt 11
+(`/?month=2030-01`) bestätigt Plan-Forward-Inheritance funktional.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-4** (siehe §7 Datei-Konventionen + Briefing-Konvention): Production-
+  Bundle-Greps für Touch-/Swipe-/Tooling-Strings (A14-Pattern) künftig auf
+  `chunks/app/*.js` einschränken. Framework-Chunks (React Synthetic Events,
+  Next.js Runtime) enthalten `touchstart`/`touchend` als Baseline-Noise →
+  False-Positives bei Grep auf `chunks/*.js`. Sprint-3-A14 wurde mit dem
+  präziseren Grep verifiziert: 0 Treffer in `chunks/app/`, 3 Treffer in
+  Framework-Chunks byte-identisch zu Sprint 2.
+- **LL-5** (siehe §7 Arbeitsregeln): Next.js App Router Soft-Navigation
+  (URL-Param-Wechsel innerhalb derselben Route) un-mountet Client-Components
+  NICHT. Interner `useState` von Client-Wrappern wie `DashboardRingStage`
+  überlebt die Navigation. Folge: Force-Override aus Sprint-2-Dev-Panel
+  bleibt beim Monatswechsel aktiv (Test 15 im Sprint-3-Smoke beobachtet).
+  Sprint-3-Briefing-Annahme „Force-Werte sind weg" war ungenau — Annahme
+  jetzt korrigiert. **Akzeptanz:** Verhalten ist akzeptabel im Dev-Modus
+  (Reset-Button bleibt funktional, Production-Bundle enthält Force-UI nicht).
+  Bei zukünftigen Sprints mit Client-State, der monatsspezifisch sein muss,
+  bewusst `useEffect`-basierten Reset auf Prop-Change einbauen.
+
+**Test-Daten-Aktion vor Sprint 4 (vom User durchgeführt):**
+- `UPDATE income_timeline SET effective_month = '2026-01-01' WHERE …` —
+  Test-User-Onboarding-Slot von Mai auf Januar 2026 rückdatiert, damit
+  Sprint-4-Karten in vergangenen Monaten echte Sparraten zeigen statt
+  Leer-Zustand. Forward-Inheritance ab Januar greift für alle Sprint-4-Tests.
+
+**Sonstige Aktionen vor Sprint 4 (vom User durchgeführt):**
+- HTML-Prototypen aus dem externen Designabteilung-Ordner ins Repo unter
+  `public/prototypes/` committet (Option A nach Prototyp-Location-Diskrepanz
+  aus Sprint-3-Review §11). CLAUDE.md §3 Dateistruktur jetzt vollständig
+  realität-treu.

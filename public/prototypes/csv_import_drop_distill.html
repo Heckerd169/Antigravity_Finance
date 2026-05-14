@@ -1,0 +1,255 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;padding:20px;display:grid;grid-template-columns:180px 1fr;gap:16px}
+
+/* SECTION LABELS */
+.sec-lbl{font-size:9px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:rgba(255,255,255,.18);margin-bottom:10px}
+
+/* ===== PORTAL ===== */
+.portal{
+  border-radius:12px;border:1px dashed rgba(255,255,255,.12);
+  background:#111113;min-height:160px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .2s,background .2s,box-shadow .2s;
+}
+.portal.drag-over{border-color:rgba(62,207,175,.5);background:rgba(62,207,175,.04);box-shadow:0 0 0 1px rgba(62,207,175,.15) inset}
+.portal.processing{border-color:rgba(255,255,255,.2);background:#141416;cursor:default}
+.portal.success{border-color:rgba(62,207,175,.5);background:rgba(62,207,175,.06);cursor:default}
+.portal.error{border-color:rgba(255,69,58,.4);background:rgba(255,69,58,.04);cursor:default}
+.portal-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.portal.drag-over .portal-icon{background:rgba(62,207,175,.1);border-color:rgba(62,207,175,.3)}
+.portal.success .portal-icon{background:rgba(62,207,175,.12);border-color:rgba(62,207,175,.4)}
+.portal.error .portal-icon{background:rgba(255,69,58,.08);border-color:rgba(255,69,58,.25)}
+.portal-lbl{font-size:11px;font-weight:500;color:rgba(255,255,255,.25);text-align:center;line-height:1.5}
+.portal.drag-over .portal-lbl{color:rgba(62,207,175,.7)}
+.portal.success .portal-lbl{color:rgba(62,207,175,.7)}
+.portal.error .portal-lbl{color:rgba(255,99,88,.7)}
+.portal-sub{font-size:9.5px;color:rgba(255,255,255,.13);text-align:center;line-height:1.5;padding:0 8px}
+.portal.error .portal-sub{color:rgba(255,99,88,.45)}
+.portal-input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.portal.processing .portal-input,.portal.success .portal-input,.portal.error .portal-input{pointer-events:none}
+
+/* PULSE ANIMATION */
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.pulsing{animation:pulse 1.2s ease-in-out infinite}
+
+/* STATE BUTTONS */
+.state-btns{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.sbtn{padding:5px 8px;border-radius:6px;border:.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:9px;font-weight:500;color:rgba(255,255,255,.3);cursor:pointer;text-align:center;transition:all .15s}
+.sbtn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
+
+/* ===== FRAGMENT STACK ===== */
+.stack-area{display:flex;flex-direction:column}
+.stack-scroll{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding-right:4px}
+.stack-scroll::-webkit-scrollbar{width:3px}
+.stack-scroll::-webkit-scrollbar-track{background:transparent}
+.stack-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* FRAGMENT CARD */
+.frag{
+  background:#141416;border:1px solid rgba(255,255,255,.07);border-radius:10px;
+  padding:11px 12px;cursor:grab;
+  transition:transform .15s,opacity .15s,box-shadow .15s,border-color .15s;
+  opacity:.72;position:relative;
+}
+.frag:hover{transform:translateY(-1px);opacity:.92;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.frag:active{cursor:grabbing;transform:scale(.97)}
+.frag.used{opacity:.22;cursor:default;pointer-events:none}
+.frag.dragging{opacity:.35;transform:scale(.97)}
+
+.frag-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.frag-amt{font-size:16px;font-weight:200;letter-spacing:-.8px;font-variant-numeric:tabular-nums;line-height:1}
+.frag-amt.neg{color:#FF453A}
+.frag-amt.pos{color:#3ECFAF}
+.frag-badge{font-size:7.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.frag-badge.tanken{background:rgba(100,168,240,.1);color:rgba(100,168,240,.6);border:.5px solid rgba(100,168,240,.2)}
+.frag-badge.essen{background:rgba(255,200,60,.08);color:rgba(255,200,60,.5);border:.5px solid rgba(255,200,60,.15)}
+.frag-desc{font-size:10px;font-weight:500;color:rgba(255,255,255,.28);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.frag-date{font-size:9px;color:rgba(255,255,255,.15)}
+
+/* DRAG HINT */
+.drag-hint{font-size:9px;color:rgba(255,255,255,.12);text-align:center;margin-top:8px;letter-spacing:.2px}
+</style>
+
+<div class="w">
+<h2 class="sr-only">CSV Import Drop & Distill – Portal Zustände und Fragment Stack</h2>
+<div class="d">
+
+  <!-- LEFT: PORTAL -->
+  <div>
+    <div class="sec-lbl">Portal — Import</div>
+    <div class="portal" id="portal"
+      ondragover="ev=event;ev.preventDefault();setState('drag-over')"
+      ondragleave="setState('default')"
+      ondrop="ev=event;ev.preventDefault();simulateImport()">
+      <input type="file" accept=".csv" class="portal-input" onchange="simulateImport()">
+      <div class="portal-icon" id="p-icon">
+        <svg id="p-svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 3v9M6 9l3-3 3 3" stroke="rgba(255,255,255,.4)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 13h12" stroke="rgba(255,255,255,.22)" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="portal-lbl" id="p-lbl">CSV ablegen<br>oder klicken</div>
+      <div class="portal-sub" id="p-sub">Kontoauszug importieren</div>
+    </div>
+
+    <div class="state-btns">
+      <div class="sec-lbl" style="margin-top:10px;margin-bottom:6px">Zustand simulieren</div>
+      <div class="sbtn" onclick="setState('default')">Default</div>
+      <div class="sbtn" onclick="setState('drag-over')">Drag-Over</div>
+      <div class="sbtn" onclick="setState('processing')">Verarbeitung</div>
+      <div class="sbtn" onclick="setState('success')">Erfolg</div>
+      <div class="sbtn" onclick="simulateError('format')">Fehler: Format</div>
+      <div class="sbtn" onclick="simulateError('empty')">Fehler: Leer</div>
+      <div class="sbtn" onclick="simulateError('corrupt')">Fehler: Korrupt</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FRAGMENT STACK -->
+  <div class="stack-area">
+    <div class="sec-lbl">Fragment-Stack — Rohmasse</div>
+    <div class="stack-scroll" id="fstack">
+
+      <!-- AUSGABE: negativ -->
+      <div class="frag" draggable="true" id="f1" ondragstart="ds(event,'f1')" ondragend="de('f1')">
+        <div class="frag-top">
+          <div class="frag-amt neg">−47,20 €</div>
+          <div class="frag-badge tanken">Tanken</div>
+        </div>
+        <div class="frag-desc">Aral Tankstelle Frankfurt Süd</div>
+        <div class="frag-date">12. März 2026</div>
+      </div>
+
+      <!-- AUSGABE: negativ, kein Badge -->
+      <div class="frag" draggable="true" id="f2" ondragstart="ds(event,'f2')" ondragend="de('f2')">
+        <div class="frag-top">
+          <div class="frag-amt neg">−18,90 €</div>
+        </div>
+        <div class="frag-desc">Rewe Supermarkt Sachsenhausen</div>
+        <div class="frag-date">14. März 2026</div>
+      </div>
+
+      <!-- EINNAHME: positiv -->
+      <div class="frag" draggable="true" id="f3" ondragstart="ds(event,'f3')" ondragend="de('f3')">
+        <div class="frag-top">
+          <div class="frag-amt pos">+45,00 €</div>
+        </div>
+        <div class="frag-desc">Unbekannte Gutschrift</div>
+        <div class="frag-date">15. März 2026</div>
+      </div>
+
+      <!-- AUSGABE: mit Badge -->
+      <div class="frag" draggable="true" id="f4" ondragstart="ds(event,'f4')" ondragend="de('f4')">
+        <div class="frag-top">
+          <div class="frag-amt neg">−38,50 €</div>
+          <div class="frag-badge essen">Essen</div>
+        </div>
+        <div class="frag-desc">Norma Discount GmbH</div>
+        <div class="frag-date">16. März 2026</div>
+      </div>
+
+      <!-- AUSGABE: große Summe -->
+      <div class="frag" draggable="true" id="f5" ondragstart="ds(event,'f5')" ondragend="de('f5')">
+        <div class="frag-top">
+          <div class="frag-amt neg">−650,00 €</div>
+        </div>
+        <div class="frag-desc">HUK-COBURG Versicherung</div>
+        <div class="frag-date">18. März 2026</div>
+      </div>
+
+      <!-- AUSGABE: bereits verwendet -->
+      <div class="frag used" id="f6">
+        <div class="frag-top">
+          <div class="frag-amt neg" style="color:rgba(255,69,58,.4)">−120,00 €</div>
+        </div>
+        <div class="frag-desc">Stadtwerke Frankfurt GmbH</div>
+        <div class="frag-date">10. März 2026</div>
+      </div>
+
+    </div>
+    <div class="drag-hint">Fragmente auf Karten ziehen · Bereits zugeordnet: gedimmt</div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var dragId=null;
+var errorTimer=null;
+var processingTimer=null;
+
+function setState(s){
+  var p=document.getElementById('portal');
+  var icon=document.getElementById('p-svg');
+  var lbl=document.getElementById('p-lbl');
+  var sub=document.getElementById('p-sub');
+  p.className='portal '+(s==='default'?'':s);
+  icon.classList.remove('pulsing');
+
+  if(s==='default'){
+    icon.innerHTML='<path d="M9 3v9M6 9l3-3 3 3" stroke="rgba(255,255,255,.4)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h12" stroke="rgba(255,255,255,.22)" stroke-width="1.3" stroke-linecap="round"/>';
+    lbl.innerHTML='CSV ablegen<br>oder klicken';
+    sub.textContent='Kontoauszug importieren';
+  } else if(s==='drag-over'){
+    icon.innerHTML='<path d="M9 2v10M6 8l3-3 3 3" stroke="rgba(62,207,175,.8)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h12" stroke="rgba(62,207,175,.5)" stroke-width="1.3" stroke-linecap="round"/>';
+    lbl.innerHTML='Loslassen zum Import';
+    sub.textContent='CSV wird erkannt';
+  } else if(s==='processing'){
+    icon.innerHTML='<circle cx="9" cy="9" r="5" stroke="rgba(255,255,255,.3)" stroke-width="1.3" stroke-dasharray="20" stroke-dashoffset="0"/>';
+    icon.classList.add('pulsing');
+    lbl.innerHTML='Wird verarbeitet…';
+    sub.textContent='Fragmente werden erkannt';
+  } else if(s==='success'){
+    icon.innerHTML='<path d="M5 9l3 3 5-5" stroke="rgba(62,207,175,.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    lbl.innerHTML='Import erfolgreich';
+    sub.textContent='Fragmente erscheinen im Stack';
+  } else if(s==='error-format'){
+    icon.innerHTML='<path d="M9 5v5M9 12v1" stroke="rgba(255,99,88,.8)" stroke-width="1.4" stroke-linecap="round"/>';
+    lbl.innerHTML='Format nicht erkannt';
+    sub.textContent='Bitte CSV-Datei verwenden';
+  } else if(s==='error-empty'){
+    icon.innerHTML='<path d="M9 5v5M9 12v1" stroke="rgba(255,99,88,.8)" stroke-width="1.4" stroke-linecap="round"/>';
+    lbl.innerHTML='Keine Transaktionen';
+    sub.textContent='Datei enthält keine Einträge';
+  } else if(s==='error-corrupt'){
+    icon.innerHTML='<path d="M9 5v5M9 12v1" stroke="rgba(255,99,88,.8)" stroke-width="1.4" stroke-linecap="round"/>';
+    lbl.innerHTML='Datei fehlerhaft';
+    sub.textContent='Datei konnte nicht gelesen werden';
+  }
+}
+
+function simulateImport(){
+  if(errorTimer)clearTimeout(errorTimer);
+  if(processingTimer)clearTimeout(processingTimer);
+  setState('processing');
+  processingTimer=setTimeout(function(){
+    setState('success');
+    setTimeout(function(){setState('default');},1500);
+  },2000);
+}
+
+function simulateError(type){
+  if(errorTimer)clearTimeout(errorTimer);
+  if(processingTimer)clearTimeout(processingTimer);
+  setState('processing');
+  processingTimer=setTimeout(function(){
+    setState('error-'+type);
+    document.getElementById('portal').className='portal error';
+    errorTimer=setTimeout(function(){setState('default');},4000);
+  },1200);
+}
+
+function ds(e,id){
+  dragId=id;
+  document.getElementById(id).classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function de(id){
+  document.getElementById(id).classList.remove('dragging');
+  dragId=null;
+}
+</script>

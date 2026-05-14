@@ -3,20 +3,26 @@ import {
   calculatePlannedSparrateForMonth,
   calculateSparrateForMonth,
 } from "@/lib/rpc";
+import {
+  getCurrentMonthYM,
+  parseMonthParam,
+  ymToDbDate,
+} from "@/lib/months";
 import { DashboardRingStage } from "@/components/dashboard-ring-stage";
+import { HeaderTimeline } from "@/components/header-timeline";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
 import styles from "./page.module.css";
 
-function currentMonthYYYYMM01(): string {
-  const now = new Date();
-  const yyyy = now.getUTCFullYear();
-  const mm = String(now.getUTCMonth() + 1).padStart(2, "0");
-  return `${yyyy}-${mm}-01`;
-}
+type HomeProps = {
+  searchParams: { month?: string | string[] };
+};
 
-export default async function Home() {
+export default async function Home({ searchParams }: HomeProps) {
   const supabase = createClient();
+  const currentMonth = getCurrentMonthYM();
+  const targetMonth = parseMonthParam(searchParams?.month);
+  const targetDbDate = ymToDbDate(targetMonth);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -57,13 +63,12 @@ export default async function Home() {
   const taxYear = profile?.tax_year ?? activeMonth.year;
   const taxClass = profile?.tax_class ?? 1;
 
-  const month = currentMonthYYYYMM01();
   let realCurrent: number | null = null;
   let realPlanned: number | null = null;
   try {
     [realCurrent, realPlanned] = await Promise.all([
-      calculateSparrateForMonth(supabase, { userId: user!.id, month }),
-      calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month }),
+      calculateSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
+      calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
     ]);
   } catch (err) {
     console.error("Sparrate-RPCs fehlgeschlagen", err);
@@ -81,6 +86,8 @@ export default async function Home() {
           </button>
         </form>
       </div>
+
+      <HeaderTimeline targetMonth={targetMonth} currentMonth={currentMonth} />
 
       <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
 

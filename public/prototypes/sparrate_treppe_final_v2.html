@@ -1,0 +1,285 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;overflow:hidden}
+.controls{padding:14px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-bottom:.5px solid rgba(255,255,255,.06)}
+.ctrl-row{display:flex;align-items:center;gap:10px}
+.ctrl-lbl{font-size:9.5px;font-weight:500;color:rgba(255,255,255,.25);flex-shrink:0;width:130px}
+.ctrl-val{font-size:10px;font-weight:300;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.4);width:30px;text-align:right;flex-shrink:0}
+input[type=range]{-webkit-appearance:none;flex:1;height:2px;border-radius:1px;outline:none;cursor:pointer;background:rgba(255,255,255,.1)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#fff;border-radius:50%}
+.year-nav{padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:.5px solid rgba(255,255,255,.06)}
+.yn-lbl{font-size:10px;font-weight:500;color:rgba(255,255,255,.25)}
+.yn-btns{display:flex;gap:6px}
+.yn-btn{padding:5px 12px;border-radius:7px;border:.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:10px;font-weight:500;color:rgba(255,255,255,.35);cursor:pointer;transition:background .15s,color .15s}
+.yn-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+.yn-btn.active{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)}
+.chart-area{position:relative;padding:20px 20px 36px 20px}
+.deviation-box{margin:0 20px 14px;padding:10px 14px;background:rgba(255,69,58,.05);border:.5px solid rgba(255,69,58,.15);border-radius:10px;display:none;align-items:flex-start;gap:10px}
+.deviation-box.visible{display:flex}
+.dev-icon{font-size:11px;flex-shrink:0;margin-top:1px;color:rgba(255,99,88,.6)}
+.dev-text{font-size:11px;color:rgba(255,255,255,.35);line-height:1.55}
+.dev-text strong{color:rgba(255,255,255,.55);font-weight:500}
+.legend{display:flex;align-items:center;gap:20px;padding:0 20px 14px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:7px}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+.leg-lbl{font-size:9px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.22)}
+.tooltip{position:absolute;background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 13px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;min-width:190px}
+.tt-month{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:5px}
+.tt-pct{font-size:16px;font-weight:200;letter-spacing:-.6px;font-variant-numeric:tabular-nums;margin-bottom:8px}
+.tt-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-top:4px}
+.tt-lbl{font-size:9px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.22)}
+.tt-val{font-size:12px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.tt-div{height:.5px;background:rgba(255,255,255,.07);margin:7px 0}
+.tt-event{font-size:10px;color:rgba(255,200,60,.6);margin-top:5px}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Sparraten-Treppe Final V2 – nur Vorjahreswert rechts</h2>
+<div class="d">
+  <div class="controls">
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">Opacity tatsächlich</span>
+      <input type="range" id="op-ist" min="5" max="100" step="5" value="50">
+      <span class="ctrl-val" id="v-ist">0.50</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">Opacity geplant</span>
+      <input type="range" id="op-plan" min="5" max="100" step="5" value="30">
+      <span class="ctrl-val" id="v-plan">0.30</span>
+    </div>
+  </div>
+
+  <div class="year-nav">
+    <span class="yn-lbl">Aktives Jahr simulieren:</span>
+    <div class="yn-btns">
+      <div class="yn-btn" id="y2025" onclick="setYear(2025)">2025</div>
+      <div class="yn-btn active" id="y2026" onclick="setYear(2026)">2026</div>
+      <div class="yn-btn" id="y2027" onclick="setYear(2027)">2027</div>
+    </div>
+  </div>
+
+  <div class="chart-area" id="chart-area">
+    <canvas id="cv" style="cursor:default;display:block;width:100%"></canvas>
+    <div class="tooltip" id="tt">
+      <div class="tt-month" id="tt-month"></div>
+      <div class="tt-pct" id="tt-pct"></div>
+      <div class="tt-div"></div>
+      <div class="tt-row"><span class="tt-lbl">IST kumuliert</span><span class="tt-val" id="tt-ist" style="color:rgba(62,207,175,.9)"></span></div>
+      <div class="tt-row" style="margin-top:3px"><span class="tt-lbl">Plan kumuliert</span><span class="tt-val" id="tt-plan" style="color:rgba(255,255,255,.45)"></span></div>
+      <div class="tt-event" id="tt-event" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="deviation-box" id="dev-box">
+    <div class="dev-icon">↘</div>
+    <div class="dev-text" id="dev-text"></div>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(62,207,175,.8)"></div><span class="leg-lbl">Tatsächlich kumuliert</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,.5)"></div><span class="leg-lbl">Geplant kumuliert</span></div>
+    <div class="leg-item" id="leg-prev" style="display:none">
+      <div class="leg-dot" style="background:rgba(255,200,60,.6)"></div>
+      <span class="leg-lbl" id="leg-prev-lbl" style="color:rgba(255,200,60,.6)"></span>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var cv=document.getElementById('cv');
+var ctx=cv.getContext('2d');
+var area=document.getElementById('chart-area');
+
+var data={
+  2025:{ist:[1400,1600,800,1900,1500,1800,1800,-600,1600,1200,1800,2000],plan:[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000],prevYearEnd:16200,prevYear:2024,hasPrev:true},
+  2026:{ist:[1800,2100,1200,2400,1700,2000,2000,-800,2000,1500,2000,2200],plan:[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000],prevYearEnd:17600,prevYear:2025,hasPrev:true},
+  2027:{ist:[2000,1800,2200,1900,2100,2000,2000,1500,2000,2200,2000,2400],plan:[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000],prevYearEnd:null,prevYear:2026,hasPrev:false}
+};
+
+var activeYear=2026;
+var events={7:'Urlaub: Defizitmonat −800 €'};
+var deviations={3:'<strong>April: −320 € vs. Plan</strong> &nbsp;·&nbsp; Urlaub +180 € über Budget &nbsp;·&nbsp; Autoversicherung +650 € &nbsp;·&nbsp; Strom −30 € unter Plan'};
+var monthNames=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+var monthNamesFull=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var netto=4000;
+var istPts=[],planPts=[];
+var hovIdx=-1,selIdx=-1;
+
+function cumul(arr){var r=[],s=0;for(var i=0;i<arr.length;i++){s+=arr[i];r.push(s);}return r;}
+function pct(v){return Math.round(v/netto*100);}
+function fmtE(v){return(v>=0?'+':'')+v.toLocaleString('de-DE')+' €';}
+function getOps(){return{ist:parseInt(document.getElementById('op-ist').value)/100,plan:parseInt(document.getElementById('op-plan').value)/100};}
+
+function setYear(y){
+  activeYear=y;selIdx=-1;
+  document.getElementById('dev-box').classList.remove('visible');
+  [2025,2026,2027].forEach(function(yr){document.getElementById('y'+yr).classList.remove('active');});
+  document.getElementById('y'+y).classList.add('active');
+  updateLegend();draw();
+}
+
+function updateLegend(){
+  var d=data[activeYear];
+  var legPrev=document.getElementById('leg-prev');
+  if(d.hasPrev){legPrev.style.display='flex';document.getElementById('leg-prev-lbl').textContent='Vorjahr '+d.prevYear;}
+  else{legPrev.style.display='none';}
+}
+
+function resize(){
+  var dpr=window.devicePixelRatio||1;
+  var w=area.offsetWidth-40;var h=210;
+  cv.style.width=w+'px';cv.style.height=h+'px';
+  cv.width=w*dpr;cv.height=h*dpr;
+  ctx.scale(dpr,dpr);draw();
+}
+
+function draw(){
+  var dpr=window.devicePixelRatio||1;
+  var W=cv.width/dpr,H=cv.height/dpr;
+  ctx.clearRect(0,0,W,H);
+  var ops=getOps();
+  var d=data[activeYear];
+  var kIst=cumul(d.ist);
+  var kPlan=cumul(d.plan);
+  var allV=kIst.concat(kPlan);
+  if(d.hasPrev&&d.prevYearEnd!==null)allV.push(d.prevYearEnd);
+  allV.push(0);
+  var minV=Math.min.apply(null,allV);
+  var maxV=Math.max.apply(null,allV);
+  var range=maxV-minV||1;
+
+  // padR: only enough for prevYear label when present, small otherwise
+  var padR=d.hasPrev?106:16;
+  var padL=8,padT=20,padB=24;
+  var cW=W-padL-padR,cH=H-padT-padB;
+  var n=12;var stepX=cW/(n-1);
+  function xOf(i){return padL+i*stepX;}
+  function yOf(v){return padT+cH-(v-minV)/range*cH;}
+
+  // zero line
+  ctx.beginPath();ctx.moveTo(padL,yOf(0));ctx.lineTo(padL+cW,yOf(0));
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=.5;ctx.setLineDash([]);ctx.stroke();
+
+  // prev year dashed line + label (ONLY label here, no staircase end labels)
+  if(d.hasPrev&&d.prevYearEnd!==null){
+    var yPrev=yOf(d.prevYearEnd);
+    ctx.beginPath();ctx.setLineDash([4,4]);
+    ctx.moveTo(padL,yPrev);ctx.lineTo(padL+cW,yPrev);
+    ctx.strokeStyle='rgba(255,200,60,.3)';ctx.lineWidth=1;ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font='500 9.5px system-ui,-apple-system';
+    ctx.fillStyle='rgba(255,200,60,0.75)';
+    ctx.textAlign='left';
+    ctx.fillText(fmtE(d.prevYearEnd),xOf(n-1)+10,yPrev+3);
+  }
+
+  // staircase — NO end labels
+  function drawStair(kdata,fillTpl,strokeTpl,op,store){
+    if(store)store.length=0;
+    ctx.beginPath();
+    ctx.moveTo(xOf(0),yOf(0));ctx.lineTo(xOf(0),yOf(kdata[0]));
+    for(var i=1;i<n;i++){ctx.lineTo(xOf(i),yOf(kdata[i-1]));ctx.lineTo(xOf(i),yOf(kdata[i]));}
+    ctx.lineTo(xOf(n-1),yOf(0));ctx.closePath();
+    var grad=ctx.createLinearGradient(0,padT,0,padT+cH);
+    grad.addColorStop(0,fillTpl.replace('OP',(op*0.35).toFixed(2)));
+    grad.addColorStop(1,fillTpl.replace('OP','0.01'));
+    ctx.fillStyle=grad;ctx.fill();
+
+    ctx.beginPath();ctx.moveTo(xOf(0),yOf(kdata[0]));
+    for(var i=1;i<n;i++){ctx.lineTo(xOf(i),yOf(kdata[i-1]));ctx.lineTo(xOf(i),yOf(kdata[i]));}
+    ctx.strokeStyle=strokeTpl.replace('OP',op.toFixed(2));
+    ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.stroke();
+
+    for(var i=0;i<n;i++){
+      var px=xOf(i),py=yOf(kdata[i]);
+      if(store)store.push({x:px,y:py,val:kdata[i]});
+      var isHov=i===hovIdx,isSel=(i===selIdx&&store===istPts);
+      ctx.beginPath();ctx.arc(px,py,isHov||isSel?5:2.5,0,Math.PI*2);
+      ctx.fillStyle=strokeTpl.replace('OP',(isHov||isSel?Math.min(op+0.35,1):op).toFixed(2));
+      ctx.fill();
+      if(isSel){ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.strokeStyle=strokeTpl.replace('OP','0.35');ctx.lineWidth=1;ctx.stroke();}
+    }
+    // NO end label drawn here
+  }
+
+  drawStair(kPlan,'rgba(255,255,255,OP)','rgba(255,255,255,OP)',ops.plan,planPts);
+  drawStair(kIst,'rgba(62,207,175,OP)','rgba(62,207,175,OP)',ops.ist,istPts);
+
+  // event dot Aug
+  var evX=xOf(7),evY=yOf(kIst[7]);
+  ctx.beginPath();ctx.arc(evX,evY,6,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,200,60,.65)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.font='600 9px system-ui';ctx.fillStyle='rgba(255,200,60,.65)';
+  ctx.textAlign='center';ctx.fillText('⚠',evX,evY-10);
+
+  // month labels
+  for(var i=0;i<n;i++){
+    ctx.font='500 8px system-ui';
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    ctx.textAlign='center';ctx.fillText(monthNames[i],xOf(i),H-5);
+  }
+}
+
+cv.addEventListener('mousemove',function(e){
+  var rect=cv.getBoundingClientRect();
+  var mx=e.clientX-rect.left;
+  var best=-1,bestD=9999;
+  for(var i=0;i<istPts.length;i++){var dd=Math.abs(istPts[i].x-mx);if(dd<bestD){bestD=dd;best=i;}}
+  if(bestD<40&&best>=0){
+    hovIdx=best;cv.style.cursor='pointer';
+    var pt=istPts[best],pp=planPts[best];
+    var d=data[activeYear];
+    var p=pct(d.ist[best]);
+    document.getElementById('tt-month').textContent=monthNamesFull[best]+' '+activeYear;
+    document.getElementById('tt-pct').textContent=(p>=0?'+':'')+p+' % monatlich';
+    document.getElementById('tt-pct').style.color=p>=0?'rgba(62,207,175,.9)':'#FF453A';
+    document.getElementById('tt-ist').textContent=fmtE(pt.val);
+    document.getElementById('tt-plan').textContent=fmtE(pp?pp.val:0);
+    var evEl=document.getElementById('tt-event');
+    if(events[best]){evEl.textContent='⚠ '+events[best];evEl.style.display='block';}else{evEl.style.display='none';}
+    var ar=area.getBoundingClientRect();
+    var tx=e.clientX-ar.left+14,ty=e.clientY-ar.top-85;
+    if(tx+200>ar.width-20)tx=e.clientX-ar.left-210;
+    if(ty<0)ty=4;
+    var tt=document.getElementById('tt');
+    tt.style.left=tx+'px';tt.style.top=ty+'px';tt.style.opacity='1';
+    draw();
+  } else {
+    hovIdx=-1;cv.style.cursor='default';
+    document.getElementById('tt').style.opacity='0';draw();
+  }
+});
+
+cv.addEventListener('click',function(e){
+  var rect=cv.getBoundingClientRect();
+  var mx=e.clientX-rect.left;
+  var best=-1,bestD=9999;
+  for(var i=0;i<istPts.length;i++){var dd=Math.abs(istPts[i].x-mx);if(dd<bestD){bestD=dd;best=i;}}
+  if(bestD<40&&best>=0){
+    if(selIdx===best){selIdx=-1;document.getElementById('dev-box').classList.remove('visible');}
+    else{
+      selIdx=best;
+      if(deviations[best]){document.getElementById('dev-text').innerHTML=deviations[best];document.getElementById('dev-box').classList.add('visible');}
+      else{document.getElementById('dev-box').classList.remove('visible');}
+    }
+    draw();
+  }
+});
+
+cv.addEventListener('mouseleave',function(){hovIdx=-1;cv.style.cursor='default';document.getElementById('tt').style.opacity='0';draw();});
+
+function updOp(id,dispId){
+  var v=parseInt(document.getElementById(id).value);
+  var s='0.'+(v<10?'0':'')+v;if(v===100)s='1.00';
+  document.getElementById(dispId).textContent=s;draw();
+}
+document.getElementById('op-ist').addEventListener('input',function(){updOp('op-ist','v-ist');});
+document.getElementById('op-plan').addEventListener('input',function(){updOp('op-plan','v-plan');});
+
+window.addEventListener('resize',resize);
+updateLegend();resize();setTimeout(draw,80);
+</script>

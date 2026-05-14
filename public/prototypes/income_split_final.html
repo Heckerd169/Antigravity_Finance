@@ -1,0 +1,408 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+
+.ctx-title{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:14px}
+
+/* SPLIT ROW */
+.split-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+.sl{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;width:64px}
+.sl:hover .av{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.04)}
+.sl.active-who .av{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.06)}
+.av{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.sl-pct{font-size:13px;font-weight:500;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.sl-name{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+
+/* RING */
+.ring-wrap{display:flex;justify-content:center}
+.ring-wrap svg{width:110px;height:110px}
+
+/* SPARRATE INFO */
+.sparrate-info{background:rgba(255,255,255,.03);border:.5px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.si-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.si-lbl{font-size:9px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.si-val{font-size:12px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.3px;color:rgba(255,255,255,.5)}
+.si-val.highlight{color:#3ECFAF}
+
+/* TIMELINE */
+.tl-lbl{font-size:9px;font-weight:500;color:rgba(255,255,255,.18);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.tl-months{display:flex;gap:3px;margin-bottom:3px}
+.tl-m{flex:1;height:3px;border-radius:1.5px;background:rgba(255,255,255,.07);cursor:pointer;transition:background .15s;position:relative}
+.tl-m:hover{background:rgba(255,255,255,.2)}
+.tl-m.past{background:rgba(255,255,255,.12)}
+.tl-m.active{background:rgba(255,255,255,.5)}
+.tl-m.changed{background:rgba(62,207,175,.45)}
+.tl-m.future{background:rgba(255,255,255,.05)}
+.tl-names{display:flex;gap:3px;margin-bottom:10px}
+.tl-n{flex:1;font-size:7px;color:rgba(255,255,255,.15);text-align:center}
+
+.hint-text{font-size:9.5px;color:rgba(255,255,255,.15);line-height:1.6}
+.hint-text span{color:rgba(255,255,255,.32)}
+
+/* POPUP */
+.popup{background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);border-radius:16px;padding:18px 16px 14px}
+.pop-who{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:2px}
+.pop-month{font-size:14px;font-weight:500;color:#fff;letter-spacing:-.3px;margin-bottom:14px}
+
+.field-lbl{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:6px}
+.brutto-val{font-size:24px;font-weight:200;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;color:#fff;text-align:center;margin-bottom:8px}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;border-radius:1px;outline:none;cursor:pointer;background:rgba(255,255,255,.1);margin-bottom:4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;background:#fff;border-radius:50%}
+.range-hints{display:flex;justify-content:space-between;margin-bottom:12px}
+.range-hint{font-size:8px;color:rgba(255,255,255,.18)}
+
+.split-prev{background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.06);border-radius:9px;padding:9px 11px;margin-bottom:12px}
+.sp-row{display:flex;justify-content:space-between;align-items:center}
+.sp-name{font-size:8px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.22)}
+.sp-pct{font-size:15px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.sp-example{font-size:8.5px;color:rgba(255,255,255,.15);margin-top:5px;padding-top:5px;border-top:.5px solid rgba(255,255,255,.06);font-style:italic}
+
+.pop-div{height:.5px;background:rgba(255,255,255,.06);margin:10px 0}
+
+.netto-field{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:.5px solid rgba(255,255,255,.1);border-radius:9px;padding:9px 11px;margin-bottom:4px;transition:border-color .2s}
+.netto-field.focus{border-color:rgba(255,255,255,.3)}
+.netto-field.error{border-color:rgba(255,69,58,.4);background:rgba(255,69,58,.04)}
+.netto-pre{font-size:12px;color:rgba(255,255,255,.25)}
+.netto-input{background:none;border:none;outline:none;font-size:15px;font-weight:300;color:#fff;font-variant-numeric:tabular-nums;width:100%;font-family:inherit}
+.netto-unit{font-size:10px;color:rgba(255,255,255,.25);flex-shrink:0}
+.netto-hint{font-size:9px;margin-bottom:10px}
+.nh-pre{color:rgba(255,255,255,.2)}
+.nh-err{color:rgba(255,69,58,.55)}
+.nh-ok{color:rgba(62,207,175,.5)}
+
+.fw{display:flex;align-items:flex-start;gap:6px;background:rgba(62,207,175,.05);border:.5px solid rgba(62,207,175,.12);border-radius:8px;padding:7px 9px;margin-bottom:12px}
+.fw-icon{font-size:10px;color:rgba(62,207,175,.55);margin-top:1px;flex-shrink:0}
+.fw-text{font-size:9.5px;color:rgba(62,207,175,.45);line-height:1.5}
+
+/* FROZEN NOTICE */
+.frozen{display:flex;align-items:flex-start;gap:6px;background:rgba(255,200,60,.04);border:.5px solid rgba(255,200,60,.15);border-radius:8px;padding:7px 9px;margin-bottom:12px}
+.frozen-text{font-size:9.5px;color:rgba(255,200,60,.5);line-height:1.5}
+
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.btn{padding:9px;border-radius:9px;font-size:11px;font-weight:500;cursor:pointer;text-align:center;transition:all .15s;border:none;font-family:inherit}
+.btn-cancel{background:rgba(255,255,255,.05);color:rgba(255,255,255,.3)}
+.btn-cancel:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.65)}
+.btn-ok{background:rgba(62,207,175,.14);color:rgba(62,207,175,.85)}
+.btn-ok:hover:not(:disabled){background:rgba(62,207,175,.22);color:#3ECFAF}
+.btn-ok:disabled{background:rgba(255,255,255,.04);color:rgba(255,255,255,.18);cursor:not-allowed}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Income Partner Split Final – korrekte Sparrate-Formel, eingefrorene Vergangenheit</h2>
+<div class="d">
+
+  <!-- LEFT -->
+  <div>
+    <div class="ctx-title">Dashboard-Kontext</div>
+
+    <div class="split-row">
+      <div class="sl" id="sl-ich" onclick="openFor('ich')">
+        <div class="av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.8" r="2.2" stroke="rgba(255,255,255,.45)" stroke-width="1"/><path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="rgba(255,255,255,.45)" stroke-width="1" stroke-linecap="round"/></svg></div>
+        <div class="sl-pct" id="ich-pct">60 %</div>
+        <div class="sl-name">Ich</div>
+      </div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="44" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="7"/>
+          <circle id="arc" cx="55" cy="55" r="44" fill="none" stroke="#3ECFAF" stroke-width="7" stroke-linecap="round"
+            style="stroke-dasharray:276.5;stroke-dashoffset:138.2;transform-box:fill-box;transform-origin:center;transform:rotate(90deg);transition:stroke-dashoffset .5s cubic-bezier(.2,0,.1,1)"/>
+          <circle cx="55" cy="99" r="3" fill="rgba(255,255,255,.2)"/>
+          <circle cx="55" cy="11" r="3" fill="rgba(255,255,255,.2)"/>
+          <text x="55" y="51" text-anchor="middle" fill="#fff" font-size="11" font-weight="200" font-family="system-ui" id="ring-val">+850 €</text>
+          <text x="55" y="62" text-anchor="middle" fill="#3ECFAF" font-size="6" font-weight="600" letter-spacing="1" font-family="system-ui">SPARRATE</text>
+          <text x="55" y="72" text-anchor="middle" fill="rgba(255,255,255,.22)" font-size="6" font-weight="400" font-family="system-ui" id="ring-pct">42 % von Plan</text>
+        </svg>
+      </div>
+      <div class="sl" id="sl-partner" onclick="openFor('partner')">
+        <div class="av"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.8" r="2.2" stroke="rgba(255,255,255,.45)" stroke-width="1"/><path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="rgba(255,255,255,.45)" stroke-width="1" stroke-linecap="round"/></svg></div>
+        <div class="sl-pct" id="partner-pct">40 %</div>
+        <div class="sl-name">Partner</div>
+      </div>
+    </div>
+
+    <!-- SPARRATE BREAKDOWN -->
+    <div class="sparrate-info">
+      <div class="si-row"><span class="si-lbl">Mein Netto</span><span class="si-val" id="si-netto">+3.200 €</span></div>
+      <div class="si-row"><span class="si-lbl">Mein Anteil Fixkosten</span><span class="si-val" id="si-fix">−1.920 €</span></div>
+      <div class="si-row"><span class="si-lbl">Budget-Karten</span><span class="si-val">−500 €</span></div>
+      <div style="height:.5px;background:rgba(255,255,255,.06);margin:5px 0"></div>
+      <div class="si-row"><span class="si-lbl">Sparrate</span><span class="si-val highlight" id="si-sparrate">+780 €</span></div>
+      <div class="si-row"><span class="si-lbl">Plan</span><span class="si-val" id="si-plan">+850 €</span></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="tl-lbl">Aktiver Monat — Klick zum Wechseln</div>
+    <div class="tl-months" id="tl-months"></div>
+    <div class="tl-names" id="tl-names"></div>
+
+    <div class="hint-text">Klick auf <span>„Ich"</span> oder <span>„Partner"</span> öffnet den Popup.<br>Vergangene Monate sind eingefroren.</div>
+  </div>
+
+  <!-- RIGHT: POPUP -->
+  <div class="popup">
+    <div class="pop-who" id="pop-who">Ich — Jahresbrutto</div>
+    <div class="pop-month" id="pop-month">April 2026</div>
+
+    <!-- FROZEN NOTICE (past months) -->
+    <div class="frozen" id="frozen-notice" style="display:none">
+      <span class="frozen-text">⚠ Vergangener Monat — Werte sind eingefroren und können nicht geändert werden.</span>
+    </div>
+
+    <div id="edit-area">
+      <div class="field-lbl">Jahresbrutto</div>
+      <div class="brutto-val" id="brutto-disp">60.000 €</div>
+      <input type="range" id="brutto-sl" min="20000" max="150000" step="1000" value="60000" oninput="onBrutto()">
+      <div class="range-hints"><span class="range-hint">20.000 €</span><span class="range-hint">150.000 €</span></div>
+
+      <div class="split-prev">
+        <div class="sp-row">
+          <div><div class="sp-name">Ich</div><div class="sp-pct" id="sp-ich" style="color:#3ECFAF">60 %</div></div>
+          <div style="text-align:right"><div class="sp-name">Partner</div><div class="sp-pct" id="sp-par" style="color:rgba(255,255,255,.4)">40 %</div></div>
+        </div>
+        <div class="sp-example">Beispiel gem. Fixkosten 1.200 € → Ich: <span id="sp-ich-eur">720 €</span> / Partner: <span id="sp-par-eur">480 €</span> (nur illustrativ)</div>
+      </div>
+
+      <div class="pop-div"></div>
+
+      <div class="field-lbl">Monatliches Netto <span style="color:rgba(255,69,58,.55)">*</span></div>
+      <div class="netto-field" id="nf">
+        <span class="netto-pre">+</span>
+        <input type="number" class="netto-input" id="ni" placeholder="3.200"
+          onfocus="document.getElementById('nf').className='netto-field focus'"
+          onblur="onNettoBlur()" oninput="onNettoInput()">
+        <span class="netto-unit">€ / Monat</span>
+      </div>
+      <div class="netto-hint nh-pre" id="nh">Vorschlag basiert auf Steuerklasse 1 · Änderbar</div>
+
+      <div class="fw" id="fw-badge">
+        <span class="fw-icon">→</span>
+        <span class="fw-text">Gilt ab <strong id="fw-from">April 2026</strong> für alle Folgemonate bis zur nächsten Änderung.</span>
+      </div>
+    </div>
+
+    <div class="btns">
+      <div class="btn btn-cancel" onclick="cancelPopup()">Abbrechen</div>
+      <button class="btn btn-ok" id="btn-ok" onclick="confirmPopup()">Übernehmen</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// State: per-month salary snapshots
+// activeMonth = current dashboard month (Apr = index 3, 0-based)
+var CURRENT_MONTH=3; // April is "today" — months 0-2 are past
+var activeMonth=3;
+var who='ich';
+var userEdited=false;
+
+// Monthly salary data — forward-inherited
+var salaryHistory={
+  ich:[60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000,60000],
+  partner:[40000,40000,40000,40000,40000,40000,40000,40000,40000,40000,40000,40000]
+};
+var nettoHistory={
+  ich:[3200,3200,3200,3200,3200,3200,3200,3200,3200,3200,3200,3200],
+  partner:[2100,2100,2100,2100,2100,2100,2100,2100,2100,2100,2100,2100]
+};
+var prefill={ich:3200,partner:2100};
+var BUDGET=500;
+var FIXKOSTEN_TOTAL=3200; // total shared fixkosten
+var mNames=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+var mFull=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var C=276.5,hC=138.25;
+
+function getSplit(m){
+  var ib=salaryHistory.ich[m],pb=salaryHistory.partner[m];
+  var t=ib+pb;
+  if(t===0)return{ich:1,par:0};
+  return{ich:ib/t,par:pb/t};
+}
+
+function calcSparrate(m){
+  var s=getSplit(m);
+  var netto=nettoHistory.ich[m];
+  var meinAnteil=FIXKOSTEN_TOTAL*s.ich;
+  return netto-meinAnteil-BUDGET;
+}
+
+function calcPlan(m){
+  // plan = netto - all card planvalues (ich-share)
+  var s=getSplit(m);
+  return nettoHistory.ich[m]-FIXKOSTEN_TOTAL*s.ich-BUDGET;
+}
+
+function updateRing(){
+  var sr=calcSparrate(activeMonth);
+  var plan=calcPlan(activeMonth);
+  var pct=plan>0?sr/plan:0;
+  var fill=Math.min(Math.max(pct,0),1)*hC+(pct>1?(pct-1)*hC:0);
+  fill=Math.min(fill,C-0.5);
+  document.getElementById('arc').style.strokeDashoffset=(C-fill).toFixed(2);
+  document.getElementById('arc').style.stroke=sr<0?'#FF453A':'#3ECFAF';
+  document.getElementById('ring-val').textContent=(sr>=0?'+':'')+Math.round(sr).toLocaleString('de-DE')+' €';
+  document.getElementById('ring-val').setAttribute('fill',sr<0?'#FF453A':sr>plan?'#3ECFAF':'#fff');
+  var pctDisp=Math.round(Math.abs(pct)*100);
+  document.getElementById('ring-pct').textContent=sr>=0?pctDisp+'% von Plan':pctDisp+'% Defizit';
+
+  var s=getSplit(activeMonth);
+  document.getElementById('ich-pct').textContent=Math.round(s.ich*100)+' %';
+  document.getElementById('partner-pct').textContent=Math.round(s.par*100)+' %';
+
+  // sparrate breakdown
+  document.getElementById('si-netto').textContent='+'+nettoHistory.ich[activeMonth].toLocaleString('de-DE')+' €';
+  document.getElementById('si-fix').textContent='−'+Math.round(FIXKOSTEN_TOTAL*s.ich).toLocaleString('de-DE')+' €';
+  document.getElementById('si-sparrate').textContent=(sr>=0?'+':'')+Math.round(sr).toLocaleString('de-DE')+' €';
+  document.getElementById('si-sparrate').style.color=sr<0?'#FF453A':'#3ECFAF';
+  document.getElementById('si-plan').textContent=(plan>=0?'+':'')+Math.round(plan).toLocaleString('de-DE')+' €';
+}
+
+function buildTl(){
+  var mc=document.getElementById('tl-months'),nc=document.getElementById('tl-names');
+  mc.innerHTML='';nc.innerHTML='';
+  for(var i=0;i<12;i++){
+    var d=document.createElement('div');
+    var cls='tl-m ';
+    if(i<CURRENT_MONTH)cls+='past';
+    else if(i===activeMonth)cls+='active';
+    else if(i===CURRENT_MONTH&&i!==activeMonth)cls+='past';
+    else cls+='future';
+    d.className=cls.trim();
+    d.onclick=(function(x){return function(){setMonth(x);};})(i);
+    d.title=mFull[i]+' 2026';
+    mc.appendChild(d);
+    var n=document.createElement('div');
+    n.className='tl-n';n.textContent=mNames[i];
+    nc.appendChild(n);
+  }
+}
+
+function setMonth(m){
+  activeMonth=m;
+  buildTl();
+  updateRing();
+  // update popup if open
+  document.getElementById('pop-month').textContent=mFull[m]+' 2026';
+  document.getElementById('fw-from').textContent=mFull[m]+' 2026';
+  var isPast=m<CURRENT_MONTH;
+  document.getElementById('frozen-notice').style.display=isPast?'flex':'none';
+  document.getElementById('edit-area').style.opacity=isPast?'0.35':'1';
+  document.getElementById('edit-area').style.pointerEvents=isPast?'none':'auto';
+  document.getElementById('btn-ok').disabled=isPast;
+  // load values for this month
+  loadPopupValues();
+}
+
+function loadPopupValues(){
+  var b=salaryHistory[who][activeMonth];
+  var n=nettoHistory[who][activeMonth];
+  document.getElementById('brutto-sl').value=b;
+  document.getElementById('brutto-disp').textContent=b.toLocaleString('de-DE')+' €';
+  updateSplitPrev(b);
+  document.getElementById('ni').value=n;
+  document.getElementById('nh').textContent='Vorschlag basiert auf Steuerklasse 1 · Änderbar';
+  document.getElementById('nh').className='netto-hint nh-pre';
+  document.getElementById('nf').className='netto-field';
+}
+
+function openFor(w){
+  who=w;userEdited=false;
+  document.getElementById('pop-who').textContent=(w==='ich'?'Ich':'Partner')+' — Jahresbrutto';
+  document.getElementById('sl-ich').classList.remove('active-who');
+  document.getElementById('sl-partner').classList.remove('active-who');
+  document.getElementById('sl-'+w).classList.add('active-who');
+  var isPast=activeMonth<CURRENT_MONTH;
+  document.getElementById('frozen-notice').style.display=isPast?'flex':'none';
+  document.getElementById('edit-area').style.opacity=isPast?'0.35':'1';
+  document.getElementById('edit-area').style.pointerEvents=isPast?'none':'auto';
+  document.getElementById('btn-ok').disabled=isPast;
+  loadPopupValues();
+}
+
+function onBrutto(){
+  var v=parseInt(document.getElementById('brutto-sl').value);
+  document.getElementById('brutto-disp').textContent=v.toLocaleString('de-DE')+' €';
+  updateSplitPrev(v);
+  // update netto estimate if not user-edited
+  var est=Math.round(v/12*0.67/50)*50;
+  prefill[who]=est;
+  if(!userEdited){
+    document.getElementById('ni').value=est;
+  }
+}
+
+function updateSplitPrev(b){
+  var other=salaryHistory[who==='ich'?'partner':'ich'][activeMonth];
+  var myB=who==='ich'?b:other;
+  var pB=who==='ich'?other:b;
+  var t=myB+pB;
+  var ip=t>0?Math.round(myB/t*100):100;
+  var pp=100-ip;
+  document.getElementById('sp-ich').textContent=ip+' %';
+  document.getElementById('sp-par').textContent=pp+' %';
+  document.getElementById('sp-ich-eur').textContent=Math.round(1200*ip/100).toLocaleString('de-DE')+' €';
+  document.getElementById('sp-par-eur').textContent=Math.round(1200*pp/100).toLocaleString('de-DE')+' €';
+}
+
+function onNettoBlur(){
+  var v=document.getElementById('ni').value.trim();
+  if(!v||parseInt(v)<=0){
+    document.getElementById('ni').value=prefill[who];
+    userEdited=false;
+    document.getElementById('nh').textContent='Vorschlag wiederhergestellt · Änderbar';
+    document.getElementById('nh').className='netto-hint nh-pre';
+    document.getElementById('nf').className='netto-field';
+    document.getElementById('btn-ok').disabled=activeMonth<CURRENT_MONTH;
+  } else {document.getElementById('nf').className='netto-field';}
+}
+
+function onNettoInput(){
+  var v=document.getElementById('ni').value.trim();
+  userEdited=v!=='';
+  if(!v||parseInt(v)<=0){
+    document.getElementById('nf').className='netto-field error';
+    document.getElementById('nh').textContent='Pflichtfeld — Vorschlag kehrt beim Verlassen zurück';
+    document.getElementById('nh').className='netto-hint nh-err';
+    document.getElementById('btn-ok').disabled=true;
+  } else {
+    document.getElementById('nf').className='netto-field focus';
+    document.getElementById('nh').textContent='Manuell angepasst';
+    document.getElementById('nh').className='netto-hint nh-ok';
+    document.getElementById('btn-ok').disabled=false;
+  }
+}
+
+function cancelPopup(){
+  loadPopupValues();
+  document.getElementById('sl-ich').classList.remove('active-who');
+  document.getElementById('sl-partner').classList.remove('active-who');
+}
+
+function confirmPopup(){
+  var newB=parseInt(document.getElementById('brutto-sl').value);
+  var newN=parseInt(document.getElementById('ni').value)||prefill[who];
+  // forward-inherit from activeMonth
+  for(var i=activeMonth;i<12;i++){
+    salaryHistory[who][i]=newB;
+    nettoHistory[who][i]=newN;
+  }
+  updateRing();
+  buildTl();
+  // mark changed months
+  var ms=document.querySelectorAll('.tl-m');
+  for(var i=activeMonth;i<12;i++){
+    ms[i].className='tl-m changed';
+  }
+  ms[activeMonth].className='tl-m active';
+  document.getElementById('sl-ich').classList.remove('active-who');
+  document.getElementById('sl-partner').classList.remove('active-who');
+}
+
+buildTl();
+openFor('ich');
+updateRing();
+</script>

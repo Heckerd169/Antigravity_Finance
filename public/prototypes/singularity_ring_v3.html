@@ -1,0 +1,108 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:24px;font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.d{background:#0D0D0F;border-radius:16px;padding:36px 24px 48px;display:flex;flex-direction:column;align-items:center}
+.slrow{display:flex;align-items:center;gap:14px;width:100%;max-width:440px;margin-bottom:48px}
+.sll{font-size:11px;color:rgba(255,255,255,.28);font-weight:500;letter-spacing:.3px;flex-shrink:0;width:130px}
+.slv{font-size:13px;font-weight:300;font-variant-numeric:tabular-nums;flex-shrink:0;width:76px;text-align:right;transition:color .2s;letter-spacing:-.3px}
+input[type=range]{-webkit-appearance:none;flex:1;height:2px;border-radius:1px;outline:none;cursor:pointer;background:rgba(255,255,255,.1)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#fff;border-radius:50%;cursor:pointer}
+.rw{position:relative;width:248px;height:248px}
+.rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none;text-align:center;padding:0 30px}
+.ra{font-size:34px;font-weight:200;letter-spacing:-1.8px;font-variant-numeric:tabular-nums;line-height:1.05;transition:color .22s}
+.rl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-top:9px}
+.rp{font-size:13px;font-weight:300;letter-spacing:-.3px;margin-top:5px;transition:color .2s;font-variant-numeric:tabular-nums}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Singularity Ring V3 – 6 Uhr unten, korrektes Arc-Wachstum und Farblogik</h2>
+<div class="d">
+
+  <div class="slrow">
+    <span class="sll">Sparrate diesen Monat</span>
+    <input type="range" id="sl" min="-1200" max="3500" step="50" value="850">
+    <span class="slv" id="sv">+850 €</span>
+  </div>
+
+  <div class="rw">
+    <svg width="248" height="248" viewBox="0 0 248 248" style="display:block">
+
+      <circle cx="124" cy="124" r="98"
+        fill="none" stroke="rgba(255,255,255,.05)" stroke-width="9"/>
+
+      <circle id="aneg" cx="124" cy="124" r="98"
+        fill="none" stroke="#FF453A" stroke-width="9" stroke-linecap="round"
+        style="stroke-dasharray:615.75;stroke-dashoffset:615.75;
+               transform-box:fill-box;transform-origin:center;
+               transform:scaleX(-1) rotate(90deg);
+               transition:stroke-dashoffset .72s cubic-bezier(.22,0,.08,1)"/>
+
+      <circle id="apos" cx="124" cy="124" r="98"
+        fill="none" stroke="#3ECFAF" stroke-width="9" stroke-linecap="round"
+        style="stroke-dasharray:615.75;stroke-dashoffset:615.75;
+               transform-box:fill-box;transform-origin:center;
+               transform:rotate(90deg);
+               transition:stroke-dashoffset .72s cubic-bezier(.22,0,.08,1)"/>
+
+      <circle cx="124" cy="222" r="3.5" fill="rgba(255,255,255,.22)"/>
+      <circle cx="124" cy="26"  r="3.5" fill="rgba(255,255,255,.22)"/>
+
+    </svg>
+
+    <div class="rc">
+      <div class="ra" id="ra">+850 €</div>
+      <div class="rl">Sparrate</div>
+      <div class="rp" id="rp">42,5 % von Plan</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var PLAN=2000;
+var C=2*Math.PI*98;
+var hC=C/2;
+
+function de(v,d){return v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtE(v){return(v>=0?'+':'−')+de(Math.abs(v),0)+'\u00a0€';}
+
+function upd(){
+  var v=+document.getElementById('sl').value;
+  var pct=v/PLAN;
+
+  var col=v<0?'#FF453A':v<=PLAN?'#ffffff':'#3ECFAF';
+
+  document.getElementById('sv').textContent=fmtE(v);
+  document.getElementById('sv').style.color=col;
+  document.getElementById('ra').textContent=fmtE(v);
+  document.getElementById('ra').style.color=col;
+
+  var apos=document.getElementById('apos');
+  var aneg=document.getElementById('aneg');
+  var rp=document.getElementById('rp');
+
+  if(v>=0){
+    var fill=Math.min(pct*hC, C-0.5);
+    apos.style.strokeDashoffset=(C-fill).toFixed(2);
+    aneg.style.strokeDashoffset=C.toFixed(2);
+    if(v>PLAN){
+      rp.textContent='+'+de((pct-1)*100,1)+'\u00a0% über Plan';
+      rp.style.color='#3ECFAF';
+    } else {
+      rp.textContent=de(pct*100,1)+'\u00a0% von Plan';
+      rp.style.color='rgba(255,255,255,.28)';
+    }
+  } else {
+    var nf=Math.min(Math.abs(pct),1)*hC;
+    aneg.style.strokeDashoffset=(C-nf).toFixed(2);
+    apos.style.strokeDashoffset=C.toFixed(2);
+    rp.textContent='−'+de(Math.abs(pct)*100,1)+'\u00a0% Defizit';
+    rp.style.color='#FF453A';
+  }
+}
+
+upd();
+document.getElementById('sl').addEventListener('input',upd);
+</script>
