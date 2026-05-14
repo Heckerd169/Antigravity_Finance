@@ -1,0 +1,231 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;padding:24px 20px 28px}
+.section{margin-bottom:28px}
+.sec-title{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:14px;padding-bottom:10px;border-bottom:.5px solid rgba(255,255,255,.06)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+
+/* BASE CARD */
+.card{
+  width:136px;flex-shrink:0;border-radius:14px;padding:14px 13px 12px;
+  border:1px solid rgba(255,255,255,.07);background:#141416;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .15s,border-color .15s,background .25s,opacity .25s;
+  -webkit-tap-highlight-color:transparent;
+  opacity:.75;
+}
+.card:hover:not(.ghost){transform:translateY(-2px);opacity:.95}
+.card:active:not(.ghost){transform:scale(.97)}
+
+/* EINNAHMEN STATES */
+.card.erwartet{background:#0D1A16;border-color:rgba(62,207,175,.18)}
+.card.erhalten{background:#0A140E;border-color:rgba(62,207,175,.22)}
+.card.ghost{background:#181818;border-color:rgba(255,255,255,.1);opacity:.65;cursor:default}
+
+/* FIXKOSTEN STATES (für Vergleich) */
+.card.offen{background:#160D0D;border-color:rgba(255,69,58,.18)}
+.card.bezahlt{background:#0A140E;border-color:rgba(62,207,175,.22)}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+
+/* LABELS */
+.card-label{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.erwartet .card-label{color:rgba(62,207,175,.45)}
+.erhalten .card-label{color:rgba(62,207,175,.45)}
+.ghost .card-label{color:rgba(255,255,255,.3)}
+.offen .card-label{color:rgba(255,99,88,.45)}
+.bezahlt .card-label{color:rgba(62,207,175,.45)}
+
+/* ICONS */
+.icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.i-erwartet{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.25)}
+.i-erhalten{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.28)}
+.i-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.i-offen{background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.2)}
+.i-bezahlt{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.28)}
+
+/* CNAME */
+.cname{font-size:13px;font-weight:500;letter-spacing:-.2px;margin-bottom:2px;transition:color .25s}
+.erwartet .cname,.offen .cname{color:rgba(255,255,255,.45)}
+.erhalten .cname,.bezahlt .cname{color:#ffffff}
+.ghost .cname{color:rgba(255,255,255,.35)}
+
+/* AMOUNT */
+.amount{font-size:22px;font-weight:200;letter-spacing:-1.2px;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:5px;transition:color .25s}
+.erwartet .amount,.offen .amount{color:rgba(255,255,255,.45)}
+.erhalten .amount,.bezahlt .amount{color:#ffffff}
+.ghost .amount{color:rgba(255,255,255,.32)}
+
+/* STATUS LABEL */
+.state-lbl{font-size:9px;font-weight:500;letter-spacing:.6px;text-transform:uppercase}
+.erwartet .state-lbl{color:rgba(62,207,175,.45)}
+.erhalten .state-lbl{color:rgba(62,207,175,.55)}
+.ghost .state-lbl{color:rgba(255,255,255,.22)}
+.offen .state-lbl{color:rgba(255,99,88,.38)}
+.bezahlt .state-lbl{color:rgba(62,207,175,.45)}
+
+/* META */
+.meta{display:flex;align-items:center;gap:5px;margin-top:8px}
+.dot{width:5px;height:5px;border-radius:50%}
+.dot-ich{background:rgba(255,255,255,.22)}
+.dot-gem{background:rgba(100,168,240,.38)}
+.meta-text{font-size:10px;font-weight:500;color:rgba(255,255,255,.2);letter-spacing:.2px}
+
+/* TAP HINT */
+.tap-hint{
+  position:absolute;inset:0;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.5);opacity:0;transition:opacity .15s;
+  font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  color:rgba(255,255,255,.45);pointer-events:none;
+}
+.card:hover .tap-hint{opacity:1}
+.ghost:hover .tap-hint{opacity:0}
+
+/* DIVIDER */
+.divider{width:.5px;height:120px;background:rgba(255,255,255,.06);align-self:center;flex-shrink:0}
+
+/* ANNOTATION */
+.ann{font-size:9px;color:rgba(255,255,255,.15);letter-spacing:.3px;margin-top:10px;width:136px;line-height:1.5}
+.ann.teal{color:rgba(62,207,175,.35)}
+.ann.red{color:rgba(255,99,88,.35)}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Einnahmen-Karte – alle Zustände im Vergleich zu Fixkosten</h2>
+<div class="d">
+
+  <!-- EINNAHMEN -->
+  <div class="section">
+    <div class="sec-title">Einnahmen-Karte — 3 Zustände (+ Ghost)</div>
+    <div class="row">
+
+      <!-- ERWARTET -->
+      <div>
+        <div class="card erwartet" id="c1" onclick="toggleErhalten('c1')">
+          <div class="card-top">
+            <div class="card-label">Einnahmen</div>
+            <div class="icon i-erwartet">
+              <svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.8" fill="none" stroke="rgba(62,207,175,.7)" stroke-width="1.1"/></svg>
+            </div>
+          </div>
+          <div class="cname">Steuerrückzahlung</div>
+          <div class="amount">800 €</div>
+          <div class="state-lbl">Erwartet</div>
+          <div class="meta"><div class="dot dot-ich"></div><div class="meta-text">Ich</div></div>
+          <div class="tap-hint">Tap = Erhalten</div>
+        </div>
+        <div class="ann teal">Teal-Tönung<br>Offener Kreis (wartend)</div>
+      </div>
+
+      <!-- ERHALTEN -->
+      <div>
+        <div class="card erhalten" id="c2" onclick="toggleErwartet('c2')">
+          <div class="card-top">
+            <div class="card-label">Einnahmen</div>
+            <div class="icon i-erhalten">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="cname">Steuerrückzahlung</div>
+          <div class="amount">800 €</div>
+          <div class="state-lbl">Erhalten</div>
+          <div class="meta"><div class="dot dot-ich"></div><div class="meta-text">Ich</div></div>
+          <div class="tap-hint">Tap = Rückgängig</div>
+        </div>
+        <div class="ann teal">Identisch zu Bezahlt<br>Checkmark + weißer Text</div>
+      </div>
+
+      <!-- GHOST -->
+      <div>
+        <div class="card ghost">
+          <div class="card-top">
+            <div class="card-label">Einnahmen</div>
+            <div class="icon i-ghost">
+              <svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.8" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.1"/></svg>
+            </div>
+          </div>
+          <div class="cname">Steuerrückzahlung</div>
+          <div class="amount">800 €</div>
+          <div class="state-lbl">Forecast</div>
+          <div class="meta"><div class="dot dot-ich"></div><div class="meta-text">Ich</div></div>
+        </div>
+        <div class="ann">Identisch zu Fixkosten-Ghost<br>Keine Interaktion</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VERGLEICH FIXKOSTEN -->
+  <div class="section" style="margin-bottom:0">
+    <div class="sec-title">Fixkosten-Karte — Vergleich (Referenz)</div>
+    <div class="row">
+
+      <div>
+        <div class="card offen">
+          <div class="card-top">
+            <div class="card-label">Fixkosten</div>
+            <div class="icon i-offen">
+              <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg>
+            </div>
+          </div>
+          <div class="cname">Miete</div>
+          <div class="amount">1.200 €</div>
+          <div class="state-lbl">Offen</div>
+          <div class="meta"><div class="dot dot-gem"></div><div class="meta-text">Gemeinsam</div></div>
+        </div>
+        <div class="ann red">Rot-Tönung<br>Gefüllter Kreis (ausstehend)</div>
+      </div>
+
+      <div>
+        <div class="card bezahlt">
+          <div class="card-top">
+            <div class="card-label">Fixkosten</div>
+            <div class="icon i-bezahlt">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="cname">Miete</div>
+          <div class="amount">1.200 €</div>
+          <div class="state-lbl">Bezahlt</div>
+          <div class="meta"><div class="dot dot-gem"></div><div class="meta-text">Gemeinsam</div></div>
+        </div>
+        <div class="ann teal">Identisch zu Erhalten<br>Gleiche Abschluss-Sprache</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function toggleErhalten(id){
+  var c=document.getElementById(id);
+  c.className='card erhalten';
+  c.querySelector('.card-label').style.color='rgba(62,207,175,.45)';
+  c.querySelector('.state-lbl').textContent='Erhalten';
+  c.querySelector('.state-lbl').style.color='rgba(62,207,175,.55)';
+  c.querySelector('.icon').className='icon i-erhalten';
+  c.querySelector('.icon').innerHTML='<svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  c.querySelector('.cname').style.color='#fff';
+  c.querySelector('.amount').style.color='#fff';
+  c.querySelector('.tap-hint').textContent='Tap = Rückgängig';
+  c.onclick=function(){toggleErwartet(id)};
+}
+function toggleErwartet(id){
+  var c=document.getElementById(id);
+  c.className='card erwartet';
+  c.querySelector('.state-lbl').textContent='Erwartet';
+  c.querySelector('.state-lbl').style.color='rgba(62,207,175,.45)';
+  c.querySelector('.icon').className='icon i-erwartet';
+  c.querySelector('.icon').innerHTML='<svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.8" fill="none" stroke="rgba(62,207,175,.7)" stroke-width="1.1"/></svg>';
+  c.querySelector('.cname').style.color='rgba(255,255,255,.45)';
+  c.querySelector('.amount').style.color='rgba(255,255,255,.45)';
+  c.querySelector('.tap-hint').textContent='Tap = Erhalten';
+  c.onclick=function(){toggleErhalten(id)};
+}
+</script>

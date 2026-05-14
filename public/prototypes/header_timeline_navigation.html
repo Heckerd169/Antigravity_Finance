@@ -1,0 +1,246 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:24px}
+.d{background:#0D0D0F;border-radius:16px;padding:0}
+
+/* HEADER */
+.hdr{
+  display:flex;align-items:stretch;justify-content:space-between;
+  padding:22px 20px 20px;
+  position:relative;
+  border-bottom:.5px solid rgba(255,255,255,.06);
+  user-select:none;
+}
+
+/* FLANKEN */
+.flank{
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;flex:1;
+  padding:4px 0;
+  transition:opacity .2s;
+  -webkit-tap-highlight-color:transparent;
+  min-width:0;
+}
+.flank:hover{opacity:1!important}
+.flank.left{justify-content:flex-start}
+.flank.right{justify-content:flex-end}
+.flank-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.flank.right .flank-text{align-items:flex-end}
+.flank-month{font-size:13px;font-weight:500;color:rgba(255,255,255,.38);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flank-sub{font-size:10.5px;font-weight:400;color:rgba(255,255,255,.18);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* CHEVRON */
+.chev{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.0);
+  flex-shrink:0;
+  transition:background .2s,opacity .2s;
+  opacity:0;
+}
+.hdr:hover .chev,.hdr:focus-within .chev{opacity:1}
+.flank:hover .chev{background:rgba(255,255,255,.07)}
+
+/* CENTER */
+.center{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink:0;padding:0 16px;gap:4px;
+}
+.month-wrap{position:relative;height:26px;display:flex;align-items:center;overflow:hidden}
+.month-label{
+  font-size:17px;font-weight:600;letter-spacing:-.5px;color:#fff;
+  white-space:nowrap;
+  transition:opacity .22s,transform .22s;
+}
+.month-incoming{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.5px;color:#fff;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+}
+.month-status{font-size:10px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+
+/* BOTTOM PREVIEW */
+.preview{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:14px 20px 16px;
+}
+.prev-item{display:flex;flex-direction:column;gap:3px;flex:1}
+.prev-item.right{align-items:flex-end}
+.prev-item.center-item{align-items:center}
+.prev-tag{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.15)}
+.prev-val{font-size:12px;font-weight:400;color:rgba(255,255,255,.3);letter-spacing:-.2px}
+
+/* MOCK RING AREA */
+.ring-mock{
+  display:flex;justify-content:center;align-items:center;
+  padding:32px 0 28px;
+  border-top:.5px solid rgba(255,255,255,.04);
+}
+.ring-hint{
+  width:160px;height:160px;border-radius:50%;
+  border:1px dashed rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:center;
+}
+.ring-hint-label{font-size:10px;color:rgba(255,255,255,.12);letter-spacing:.5px;text-transform:uppercase}
+
+/* STATE PILL */
+.state{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.25);
+  margin-top:2px;
+}
+.state.green{background:rgba(62,207,175,.08);color:rgba(62,207,175,.6)}
+.state.ghost{background:rgba(255,255,255,.03);color:rgba(255,255,255,.15)}
+.state.now{background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)}
+
+</style>
+
+<div class="w">
+<h2 class="sr-only">Antigravity Finance – Header mit Timeline-Navigation</h2>
+<div class="d">
+
+  <!-- HEADER -->
+  <div class="hdr" id="hdr">
+
+    <!-- LINKS -->
+    <div class="flank left" onclick="navigate(-1)" style="opacity:.85">
+      <div class="chev" id="chev-l">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M9 11L5 7L9 3" stroke="rgba(255,255,255,.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="flank-text">
+        <div class="flank-month" id="prev-month">Feb 2026</div>
+        <div class="flank-sub" id="prev-sub">Alles erledigt</div>
+      </div>
+    </div>
+
+    <!-- MITTE -->
+    <div class="center">
+      <div class="month-wrap">
+        <div class="month-label" id="cur-month">März 2026</div>
+        <div class="month-incoming" id="month-in"></div>
+      </div>
+      <div class="state now" id="cur-state">Laufend</div>
+    </div>
+
+    <!-- RECHTS -->
+    <div class="flank right" onclick="navigate(1)" style="opacity:.85">
+      <div class="flank-text">
+        <div class="flank-month" id="next-month">Apr 2026</div>
+        <div class="flank-sub" id="next-sub">Kein Ausreißer</div>
+      </div>
+      <div class="chev" id="chev-r">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M5 3L9 7L5 11" stroke="rgba(255,255,255,.55)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RING PLACEHOLDER -->
+  <div class="ring-mock">
+    <div class="ring-hint">
+      <span class="ring-hint-label">Ring</span>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var months=[
+  {name:'Nov 2025',sub:'Alles erledigt',state:'past'},
+  {name:'Dez 2025',sub:'Alles erledigt',state:'past'},
+  {name:'Jan 2026',sub:'Alles erledigt',state:'past'},
+  {name:'Feb 2026',sub:'Alles erledigt',state:'past'},
+  {name:'März 2026',sub:'',state:'now'},
+  {name:'Apr 2026',sub:'Kein Ausreißer',state:'future'},
+  {name:'Mai 2026',sub:'Kein Ausreißer',state:'future'},
+  {name:'Jun 2026',sub:'Kein Ausreißer',state:'future'},
+  {name:'Jul 2026',sub:'Kein Ausreißer',state:'future'},
+  {name:'Aug 2026',sub:'Urlaub geplant',state:'future'},
+  {name:'Sep 2026',sub:'Kein Ausreißer',state:'future'},
+  {name:'Okt 2026',sub:'Autoversicherung 650 €',state:'future'},
+  {name:'Nov 2026',sub:'Kein Ausreißer',state:'future'},
+];
+var idx=4;
+var animating=false;
+
+function render(dir){
+  var cur=months[idx];
+  var prev=months[idx-1]||null;
+  var next=months[idx+1]||null;
+
+  var cm=document.getElementById('cur-month');
+  var mi=document.getElementById('month-in');
+  var pm=document.getElementById('prev-month');
+  var ps=document.getElementById('prev-sub');
+  var nm=document.getElementById('next-month');
+  var ns=document.getElementById('next-sub');
+  var cs=document.getElementById('cur-state');
+  var lf=document.querySelector('.flank.left');
+  var rf=document.querySelector('.flank.right');
+
+  mi.textContent=cur.name;
+  var inFrom=dir>0?'20px':'-20px';
+  var outTo=dir>0?'-20px':'20px';
+
+  cm.style.opacity='0';cm.style.transform='translateX('+outTo+')';
+  mi.style.opacity='0';mi.style.transform='translateX('+inFrom+')';
+  mi.style.transition='none';
+
+  setTimeout(function(){
+    mi.style.transition='opacity .22s, transform .22s';
+    mi.style.opacity='1';mi.style.transform='translateX(0)';
+    setTimeout(function(){
+      cm.textContent=cur.name;
+      cm.style.transition='none';
+      cm.style.opacity='1';cm.style.transform='translateX(0)';
+      mi.style.opacity='0';
+      animating=false;
+    },240);
+  },20);
+
+  pm.textContent=prev?prev.name:'—';
+  ps.textContent=prev?prev.sub:'';
+  nm.textContent=next?next.name:'—';
+  ns.textContent=next?next.sub:'';
+
+  lf.style.opacity=prev?'0.85':'0.2';
+  lf.style.pointerEvents=prev?'auto':'none';
+  rf.style.opacity=next?'0.85':'0.2';
+  rf.style.pointerEvents=next?'auto':'none';
+
+  cs.className='state '+(cur.state==='past'?'green':cur.state==='now'?'now':'ghost');
+  cs.textContent=cur.state==='past'?'Abgeschlossen':cur.state==='now'?'Laufend':'Forecast';
+}
+
+function navigate(dir){
+  if(animating)return;
+  var ni=idx+dir;
+  if(ni<0||ni>=months.length)return;
+  animating=true;
+  idx=ni;
+  render(dir);
+}
+
+// Touch/Swipe support
+var tx=null;
+var hdr=document.getElementById('hdr');
+hdr.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+hdr.addEventListener('touchend',function(e){
+  if(tx===null)return;
+  var dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>40)navigate(dx<0?1:-1);
+  tx=null;
+});
+</script>

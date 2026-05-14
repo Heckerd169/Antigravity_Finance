@@ -1,0 +1,406 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;padding:20px;position:relative;overflow:hidden}
+
+/* LAYOUT */
+.trinity{display:grid;grid-template-columns:160px 1fr 200px;gap:12px;align-items:start}
+
+/* ZONE LABELS */
+.zone-lbl{font-size:9px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:rgba(255,255,255,.15);margin-bottom:10px}
+
+/* === PORTAL === */
+.portal{
+  border-radius:12px;border:1px dashed rgba(255,255,255,.1);
+  background:#111113;padding:20px 14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;cursor:pointer;min-height:180px;
+  transition:border-color .2s,background .2s;
+  position:relative;
+}
+.portal:hover,.portal.drag-over{border-color:rgba(255,255,255,.28);background:#161618}
+.portal-icon{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}
+.portal-lbl{font-size:11px;font-weight:500;color:rgba(255,255,255,.25);text-align:center;line-height:1.5}
+.portal-sub{font-size:9.5px;color:rgba(255,255,255,.13);text-align:center}
+.portal-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* === CAROUSEL === */
+.carousel-wrap{position:relative}
+.carousel-row{display:flex;align-items:center;gap:8px}
+.chev-btn{
+  width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s;
+  color:rgba(255,255,255,.3);
+}
+.chev-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:rgba(255,255,255,.7)}
+.chev-btn:disabled{opacity:.2;cursor:default}
+.cards-viewport{display:flex;gap:8px;flex:1;overflow:hidden}
+
+/* CARD BASE */
+.card{
+  flex-shrink:0;width:0;flex:1;border-radius:12px;padding:12px 11px 10px;
+  border:1px solid rgba(255,255,255,.07);background:#141416;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .15s,border-color .2s,background .2s;opacity:.75;
+}
+.card:hover{transform:translateY(-1px);opacity:.92}
+.card.open{background:#160D0D;border-color:rgba(255,69,58,.18)}
+.card.paid{background:#0A140E;border-color:rgba(62,207,175,.22)}
+.card.empty-slot{
+  background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  cursor:default;min-height:150px;
+}
+.card.empty-slot.drag-target{border-color:rgba(62,207,175,.4);background:rgba(62,207,175,.04)}
+.card.drag-target-card{border-color:rgba(62,207,175,.5)!important;background:rgba(62,207,175,.06)!important}
+
+.card-lbl{font-size:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.open .card-lbl{color:rgba(255,99,88,.45)}
+.paid .card-lbl{color:rgba(62,207,175,.45)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.i-open{background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.2)}
+.i-paid{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.28)}
+.cname{font-size:12px;font-weight:500;letter-spacing:-.2px;margin-bottom:1px}
+.open .cname{color:rgba(255,255,255,.45)}
+.paid .cname{color:#fff}
+.amount{font-size:19px;font-weight:200;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:4px}
+.open .amount{color:rgba(255,255,255,.45)}
+.paid .amount{color:#fff}
+.state-lbl{font-size:8px;font-weight:500;letter-spacing:.6px;text-transform:uppercase}
+.open .state-lbl{color:rgba(255,99,88,.38)}
+.paid .state-lbl{color:rgba(62,207,175,.45)}
+.meta{display:flex;align-items:center;gap:4px;margin-top:7px}
+.dot{width:4px;height:4px;border-radius:50%}
+.dot-gem{background:rgba(100,168,240,.38)}
+.dot-ich{background:rgba(255,255,255,.22)}
+.meta-t{font-size:9px;color:rgba(255,255,255,.2)}
+
+/* MORE MENU */
+.more-btn{
+  position:absolute;top:8px;left:8px;width:20px;height:20px;
+  border-radius:5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s;cursor:pointer;z-index:2;
+}
+.card:hover .more-btn{opacity:1}
+.more-menu{
+  position:absolute;top:32px;left:8px;background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:4px;z-index:10;min-width:150px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;
+}
+.more-menu.open{display:block}
+.mm-item{font-size:11px;font-weight:500;color:rgba(255,255,255,.5);padding:8px 10px;border-radius:6px;cursor:pointer;transition:background .1s,color .1s;white-space:nowrap}
+.mm-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+.mm-item.danger{color:rgba(255,69,58,.5)}
+.mm-item.danger:hover{color:#FF453A;background:rgba(255,69,58,.06)}
+
+/* EMPTY SLOT */
+.slot-icon{font-size:20px;color:rgba(255,255,255,.08)}
+.slot-lbl{font-size:9px;color:rgba(255,255,255,.12);text-align:center;letter-spacing:.3px}
+
+/* PROG BAR */
+.prog{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.04)}
+.prog-fill{height:100%;background:rgba(62,207,175,.45)}
+
+/* === FRAGMENT STACK === */
+.fstack{display:flex;flex-direction:column;gap:8px}
+.frag{
+  background:#141416;border:1px solid rgba(255,255,255,.07);border-radius:10px;
+  padding:10px 11px;cursor:grab;transition:transform .15s,box-shadow .15s,opacity .15s;
+  opacity:.7;
+}
+.frag:hover{transform:translateY(-1px);opacity:.9;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.frag:active{cursor:grabbing;transform:scale(.97)}
+.frag.dragging{opacity:.35;transform:scale(.96)}
+.frag-amount{font-size:16px;font-weight:200;letter-spacing:-.8px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.75);margin-bottom:2px}
+.frag-desc{font-size:10px;color:rgba(255,255,255,.28);font-weight:500;letter-spacing:.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frag-date{font-size:9px;color:rgba(255,255,255,.15);margin-top:3px}
+
+/* CHEVRON STACK */
+.stack-nav{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}
+
+/* === OVERLAYS === */
+.overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  z-index:20;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.overlay.visible{opacity:1;pointer-events:all}
+
+/* RECURRENCE POPUP */
+.popup{
+  background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:20px;width:240px;
+}
+.popup-title{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:4px}
+.popup-sub{font-size:13px;font-weight:500;color:#fff;margin-bottom:16px;letter-spacing:-.2px}
+.recur-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ropt{
+  background:rgba(255,255,255,.05);border:.5px solid rgba(255,255,255,.08);border-radius:9px;
+  padding:9px 10px;font-size:11px;font-weight:500;color:rgba(255,255,255,.45);
+  cursor:pointer;text-align:center;transition:background .15s,color .15s,border-color .15s;
+}
+.ropt:hover{background:rgba(62,207,175,.1);border-color:rgba(62,207,175,.3);color:#3ECFAF}
+
+/* DETAIL OVERLAY */
+.detail-box{
+  background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);border-radius:16px;
+  padding:20px;width:260px;
+}
+.det-title{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:12px}
+.det-frag{
+  background:#141416;border:.5px solid rgba(255,255,255,.08);border-radius:10px;
+  padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.det-frag-info{}
+.det-frag-amt{font-size:15px;font-weight:300;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.det-frag-desc{font-size:10px;color:rgba(255,255,255,.28);margin-top:2px}
+.eject-btn{
+  width:24px;height:24px;border-radius:50%;background:rgba(255,69,58,.08);border:.5px solid rgba(255,69,58,.2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;flex-shrink:0;
+}
+.eject-btn:hover{background:rgba(255,69,58,.18)}
+.close-btn{width:100%;padding:9px;background:rgba(255,255,255,.05);border:.5px solid rgba(255,255,255,.08);border-radius:9px;font-size:11px;font-weight:500;color:rgba(255,255,255,.35);cursor:pointer;transition:background .15s,color .15s;text-align:center}
+.close-btn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.7)}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Untere Interaktionszone – Portal, Karussell, Fragment-Stack</h2>
+<div class="d" id="main">
+
+  <div class="trinity">
+
+    <!-- A: PORTAL -->
+    <div>
+      <div class="zone-lbl">Import</div>
+      <div class="portal" id="portal" ondragover="e=event;e.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onFileDrop(event)">
+        <input type="file" accept=".csv" class="portal-input" onchange="onFileSelect(event)">
+        <div class="portal-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3v9M6 9l3-3 3 3" stroke="rgba(255,255,255,.35)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3 13h12" stroke="rgba(255,255,255,.2)" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="portal-lbl">CSV ablegen<br>oder klicken</div>
+        <div class="portal-sub">Kontoauszug importieren</div>
+      </div>
+    </div>
+
+    <!-- B: CAROUSEL -->
+    <div class="carousel-wrap">
+      <div class="zone-lbl">Planung</div>
+      <div class="carousel-row">
+        <button class="chev-btn" onclick="scroll(-1)" id="chev-l" disabled>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 9.5L4.5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="cards-viewport" id="viewport">
+
+          <div class="card open" id="card-miete" onclick="handleCardClick(this,'miete')"
+            ondragover="dragOverCard(event,this)" ondragleave="this.classList.remove('drag-target-card')" ondrop="dropOnCard(event,this,'miete')">
+            <div class="more-btn" onclick="toggleMenu(event,'menu-miete')">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="2" r=".9" fill="rgba(255,255,255,.4)"/><circle cx="5" cy="5" r=".9" fill="rgba(255,255,255,.4)"/><circle cx="5" cy="8" r=".9" fill="rgba(255,255,255,.4)"/></svg>
+            </div>
+            <div class="more-menu" id="menu-miete">
+              <div class="mm-item" onclick="closeMenus()">Budget anpassen</div>
+              <div class="mm-item danger" onclick="closeMenus()">Beenden ab diesem Monat</div>
+            </div>
+            <div class="card-top">
+              <div class="card-lbl">Fixkosten</div>
+              <div class="icon i-open"><svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="2.2" fill="rgba(255,69,58,.55)"/></svg></div>
+            </div>
+            <div class="cname">Miete</div>
+            <div class="amount">1.200 €</div>
+            <div class="state-lbl">Offen</div>
+            <div class="meta"><div class="dot dot-gem"></div><div class="meta-t">Gemeinsam</div></div>
+          </div>
+
+          <div class="card paid" id="card-strom" onclick="handleCardClick(this,'strom')"
+            ondragover="dragOverCard(event,this)" ondragleave="this.classList.remove('drag-target-card')" ondrop="dropOnCard(event,this,'strom')">
+            <div class="more-btn" onclick="toggleMenu(event,'menu-strom')">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="2" r=".9" fill="rgba(255,255,255,.4)"/><circle cx="5" cy="5" r=".9" fill="rgba(255,255,255,.4)"/><circle cx="5" cy="8" r=".9" fill="rgba(255,255,255,.4)"/></svg>
+            </div>
+            <div class="more-menu" id="menu-strom">
+              <div class="mm-item" onclick="closeMenus()">Budget anpassen</div>
+              <div class="mm-item danger" onclick="closeMenus()">Beenden ab diesem Monat</div>
+            </div>
+            <div class="card-top">
+              <div class="card-lbl">Fixkosten</div>
+              <div class="icon i-paid"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.2 6L6.5 2.5" stroke="rgba(62,207,175,.85)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+            <div class="cname">Strom</div>
+            <div class="amount">120 €</div>
+            <div class="state-lbl">Bezahlt</div>
+            <div class="meta"><div class="dot dot-gem"></div><div class="meta-t">Gemeinsam</div></div>
+          </div>
+
+          <div class="card empty-slot" id="slot-empty"
+            ondragover="dragOverSlot(event)" ondragleave="this.classList.remove('drag-target')" ondrop="dropOnSlot(event)">
+            <div class="slot-icon">+</div>
+            <div class="slot-lbl">Fragment ziehen<br>um Karte zu erstellen</div>
+          </div>
+
+        </div>
+        <button class="chev-btn" onclick="scroll(1)" id="chev-r">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3.5L7.5 6.5L4.5 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- C: FRAGMENT STACK -->
+    <div>
+      <div class="zone-lbl">Rohmasse</div>
+      <div class="fstack" id="fstack">
+        <div class="frag" draggable="true" id="f1" ondragstart="dragStart(event,'f1')" ondragend="dragEnd(event,'f1')">
+          <div class="frag-amount">−47,20 €</div>
+          <div class="frag-desc">Aral Tankstelle Frankfurt</div>
+          <div class="frag-date">12. März 2026</div>
+        </div>
+        <div class="frag" draggable="true" id="f2" ondragstart="dragStart(event,'f2')" ondragend="dragEnd(event,'f2')">
+          <div class="frag-amount">−18,90 €</div>
+          <div class="frag-desc">Rewe Supermarkt</div>
+          <div class="frag-date">14. März 2026</div>
+        </div>
+        <div class="frag" draggable="true" id="f3" ondragstart="dragStart(event,'f3')" ondragend="dragEnd(event,'f3')">
+          <div class="frag-amount">+45,00 €</div>
+          <div class="frag-desc">Unbekannte Gutschrift</div>
+          <div class="frag-date">15. März 2026</div>
+        </div>
+      </div>
+      <div class="stack-nav">
+        <button class="chev-btn" style="opacity:.25" disabled>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 9.5L4.5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="chev-btn">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3.5L7.5 6.5L4.5 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OVERLAY: RECURRENCE POPUP -->
+  <div class="overlay" id="ov-recur">
+    <div class="popup">
+      <div class="popup-title">Neue Karte erstellen</div>
+      <div class="popup-sub" id="recur-name">Aral Tankstelle Frankfurt</div>
+      <div class="recur-opts">
+        <div class="ropt" onclick="confirmRecur('Monatlich')">Monatlich</div>
+        <div class="ropt" onclick="confirmRecur('Quartalsweise')">Quartalsweise</div>
+        <div class="ropt" onclick="confirmRecur('Halbjährlich')">Halbjährlich</div>
+        <div class="ropt" onclick="confirmRecur('Jährlich')">Jährlich</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY: FRAGMENT DETAIL -->
+  <div class="overlay" id="ov-detail">
+    <div class="detail-box">
+      <div class="det-title">Verknüpftes Fragment</div>
+      <div class="det-frag">
+        <div class="det-frag-info">
+          <div class="det-frag-amt">−120,00 €</div>
+          <div class="det-frag-desc">Stadtwerke Frankfurt GmbH</div>
+        </div>
+        <div class="eject-btn" onclick="ejectFragment()" title="Fragment zurücksetzen">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 3l4 4M7 3l-4 4" stroke="rgba(255,69,58,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="close-btn" onclick="closeDetail()">Schließen</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var dragId=null;
+
+function dragStart(e,id){
+  dragId=id;
+  document.getElementById(id).classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function dragEnd(e,id){
+  document.getElementById(id).classList.remove('dragging');
+  document.querySelectorAll('.drag-target-card,.drag-target').forEach(function(el){
+    el.classList.remove('drag-target-card','drag-target');
+  });
+}
+function dragOverCard(e,card){
+  e.preventDefault();
+  card.classList.add('drag-target-card');
+}
+function dropOnCard(e,card,name){
+  e.preventDefault();
+  card.classList.remove('drag-target-card');
+  if(!dragId)return;
+  var frag=document.getElementById(dragId);
+  if(frag){frag.style.display='none';}
+  card.className='card paid';
+  card.querySelector('.card-lbl').style.color='rgba(62,207,175,.45)';
+  card.querySelector('.state-lbl').textContent='Bezahlt';
+  card.querySelector('.state-lbl').style.color='rgba(62,207,175,.45)';
+  card.querySelector('.icon').className='icon i-paid';
+  card.querySelector('.icon').innerHTML='<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.2 6L6.5 2.5" stroke="rgba(62,207,175,.85)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  card.querySelector('.cname').style.color='#fff';
+  card.querySelector('.amount').style.color='#fff';
+  dragId=null;
+}
+function dragOverSlot(e){
+  e.preventDefault();
+  document.getElementById('slot-empty').classList.add('drag-target');
+}
+function dropOnSlot(e){
+  e.preventDefault();
+  document.getElementById('slot-empty').classList.remove('drag-target');
+  if(!dragId)return;
+  var frag=document.getElementById(dragId);
+  var desc=frag?frag.querySelector('.frag-desc').textContent:'Fragment';
+  document.getElementById('recur-name').textContent=desc;
+  document.getElementById('ov-recur').classList.add('visible');
+  dragId=null;
+}
+function confirmRecur(freq){
+  document.getElementById('ov-recur').classList.remove('visible');
+  var slot=document.getElementById('slot-empty');
+  slot.className='card paid';
+  slot.innerHTML='<div class="card-top"><div class="card-lbl" style="color:rgba(62,207,175,.45)">Fixkosten</div><div class="icon i-paid"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3.2 6L6.5 2.5" stroke="rgba(62,207,175,.85)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="cname" style="color:#fff">Neue Karte</div><div class="amount" style="color:#fff">47 €</div><div class="state-lbl" style="color:rgba(62,207,175,.45)">'+freq+'</div><div class="meta"><div class="dot dot-ich"></div><div class="meta-t">Ich</div></div>';
+  slot.onclick=null;
+}
+function handleCardClick(card,name){
+  if(event.target.closest('.more-btn')||event.target.closest('.more-menu'))return;
+  if(card.classList.contains('paid')){
+    document.getElementById('ov-detail').classList.add('visible');
+  }
+}
+function ejectFragment(){
+  document.getElementById('ov-detail').classList.remove('visible');
+  var card=document.getElementById('card-strom');
+  card.className='card open';
+  card.querySelector('.cname').style.color='rgba(255,255,255,.45)';
+  card.querySelector('.amount').style.color='rgba(255,255,255,.45)';
+  card.querySelector('.state-lbl').textContent='Offen';
+  card.querySelector('.state-lbl').style.color='rgba(255,99,88,.38)';
+  card.querySelector('.icon').className='icon i-open';
+  card.querySelector('.icon').innerHTML='<svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="2.2" fill="rgba(255,69,58,.55)"/></svg>';
+  var f=document.createElement('div');
+  f.className='frag';f.draggable=true;
+  f.innerHTML='<div class="frag-amount">−120,00 €</div><div class="frag-desc">Stadtwerke Frankfurt GmbH</div><div class="frag-date">März 2026</div>';
+  document.getElementById('fstack').prepend(f);
+}
+function closeDetail(){document.getElementById('ov-detail').classList.remove('visible')}
+function toggleMenu(e,id){
+  e.stopPropagation();closeMenus();
+  document.getElementById(id).classList.toggle('open');
+}
+function closeMenus(){document.querySelectorAll('.more-menu.open').forEach(function(m){m.classList.remove('open')});}
+document.addEventListener('click',function(e){if(!e.target.closest('.more-btn')&&!e.target.closest('.more-menu'))closeMenus();});
+function scroll(d){} // placeholder
+function onFileDrop(e){e.preventDefault();document.getElementById('portal').classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f)showImport(f.name);}
+function onFileSelect(e){var f=e.target.files[0];if(f)showImport(f.name);}
+function showImport(name){var p=document.getElementById('portal');p.querySelector('.portal-lbl').textContent=name;p.querySelector('.portal-sub').textContent='Wird verarbeitet…';}
+</script>

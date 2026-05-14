@@ -1,0 +1,224 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif}
+.w{background:var(--color-background-secondary);border-radius:20px;padding:20px}
+.d{background:#0D0D0F;border-radius:14px;padding:24px;position:relative;min-height:320px}
+.layout{display:grid;grid-template-columns:180px 1fr 180px;gap:16px;align-items:start}
+.zone-lbl{font-size:9px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:rgba(255,255,255,.15);margin-bottom:10px}
+
+/* BUDGET CARD */
+.bcard{
+  border-radius:12px;padding:13px 12px 18px;border:1px solid rgba(255,69,58,.18);
+  background:#160D0D;position:relative;overflow:hidden;cursor:pointer;
+  transition:border-color .2s,background .2s;opacity:.75;min-height:160px;
+}
+.bcard:hover{opacity:.92;transform:translateY(-1px)}
+.bcard.drag-over{border-color:rgba(62,207,175,.5);background:rgba(62,207,175,.05)}
+.bc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.bc-lbl{font-size:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,99,88,.45)}
+.bc-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.2)}
+.bc-name{font-size:12px;font-weight:500;color:rgba(255,255,255,.45);margin-bottom:2px}
+.bc-amount{font-size:19px;font-weight:200;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.45);line-height:1;margin-bottom:4px;transition:color .2s}
+.bc-state{font-size:8px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.bc-rest{font-size:10px;font-weight:400;color:rgba(62,207,175,.4);margin-top:3px}
+.bc-rest.neg{color:rgba(255,69,58,.65)}
+.bc-meta{display:flex;align-items:center;gap:4px;margin-top:7px}
+.dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.22)}
+.meta-t{font-size:9px;color:rgba(255,255,255,.2)}
+.prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.04)}
+.prog-fill{height:100%;background:rgba(62,207,175,.45);transition:width .5s cubic-bezier(.2,0,.1,1)}
+.prog-fill.over{background:#FF453A}
+
+/* FRAGMENTS */
+.fstack{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+.frag{
+  background:#141416;border:1px solid rgba(255,255,255,.07);border-radius:10px;
+  padding:10px 11px;cursor:grab;transition:transform .15s,opacity .15s;opacity:.7;
+}
+.frag:hover{transform:translateY(-1px);opacity:.9}
+.frag:active{cursor:grabbing}
+.frag.used{opacity:.25;cursor:default;pointer-events:none}
+.frag-amt{font-size:15px;font-weight:200;letter-spacing:-.8px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.75)}
+.frag-desc{font-size:10px;color:rgba(255,255,255,.28);margin-top:2px}
+.frag-date{font-size:9px;color:rgba(255,255,255,.15);margin-top:2px}
+
+/* DETAIL OVERLAY */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.65);border-radius:14px;display:flex;align-items:center;justify-content:center;z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.vis{opacity:1;pointer-events:all}
+.det{background:#1C1C1E;border:.5px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;width:260px}
+.det-title{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:12px}
+.det-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:180px;overflow-y:auto}
+.det-row{background:#141416;border:.5px solid rgba(255,255,255,.07);border-radius:9px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between}
+.det-info{}
+.det-amt{font-size:13px;font-weight:300;color:#fff;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.det-desc{font-size:9.5px;color:rgba(255,255,255,.28);margin-top:2px}
+.eject{width:22px;height:22px;border-radius:50%;background:rgba(255,69,58,.08);border:.5px solid rgba(255,69,58,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s}
+.eject:hover{background:rgba(255,69,58,.2)}
+.det-empty{font-size:11px;color:rgba(255,255,255,.18);text-align:center;padding:16px 0}
+.divider{height:.5px;background:rgba(255,255,255,.06);margin-bottom:10px}
+.close-btn{width:100%;padding:9px;background:rgba(255,255,255,.04);border:.5px solid rgba(255,255,255,.07);border-radius:9px;font-size:11px;font-weight:500;color:rgba(255,255,255,.3);cursor:pointer;text-align:center;transition:background .15s,color .15s}
+.close-btn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.65)}
+
+/* HINT */
+.hint{font-size:10px;color:rgba(255,255,255,.15);text-align:center;margin-top:14px;letter-spacing:.2px}
+</style>
+
+<div class="w">
+<h2 class="sr-only">Budget-Karte Fragment Drop und Detail-Overlay</h2>
+<div class="d" id="main">
+  <div class="layout">
+
+    <!-- PLACEHOLDER LEFT -->
+    <div>
+      <div class="zone-lbl">Planung</div>
+      <div class="bcard" id="bcard"
+        onclick="openDetail()"
+        ondragover="ev=event;ev.preventDefault();document.getElementById('bcard').classList.add('drag-over')"
+        ondragleave="document.getElementById('bcard').classList.remove('drag-over')"
+        ondrop="dropFrag(event)">
+        <div class="bc-top">
+          <div class="bc-lbl">Budget</div>
+          <div class="bc-icon"><svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="2.2" fill="rgba(255,69,58,.55)"/></svg></div>
+        </div>
+        <div class="bc-name">Tanken</div>
+        <div class="bc-amount" id="bc-amt">0 €</div>
+        <div class="bc-state">Laufend</div>
+        <div class="bc-rest" id="bc-rest">Noch 200 € frei</div>
+        <div class="bc-meta"><div class="dot"></div><div class="meta-t">Ich</div></div>
+        <div class="prog"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+      <div class="hint">Klick auf Karte = Detail-Overlay</div>
+    </div>
+
+    <!-- SPACER -->
+    <div></div>
+
+    <!-- FRAGMENT STACK -->
+    <div>
+      <div class="zone-lbl">Rohmasse</div>
+      <div class="fstack" id="fstack">
+        <div class="frag" draggable="true" id="f1" ondragstart="dstart(event,'f1')" ondragend="dend('f1')">
+          <div class="frag-amt">−47,20 €</div>
+          <div class="frag-desc">Aral Tankstelle</div>
+          <div class="frag-date">12. März 2026</div>
+        </div>
+        <div class="frag" draggable="true" id="f2" ondragstart="dstart(event,'f2')" ondragend="dend('f2')">
+          <div class="frag-amt">−38,50 €</div>
+          <div class="frag-desc">Shell Tankstelle</div>
+          <div class="frag-date">18. März 2026</div>
+        </div>
+        <div class="frag" draggable="true" id="f3" ondragstart="dstart(event,'f3')" ondragend="dend('f3')">
+          <div class="frag-amt">−18,90 €</div>
+          <div class="frag-desc">Rewe Supermarkt</div>
+          <div class="frag-date">20. März 2026</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="overlay" id="overlay">
+    <div class="det">
+      <div class="det-title">Verknüpfte Fragmente — Tanken</div>
+      <div class="det-list" id="det-list">
+        <div class="det-empty" id="det-empty">Noch keine Fragmente verknüpft.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="close-btn" onclick="closeDetail()">Schließen</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var PLAN=200;
+var linked=[];
+var dragId=null;
+var fragData={
+  f1:{amt:47.20,desc:'Aral Tankstelle',date:'12. März 2026'},
+  f2:{amt:38.50,desc:'Shell Tankstelle',date:'18. März 2026'},
+  f3:{amt:18.90,desc:'Rewe Supermarkt',date:'20. März 2026'}
+};
+
+function dstart(e,id){dragId=id;e.dataTransfer.effectAllowed='move';}
+function dend(id){}
+
+function dropFrag(e){
+  e.preventDefault();
+  document.getElementById('bcard').classList.remove('drag-over');
+  if(!dragId||!fragData[dragId])return;
+  var d=fragData[dragId];
+  linked.push({id:dragId,amt:d.amt,desc:d.desc,date:d.date});
+  document.getElementById(dragId).classList.add('used');
+  updateCard();
+  dragId=null;
+}
+
+function updateCard(){
+  var total=linked.reduce(function(s,f){return s+f.amt;},0);
+  var rest=PLAN-total;
+  var pct=Math.min(total/PLAN*100,100);
+  var over=total>PLAN;
+
+  document.getElementById('bc-amt').textContent=(total>0?total.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €':'0 €');
+  document.getElementById('bc-amt').style.color=over?'#FF453A':total>0?'#fff':'rgba(255,255,255,.45)';
+
+  var restEl=document.getElementById('bc-rest');
+  if(over){
+    restEl.textContent='−'+Math.abs(rest).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' € über Plan';
+    restEl.className='bc-rest neg';
+  } else {
+    restEl.textContent='Noch '+rest.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' € frei';
+    restEl.className='bc-rest';
+  }
+
+  var fill=document.getElementById('prog-fill');
+  fill.style.width=pct+'%';
+  fill.className='prog-fill'+(over?' over':'');
+
+  var card=document.getElementById('bcard');
+  if(over){
+    card.style.background='#160A08';
+    card.style.borderColor='rgba(255,69,58,.35)';
+  } else if(total>0){
+    card.style.background='#160D0D';
+    card.style.borderColor='rgba(255,69,58,.18)';
+  }
+
+  updateDetailList();
+}
+
+function updateDetailList(){
+  var list=document.getElementById('det-list');
+  var empty=document.getElementById('det-empty');
+  if(linked.length===0){
+    empty.style.display='block';
+    Array.from(list.querySelectorAll('.det-row')).forEach(function(r){r.remove()});
+    return;
+  }
+  empty.style.display='none';
+  Array.from(list.querySelectorAll('.det-row')).forEach(function(r){r.remove()});
+  linked.forEach(function(f,i){
+    var row=document.createElement('div');
+    row.className='det-row';
+    row.innerHTML='<div class="det-info"><div class="det-amt">−'+f.amt.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €</div><div class="det-desc">'+f.desc+'</div></div>'
+      +'<div class="eject" onclick="eject('+i+')" title="Fragment entfernen"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2.5 2.5l4 4M6.5 2.5l-4 4" stroke="rgba(255,69,58,.7)" stroke-width="1.3" stroke-linecap="round"/></svg></div>';
+    list.insertBefore(row,document.getElementById('det-empty'));
+  });
+}
+
+function eject(i){
+  var f=linked[i];
+  linked.splice(i,1);
+  var fragEl=document.getElementById(f.id);
+  if(fragEl){fragEl.classList.remove('used');}
+  updateCard();
+  if(linked.length===0){closeDetail();}
+}
+
+function openDetail(){document.getElementById('overlay').classList.add('vis');}
+function closeDetail(){document.getElementById('overlay').classList.remove('vis');}
+</script>
