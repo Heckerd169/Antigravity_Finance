@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom PM (Opus 4.7) nach jedem abgeschlossenen Sprint aktualisiert.
-> **Letzte Aktualisierung:** 14. Mai 2026 · **Nach Sprint:** 3 (Approved)
+> **Letzte Aktualisierung:** 16. Mai 2026 · **Nach Sprint:** 4 (Approved)
 
 ---
 
@@ -106,7 +106,7 @@ Antigravity_Finance/
 | 1 | Onboarding + Income/Partner-Split (§10) | 🟢 Done | sprints/sprint_01_briefing.md | 11. Mai 2026 |
 | 2 | Singularity Ring (§5) | 🟢 Done | sprints/sprint_02_briefing.md | 12. Mai 2026 |
 | 3 | Header / Timeline-Navigation (§6) | 🟢 Done | sprints/sprint_03_briefing.md | 14. Mai 2026 |
-| 4 | Karten — alle 3 Typen × alle Zustände (§7) | — | — | — |
+| 4 | Karten — alle 3 Typen × alle Zustände (§7) | 🟢 Done | sprints/sprint_04_briefing.md | 16. Mai 2026 |
 | 5 | Untere Interaktionszone (§8) | — | — | — |
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | — | — | — |
 | 7 | CSV-Import / Distiller (§11) | — | — | — |
@@ -129,6 +129,12 @@ die Design-Doku.
 **Bekannte Abweichungen Prototyp ↔ Design-Doku:**
 - `singularity_ring_v3.html` zeigt einen Slider oben — Design-Doku §5 schließt den Slider
   im finalen Dashboard explizit aus. Slider ist Tooling, NICHT Produkt.
+- `karten_final_v4.html` zeigt eine Budget-Karte mit „Gemeinsam"-Attribution („Essen 260 €")
+  — Design-Doku §7 verbietet das explizit (Budget = immer ICH, datenbankseitig durch
+  Constraint abgesichert). Prototyp-Visual ignorieren.
+- `karten_final_v4.html` zeigt einen Budget-Zustand „Abgeschlossen" mit „X € nicht
+  verbraucht" — Design-Doku §7 spezifiziert für Budget nur 3 Zustände (Laufend,
+  Überschritten, Ghost). Kein „Abgeschlossen". Prototyp-Visual ignorieren.
 
 **Sektionen, die Claude Code immer prüft:**
 
@@ -176,6 +182,25 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
   `.upsert(..., { onConflict: "user_id,person,effective_month" })` für Forward-
   Inheritance-Writes — überschreibt denselben Monat, hängt nicht an.
 
+**Wichtige Schema-Befunde aus Sprint 4 (Karten):**
+- Spalten in `cards` heißen `type`, `attribution`, `frequency` — **ohne** `card_`-
+  Präfix (LL-7). Werte sind die ENUM-Strings aus Design-Doku §2.6 (`FIXED_COST`,
+  `INCOME`, `BUDGET`; `ICH`, `GEMEINSAM`; `MONTHLY`, `QUARTERLY`, `SEMIANNUAL`,
+  `ANNUAL`, `ONCE`).
+- `card_monthly_states` Composite-Key ist `(card_id, month)`. UPSERTs nutzen
+  `onConflict: "card_id,month"`. Row kann existieren wegen `manually_paid=true`
+  ohne `adjusted_amount`, oder umgekehrt. Beim Clearen eines Felds: `UPDATE ...
+  SET adjusted_amount = NULL`, NICHT `DELETE` (sonst geht `manually_paid` mit verloren).
+- `card_planned_timeline` Composite-Key ist `(card_id, effective_month)`. Forward-
+  Inheritance erfolgt durch `.upsert(..., { onConflict: "card_id,effective_month" })`
+  — analog zum Income-Timeline-Pattern aus Sprint 1.
+- Hot-Path-RPCs (`calculate_card_amount_for_month`, `is_card_active_in_month`,
+  `get_planned_amount_for_month`) nehmen **kein** `p_user_id` — RLS über
+  `auth.uid()` auf den referenzierten Tabellen. Bei fehlender Session: stilles
+  NULL/`false`/`0`, kein Error. Defensiver Wrapper-Check pflicht.
+- `get_split_factor` ist die einzige Karten-bezogene Hot-Path-RPC, die `p_user_id`
+  erwartet (greift auf `income_timeline` zu, das nicht über Card-FK gefiltert wird).
+
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
 supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supabase/types.ts
@@ -218,14 +243,26 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
   zwischen `server.ts`/`client.ts` zu wählen. Vorteil: kein versteckter Server-/Client-
   Switch, ein RPC funktioniert überall. **Default ist Throw-on-Error**: Wrapper
   geben bei DB-`null` legitim `null` zurück, werfen aber bei Supabase-Errors
-  (Network, RLS, etc.). Schluckende Variante (`null` auch bei Errors) nur, wenn
-  der Aufrufer „kein Datum" und „Fehler" nicht unterscheiden muss und ein Crash
+  (Network, RLS, etc.). Schluckende Variante (`null`/`false`/`0` auch bei Errors) nur,
+  wenn der Aufrufer „kein Datum" und „Fehler" nicht unterscheiden muss und ein Crash
   UX-schädlich wäre — diese Ausnahme im Wrapper-Kommentar dokumentieren.
+  (Bekannte Ausnahme Sprint 4: `isCardActiveInMonth` schluckt — Begründung im
+  Wrapper-Kommentar; verhindert dass eine einzelne Karte den gesamten Karten-Render
+  blockiert.)
 - Keine globalen CSS-Klassen außerhalb `tokens.css` + `globals.css`
 - **SVG-Transform-Properties inline erlaubt:** `transform-box: fill-box` und
   `transform-origin: center` dürfen als `style=`-Attribut auf SVG-Elementen
   stehen, da CSS-Module-Spezifität hier inkonsistent wirken kann. Farben und
   alle anderen Properties gehen weiterhin über Tokens / CSS-Modules.
+- **Overlays / Kontextmenüs / Tooltips in Clipping-Containern** (Eltern mit
+  `overflow-x: auto`, `overflow: hidden`, `overflow-y: scroll`): müssen entweder
+  via `position: fixed` (mit `getBoundingClientRect()` zur Positionsbestimmung)
+  **oder** via React Portal aus dem Clipping-Container ausgelagert werden — sonst
+  werden sie geclipt. **Zusätzlich:** Sichtbarkeits-CSS (Opacity, Visibility,
+  Display) NIE an Eltern-Hover-Selektoren koppeln, wenn das Element via
+  `useState(isOpen)` gesteuert wird → sonst „Phantom-Sichtbarkeit" (DOM präsent,
+  aber Cursor-Position macht es unsichtbar). Diagnose-Pattern: Sprint 4 K2.
+  (LL-6)
 - Branch pro Sprint: `sprint/NN-<komponente>`
 
 ### Was Claude Code NIE macht
@@ -306,9 +343,15 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 1 (Onboarding + Income) | ~~Opus 4.7~~ ✓ erledigt |
 | Sprint 2 (Singularity Ring) | ~~Opus 4.7~~ ✓ erledigt |
 | Sprint 3 (Header / Timeline-Navigation) | ~~Sonnet 4.6~~ ✓ erledigt |
-| Sprints 4, 5, 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
+| Sprint 4 (Karten) | ~~Sonnet 4.6 + Opus 4.7 (für K2/K3)~~ ✓ erledigt |
+| Sprints 5, 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
 | Sprint 6 (Sparrate-Verifikation) | **Opus 4.7** — harter Gate, §4-Konflikte |
 | Sprint 7 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
+
+**Eskalations-Heuristik:** Wenn Sonnet 4.6 bei einer Korrektur nach einem
+erfolglosen Fix-Versuch immer noch nicht alle Symptome löst, direkt auf Opus 4.7
+eskalieren statt zu iterieren. Erfahrung aus Sprint 4 K2: diagnostisch unklare
+Bugs (insbesondere mit CSS/DOM-Coupling) lohnen den Modell-Switch.
 
 ---
 
@@ -410,7 +453,8 @@ vollständig (visuell bestätigt).
 - **LL-2**: RPC-Wrapper-Default ist Throw-on-Error. `estimateNetMonthly`
   (Sprint 1) ist inkonsistent (schluckt Errors) — bekannte Inkonsistenz, **kein
   eigener Fix-Sprint**. Wird mitgefixt bei nächster Sprint-Berührung des
-  Wrappers, sonst bleibt stehen.
+  Wrappers, sonst bleibt stehen. **In Sprint 4 mitgefixt** — alle Wrapper jetzt
+  konsistent Throw-on-Error außer `isCardActiveInMonth` (dokumentierte Ausnahme).
 - **LL-3**: SVG-Transform-Properties (`transform-box`, `transform-origin`)
   dürfen inline als `style=`-Attribut stehen.
 
@@ -500,3 +544,134 @@ keine Migration, keine Architekten-Vorarbeit. Branch `sprint/03-header-timeline`
   `public/prototypes/` committet (Option A nach Prototyp-Location-Diskrepanz
   aus Sprint-3-Review §11). CLAUDE.md §3 Dateistruktur jetzt vollständig
   realität-treu.
+
+### Sprint 4 · APPROVED 16. Mai 2026
+**Komponente:** Karten — Fixkosten, Einnahmen, Budget (Design-Doku §7).
+Drei Karten-Typen × drei Zustände, Tap-Interaktion (Fixkosten + Einnahmen),
+Kontextmenü mit „Betrag anpassen" (zwei Pfade: nur dieser Monat /
+dauerhaft ab diesem Monat). Karussell-Sortierung FIXED_COST → INCOME →
+BUDGET. **Bewusster Scope-Cut:** destruktive Kontextmenü-Aktionen
+(„Letzte Zahlung in Monat X" + „Karte löschen") nach Sprint 8 verschoben,
+da sie Soft-Delete-Pattern + Toast-UI voraussetzen.
+
+**Voraussetzungen erfüllt:** Sprint 3 grün auf `main`. Architekten-Sanity-
+Check 16. Mai 2026 bestätigt: alle 4 Karten-Hot-Path-RPCs
+(`calculate_card_amount_for_month`, `is_card_active_in_month`,
+`get_planned_amount_for_month`, `get_split_factor`) live, spec-konform,
+keine Migration nötig. Test-Daten via Architekten-SQL applied am 16. Mai
+2026: 7 Karten (Miete/Strom GEMEINSAM, Netflix/Auto-Vers./Steuer/Tanken/
+Essen ICH), 8 `card_planned_timeline`-Zeilen (Strom hat 2 für Forward-
+Inheritance-Test ab Mai), 3 `card_monthly_states`-Zeilen (Strom paid Mai,
+Steuer received März, Tanken adj 250 € Mai), 1 `fragment` (Edeka 360 €
+Mai) + 1 `card_fragment_link` zur Essen-Budget-Karte für Überschritten-
+Visual-Test. Branch `sprint/04-cards`.
+
+**Implementierung (Initial-feat-Commit + 3 Korrektur-Iterationen, gesamt
+~1500 LOC netto):**
+- `src/lib/rpc.ts` (MODIFIED) — 4 neue Wrapper für Karten-Hot-Path-RPCs,
+  alle Throw-on-Error. **LL-2-Fix umgesetzt:** `estimateNetMonthly` wirft
+  jetzt konsistent (vorher: schluckte Errors). `onboarding-form.tsx` mit
+  try/catch um die beiden Aufrufer-Stellen ergänzt, damit UI nicht crasht.
+- `src/components/cards/` (NEU, 7 Dateien): `index.tsx` (Karussell-Wrapper),
+  `card.tsx` (Server-Component Single-Card-Render alle 3 Typen),
+  `card-interactive.tsx` (Client, Tap + Kontextmenü), `adjust-amount-overlay.tsx`
+  (Client, Overlay mit zwei Pfaden), `actions.ts` (Server Actions
+  `toggleCardTap`, `applyAdjustmentThisMonth`, `applyAdjustmentForward`),
+  `cards.module.css` (Layout + alle Karten-Styles + Overlay), `cards.types.ts`.
+- `src/app/page.tsx` (MODIFIED) — Cards-Loading-Pipeline: `cards`-SELECT
+  → `isCardActiveInMonth` parallel → Beträge + Plan + Monthly-State via
+  `Promise.all` → Sortierung FIXED→INCOME→BUDGET, dann
+  `localeCompare("de-DE")`.
+
+**Architektur-Entscheidungen:**
+- **E1** Schema-Spaltennamen-Korrektur: Die Spalten in `cards` heißen
+  `type`, `attribution`, `frequency` (ohne `card_`-Präfix). Briefing-
+  Skeleton hatte fälschlich `card_type` etc. → siehe LL-7 unten.
+- **E2** Kontextmenü als `position: fixed` via `getBoundingClientRect()`:
+  `overflow-x: auto` am Karussell-Container erzwingt per CSS-Spec
+  `overflow-y: non-visible` → absolut positionierte Kinder würden geclipt.
+  → siehe LL-6 unten.
+- **E3** Kein `overflow: hidden` auf `.card`: würde CardInteractive-
+  Overlays (Kontext-Icon als `position: absolute`) clippen.
+- **E4** Budget-Attribution hardcoded `"ICH"` im `MetaRow`-Render statt
+  aus DB-Spalte. Begründung: §7 + DB-Constraint garantieren immer `ICH`.
+  Code kommuniziert die Absicht explizit.
+- **E5** `isCardActiveInMonth` schluckt Errors (gibt `false` bei DB-Fehler
+  statt zu werfen). Einzige RPC-Wrapper-Ausnahme zur LL-2-Regel. Begründung
+  im Wrapper-Kommentar dokumentiert: Ein RLS-/Netz-Fehler bei einer
+  einzelnen Karte soll nicht den gesamten Karten-Render blockieren.
+
+**Korrekturen während Sprint (3 Iterationen):**
+- **K1** (Sonnet 4.6): Outside-Click-Handler in `card-interactive.tsx`
+  schloss das Kontextmenü bevor das Click-Event auf einem Menü-Item feuern
+  konnte — der `mousedown`-Handler prüfte nur `iconRef.current.contains(target)`,
+  und das Menü-Element ist DOM-seitig kein Kind des ⋯-Icons. Fix: `menuRef`
+  als zweiter `useRef` hinzugefügt, Outside-Check prüft jetzt sowohl
+  Icon- als auch Menu-Ref.
+- **K2** (Opus 4.7 — Eskalation nach unvollständigem Sonnet-K1): CSS/DOM-
+  Coupling — Kontextmenü-Sichtbarkeit war an `.card:hover`-Selektoren in
+  `cards.module.css` gekoppelt, sodass das Menü zwar via `useState(isOpen)`
+  gerendert wurde, aber CSS-seitig nur bei Karten-Hover sichtbar war.
+  Klick auf ⋯ ohne Cursor-Bewegung → Menü unsichtbar. Diagnose über
+  4 User-Screenshots (Cursor in 4 Positionen). Fix: Sichtbarkeits-Coupling
+  vollständig entkoppelt (Details im `sprint_04_review.md` K2-Append).
+  → siehe LL-6 unten.
+- **K3** (Opus 4.7): „Dauerhaft ab diesem Monat" hat existierende
+  `card_monthly_states.adjusted_amount` für den aktuellen Monat nicht
+  geclear-t. Prioritätskette §4 (Realität → Anpassung → Plan) ließ die
+  alte Anpassung gewinnen, sodass der neue Plan nicht sichtbar wurde.
+  User-Intent war aber „neue Baseline ab jetzt". PM-Entscheidung:
+  `applyAdjustmentForward` setzt zusätzlich `adjusted_amount = NULL` für
+  `effective_month` (nur diesen Monat, nicht zukünftige; Tap-Status
+  `manually_paid` unberührt). → siehe LL-8 unten.
+
+**Browser-Smoke-Test (User):** 24/24 Schritte grün nach K3, plus Bonus-
+Test eines kreativen User-Szenarios („Dauerhaft 25 → Nur dieser Monat 100
+→ Dauerhaft 25" — Karte zeigt 25 €). S5 (Forward-Inheritance Strom Mai
+110 €) bestätigt. S8 (Tanken-Adjustment-Edge-Case: Plan 200 + Adj 250
+ohne Fragmente → „Überschritten −50 €") als erwartetes V1-Verhalten
+akzeptiert. 1s-Tap-Latenz beobachtet und für V1 akzeptiert (Server
+Action + revalidate ohne optimistic UI — bewusste LL-5-Vermeidung).
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-6** (§7 Datei-Konventionen): Overlays / Kontextmenüs / Tooltips
+  innerhalb eines Clipping-Containers (`overflow-x: auto`, `overflow:
+  hidden`) brauchen entweder `position: fixed` mit
+  `getBoundingClientRect()`-Positionierung oder React-Portal-Extraktion.
+  **Zusätzlich:** Sichtbarkeits-CSS (Opacity, Visibility, Display) NIE
+  an Eltern-Hover-Selektoren koppeln, wenn das Element via
+  `useState(isOpen)` gesteuert wird — sonst Phantom-Sichtbarkeit.
+  Diagnose-Pattern: vier Screenshots in vier Cursor-Positionen (Hover ⋯
+  / direkt nach Click / Karten-Mitte / off-card) reichen typischerweise
+  zur Differential-Diagnose.
+- **LL-7** (§6 Schema-Referenz): `cards`-Spalten heißen `type`,
+  `attribution`, `frequency` ohne `card_`-Präfix. Briefings dürfen das
+  nicht als `card_type` etc. spezifizieren — Schema-Doku ist Quelle.
+  Bei Diskrepanz: zur Schema-Doku gehen, nicht zur Briefing-Annahme.
+- **LL-8** (§10 dieser Eintrag, K3-Block): „Dauerhaft ab diesem Monat = X"
+  via `card_planned_timeline`-UPSERT clear-t zusätzlich
+  `card_monthly_states.adjusted_amount` für `effective_month` selbst.
+  Begründung: User-Intent ist „neue Baseline ab jetzt", nicht „Plan
+  ändern aber alte Anpassung als Override behalten". Tap-Status
+  (`manually_paid`) bleibt unberührt. Zukünftige Monats-Adjustments
+  werden nicht geclear-t (nicht-destruktiv für andere User-Intents).
+
+**Modell-Empfehlung-Befund:** Sprint 4 erforderte 1× Sonnet 4.6
+(Initial-Implementation + K1) und 1× Opus 4.7 (K2 + K3). Switch zu
+Opus war notwendig, nachdem Sonnet bei K2 nur eines von zwei Symptomen
+gelöst hatte. Konsequenz: §9 Modell-Empfehlungen um Eskalations-
+Heuristik ergänzt.
+
+**Test-Daten-Lebenszyklus:** Die in Sprint 4 angelegten Test-Karten +
+Plan-Timeline + Monthly States + Fragment-Link bleiben in der DB.
+Sprint 5 (Untere Interaktionszone) und Sprint 6 (Sparrate-Verifikation)
+bauen darauf auf — Pre-Sprint-SQL-Aufträge dort werden ggf. nur kleinere
+Anreicherungen benötigen statt komplettem Reset.
+
+**Offene Frage zur Beobachtung in Sprint 5/6:** Die Sprint-4-Tap-
+Interaktion hat eine ~1s-Latenz wegen Server Action + Revalidate.
+Wenn Sprint 5 die Untere Interaktionszone (Fragments) baut und sich
+ähnliche Latenzen bei Drag&Drop zeigen, ist optimistic UI ein
+sinnvoller V1.1-Refactor — dann global, nicht ad-hoc. Bei Implementierung:
+LL-5-Reset-Pattern (`useEffect` auf `targetMonth`-Prop) pflichten, sonst
+überlebt optimistic State die Monatsnavigation falsch.

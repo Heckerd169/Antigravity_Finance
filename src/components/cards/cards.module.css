@@ -1,0 +1,495 @@
+/* ======================================================
+   Antigravity Finance — Cards Component
+   Design-Doku §7 + §3 Tokens
+   Komponenten-lokale RGBA-Werte am .card-Root (analog Sprint 2/3 Pattern).
+   ====================================================== */
+
+/* ---------- Carousel ---------- */
+
+.carousel {
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  gap: 10px;
+  padding: 4px 0 16px;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Card Base ---------- */
+
+.card {
+  /* Komponenten-lokale CSS-Custom-Properties (analog Sprint-2-Ring-Pattern) */
+  --meta-dot-ich: rgba(255, 255, 255, .22);
+  --meta-dot-gem: rgba(100, 168, 240, .38);
+  --meta-text-color: rgba(255, 255, 255, .20);
+  --rest-pos: rgba(62, 207, 175, .40);
+  --rest-neg: rgba(255, 69, 58, .65);
+  --progress-norm: rgba(62, 207, 175, .45);
+  --progress-over: #FF453A;
+  --icon-open-bg: rgba(255, 69, 58, .1);
+  --icon-open-border: rgba(255, 69, 58, .2);
+  --icon-paid-bg: rgba(62, 207, 175, .1);
+  --icon-paid-border: rgba(62, 207, 175, .28);
+  --icon-ghost-bg: rgba(255, 255, 255, .06);
+  --icon-ghost-border: rgba(255, 255, 255, .1);
+  --icon-over-bg: rgba(255, 69, 58, .16);
+  --icon-over-border: rgba(255, 69, 58, .35);
+  --icon-expected-bg: rgba(62, 207, 175, .1);
+  --icon-expected-border: rgba(62, 207, 175, .25);
+
+  width: 136px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  padding: 14px 13px 12px;
+  border: 1px solid rgba(255, 255, 255, .07);
+  background: #141416;
+  position: relative;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, background .25s, opacity .25s;
+  opacity: .75;
+  scroll-snap-align: start;
+}
+
+.card:hover:not(.ghost) {
+  transform: translateY(-2px);
+  opacity: .95;
+}
+
+.card:active:not(.ghost) {
+  transform: scale(.97);
+}
+
+/* Budget-Karte braucht extra Padding-Bottom für den Fortschrittsbalken */
+.cardBudget {
+  padding-bottom: 18px;
+}
+
+/* ---------- Fixkosten-Zustände ---------- */
+
+.open {
+  background: var(--bg-card-open);
+  border-color: var(--border-red);
+}
+
+.paid {
+  background: var(--bg-card-paid);
+  border-color: var(--border-teal);
+}
+
+/* ---------- Einnahmen-Zustände ---------- */
+
+.expected {
+  background: #0D1A16;
+  border-color: rgba(62, 207, 175, .18);
+}
+
+.received {
+  background: var(--bg-card-paid);
+  border-color: var(--border-teal);
+}
+
+/* ---------- Budget-Zustände ---------- */
+
+.running {
+  background: var(--bg-card-open);
+  border-color: var(--border-red);
+}
+
+.over {
+  background: var(--bg-card-over);
+  border-color: rgba(255, 69, 58, .35);
+}
+
+/* ---------- Ghost (alle Typen) ---------- */
+
+.ghost {
+  background: var(--bg-card-ghost);
+  border-color: rgba(255, 255, 255, .10);
+  opacity: .65;
+  cursor: default;
+}
+
+.ghost:hover {
+  transform: none;
+  opacity: .65;
+}
+
+/* ---------- Card Internal Layout ---------- */
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Karten-Typ-Label (FIXKOSTEN | EINNAHMEN | BUDGET) */
+.cardLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.open .cardLabel,
+.running .cardLabel { color: rgba(255, 99, 88, .45); }
+
+.paid .cardLabel { color: rgba(62, 207, 175, .45); }
+
+.expected .cardLabel,
+.received .cardLabel { color: rgba(62, 207, 175, .45); }
+
+.over .cardLabel { color: rgba(255, 99, 88, .45); }
+
+.ghost .cardLabel { color: rgba(255, 255, 255, .25); }
+
+/* Icon-Container (18×18px, circle) */
+.icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconOpen {
+  background: var(--icon-open-bg);
+  border: 1px solid var(--icon-open-border);
+}
+
+.iconPaid {
+  background: var(--icon-paid-bg);
+  border: 1px solid var(--icon-paid-border);
+}
+
+.iconGhost {
+  background: var(--icon-ghost-bg);
+  border: 1px solid var(--icon-ghost-border);
+}
+
+.iconOver {
+  background: var(--icon-over-bg);
+  border: 1px solid var(--icon-over-border);
+}
+
+.iconExpected {
+  background: var(--icon-expected-bg);
+  border: 1px solid var(--icon-expected-border);
+}
+
+/* Kartenname */
+.cardName {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -.2px;
+  margin-bottom: 2px;
+}
+
+.open .cardName,
+.running .cardName,
+.expected .cardName { color: var(--text-muted); }
+
+.paid .cardName,
+.received .cardName,
+.over .cardName { color: var(--text-primary); }
+
+.ghost .cardName { color: rgba(255, 255, 255, .35); }
+
+/* Kartenbetrag */
+.cardAmount {
+  font-size: 22px;
+  font-weight: 200;
+  letter-spacing: -1.2px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.open .cardAmount,
+.running .cardAmount,
+.expected .cardAmount { color: var(--text-muted); }
+
+.paid .cardAmount,
+.received .cardAmount { color: var(--text-primary); }
+
+.over .cardAmount { color: var(--color-red); }
+
+.ghost .cardAmount { color: rgba(255, 255, 255, .32); }
+
+/* Status-Label (OFFEN | BEZAHLT | LAUFEND | …) */
+.stateLabel {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+.open .stateLabel { color: rgba(255, 99, 88, .38); }
+.paid .stateLabel { color: rgba(62, 207, 175, .45); }
+.expected .stateLabel { color: rgba(62, 207, 175, .45); }
+.received .stateLabel { color: rgba(62, 207, 175, .55); }
+.running .stateLabel { color: rgba(255, 255, 255, .2); }
+.over .stateLabel { color: rgba(255, 69, 58, .55); }
+.ghost .stateLabel { color: var(--text-ghost); }
+
+/* Restbudget (Budget-Karte) */
+.restAmount {
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.restAmountPos { color: var(--rest-pos); }
+.restAmountNeg { color: var(--rest-neg); }
+
+/* Meta-Zeile (Dot + Attribution-Text) */
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.metaDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.metaDotIch { background: var(--meta-dot-ich); }
+.metaDotGem { background: var(--meta-dot-gem); }
+
+.metaText {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--meta-text-color);
+  letter-spacing: .2px;
+}
+
+/* Fortschrittsbalken (Budget, position: absolute Unterkante) */
+.progressWrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, .04);
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  transition: width .3s ease;
+}
+
+.progressBarNorm { background: var(--progress-norm); }
+.progressBarOver { background: var(--progress-over); }
+
+/* ---------- Interaktions-Layer (CardInteractive) ---------- */
+
+/* Unsichtbarer Klick-Catcher über der gesamten Karte */
+.tapButton {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* ⋯-Icon oben links */
+.contextIcon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, background .15s;
+  color: rgba(255, 255, 255, .55);
+  font-size: 14px;
+  line-height: 1;
+  z-index: 2;
+  padding: 0;
+}
+
+.card:hover .contextIcon {
+  opacity: 1;
+}
+
+.contextIcon:hover {
+  background: rgba(255, 255, 255, .07);
+}
+
+/* Kontext-Menü (position: fixed via JS) */
+.contextMenu {
+  background: rgba(28, 28, 30, .92);
+  border: .5px solid rgba(255, 255, 255, .1);
+  border-radius: 10px;
+  padding: 4px 0;
+  min-width: 160px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+  z-index: 200;
+}
+
+.contextMenuItem {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .75);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background .1s;
+  font-family: inherit;
+}
+
+.contextMenuItem:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+/* ---------- Betrag-anpassen-Overlay ---------- */
+
+.overlayBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.overlayModal {
+  background: rgba(28, 28, 30, .96);
+  border: .5px solid rgba(255, 255, 255, .1);
+  border-radius: 16px;
+  padding: 20px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+}
+
+.overlayTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .8);
+}
+
+.overlayCurrentValue {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .35);
+}
+
+.overlayInputWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overlayInputLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, .35);
+}
+
+.overlayInput {
+  width: 100%;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-weight: 300;
+  color: #ffffff;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color .15s;
+  font-family: inherit;
+}
+
+.overlayInput:focus {
+  border-color: rgba(255, 255, 255, .3);
+}
+
+.overlayInputError {
+  border-color: rgba(255, 69, 58, .45) !important;
+}
+
+.overlayInputErrorText {
+  font-size: 11px;
+  color: rgba(255, 69, 58, .85);
+}
+
+.overlayActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.overlayActionButton {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .05);
+  color: rgba(255, 255, 255, .7);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.overlayActionButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .09);
+  color: rgba(255, 255, 255, .9);
+}
+
+.overlayActionButton:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.overlayCancelButton {
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  transition: color .15s;
+  text-align: center;
+  font-family: inherit;
+}
+
+.overlayCancelButton:hover {
+  color: rgba(255, 255, 255, .55);
+}
