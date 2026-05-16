@@ -96,5 +96,18 @@ export async function applyAdjustmentForward(formData: FormData) {
 
   if (error) throw error;
 
+  // K4: Clear adjusted_amount for the effective_month itself. "Dauerhaft ab
+  // diesem Monat" means the current month is part of the new baseline, so a
+  // prior "Nur dieser Monat"-adjustment for exactly this month must not
+  // override the new plan. Tap-status (manually_paid) and adjustments for
+  // OTHER months stay untouched. UPDATE on missing row = 0 rows, no error.
+  const { error: clearError } = await supabase
+    .from("card_monthly_states")
+    .update({ adjusted_amount: null })
+    .eq("card_id", cardId)
+    .eq("month", month);
+
+  if (clearError) throw clearError;
+
   revalidatePath("/", "page");
 }
