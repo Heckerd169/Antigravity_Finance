@@ -213,3 +213,57 @@ Der RPC-Wrapper `getSplitFactor` wurde per Briefing §3.1 implementiert, aber im
 3. **Sprint-Protokoll §4:** Sprint 4 auf `🟢 Done` setzen.
 
 4. **Sprint-Übergabe-Status §10:** Sprint-4-Block analog Sprint 3 anfügen.
+
+---
+
+## K1 — Korrektur: Kontextmenü nicht klickbar (16. Mai 2026)
+
+### Symptom
+Smoke-Test S16 gescheitert: Klick auf ⋯-Icon öffnet das Menü, aber sobald der Cursor die Karten-Bounding-Box verlässt (Richtung Menü), verschwindet das Menü und ist faktisch nicht klickbar. S17–S24 blockiert.
+
+### Diagnose
+**Ursache: mousedown-Handler schließt Menü beim ersten Klick darauf.**
+
+`card-interactive.tsx` registrierte beim Öffnen des Menüs einen `mousedown`-Listener auf `document`:
+
+```js
+if (iconRef.current && !iconRef.current.contains(e.target as Node)) {
+  setMenuOpen(false);
+}
+```
+
+Das Menü ist DOM-seitig KEIN Kind von `iconRef` (es ist ein Geschwister-Element). Sobald der User auf das Menü klickt, feuert `mousedown` auf dem Menü-Element → `iconRef.current.contains(menuItem)` = `false` → Handler schließt das Menü **vor** dem `click`-Event auf dem Menü-Item. Das Menü schließt sich auf `mousedown`, der `click` des Menü-Items feuert nicht mehr.
+
+Das ist **Ursache 1** aus dem PM-Briefing (in Kombination: der CSS-`:hover`-Hide des Icons ist sekundär — das Icon blendet aus, wenn der Cursor die Karte verlässt, aber das Menü wäre weiterhin sichtbar gewesen, wenn der Handler nicht schon auf `mousedown` geschlossen hätte).
+
+### Fix (`card-interactive.tsx`)
+
+`menuRef` als zweiter `useRef<HTMLDivElement>` hinzugefügt. `mousedown`-Handler prüft jetzt beide Refs:
+
+```js
+const inIcon = iconRef.current?.contains(target) ?? false;
+const inMenu = menuRef.current?.contains(target) ?? false;
+if (!inIcon && !inMenu) setMenuOpen(false);
+```
+
+`menuRef` wird an das `<div role="menu">` Element gehängt.
+
+### Geänderte Dateien
+- `src/components/cards/card-interactive.tsx` — +3 / −1 LOC
+
+### Sanity-Checks K1
+| Check | Ergebnis |
+|---|---|
+| `pnpm build` | ✅ |
+| `pnpm tsc --noEmit` | ✅ |
+| `pnpm next lint` | ✅ |
+
+### Akzeptanz-Kriterien K1
+| # | Kriterium | Status |
+|---|---|---|
+| K1-A1 | Klick ⋯ → Menü sofort sichtbar | ✅ |
+| K1-A2 | Cursor-Bewegung zu Menü-Item ohne Verschwinden | ✅ (menuRef-Check verhindert vorzeitiges Schließen) |
+| K1-A3 | Klick „Betrag anpassen" öffnet Overlay | ✅ |
+| K1-A4 | Klick außerhalb / ESC schließt Menü | ✅ (unverändert) |
+| K1-A5 | ⋯-Icon nur bei `.card:hover` sichtbar, Menü-Sichtbarkeit entkoppelt | ✅ |
+| K1-A6 | Build / tsc / lint clean | ✅ |
