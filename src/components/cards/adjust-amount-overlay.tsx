@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { applyAdjustmentThisMonth, applyAdjustmentForward } from "./actions";
 import styles from "./cards.module.css";
 
@@ -99,7 +100,10 @@ export function AdjustAmountOverlay({
     onClose();
   }
 
-  return (
+  // Portal nach document.body, damit Backdrop (position: fixed; inset: 0) und
+  // Modal (width: 300px) nicht vom .card-Vorfahren (transform on hover →
+  // Containing-Block-Hijack) eingesperrt werden. K3-Fix, gleiche Mechanik wie K2.
+  return createPortal(
     <div
       className={styles.overlayBackdrop}
       onClick={(e) => {
@@ -168,6 +172,7 @@ export function AdjustAmountOverlay({
           Abbrechen
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
