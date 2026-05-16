@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toggleCardTap } from "./actions";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
 import styles from "./cards.module.css";
@@ -92,8 +93,10 @@ export function CardInteractive({
         ···
       </button>
 
-      {/* Kontext-Menü (position: fixed — verhindert Clipping durch Carousel overflow) */}
-      {menuOpen && menuPos && (
+      {/* Kontext-Menü (Portal nach document.body — entkoppelt vom .card-DOM,
+          damit transform/opacity am Vorfahren keinen neuen Containing-Block
+          bzw. Stacking-Context für das position:fixed-Menü erzeugt. K2-Fix.) */}
+      {menuOpen && menuPos && createPortal(
         <div
           ref={menuRef}
           className={styles.contextMenu}
@@ -108,7 +111,8 @@ export function CardInteractive({
           >
             Betrag anpassen
           </button>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Betrag-anpassen-Overlay */}
