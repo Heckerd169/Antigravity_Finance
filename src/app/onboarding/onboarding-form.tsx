@@ -40,7 +40,12 @@ export function OnboardingForm() {
   useEffect(() => {
     const reqId = ++lastIchReq.current;
     const t = window.setTimeout(async () => {
-      const result = await estimateNetMonthly(supabase, { grossAnnual, taxClass, taxYear });
+      let result: number | null = null;
+      try {
+        result = await estimateNetMonthly(supabase, { grossAnnual, taxClass, taxYear });
+      } catch {
+        // DB-Error → kein Schätzwert, UI bleibt stabil (LL-2-Fix)
+      }
       if (reqId !== lastIchReq.current) return;
       setEstimate(result);
       // K2 (Briefing-Korrektur): bei manualOverride bleibt der Estimate nur
@@ -63,7 +68,12 @@ export function OnboardingForm() {
     const reqId = ++lastPartnerReq.current;
     // Steuerklasse Partner: V1 erfasst keine Partner-Steuerklasse — Fallback 1.
     const t = window.setTimeout(async () => {
-      const result = await estimateNetMonthly(supabase, { grossAnnual: partnerGross, taxClass: 1, taxYear });
+      let result: number | null = null;
+      try {
+        result = await estimateNetMonthly(supabase, { grossAnnual: partnerGross, taxClass: 1, taxYear });
+      } catch {
+        // DB-Error → kein Schätzwert (LL-2-Fix)
+      }
       if (reqId !== lastPartnerReq.current) return;
       setPartnerEstimate(result);
       // K2: manualOverride sperrt das Schreiben ins Feld.
