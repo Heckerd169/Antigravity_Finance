@@ -267,3 +267,94 @@ if (!inIcon && !inMenu) setMenuOpen(false);
 | K1-A4 | Klick außerhalb / ESC schließt Menü | ✅ (unverändert) |
 | K1-A5 | ⋯-Icon nur bei `.card:hover` sichtbar, Menü-Sichtbarkeit entkoppelt | ✅ |
 | K1-A6 | Build / tsc / lint clean | ✅ |
+
+---
+
+## K2 — Korrektur: Kontextmenü nicht sofort sichtbar nach Klick (16. Mai 2026)
+
+### Symptom (User-Report S16, Rest nach K1)
+Nach K1 war das Verschwinden-bei-Hover behoben (Symptom B), aber das eigentliche
+Erscheinen-Problem blieb: Klick auf ⋯ öffnete das Menü zustands-seitig, **visuell**
+erschien es aber erst, sobald der Cursor die Karte verließ. Der State war korrekt
+(`menuOpen=true`, `menuPos` gesetzt), das DOM-Element war gerendert — aber das
+Menü tauchte nicht an der berechneten Position auf, solange die Karte gehovered
+blieb.
+
+### Diagnose
+**Ursache: `transform: translateY(-2px)` am `.card:hover`-Selector erzeugt
+einen neuen *containing block* für `position: fixed`-Descendants.**
+
+CSS-Spec ([CSS Transforms §6](https://www.w3.org/TR/css-transforms-1/#transform-rendering)):
+Jeder Vorfahre mit `transform ≠ none` wird selbst zum Containing Block für alle
+seine Descendants — auch für `position: fixed`. Das ist der bekannte
+„fixed-is-not-actually-fixed"-Gotcha.
+
+Ablauf des Bugs:
+1. User klickt ⋯-Icon. `getBoundingClientRect()` liest **Viewport**-Koordinaten
+   vom Icon. State wird gesetzt, Menü rendert als DOM-Kind von `.card`.
+2. `.card` ist im Moment des Klicks gehovered → hat `transform: translateY(-2px)`
+   aktiv → wirkt als neuer Containing Block für die Menü-`position: fixed`.
+3. Das Menü mit `top: <viewport-Y>; left: <viewport-X>` interpretiert die Werte
+   jetzt **relativ zur (transformierten) Karte**, nicht zum Viewport → landet
+   off-screen oder hinter Nachbar-Karten.
+4. Cursor verlässt die Karte → `:hover` weg → kein Transform → Containing Block
+   wieder Viewport → Menü erscheint an den ursprünglich gerechneten Koordinaten.
+
+**Bonus-Verstärker:** `.card` hat `opacity: .75/.95` → schafft zusätzlich einen
+neuen Stacking Context, der `z-index: 200` des Menüs lokal zur Karte scoped.
+
+Korrekte Zuordnung zur PM-Hypothesen-Liste: Mischung aus **#3 (Stacking-Context)**
+und **#2 (DOM-Hierarchie)**, präziser CSS-Containing-Block-Hijack durch
+`transform`-on-hover.
+
+### Fix (`card-interactive.tsx`)
+
+`createPortal` aus `react-dom`. Das Menü wird nach `document.body` portaliert —
+außerhalb des `.card`-DOM. Damit hat es keinen transformierten/opazen Vorfahren
+mehr, `position: fixed` verhält sich spec-konform relativ zum Viewport,
+`z-index: 200` ist global gültig.
+
+```tsx
+import { createPortal } from "react-dom";
+
+// ... in JSX:
+{menuOpen && menuPos && createPortal(
+  <div ref={menuRef} className={styles.contextMenu}
+       style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
+       role="menu">
+    <button … onClick={handleAdjustClick}>Betrag anpassen</button>
+  </div>,
+  document.body
+)}
+```
+
+**Bewusst nicht angefasst:**
+- K1-mousedown-Handler unverändert. `menuRef.current?.contains(target)` arbeitet
+  weiter korrekt — Portal-Children sind im DOM, die Ref hängt am tatsächlichen
+  Element. K1-A6 verifiziert.
+- `.card:hover` `translateY(-2px)` bleibt erhalten (Design-Doku §7 Visual-Spec).
+- E2-Architektur (`position: fixed` via `getBoundingClientRect()`) bleibt
+  erhalten. Geändert wird nur das DOM-Mount-Ziel.
+- Kein SSR-Hydration-Problem: `card-interactive.tsx` ist `"use client"`, Portal
+  wird nur ausgeführt wenn `menuOpen && menuPos` — beides initial false/null,
+  also erst nach Client-Side User-Interaction.
+
+### Geänderte Dateien
+- `src/components/cards/card-interactive.tsx` — +7 / −3 LOC
+
+### Sanity-Checks K2
+| Check | Ergebnis |
+|---|---|
+| `pnpm build` | ✅ Compiled successfully, route / size 15.6 kB |
+| `pnpm tsc --noEmit` | ✅ No errors found |
+| `pnpm next lint` | ✅ No ESLint warnings or errors |
+
+### Akzeptanz-Kriterien K2
+| # | Kriterium | Status |
+|---|---|---|
+| K2-A1 | Klick auf ⋯ → Menü sofort sichtbar, ohne Maus-Bewegung | ✅ Portal entkoppelt Menü vom Card-Containing-Block |
+| K2-A2 | Menü bleibt sichtbar bei Cursor-Bewegung Icon ↔ Menu ↔ off-card | ✅ K1-mousedown-Logik unverändert + Portal-DOM |
+| K2-A3 | Schließen nur via Outside-Click oder ESC | ✅ unverändert |
+| K2-A4 | ⋯-Icon weiterhin nur auf `.card:hover` sichtbar | ✅ CSS unverändert (`.card:hover .contextIcon { opacity: 1 }`) |
+| K2-A5 | Build / tsc / lint clean | ✅ alle drei |
+| K2-A6 | K1-Verhalten unverändert: `mousedown` auf Menü-Item schließt nicht prematurly | ✅ menuRef.current zeigt weiter aufs Portal-DOM-Element |
