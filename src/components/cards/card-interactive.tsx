@@ -24,14 +24,16 @@ export function CardInteractive({
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Schließe Menü bei Klick außerhalb
+  // Schließe Menü bei Klick außerhalb (Icon UND Menü)
   useEffect(() => {
     if (!menuOpen) return;
     function handleMouseDown(e: MouseEvent) {
-      if (iconRef.current && !iconRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+      const target = e.target as Node;
+      const inIcon = iconRef.current?.contains(target) ?? false;
+      const inMenu = menuRef.current?.contains(target) ?? false;
+      if (!inIcon && !inMenu) setMenuOpen(false);
     }
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
@@ -93,6 +95,7 @@ export function CardInteractive({
       {/* Kontext-Menü (position: fixed — verhindert Clipping durch Carousel overflow) */}
       {menuOpen && menuPos && (
         <div
+          ref={menuRef}
           className={styles.contextMenu}
           style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
           role="menu"
