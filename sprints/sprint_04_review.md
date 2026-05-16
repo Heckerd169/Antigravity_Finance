@@ -358,3 +358,89 @@ import { createPortal } from "react-dom";
 | K2-A4 | ⋯-Icon weiterhin nur auf `.card:hover` sichtbar | ✅ CSS unverändert (`.card:hover .contextIcon { opacity: 1 }`) |
 | K2-A5 | Build / tsc / lint clean | ✅ alle drei |
 | K2-A6 | K1-Verhalten unverändert: `mousedown` auf Menü-Item schließt nicht prematurly | ✅ menuRef.current zeigt weiter aufs Portal-DOM-Element |
+
+---
+
+## K3 — Korrektur: AdjustAmountOverlay zusammengequetscht auf Karten-Breite (16. Mai 2026)
+
+### Symptom (User-Report nach K2)
+Kontext-Menü öffnete nach K2 wie erwartet. Klick auf „Betrag anpassen" öffnete das
+Overlay — aber dieses war auf ~136px Breite zusammengequetscht (Karten-Breite):
+Input „0,00" nur ~80px breit, Buttons „Nur dieser Monat" / „Dauerhaft ab diesem
+Monat" auf 3–4 Zeilen umgebrochen, Backdrop-Blur überdeckte nur die Netflix-Karte
+statt des ganzen Viewports.
+
+### Diagnose
+**Exakt derselbe Containing-Block-Hijack wie K2, nur für die zweite
+position:fixed-Komponente.**
+
+`AdjustAmountOverlay` wurde in `card-interactive.tsx` als JSX-Kind innerhalb des
+`.card`-DOM-Baums gerendert (nicht portal'd). Das Overlay nutzt intern:
+
+```css
+.overlayBackdrop { position: fixed; inset: 0; }   /* sollte Viewport ausfüllen */
+.overlayModal    { width: 300px; }                /* sollte 300px breit sein */
+```
+
+Da `.card:hover` `transform: translateY(-2px)` setzt, wird die Karte zum
+Containing Block für `position: fixed`-Descendants. Folge:
+1. **Backdrop** mit `inset: 0` füllt nicht den Viewport, sondern nur die Karte
+   (~136 × 190 px) — sichtbar in Screenshot #3 als Blur-Effekt **nur** auf der
+   Netflix-Karte, nicht auf den anderen.
+2. **Modal** mit `width: 300px` ist Flex-Kind des kleinen Backdrops mit
+   `align-items: center; justify-content: center`. Flex-Default
+   `flex-shrink: 1` quetscht den Modal auf die verfügbare Breite (~136 px)
+   zusammen — daher die mehrzeiligen Button-Texte und das schmale Input.
+
+Wurde in K2 übersehen, weil S17–S24 (Overlay-Smoke-Tests) durch den K1-Blocker
+nie ausgeführt wurden — der Bug saß die ganze Zeit latent.
+
+### Fix (`adjust-amount-overlay.tsx`)
+
+`createPortal` aus `react-dom`. Das gesamte Overlay-JSX wird nach `document.body`
+portaliert — Self-Portaling, der Caller (`card-interactive.tsx`) muss nichts
+ändern.
+
+```tsx
+import { createPortal } from "react-dom";
+
+return createPortal(
+  <div className={styles.overlayBackdrop} onClick={...}>
+    <div className={styles.overlayModal} onClick={...}>
+      {/* … Title / Input / Buttons / Cancel … */}
+    </div>
+  </div>,
+  document.body
+);
+```
+
+**Bewusst nicht angefasst:**
+- Kein CSS verändert. `width: 300px` am Modal, `inset: 0` am Backdrop, alle
+  Flex-Defaults bleiben — sie funktionieren spec-konform, sobald der Containing
+  Block wieder der Viewport ist.
+- ESC-Handler, Backdrop-Click-Close, `inputRef.focus()`, `useTransition` —
+  alles unverändert. Refs hängen am Portal-DOM, funktionieren wie zuvor.
+- Konsistenz mit K2-Pattern (Portal nach `document.body`, kein dedicated
+  portal-root-Div in `layout.tsx` nötig).
+- Kein SSR-Hydration-Problem: `"use client"`, Overlay rendert nur wenn
+  `overlayOpen=true` (initial false), also erst nach Client-Interaktion.
+
+### Geänderte Dateien
+- `src/components/cards/adjust-amount-overlay.tsx` — +7 / −2 LOC
+
+### Sanity-Checks K3
+| Check | Ergebnis |
+|---|---|
+| `pnpm build` | ✅ Compiled successfully, route / size 15.6 kB (unverändert) |
+| `pnpm tsc --noEmit` | ✅ No errors found |
+| `pnpm next lint` | ✅ No ESLint warnings or errors |
+
+### Akzeptanz-Kriterien K3
+| # | Kriterium | Status |
+|---|---|---|
+| K3-A1 | Overlay rendert mit `width: 300px` Modal, Input/Buttons nicht gequetscht | ✅ Portal hebt Containing-Block-Hijack auf |
+| K3-A2 | Backdrop-Blur überdeckt den ganzen Viewport, nicht nur eine Karte | ✅ `inset: 0` ist jetzt viewport-relativ |
+| K3-A3 | Button-Texte „Nur dieser Monat" / „Dauerhaft ab diesem Monat" einzeilig | ✅ Modal hat ausreichend Breite |
+| K3-A4 | ESC, Backdrop-Click-Close, Abbrechen-Button: unverändert | ✅ Handler-Logik unverändert |
+| K3-A5 | Build / tsc / lint clean | ✅ alle drei |
+| K3-A6 | K1- und K2-Verhalten unverändert | ✅ Menu-Portal + mousedown-Outside-Click unverändert |
