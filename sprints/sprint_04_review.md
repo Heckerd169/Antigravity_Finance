@@ -444,3 +444,82 @@ return createPortal(
 | K3-A4 | ESC, Backdrop-Click-Close, Abbrechen-Button: unverändert | ✅ Handler-Logik unverändert |
 | K3-A5 | Build / tsc / lint clean | ✅ alle drei |
 | K3-A6 | K1- und K2-Verhalten unverändert | ✅ Menu-Portal + mousedown-Outside-Click unverändert |
+
+---
+
+## K4 — Korrektur: „Dauerhaft ab diesem Monat" cleart current-month Adjustment (16. Mai 2026)
+
+> **Nummerierungs-Hinweis:** PM-Briefing für diese Korrektur wurde als „K3"
+> formuliert. Da K3 bereits für den Overlay-Portal-Fix vergeben war, wird
+> diese als K4 geführt — Inhalt und Akzeptanz-Kriterien identisch zur
+> PM-Spec, nur das Label ist verschoben.
+
+### Symptom (User-Report Smoke-Test S20)
+Szenario im Mai 2026, Netflix-Karte (Plan = 17,99 €):
+
+1. „Nur dieser Monat = 20 €" → `card_monthly_states.adjusted_amount = 20` →
+   Karte zeigt 20 € ✅
+2. „Dauerhaft ab diesem Monat = 25 €" → INSERT
+   `card_planned_timeline (effective_month=Mai, planned_amount=25)` →
+   Karte zeigt weiterhin **20 €** ❌ (User-Erwartung + Briefing-S20: 25 €)
+
+### Diagnose
+**Korrekt per §4-Prioritätskette, falsch als User-Intent:**
+
+`calculate_card_amount_for_month` priorisiert
+`adjusted_amount > plan > 0`. Der „Nur dieser Monat = 20 €"-Eintrag in
+`card_monthly_states` aus Schritt 1 gewinnt nach Schritt 2 weiterhin gegen
+den neuen Plan von 25 €.
+
+**PM-Entscheidung:** Das ist unerwünschtes Verhalten bei späterer expliziter
+User-Aktion. „Dauerhaft ab diesem Monat" bedeutet semantisch: der aktuelle
+Monat ist Teil der neuen Baseline → bestehende „Nur dieser Monat"-Anpassung
+für genau diesen Monat muss geclearet werden. Die §4-Prioritätskette
+beschreibt Runtime-Logik, nicht Write-Semantik bei späteren expliziten
+User-Aktionen.
+
+### Fix (`actions.ts` — `applyAdjustmentForward`)
+
+Nach dem erfolgreichen `card_planned_timeline`-UPSERT, vor `revalidatePath`:
+
+```ts
+const { error: clearError } = await supabase
+  .from("card_monthly_states")
+  .update({ adjusted_amount: null })
+  .eq("card_id", cardId)
+  .eq("month", month);
+
+if (clearError) throw clearError;
+```
+
+**Eigenschaften der Implementierung:**
+- Nur `adjusted_amount` wird auf NULL gesetzt — **nicht** die Row gelöscht.
+  `manually_paid` (Tap-Status) bleibt unberührt.
+- Nur für `effective_month` selbst — zukünftige Monats-Anpassungen unverändert.
+- Wenn keine Row für diesen Monat existiert: UPDATE trifft 0 Rows,
+  kein Error, kein INSERT nötig (Postgres semantik: UPDATE … WHERE … ohne
+  Treffer ist no-op, nicht Fehler).
+- Eine `revalidatePath`-Aktion am Ende für beide Writes.
+- `toggleCardTap` und `applyAdjustmentThisMonth` bleiben unangetastet
+  (out-of-scope).
+
+### Geänderte Dateien
+- `src/components/cards/actions.ts` — +13 / −0 LOC
+
+### Sanity-Checks K4
+| Check | Ergebnis |
+|---|---|
+| `pnpm build` | ✅ Compiled successfully, route / size 15.6 kB (unverändert) |
+| `pnpm tsc --noEmit` | ✅ No errors found |
+| `pnpm next lint` | ✅ No ESLint warnings or errors |
+
+### Akzeptanz-Kriterien K4
+| # | Kriterium | Status |
+|---|---|---|
+| K4-A1 | S20: Nach „Dauerhaft = 25" (folgend auf „Nur dieser Monat = 20") zeigt Karte 25 € | ⏳ User-Smoke pending |
+| K4-A2 | S22: Soft-Navigation Juni → Mai zurück zeigt 25 € (Forward-Inheritance ab Mai) | ⏳ User-Smoke pending |
+| K4-A3 | S23: Soft-Navigation April zeigt 17,99 € (alter Plan vor Mai unberührt) | ⏳ User-Smoke pending |
+| K4-A4 | Sequenz „Dauerhaft = 25" → „Nur dieser Monat = 100" → „Dauerhaft = 25" zeigt 25 € (nicht 100 €) | ⏳ User-Smoke pending |
+| K4-A5 | DB: `SELECT adjusted_amount FROM card_monthly_states WHERE card_id=<netflix> AND month='2026-05-01'` → NULL nach K4-Trigger | ⏳ User-DB-Verifikation pending |
+| K4-A6 | Tap-Status bleibt: vor K4 `manually_paid=true`, dann „Dauerhaft" anwenden → `manually_paid` weiterhin true | ⏳ User-DB-Verifikation pending |
+| K4-A7 | Build / tsc / lint clean | ✅ alle drei |
