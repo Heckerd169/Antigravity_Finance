@@ -56,7 +56,11 @@ function ChevronRightIcon() {
   );
 }
 
-export function HeaderTimeline({ targetMonth, currentMonth }: HeaderTimelineProps) {
+export function HeaderTimeline({
+  targetMonth,
+  currentMonth,
+  unassignedPreviousMonthCount,
+}: HeaderTimelineProps) {
   const prevYm = addMonths(targetMonth, -1);
   const nextYm = addMonths(targetMonth, 1);
 
@@ -68,18 +72,23 @@ export function HeaderTimeline({ targetMonth, currentMonth }: HeaderTimelineProp
 
   const variant = pillVariantFor(targetMonth, currentMonth);
 
+  // Sprint 5: dynamisches linke-Flanke-Sublabel.
+  // Boundary-Defense: an MIN_NAVIGABLE_YM ist `prevYm` undefiniert → Count = 0.
+  const safeCount = prevDisabled ? 0 : Math.max(0, unassignedPreviousMonthCount | 0);
+  const leftSublabel =
+    safeCount === 0
+      ? "Alles erledigt"
+      : safeCount === 1
+      ? "1 Fragment offen"
+      : `${safeCount} Fragmente offen`;
+
   return (
     <div className={styles.headerTimeline}>
       <Flank
         side="left"
         ym={prevYm}
         disabled={prevDisabled}
-        sublabel={
-          // TODO Sprint 7: ersetzen durch COUNT auf fragments_with_status
-          // WHERE status='UNASSIGNED' für targetMonth − 1; Label-Varianten:
-          // "Alles erledigt" | "1 Fragment offen" | "[N] Fragmente offen"
-          "Alles erledigt"
-        }
+        sublabel={leftSublabel}
       />
 
       <div className={styles.center}>

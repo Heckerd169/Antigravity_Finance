@@ -4,28 +4,45 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toggleCardTap } from "./actions";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
+import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
+import type { LinkedFragmentRef } from "./cards.types";
 import styles from "./cards.module.css";
 
 type CardInteractiveProps = {
   cardId: string;
+  cardName: string;
   month: string; // "YYYY-MM-01"
   currentAmount: number;
   tappable: boolean;
   ariaLabel: string;
+  /** Sprint 5: im aktuellen Monat verknüpfte Fragmente. Wenn länger 0,
+   *  erscheint die Menüoption „Verknüpfte Fragmente". */
+  linkedFragments?: LinkedFragmentRef[];
 };
 
 export function CardInteractive({
   cardId,
+  cardName,
   month,
   currentAmount,
   tappable,
   ariaLabel,
+  linkedFragments,
 }: CardInteractiveProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const hasLinkedFragments = (linkedFragments?.length ?? 0) > 0;
+
+  // LL-5: Wenn der Monat wechselt (month-Prop ändert sich) oder die letzte
+  // Verknüpfung weg ist, das Linked-Overlay schließen — sonst zeigt es Daten
+  // aus dem vorherigen Monat / Zustand.
+  useEffect(() => {
+    setLinkedOverlayOpen(false);
+  }, [month, hasLinkedFragments]);
 
   // Schließe Menü bei Klick außerhalb (Icon UND Menü)
   useEffect(() => {
@@ -70,6 +87,12 @@ export function CardInteractive({
     setOverlayOpen(true);
   }
 
+  function handleLinkedClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setLinkedOverlayOpen(true);
+  }
+
   return (
     <>
       {/* Unsichtbarer Tap-Button über die gesamte Karte (nur für tappable Karten) */}
@@ -103,6 +126,16 @@ export function CardInteractive({
           style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
           role="menu"
         >
+          {hasLinkedFragments && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleLinkedClick}
+              role="menuitem"
+            >
+              Verknüpfte Fragmente
+            </button>
+          )}
           <button
             type="button"
             className={styles.contextMenuItem}
@@ -122,6 +155,15 @@ export function CardInteractive({
           month={month}
           currentAmount={currentAmount}
           onClose={() => setOverlayOpen(false)}
+        />
+      )}
+
+      {/* Verknüpfte-Fragmente-Overlay (Sprint 5) */}
+      {linkedOverlayOpen && hasLinkedFragments && (
+        <LinkedFragmentsOverlay
+          cardName={cardName}
+          linkedFragments={linkedFragments!}
+          onClose={() => setLinkedOverlayOpen(false)}
         />
       )}
     </>

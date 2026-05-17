@@ -169,9 +169,11 @@ function FixedCostCard({
       {!isGhost && (
         <CardInteractive
           cardId={card.id}
+          cardName={card.name}
           month={month}
           currentAmount={card.amount}
           tappable
+          linkedFragments={card.linkedFragments}
           ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
         />
       )}
@@ -224,9 +226,11 @@ function IncomeCard({
       {!isGhost && (
         <CardInteractive
           cardId={card.id}
+          cardName={card.name}
           month={month}
           currentAmount={card.amount}
           tappable
+          linkedFragments={card.linkedFragments}
           ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
         />
       )}
@@ -314,9 +318,11 @@ function BudgetCard({
       {!isGhost && (
         <CardInteractive
           cardId={card.id}
+          cardName={card.name}
           month={month}
           currentAmount={card.amount}
           tappable={false}
+          linkedFragments={card.linkedFragments}
           ariaLabel={card.name}
         />
       )}

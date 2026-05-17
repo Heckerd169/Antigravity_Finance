@@ -1,0 +1,717 @@
+/* ======================================================
+   Antigravity Finance — Untere Interaktionszone
+   Design-Doku §8 + §11 + §3 Tokens
+   Komponenten-lokale RGBA-Werte am .interactionZone-Root.
+   ====================================================== */
+
+.interactionZone {
+  /* Lokale Custom-Properties */
+  --portal-border: rgba(255, 255, 255, .12);
+  --portal-border-drag: rgba(62, 207, 175, .5);
+  --portal-bg-drag: rgba(62, 207, 175, .04);
+  --portal-border-processing: rgba(255, 255, 255, .2);
+  --portal-bg-processing: #141416;
+  --portal-border-success: rgba(62, 207, 175, .5);
+  --portal-bg-success: rgba(62, 207, 175, .06);
+  --portal-border-error: rgba(255, 69, 58, .4);
+  --portal-bg-error: rgba(255, 69, 58, .04);
+  --portal-default-bg: #111113;
+  --chev-bg: rgba(255, 255, 255, .03);
+  --chev-bg-hover: rgba(255, 255, 255, .07);
+  --chev-border: rgba(255, 255, 255, .08);
+  --chev-color: rgba(255, 255, 255, .3);
+  --chev-color-hover: rgba(255, 255, 255, .7);
+  --frag-amount-pos: #3ECFAF;
+  --frag-amount-neg: #FF453A;
+  --frag-bg: #141416;
+  --frag-border: rgba(255, 255, 255, .07);
+  --frag-desc: rgba(255, 255, 255, .28);
+  --frag-date: rgba(255, 255, 255, .15);
+  --slot-border: rgba(255, 255, 255, .12);
+  --slot-border-hover: rgba(62, 207, 175, .35);
+  --slot-border-drag: rgba(62, 207, 175, .5);
+  --slot-bg-drag: rgba(62, 207, 175, .04);
+  --slot-icon: rgba(255, 255, 255, .15);
+  --slot-label: rgba(255, 255, 255, .25);
+  --zone-label: rgba(255, 255, 255, .18);
+  --overlay-modal-bg: rgba(28, 28, 30, .96);
+  --overlay-modal-border: rgba(255, 255, 255, .1);
+  --overlay-backdrop: rgba(0, 0, 0, .55);
+
+  display: grid;
+  grid-template-columns: 180px 1fr 220px;
+  gap: 14px;
+  align-items: stretch;
+  margin-top: 24px;
+}
+
+.zoneLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--zone-label);
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   PORTAL
+   ============================================================ */
+
+.portalColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal {
+  position: relative;
+  border-radius: 12px;
+  border: 1px dashed var(--portal-border);
+  background: var(--portal-default-bg);
+  padding: 24px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  min-height: 180px;
+  transition: border-color .2s, background .2s;
+  overflow: hidden;
+}
+
+.portalDragOver {
+  border-color: var(--portal-border-drag);
+  background: var(--portal-bg-drag);
+  cursor: default;
+}
+
+.portalProcessing {
+  border-color: var(--portal-border-processing);
+  background: var(--portal-bg-processing);
+  cursor: default;
+}
+
+.portalSuccess {
+  border-color: var(--portal-border-success);
+  background: var(--portal-bg-success);
+  cursor: default;
+}
+
+.portalError {
+  border-color: var(--portal-border-error);
+  background: var(--portal-bg-error);
+  cursor: default;
+}
+
+.portalIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.portalDragOver .portalIcon {
+  background: rgba(62, 207, 175, .1);
+  border-color: rgba(62, 207, 175, .3);
+}
+
+.portalSuccess .portalIcon {
+  background: rgba(62, 207, 175, .12);
+  border-color: rgba(62, 207, 175, .4);
+}
+
+.portalError .portalIcon {
+  background: rgba(255, 69, 58, .08);
+  border-color: rgba(255, 69, 58, .25);
+}
+
+.portalLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .25);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.portalDragOver .portalLabel,
+.portalSuccess .portalLabel {
+  color: rgba(62, 207, 175, .7);
+}
+
+.portalError .portalLabel {
+  color: rgba(255, 99, 88, .8);
+}
+
+.portalSubLabel {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, .13);
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 8px;
+}
+
+.portalError .portalSubLabel {
+  color: rgba(255, 99, 88, .45);
+}
+
+@keyframes portalPulse {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+.portalPulsing {
+  animation: portalPulse 1.2s ease-in-out infinite;
+}
+
+.portalFileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.portalFileInputLocked {
+  pointer-events: none;
+}
+
+/* Dev-Buttons unterhalb des Portals — NODE_ENV-gated, im Production-Bundle eliminiert */
+.devButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.devButton {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: .5px solid rgba(255, 255, 255, .08);
+  background: rgba(255, 255, 255, .04);
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s, color .15s;
+  font-family: inherit;
+}
+
+.devButton:hover {
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .6);
+}
+
+.devButtonLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .18);
+  margin-bottom: 4px;
+  margin-top: 6px;
+}
+
+/* ============================================================
+   CAROUSEL (Wrapper für Sprint-4-Karten + Empty-Slot + Chevrons)
+   ============================================================ */
+
+.carouselColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.carouselRow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chevButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--chev-border);
+  background: var(--chev-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s, color .15s;
+  color: var(--chev-color);
+  align-self: center;
+  padding: 0;
+}
+
+.chevButton:hover:not(:disabled) {
+  background: var(--chev-bg-hover);
+  border-color: rgba(255, 255, 255, .16);
+  color: var(--chev-color-hover);
+}
+
+.chevButton:disabled {
+  opacity: .25;
+  cursor: not-allowed;
+}
+
+.cardsViewport {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  padding: 4px 0 16px;
+}
+
+.cardsViewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* DropTargetWrapper umhüllt jede Sprint-4-Card. display:contents würde die
+   Card aus dem Flex-Layout reißen — stattdessen flex-shrink:0 + relativer
+   Wrapper, damit das Outline-Visual greift. */
+.dropTargetWrap {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 14px;
+  transition: outline .12s;
+}
+
+.dropTargetActive {
+  outline: 1.5px solid rgba(62, 207, 175, .55);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   EMPTY SLOT
+   ============================================================ */
+
+.emptySlot {
+  flex-shrink: 0;
+  width: 136px;
+  border-radius: 14px;
+  border: 1px dashed var(--slot-border);
+  background: rgba(255, 255, 255, .02);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  /* gleiche Höhe wie reguläre Karten (durch Padding + Inhalt) */
+  min-height: 168px;
+  padding: 14px 13px 12px;
+}
+
+.emptySlot:hover:not(.emptySlotDrag) {
+  border-color: var(--slot-border-hover);
+}
+
+.emptySlotDrag {
+  border-color: var(--slot-border-drag);
+  background: var(--slot-bg-drag);
+}
+
+.slotPlus {
+  font-size: 22px;
+  color: var(--slot-icon);
+  font-weight: 200;
+  line-height: 1;
+}
+
+.slotLabel {
+  font-size: 10px;
+  color: var(--slot-label);
+  text-align: center;
+  letter-spacing: .3px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   FRAGMENT STACK
+   ============================================================ */
+
+.fragmentColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fragmentStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+
+.fragmentStack::-webkit-scrollbar {
+  width: 3px;
+}
+
+.fragmentStack::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fragmentStack::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .1);
+  border-radius: 2px;
+}
+
+.fragmentCard {
+  background: var(--frag-bg);
+  border: 1px solid var(--frag-border);
+  border-radius: 10px;
+  padding: 11px 12px;
+  cursor: grab;
+  transition: transform .15s, opacity .15s, box-shadow .15s;
+  opacity: .72;
+}
+
+.fragmentCard:hover {
+  transform: translateY(-1px);
+  opacity: .92;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+}
+
+.fragmentCard:active {
+  cursor: grabbing;
+  transform: scale(.97);
+}
+
+.fragmentCardDragging {
+  opacity: .35;
+  transform: scale(.97);
+}
+
+.fragmentCardLocked {
+  opacity: .22;
+  cursor: default;
+  pointer-events: none;
+}
+
+.fragmentAmount {
+  font-size: 16px;
+  font-weight: 200;
+  letter-spacing: -.8px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.fragmentAmountNeg {
+  color: var(--frag-amount-neg);
+}
+
+.fragmentAmountPos {
+  color: var(--frag-amount-pos);
+}
+
+.fragmentDesc {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--frag-desc);
+  letter-spacing: .1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.fragmentDate {
+  font-size: 9px;
+  color: var(--frag-date);
+}
+
+/* ============================================================
+   OVERLAYS (Recurrence-Popup, Direct-Create-Overlay,
+   Linked-Fragments-Overlay) — Position via React-Portal nach body
+   ============================================================ */
+
+.overlayBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay-backdrop);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.overlayModal {
+  background: var(--overlay-modal-bg);
+  border: .5px solid var(--overlay-modal-border);
+  border-radius: 16px;
+  padding: 22px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.overlayWide {
+  width: 360px;
+}
+
+.overlayTitle {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .9px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .25);
+}
+
+.overlaySubtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -.2px;
+}
+
+.overlayMetaLine {
+  font-size: 12px;
+  color: rgba(255, 255, 255, .35);
+  font-variant-numeric: tabular-nums;
+}
+
+.overlayFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.overlayFieldLabel {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .25);
+}
+
+.overlayInput {
+  width: 100%;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 300;
+  color: #ffffff;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color .15s;
+  font-family: inherit;
+}
+
+.overlayInput:focus {
+  border-color: rgba(255, 255, 255, .3);
+}
+
+.overlayInputReadOnly {
+  background: rgba(255, 255, 255, .02);
+  color: rgba(255, 255, 255, .55);
+  cursor: default;
+}
+
+.overlayInputError {
+  border-color: rgba(255, 69, 58, .45);
+}
+
+.overlayInputErrorText {
+  font-size: 11px;
+  color: rgba(255, 69, 58, .85);
+}
+
+.optionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.optionGridSingle {
+  grid-template-columns: 1fr;
+}
+
+.optionButton {
+  background: rgba(255, 255, 255, .05);
+  border: .5px solid rgba(255, 255, 255, .08);
+  border-radius: 9px;
+  padding: 9px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .45);
+  cursor: pointer;
+  text-align: center;
+  transition: background .15s, color .15s, border-color .15s;
+  font-family: inherit;
+}
+
+.optionButton:hover {
+  background: rgba(62, 207, 175, .1);
+  border-color: rgba(62, 207, 175, .3);
+  color: #3ECFAF;
+}
+
+.optionButtonSelected {
+  background: rgba(62, 207, 175, .12);
+  border-color: rgba(62, 207, 175, .4);
+  color: #3ECFAF;
+}
+
+.overlayActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.primaryButton {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(62, 207, 175, .35);
+  background: rgba(62, 207, 175, .12);
+  color: #3ECFAF;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  text-align: center;
+  font-family: inherit;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: rgba(62, 207, 175, .18);
+  border-color: rgba(62, 207, 175, .55);
+}
+
+.primaryButton:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: .5px solid rgba(255, 255, 255, .07);
+  background: transparent;
+  color: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  transition: color .15s, background .15s;
+  text-align: center;
+  font-family: inherit;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .05);
+  color: rgba(255, 255, 255, .55);
+}
+
+.cancelButton:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.errorText {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 69, 58, .85);
+  padding: 8px 10px;
+  background: rgba(255, 69, 58, .06);
+  border: .5px solid rgba(255, 69, 58, .2);
+  border-radius: 8px;
+}
+
+/* Linked-Fragments-Liste */
+.linkedList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.linkedRow {
+  background: #141416;
+  border: .5px solid rgba(255, 255, 255, .08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.linkedRowInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.linkedRowAmount {
+  font-size: 15px;
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: -.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.linkedRowDesc {
+  font-size: 10px;
+  color: rgba(255, 255, 255, .28);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linkedRowDate {
+  font-size: 9px;
+  color: rgba(255, 255, 255, .18);
+  margin-top: 2px;
+}
+
+.ejectButton {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 69, 58, .08);
+  border: .5px solid rgba(255, 69, 58, .2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.ejectButton:hover:not(:disabled) {
+  background: rgba(255, 69, 58, .18);
+}
+
+.ejectButton:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}

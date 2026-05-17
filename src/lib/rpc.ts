@@ -108,3 +108,68 @@ export async function getSplitFactor(
   if (error) throw error;
   return data ?? 1.0;
 }
+
+// ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────
+
+export type CreateCardDirectArgs = {
+  name: string;
+  type: Database["public"]["Enums"]["card_type"];
+  attribution: Database["public"]["Enums"]["card_attribution"];
+  frequency: Database["public"]["Enums"]["card_frequency"];
+  firstActiveMonth: string; // "YYYY-MM-01"
+  lastActiveMonth: string | null; // null außer bei ONCE
+  plannedAmount: number;
+};
+
+/** Atomic: INSERT cards + INSERT card_planned_timeline in einer Transaktion.
+ *  Notwendig wegen DEFERRED-Constraint cards_assert_initial_plan. Returns Card-ID.
+ *  Wirft bei DB-Validation-Fehlern (Name leer, Betrag ≤ 0, ONCE-Konflikt, etc.). */
+export async function createCardDirect(
+  client: AppSupabaseClient,
+  args: CreateCardDirectArgs,
+): Promise<string> {
+  // p_last_active_month akzeptiert NULL (offene Laufzeit für nicht-ONCE-Karten).
+  // Die generierten Typen markieren ihn als `string`, aber die Funktion hat
+  // DEFAULT NULL — Cast zu unknown nötig, um null durchzureichen.
+  const rpcArgs = {
+    p_name: args.name,
+    p_type: args.type,
+    p_attribution: args.attribution,
+    p_frequency: args.frequency,
+    p_first_active_month: args.firstActiveMonth,
+    p_last_active_month: args.lastActiveMonth as unknown as string,
+    p_planned_amount: args.plannedAmount,
+  };
+  const { data, error } = await client.rpc("create_card_direct", rpcArgs);
+  if (error) throw error;
+  if (!data) throw new Error("create_card_direct returned no card id");
+  return data;
+}
+
+export type CreateCardFromFragmentArgs = CreateCardDirectArgs & {
+  fragmentId: string;
+  linkMonth: string; // "YYYY-MM-01" — Periodenabgrenzung gemäß Konflikt 4 §7
+};
+
+/** Atomic: INSERT cards + INSERT card_planned_timeline + INSERT card_fragment_links. */
+export async function createCardFromFragment(
+  client: AppSupabaseClient,
+  args: CreateCardFromFragmentArgs,
+): Promise<string> {
+  // Gleiches NULL-Verhalten für p_last_active_month wie in createCardDirect.
+  const rpcArgs = {
+    p_name: args.name,
+    p_type: args.type,
+    p_attribution: args.attribution,
+    p_frequency: args.frequency,
+    p_first_active_month: args.firstActiveMonth,
+    p_last_active_month: args.lastActiveMonth as unknown as string,
+    p_planned_amount: args.plannedAmount,
+    p_fragment_id: args.fragmentId,
+    p_link_month: args.linkMonth,
+  };
+  const { data, error } = await client.rpc("create_card_from_fragment", rpcArgs);
+  if (error) throw error;
+  if (!data) throw new Error("create_card_from_fragment returned no card id");
+  return data;
+}

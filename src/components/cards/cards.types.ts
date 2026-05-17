@@ -8,6 +8,14 @@ export type FixedCostState = "open" | "paid" | "ghost";
 export type IncomeState = "expected" | "received" | "ghost";
 export type BudgetState = "running" | "over" | "ghost";
 
+/** Sprint 5: im targetMonth verknüpftes Fragment (für „Verknüpfte Fragmente"-Menüoption). */
+export type LinkedFragmentRef = {
+  fragmentId: string;
+  amount: number;
+  description: string;
+  transactionDate: string;
+};
+
 export type EnrichedCard = {
   id: string;
   name: string;
@@ -20,4 +28,6 @@ export type EnrichedCard = {
   planned: number | null;
   manuallyPaid: boolean;
   adjustedAmount: number | null;
+  /** Sprint 5: im aktuellen Monat zugeordnete Fragmente. */
+  linkedFragments?: LinkedFragmentRef[];
 };
