@@ -1,21 +1,10 @@
 import type { EnrichedCard, FixedCostState, IncomeState, BudgetState } from "./cards.types";
 import { CardInteractive } from "./card-interactive";
+import { formatAmount, formatEuro } from "@/lib/format";
 import styles from "./cards.module.css";
 
-// ── Euro-Formatter (de-DE, 0–2 Dezimalstellen) ──────────────────────────────
-
-const EUR_FMT = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-
-function formatAmount(n: number): string {
-  return EUR_FMT.format(n);
-}
-
-function formatEuro(n: number): string {
-  return EUR_FMT.format(n) + " €";
-}
+/* K1.6: 2-Dezimalen-Formatter zentral in `lib/format.ts`. Ring (Sprint 2)
+ * nutzt sein eigenes Format (0 Dezimalen + NBSP), bleibt unverändert. */
 
 // ── Icon-SVGs ────────────────────────────────────────────────────────────────
 
@@ -108,6 +97,16 @@ function resolveBudgetState(card: EnrichedCard, isFuture: boolean): BudgetState 
   if (isFuture) return "ghost";
   const plan = card.planned ?? 0;
   return card.amount > plan ? "over" : "running";
+}
+
+/** K1.2: Summe der absoluten Beträge aller verknüpften Fragmente. Bildet die
+ *  „verbrauchte" Realität ab — getrennt von `card.amount`, das per §4.3.3
+ *  Priorisierung (Realität → Anpassung → Plan) auch den Plan zurückgeben kann. */
+function sumLinkedFragments(card: EnrichedCard): number {
+  return (card.linkedFragments ?? []).reduce(
+    (acc, f) => acc + Math.abs(f.amount),
+    0,
+  );
 }
 
 // ── Sub-Components ───────────────────────────────────────────────────────────
@@ -253,15 +252,19 @@ function BudgetCard({
   const isGhost = state === "ghost";
   const plan = card.planned ?? 0;
 
-  // Fortschrittsbalken + Restbudget (§3.7 Budget-Math)
-  const overshoot = Math.max(0, card.amount - plan);
-  const consumed = Math.min(card.amount, plan);
+  // K1.2: „Spent" = Summe der Fragmentwerte, separat vom Anzeige-Betrag.
+  // Design-Doku §4.3.3: bei keinen Fragmenten und keinem Tap zeigt die Karte
+  // den Plan an (card.amount === plan). Das ist KEIN „verbraucht" — der
+  // Fortschrittsbalken und „Noch X € frei" basieren auf realen Fragmenten.
+  const spent = sumLinkedFragments(card);
+  const overshoot = Math.max(0, spent - plan);
+  const consumed = Math.min(spent, plan);
   const barWidth = state === "over" ? 100 : plan > 0 ? (consumed / plan) * 100 : 0;
 
   const restText =
     state === "over"
       ? `−${formatAmount(overshoot)} € über Plan`
-      : `Noch ${formatAmount(plan - card.amount)} € frei`;
+      : `Noch ${formatAmount(Math.max(0, plan - spent))} € frei`;
 
   const iconEl =
     state === "over" ? (

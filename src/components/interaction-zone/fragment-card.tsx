@@ -1,14 +1,10 @@
 import type { FragmentRow } from "./interaction-zone.types";
+import { formatAmount } from "@/lib/format";
 import styles from "./interaction-zone.module.css";
 
 /* Server-Component: ein Fragment-Item ohne Event-Handler. Drag-Start wird
    per Event-Delegation in der FragmentStack-Client-Component gefangen
    (Lookup über `data-fragment-id`-Attribut). */
-
-const EUR_FMT = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
   day: "numeric",
@@ -36,7 +32,7 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
       aria-label={
         isLocked
           ? `${fragment.description} (zugeordnet)`
-          : `${fragment.description}, ${sign}${EUR_FMT.format(abs)} Euro`
+          : `${fragment.description}, ${sign}${formatAmount(abs)} Euro`
       }
     >
       <div
@@ -45,7 +41,7 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
         }`}
       >
         {sign}
-        {EUR_FMT.format(abs)} €
+        {formatAmount(abs)} €
       </div>
       <div className={styles.fragmentDesc} title={fragment.description}>
         {fragment.description}

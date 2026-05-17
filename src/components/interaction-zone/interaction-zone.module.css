@@ -289,7 +289,9 @@
 }
 
 .dropTargetActive {
-  outline: 1.5px solid rgba(62, 207, 175, .55);
+  /* K1.3: Grau-Ton statt Teal — dezenter, von Card-Status-Farben unterscheidbar.
+   * Token in tokens.css definiert. */
+  outline: 2px solid var(--outline-drop);
   outline-offset: 2px;
 }
 
@@ -300,6 +302,7 @@
 .emptySlot {
   flex-shrink: 0;
   width: 136px;
+  box-sizing: border-box;
   border-radius: 14px;
   border: 1px dashed var(--slot-border);
   background: rgba(255, 255, 255, .02);
@@ -310,8 +313,8 @@
   gap: 6px;
   cursor: pointer;
   transition: border-color .15s, background .15s;
-  /* gleiche Höhe wie reguläre Karten (durch Padding + Inhalt) */
-  min-height: 168px;
+  /* Identische Höhe wie .card (K1.1) */
+  min-height: 170px;
   padding: 14px 13px 12px;
 }
 
@@ -438,8 +441,11 @@
 }
 
 /* ============================================================
-   OVERLAYS (Recurrence-Popup, Direct-Create-Overlay,
-   Linked-Fragments-Overlay) — Position via React-Portal nach body
+   OVERLAYS — Sprint 5
+   Visuell harmonisiert auf das Sprint-4-Adjust-Amount-Pattern (K1.5).
+   Werte aus cards.module.css 1:1 übernommen; CSS-Modul-Scoping verhindert
+   Cross-Sprint-Klassen-Konflikte, der gerenderte Visual ist deckungsgleich.
+   Position via React-Portal nach document.body (LL-6).
    ============================================================ */
 
 .overlayBackdrop {
@@ -458,11 +464,11 @@
   background: var(--overlay-modal-bg);
   border: .5px solid var(--overlay-modal-border);
   border-radius: 16px;
-  padding: 22px;
-  width: 320px;
+  padding: 20px;
+  width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
   max-height: 80vh;
   overflow-y: auto;
@@ -473,18 +479,16 @@
 }
 
 .overlayTitle {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .9px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .25);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .8);
 }
 
 .overlaySubtitle {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #ffffff;
-  letter-spacing: -.2px;
+  color: rgba(255, 255, 255, .65);
+  letter-spacing: -.1px;
 }
 
 .overlayMetaLine {
@@ -496,15 +500,13 @@
 .overlayFieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .overlayFieldLabel {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: .8px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .25);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, .35);
 }
 
 .overlayInput {
@@ -553,79 +555,78 @@
 
 .optionButton {
   background: rgba(255, 255, 255, .05);
-  border: .5px solid rgba(255, 255, 255, .08);
-  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
   padding: 9px 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .45);
+  color: rgba(255, 255, 255, .55);
   cursor: pointer;
   text-align: center;
   transition: background .15s, color .15s, border-color .15s;
   font-family: inherit;
 }
 
-.optionButton:hover {
-  background: rgba(62, 207, 175, .1);
-  border-color: rgba(62, 207, 175, .3);
-  color: #3ECFAF;
+.optionButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .09);
+  color: rgba(255, 255, 255, .9);
 }
 
 .optionButtonSelected {
-  background: rgba(62, 207, 175, .12);
-  border-color: rgba(62, 207, 175, .4);
-  color: #3ECFAF;
+  background: rgba(62, 207, 175, .1);
+  border-color: rgba(62, 207, 175, .35);
+  color: rgba(62, 207, 175, .9);
 }
 
 .overlayActions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 4px;
 }
 
+/* Primary-Action-Button — visuell identisch zu Sprint-4 .overlayActionButton */
 .primaryButton {
   width: 100%;
   padding: 10px 16px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid rgba(62, 207, 175, .35);
-  background: rgba(62, 207, 175, .12);
-  color: #3ECFAF;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .05);
+  color: rgba(255, 255, 255, .7);
   cursor: pointer;
-  transition: background .15s, border-color .15s;
+  transition: background .15s, color .15s;
   text-align: center;
   font-family: inherit;
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: rgba(62, 207, 175, .18);
-  border-color: rgba(62, 207, 175, .55);
+  background: rgba(255, 255, 255, .09);
+  color: rgba(255, 255, 255, .9);
 }
 
 .primaryButton:disabled {
-  opacity: .35;
+  opacity: .4;
   cursor: not-allowed;
 }
 
+/* Cancel — identisch zu Sprint-4 .overlayCancelButton */
 .cancelButton {
   width: 100%;
   padding: 9px 16px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 500;
-  border: .5px solid rgba(255, 255, 255, .07);
+  border: none;
   background: transparent;
   color: rgba(255, 255, 255, .3);
   cursor: pointer;
-  transition: color .15s, background .15s;
+  transition: color .15s;
   text-align: center;
   font-family: inherit;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .05);
   color: rgba(255, 255, 255, .55);
 }
 
@@ -648,11 +649,11 @@
 .linkedList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .linkedRow {
-  background: #141416;
+  background: rgba(255, 255, 255, .04);
   border: .5px solid rgba(255, 255, 255, .08);
   border-radius: 10px;
   padding: 10px 12px;
@@ -692,23 +693,25 @@
   margin-top: 2px;
 }
 
+/* Eject-Button (×-Icon) — kreis-rot, klar trifftbar (K1.5c) */
 .ejectButton {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: rgba(255, 69, 58, .08);
-  border: .5px solid rgba(255, 69, 58, .2);
+  border: 1px solid rgba(255, 69, 58, .22);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background .15s;
+  transition: background .15s, border-color .15s;
   flex-shrink: 0;
   padding: 0;
 }
 
 .ejectButton:hover:not(:disabled) {
   background: rgba(255, 69, 58, .18);
+  border-color: rgba(255, 69, 58, .4);
 }
 
 .ejectButton:disabled {

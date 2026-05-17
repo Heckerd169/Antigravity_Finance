@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { formatMonthLabel } from "@/lib/months";
+import { formatAmount } from "@/lib/format";
 import {
   ATTRIBUTION_OPTIONS,
   FREQUENCY_OPTIONS,
@@ -14,11 +15,6 @@ import {
 } from "./interaction-zone.types";
 import { createCardFromFragmentAction } from "./actions";
 import styles from "./interaction-zone.module.css";
-
-const EUR_FMT = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
   day: "numeric",
@@ -112,9 +108,10 @@ export function RecurrencePopup({
         <div id="recur-title" className={styles.overlayTitle}>
           Neue Karte erstellen
         </div>
-        <div className={styles.overlaySubtitle}>{fragment.description}</div>
+        {/* K1.5a: einzeilige Kopf-Sub-Zeile <Beschr> · <Betrag> · <Datum>. */}
         <div className={styles.overlayMetaLine}>
-          {EUR_FMT.format(plannedAmount)} € · {formatDateLong(fragment.transaction_date)}
+          {fragment.description} · {formatAmount(plannedAmount)} € ·{" "}
+          {formatDateLong(fragment.transaction_date)}
         </div>
 
         <div className={styles.overlayFieldGroup}>

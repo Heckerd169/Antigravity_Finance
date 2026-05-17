@@ -2,14 +2,10 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { formatAmount } from "@/lib/format";
 import type { LinkedFragmentRow } from "./interaction-zone.types";
 import { ejectFragment } from "./actions";
 import styles from "./interaction-zone.module.css";
-
-const EUR_FMT = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
   day: "numeric",
@@ -95,7 +91,7 @@ export function LinkedFragmentsOverlay({
                 <div className={styles.linkedRowInfo}>
                   <div className={styles.linkedRowAmount}>
                     {sign}
-                    {EUR_FMT.format(abs)} €
+                    {formatAmount(abs)} €
                   </div>
                   <div className={styles.linkedRowDesc} title={row.description}>
                     {row.description}
@@ -112,11 +108,11 @@ export function LinkedFragmentsOverlay({
                   aria-label={`${row.description} zurücksetzen`}
                   title="Fragment zurücksetzen"
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                     <path
-                      d="M3 3l6 6M9 3l-6 6"
-                      stroke="rgba(255,69,58,.85)"
-                      strokeWidth="1.4"
+                      d="M3.5 3.5l7 7M10.5 3.5l-7 7"
+                      stroke="rgba(255,69,58,.9)"
+                      strokeWidth="1.5"
                       strokeLinecap="round"
                     />
                   </svg>
