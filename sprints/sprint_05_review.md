@@ -377,3 +377,181 @@ fragments_with_status → 7 Zeilen total
 
 Keine zusätzliche Test-Daten-Anreicherung im Sprint 5 nötig. Smoke-Tests
 können direkt auf dieser Basis laufen.
+
+---
+
+## 12. K1 — Korrektur-Iteration (17. Mai 2026, nach Browser-Smoke)
+
+Browser-Smoke deckte 6 Befunde auf; K1.4 (Tanken-Realität-Anzeige) ist
+diagnostisch noch offen und wird in einem separaten Append behandelt. K1.1
+bis K1.6 (ohne K1.4) sind hier ausgeführt.
+
+### 12.1 Commit
+
+```
+7e68b19 fix: K1 corrections (sprint 5) — card heights, budget rest amount,
+        drop outline, overlay visuals, 2-decimal euro
+
+src/components/cards/adjust-amount-overlay.tsx     |   8 +-
+src/components/cards/card.tsx                      |  39 ++++----
+src/components/cards/cards.module.css              |   5 +
+src/components/interaction-zone/fragment-card.tsx  |  10 +-
+src/components/interaction-zone/interaction-zone.module.css | 103 ++++++-------
+src/components/interaction-zone/linked-fragments-overlay.tsx |  16 ++--
+src/components/interaction-zone/recurrence-popup.tsx        |  11 +--
+src/lib/format.ts                                  |  24 +++++  (NEU)
+src/styles/tokens.css                              |   4 +
+```
+
+9 Files, +120 / −98 LOC.
+
+### 12.2 Was wurde gefixt
+
+**K1.1 Karten-Höhen vereinheitlicht.** Auf `.card` in
+[cards.module.css](src/components/cards/cards.module.css) `box-sizing:
+border-box` + `min-height: 170px`. Empty-Slot in
+[interaction-zone.module.css](src/components/interaction-zone/interaction-zone.module.css)
+analog auf `170px` + `box-sizing: border-box` angeglichen (vorher 168). Budget-
+Karte rendert natürlich nahe an 165px Content → min-height liefert nahtlose
+Box-Höhe. Fixkosten/Einnahmen rendern bei ~140px Content + 30px Whitespace
+am Boden — Pattern entspricht Briefing-Vorgabe „leerer Sub-Text-Container".
+Keine Logik-Änderung an Sprint 4.
+
+**K1.2 Budget „Noch X € frei" korrekt berechnet.** Wurzelursache:
+`card.amount` ist der Anzeige-Betrag aus der RPC-Prioritätskette
+(Realität → Anpassung → Plan). Für eine Budget-Karte ohne Fragmente liefert
+das RPC `amount = plan` (per §4.3.3). Die alte Formel
+`Noch ${plan - card.amount} € frei` ergab dann fälschlich `Noch 0 € frei`.
+Fix: separate Größe `spent = Σ|f.amount|` aus `card.linkedFragments`,
+verwendet in Restbudget UND Progress-Bar:
+
+```ts
+const spent = sumLinkedFragments(card);
+const overshoot = Math.max(0, spent - plan);
+const consumed = Math.min(spent, plan);
+const barWidth = state === "over" ? 100 : plan > 0 ? (consumed / plan) * 100 : 0;
+const restText = state === "over"
+  ? `−${formatAmount(overshoot)} € über Plan`
+  : `Noch ${formatAmount(Math.max(0, plan - spent))} € frei`;
+```
+
+State-Resolution (`card.amount > plan`) bleibt unverändert — funktioniert für
+alle 5 Zustände aus §4.3.3 weiterhin korrekt.
+
+**K1.3 Drop-Outline grau statt teal.** Neuer Token `--outline-drop:
+rgba(255, 255, 255, 0.35)` in [tokens.css](src/styles/tokens.css).
+`.dropTargetActive` konsumiert ihn, Outline-Stärke von 1.5px auf 2px erhöht
+für deutlichere Sichtbarkeit. **Empty-Slot-Drop-Visual bleibt
+teal-getönt** — bewusst nicht angefasst: Card-Drop = Merge mit existierender
+Entität (dezent), Empty-Slot-Drop = Neu-Anlage (positive Affordanz). Falls
+PM auch hier Konsistenz wünscht, ist es eine 2-Zeilen-CSS-Änderung in
+`interaction-zone.module.css` (`.slot-border-drag` + `.slot-bg-drag`).
+
+**K1.5 Overlay-Visual harmonisiert.** Alle Klassen in
+`interaction-zone.module.css` auf Sprint-4-`adjust-amount-overlay`-Werte
+gezogen. Konkrete Änderungen:
+
+| Property | Vorher (Sprint 5) | Nachher (Sprint 4 Pattern) |
+|---|---|---|
+| Modal width | 320px | 300px |
+| Modal padding | 22px | 20px |
+| Modal gap | 12px | 14px |
+| Title: size/weight/color | 11px/600/.25 + uppercase | 14px/500/.8 |
+| FieldLabel: size/weight | 9px/600 uppercase .25 | 11px/500 .35 |
+| primaryButton: color/border | teal-getönt | white-on-soft (.7 color, .1 border) |
+| optionButton: hover | teal-fill | white-fill (Selected bleibt teal-tönung tonal abgemildert) |
+| ejectButton: size/svg | 26×26 / 12px svg / 1.4 stroke | 28×28 / 14px svg / 1.5 stroke |
+| linkedRow bg | `#141416` | `rgba(255,255,255,.04)` |
+
+CSS-Modul-Scoping macht die Cross-Sprint-Konsistenz ohne Class-Extraktion
+möglich — Pixel-für-Pixel-Match ohne Refactor am Sprint-4-File.
+Adjust-Amount-Overlay selbst wurde NICHT visuell verändert (nur Migration auf
+`lib/format.ts` für K1.6).
+
+Strukturelle Änderungen in den Overlay-TSXs:
+- `recurrence-popup.tsx`: ehemaliger zweizeiliger Header (Subtitle + MetaLine)
+  zusammengeführt zu einer einzeiligen Sub-Zeile via `overlayMetaLine`:
+  `<Beschreibung> · <Betrag> · <Datum>`.
+- `linked-fragments-overlay.tsx`: cardName bleibt als `overlaySubtitle`
+  (jetzt 13px 500 .65 — prominent zwischen Title und MetaLine).
+- `direct-create-overlay.tsx`: strukturell unverändert (kein Fragment-Bezug).
+
+**K1.6 Geld-Formatierung zentralisiert.** Neue Datei
+[src/lib/format.ts](src/lib/format.ts) mit zwei Helpern:
+
+```ts
+export function formatAmount(amount: number): string { … }    // "28,90"
+export function formatEuro(amount: number): string { … }      // "28,90 €"
+```
+
+Beide nutzen `Intl.NumberFormat("de-DE", { minimumFractionDigits: 2,
+maximumFractionDigits: 2 })`. Migration:
+- [card.tsx](src/components/cards/card.tsx): lokales EUR_FMT mit
+  `minimumFractionDigits: 0` entfernt — **das war die Bug-Wurzel** für die
+  Anzeige „28,9 €" statt „28,90 €".
+- [adjust-amount-overlay.tsx](src/components/cards/adjust-amount-overlay.tsx),
+  [fragment-card.tsx](src/components/interaction-zone/fragment-card.tsx),
+  [recurrence-popup.tsx](src/components/interaction-zone/recurrence-popup.tsx),
+  [linked-fragments-overlay.tsx](src/components/interaction-zone/linked-fragments-overlay.tsx):
+  lokale Formatter durch Shared-Import ersetzt.
+- [singularity-ring/index.tsx](src/components/singularity-ring/index.tsx)
+  **bleibt unangetastet** — Ring nutzt eigenes Format (0 Dezimalen + NBSP).
+  Sprint-2-Pattern unverändert.
+
+### 12.3 Sanity-Checks (K1)
+
+```
+pnpm exec tsc --noEmit       → TypeScript: No errors found
+pnpm exec next lint          → ✔ No ESLint warnings or errors
+pnpm build                   → ✓ Compiled successfully
+                               Route / → 21.1 kB / First Load 173 kB
+                               (identisch zur Sprint-5-Initial-Implementation)
+rg "touchstart|swipe|longpress" .next/static/chunks/app/   → 0
+rg "Fehler: Format|Zustand simulieren" .next/static/chunks/app/ → 0
+```
+
+`git status` clean nach `fix:`-Commit.
+
+### 12.4 Überarbeitete Smoke-Test-Erwartungen (nach K1)
+
+| # | Aktion | Erwartung |
+|---|---|---|
+| S1 | Karussell bei `?month=2026-05` | Alle 8 Slots (7 Karten + Empty-Slot) auf **gleicher Höhe** (170px); Beträge wie „1.200,00 €", „110,00 €" |
+| S8 | Empty-Slot klicken → Overlay öffnen | Modal 300px, Title „Neue Karte erstellen" in 14px white-.8, Inputs neutral, primaryButton („Karte erstellen") weiß-auf-grau (nicht teal), cancelButton transparent-dim |
+| S10 | „Testkarte" Budget mit Plan 50 €, Submit | Karte zeigt „50,00 € · LAUFEND · Noch 50,00 € frei", Fortschrittsbalken **leer** (0% statt 100%) |
+| S13a | Drag-Over Aral-Fragment über Tanken-Karte | **Grauer** Outline 2px (nicht teal) |
+| S13b | Drop → Karte zeigt 42,80 € | Betrag mit 2 Dezimalen |
+| S15 | Tanken ⋯-Menü | „Verknüpfte Fragmente" + „Betrag anpassen" |
+| S16 | „Verknüpfte Fragmente" klicken | Detail-Overlay, Modal 300px, Eject-× größer (28×28), 14px-Icon |
+| S18 | Stadtwerke auf Empty-Slot droppen | Recurrence-Popup öffnet sich: Sub-Zeile in einer Zeile „Stadtwerke Frankfurt Wasser · 28,90 € · 12. Mai 2026" |
+| S19 | Wasser Submit | Karte „Wasser" zeigt 28,90 € mit 2 Dezimalen |
+
+### 12.5 Offene Fragen aus K1
+
+- **OQ-K1-1 — Empty-Slot Drop-Visual:** Card-Drop = grau (K1.3); Empty-Slot-
+  Drop ist weiterhin teal-getönt. Bewusste semantische Differenz oder soll
+  auch hier auf grau? 2 Zeilen CSS-Änderung im selben Modul.
+- **OQ-K1-2 — Fixkosten-Whitespace am Boden:** 170px-min-height ergibt
+  ~30px Whitespace zwischen `.cardMeta` und Card-Bodenkante in Fixkosten/
+  Einnahmen-Karten. Alternative: cardMeta via `margin-top: auto` an die
+  Bodenkante ankern (Flex-Column). Würde Fixkosten/Einnahmen visuell
+  „voller" wirken lassen — aber Budget hat dann auch eine Lücke zwischen
+  restAmount und cardMeta. Pragmatik-Frage; im aktuellen Stand top-aligned
+  und das ist mE OK.
+- **OQ-K1-3 — Eject-Icon-Trefferbarkeit:** 28×28 + 14px-SVG ist klar
+  klickbar. Falls visuell zu wuchtig nebeneinander mit den linkedRowAmounts
+  (15px), kann ich auf 26×26 + 13px-SVG zurückgehen. Vorher-Wert (26+12)
+  war mE etwas zu klein.
+
+### 12.6 Vorschläge zur CLAUDE.md-Aktualisierung (Append zu §10 / Sprint 5)
+
+- Hinweis auf K1.2-Wurzel (Display-Amount vs. Spent-Amount bei
+  Budget-Karten): Bei zukünftigen Cards/Card-Calc-Komponenten daran denken,
+  dass §4.3.3 die Anzeige zwischen Plan und Realität priorisiert — wer einen
+  „verbraucht"-Wert braucht, muss ihn aus den Fragmenten selber summieren.
+  Eventuell als LL-9 mit der Pseudo-Regel „RPC liefert Display, nicht
+  Components-of-Display" dokumentieren.
+- K1.6-Hinweis: `Intl.NumberFormat` mit `minimumFractionDigits: 0` ist
+  immer eine Falle, wenn Geld dargestellt wird — Trailing Zeros werden
+  gestrippt („28,9" statt „28,90"). Zentraler Helper `lib/format.ts`
+  vermeidet das Problem.
