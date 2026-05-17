@@ -1,3 +1,15 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+[WARN] 1 deprecated subdependencies found: node-domexception@1.0.0
+Packages: +24
+++++++++++++++++++++++++
+Progress: resolved 24, reused 4, downloaded 20, added 24, done
+[WARN] Failed to create bin at /Users/dominikhecker/Library/pnpm/store/v11/links/@/supabase/2.98.2/4da9bcbdc305e968532e6ffaf60794a38b26636e75014f5a87cef21d80364abf/node_modules/supabase/node_modules/.bin/supabase. ENOENT: no such file or directory, open '/Users/dominikhecker/Library/pnpm/store/v11/links/@/supabase/2.98.2/4da9bcbdc305e968532e6ffaf60794a38b26636e75014f5a87cef21d80364abf/node_modules/supabase/bin/supabase'
+.../node_modules/supabase postinstall$ node scripts/postinstall.js
+.../node_modules/supabase postinstall: Downloading https://github.com/supabase/cli/releases/download/v2.98.2/supabase_2.98.2_checksums.txt
+.../node_modules/supabase postinstall: Downloading https://github.com/supabase/cli/releases/download/v2.98.2/supabase_darwin_arm64.tar.gz
+.../node_modules/supabase postinstall: Checksum verified.
+.../node_modules/supabase postinstall: Installed Supabase CLI successfully
+.../node_modules/supabase postinstall: Done
 export type Json =
   | string
   | number
@@ -444,6 +456,32 @@ export type Database = {
         Args: { p_month: string; p_user_id: string }
         Returns: number
       }
+      create_card_direct: {
+        Args: {
+          p_attribution: Database["public"]["Enums"]["card_attribution"]
+          p_first_active_month: string
+          p_frequency: Database["public"]["Enums"]["card_frequency"]
+          p_last_active_month?: string
+          p_name: string
+          p_planned_amount?: number
+          p_type: Database["public"]["Enums"]["card_type"]
+        }
+        Returns: string
+      }
+      create_card_from_fragment: {
+        Args: {
+          p_attribution: Database["public"]["Enums"]["card_attribution"]
+          p_first_active_month: string
+          p_fragment_id: string
+          p_frequency: Database["public"]["Enums"]["card_frequency"]
+          p_last_active_month: string
+          p_link_month: string
+          p_name: string
+          p_planned_amount: number
+          p_type: Database["public"]["Enums"]["card_type"]
+        }
+        Returns: string
+      }
       estimate_net_monthly: {
         Args: {
           p_gross_annual: number
@@ -644,3 +682,4 @@ export const Constants = {
     },
   },
 } as const
+<claude-code-hint v="1" type="plugin" value="supabase@claude-plugins-official" />
