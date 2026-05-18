@@ -482,6 +482,10 @@ export type Database = {
         Args: { p_card_id: string; p_transaction_date: string }
         Returns: number
       }
+      get_effective_plan_for_month: {
+        Args: { p_card_id: string; p_month: string }
+        Returns: number
+      }
       get_net_monthly_for_month: {
         Args: {
           p_month: string

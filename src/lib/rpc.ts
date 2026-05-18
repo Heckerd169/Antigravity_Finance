@@ -95,6 +95,24 @@ export async function getPlannedAmountForMonth(
   return (data as number | null) ?? null;
 }
 
+/** Sprint 5 K1.4: „Effective Plan" — Vergleichsbasis für Budget-Status und
+ *  „Noch X € frei". Auflösungs-Ordnung:
+ *    1. 0 falls Karte im Monat inaktiv
+ *    2. card_monthly_states.adjusted_amount falls gesetzt
+ *    3. get_planned_amount_for_month(...) (Forward-Inheritance)
+ *  Returns immer eine Zahl (≥ 0). Throws bei DB-Errors (LL-2). */
+export async function getEffectivePlanForMonth(
+  client: AppSupabaseClient,
+  args: { cardId: string; month: string },
+): Promise<number> {
+  const { data, error } = await client.rpc("get_effective_plan_for_month", {
+    p_card_id: args.cardId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
 /** Split-Faktor ICH-Anteil (0..1) zum Monat M.
  *  1.0 falls Partner unbekannt. Throws bei DB-Errors. */
 export async function getSplitFactor(

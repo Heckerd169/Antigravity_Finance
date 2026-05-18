@@ -4,7 +4,7 @@ import {
   calculateSparrateForMonth,
   calculateCardAmountForMonth,
   isCardActiveInMonth,
-  getPlannedAmountForMonth,
+  getEffectivePlanForMonth,
 } from "@/lib/rpc";
 import {
   addMonths,
@@ -104,11 +104,15 @@ export default async function Home({ searchParams }: HomeProps) {
 
     enrichedCards = await Promise.all(
       activeCards.map(async (c) => {
-        const [amount, planned, stateRow] = await Promise.all([
+        // K1.4: 3 parallele Werte pro Karte —
+        //   1) `amount` (Display, RPC-Prioritätskette Realität→Anpassung→Plan)
+        //   2) `effectivePlan` (Vergleichsbasis für Budget-Status + „Noch frei",
+        //      via neue RPC get_effective_plan_for_month: Adjustment > Roh-Plan)
+        //   3) Monthly-State-Row (manually_paid + adjusted_amount).
+        // N+1-Pragmatik: bei <20 Karten in V1 akzeptable Latenz (Briefing §K1.4).
+        const [amount, effectivePlan, stateRow] = await Promise.all([
           calculateCardAmountForMonth(supabase, { cardId: c.id, month: targetDbDate }),
-          c.type === "BUDGET"
-            ? getPlannedAmountForMonth(supabase, { cardId: c.id, month: targetDbDate })
-            : Promise.resolve(null),
+          getEffectivePlanForMonth(supabase, { cardId: c.id, month: targetDbDate }),
           supabase
             .from("card_monthly_states")
             .select("manually_paid, adjusted_amount")
@@ -127,7 +131,7 @@ export default async function Home({ searchParams }: HomeProps) {
           first_active_month: c.first_active_month,
           last_active_month: c.last_active_month,
           amount,
-          planned,
+          effectivePlan,
           manuallyPaid: stateRow?.manually_paid ?? false,
           adjustedAmount: stateRow?.adjusted_amount ?? null,
         } satisfies EnrichedCard;

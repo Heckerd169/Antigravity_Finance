@@ -95,13 +95,15 @@ function resolveIncomeState(card: EnrichedCard, isFuture: boolean): IncomeState 
 
 function resolveBudgetState(card: EnrichedCard, isFuture: boolean): BudgetState {
   if (isFuture) return "ghost";
-  const plan = card.planned ?? 0;
-  return card.amount > plan ? "over" : "running";
+  // K1.4: Vergleich gegen effectivePlan (Adjustment > Plan), nicht raw Plan.
+  // Tanken (Plan 200, Adj 250, kein Fragment) → amount=250, effectivePlan=250
+  // → 250 > 250 = false → "running" (vorher fälschlich "over").
+  return card.amount > card.effectivePlan ? "over" : "running";
 }
 
-/** K1.2: Summe der absoluten Beträge aller verknüpften Fragmente. Bildet die
- *  „verbrauchte" Realität ab — getrennt von `card.amount`, das per §4.3.3
- *  Priorisierung (Realität → Anpassung → Plan) auch den Plan zurückgeben kann. */
+/** K1.2/K1.4: „Spent" = Summe der Fragmentwerte (Realität). Getrennt von
+ *  `card.amount`, das per §4.3.3 Priorisierung (Realität → Anpassung → Plan)
+ *  auch Adjustment oder Plan zurückgeben kann. */
 function sumLinkedFragments(card: EnrichedCard): number {
   return (card.linkedFragments ?? []).reduce(
     (acc, f) => acc + Math.abs(f.amount),
@@ -250,21 +252,23 @@ function BudgetCard({
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
-  const plan = card.planned ?? 0;
-
-  // K1.2: „Spent" = Summe der Fragmentwerte, separat vom Anzeige-Betrag.
-  // Design-Doku §4.3.3: bei keinen Fragmenten und keinem Tap zeigt die Karte
-  // den Plan an (card.amount === plan). Das ist KEIN „verbraucht" — der
-  // Fortschrittsbalken und „Noch X € frei" basieren auf realen Fragmenten.
+  // K1.4: Vergleichsbasis ist effectivePlan (Adjustment > Plan).
+  // K1.2: Spent ist Summe der Fragmentwerte — getrennt vom Anzeige-Betrag.
+  const effectivePlan = card.effectivePlan;
   const spent = sumLinkedFragments(card);
-  const overshoot = Math.max(0, spent - plan);
-  const consumed = Math.min(spent, plan);
-  const barWidth = state === "over" ? 100 : plan > 0 ? (consumed / plan) * 100 : 0;
+  const overshoot = Math.max(0, spent - effectivePlan);
+  const consumed = Math.min(spent, effectivePlan);
+  const barWidth =
+    state === "over"
+      ? 100
+      : effectivePlan > 0
+      ? (consumed / effectivePlan) * 100
+      : 0;
 
   const restText =
     state === "over"
       ? `−${formatAmount(overshoot)} € über Plan`
-      : `Noch ${formatAmount(Math.max(0, plan - spent))} € frei`;
+      : `Noch ${formatAmount(Math.max(0, effectivePlan - spent))} € frei`;
 
   const iconEl =
     state === "over" ? (
