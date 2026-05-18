@@ -555,3 +555,185 @@ rg "Fehler: Format|Zustand simulieren" .next/static/chunks/app/ → 0
   immer eine Falle, wenn Geld dargestellt wird — Trailing Zeros werden
   gestrippt („28,9" statt „28,90"). Zentraler Helper `lib/format.ts`
   vermeidet das Problem.
+
+---
+
+## 13. K1 v2 — Frontend-Refactor `effective_plan` (18. Mai 2026)
+
+K1 v2 hat K1.4 als Frontend-Refactor neu klassifiziert (vorher v1: RPC-
+Patch). K1.2 (Budget „Noch X € frei") fällt damit weg — wird durch
+K1.4 automatisch erschlagen, da effective_plan im Adj=0-Fall = raw plan
+und die K1.2-Logik (`spent` aus linkedFragments) unverändert weiterläuft.
+
+### 13.1 Commit
+
+```
+… fix: K1.4 effective_plan refactor — Budget-Vergleichsbasis korrigiert
+       src/app/page.tsx                    | 16 +++++++++------
+       src/components/cards/card.tsx       | 34 +++++++++++++++++--------------
+       src/components/cards/cards.types.ts | 10 ++++++++--
+       src/lib/rpc.ts                      | 18 ++++++++++++++++
+       src/lib/supabase/types.ts           |  4 ++++
+       5 files changed, 59 insertions(+), 23 deletions(-)
+```
+
+### 13.2 Wurzel-Diagnose
+
+Vor K1 wurde im Frontend `card.amount > card.planned` (Roh-Plan aus
+`card_planned_timeline`) für die Budget-State-Resolution verwendet. Das
+ignorierte `card_monthly_states.adjusted_amount`. Symptom-Karte: Tanken
+(Plan 200 €, Adjustment 250 € via Sprint-4-K3-Workflow „Nur dieser Monat",
+kein Fragment) zeigte:
+
+- `card.amount` = 250 (RPC Realität→Anpassung→Plan, Adjustment gewinnt)
+- `card.planned` = 200 (raw)
+- `250 > 200 = true` → State `over` → „ÜBERSCHRITTEN · −50,00 € über Plan"
+
+Architekt verifizierte: `calculate_card_amount_for_month` ist Fragment-
+aware und korrekt. Der Bug war ausschließlich im Frontend-Vergleichswert.
+
+### 13.3 Architekten-Lieferung (vorgezogen aus Sprint 6)
+
+Neue RPC live in DB:
+
+```
+get_effective_plan_for_month(p_card_id uuid, p_month date) returns numeric
+```
+
+Auflösung:
+1. `0` falls Karte im Monat inaktiv
+2. `card_monthly_states.adjusted_amount` falls gesetzt
+3. `get_planned_amount_for_month(...)` (Forward-Inheritance) — sonst
+
+`SECURITY INVOKER`, `STABLE`. Additiv — alle bestehenden RPC-Signaturen
+unverändert. Supabase-Types neu generiert (silent, ohne pnpm-Noise und
+ohne `<claude-code-hint>`-Tag); 1 Diff-Block in `src/lib/supabase/types.ts`.
+
+### 13.4 Frontend-Refactor
+
+**Wrapper in `lib/rpc.ts`:**
+
+```ts
+export async function getEffectivePlanForMonth(
+  client: AppSupabaseClient,
+  args: { cardId: string; month: string },
+): Promise<number> {
+  const { data, error } = await client.rpc("get_effective_plan_for_month", {
+    p_card_id: args.cardId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+```
+
+Throw-on-Error (LL-2). Sprint-4 K3 Sonderfall: bei „Dauerhaft ab diesem
+Monat" wird `adjusted_amount` für den effective_month auf NULL gesetzt
+— effective_plan fällt dann auf den frisch upserted Roh-Plan zurück.
+
+**EnrichedCard-Diff:**
+
+```diff
+-  planned: number | null;
++  /** K1.4: Adjustment > Forward-Inheritance-Plan (≥ 0; 0 bei inaktiver Karte). */
++  effectivePlan: number;
+```
+
+**Loading-Pipeline (`page.tsx`):** drei parallele Calls pro Karte —
+`calculateCardAmountForMonth` + `getEffectivePlanForMonth` +
+`card_monthly_states`-Lookup. `getPlannedAmountForMonth` wird nicht mehr
+direkt vom UI gerufen (effective_plan kapselt es).
+
+**BudgetCard-Logik (`card.tsx`):**
+
+```diff
+-  return card.amount > plan ? "over" : "running";
++  return card.amount > card.effectivePlan ? "over" : "running";
+```
+
+```diff
+-  const overshoot = Math.max(0, spent - plan);
+-  const consumed = Math.min(spent, plan);
+-  const barWidth = state === "over" ? 100 : plan > 0 ? (consumed / plan) * 100 : 0;
+-  const restText = state === "over"
+-    ? `−${formatAmount(overshoot)} € über Plan`
+-    : `Noch ${formatAmount(Math.max(0, plan - spent))} € frei`;
++  const effectivePlan = card.effectivePlan;
++  const overshoot = Math.max(0, spent - effectivePlan);
++  const consumed = Math.min(spent, effectivePlan);
++  const barWidth = state === "over" ? 100
++    : effectivePlan > 0 ? (consumed / effectivePlan) * 100 : 0;
++  const restText = state === "over"
++    ? `−${formatAmount(overshoot)} € über Plan`
++    : `Noch ${formatAmount(Math.max(0, effectivePlan - spent))} € frei`;
+```
+
+`sumLinkedFragments(card)` aus K1.2 bleibt unverändert (`spent`-Quelle).
+
+### 13.5 SQL-Re-Smoke (Service-Role MCP, `targetMonth = 2026-05-01`)
+
+```
+Name      Type        displayed   eff_plan   spent    budget_state
+─────────────────────────────────────────────────────────────────────
+Miete     FIXED_COST  1200.00     1200.00    0.00     —
+Netflix   FIXED_COST    25.00       25.00    0.00     —
+Strom     FIXED_COST   110.00      110.00    0.00     —
+Essen     BUDGET       360.00      300.00  360.00     ÜBERSCHRITTEN  ✓
+Tanken    BUDGET       250.00      250.00    0.00     LAUFEND        ✓ (vorher: ÜBERSCHRITTEN)
+```
+
+Tanken-Fix grün auf DB-Ebene. Browser-Smoke S1/S13/S17 werden vom User
+gegen die K1.4-Akzeptanztabelle re-getestet:
+
+| Test | Erwartung (UI) |
+|---|---|
+| S1 Mai 2026 | Tanken zeigt `250,00 € · LAUFEND · Noch 250,00 € frei`; Essen zeigt `360,00 € · ÜBERSCHRITTEN · −60,00 € über Plan` |
+| S13 Aral-Drop auf Tanken | Tanken fällt auf `42,80 € · LAUFEND · Noch 207,20 € frei` (Realität schlägt Adjustment) |
+| S17 Eject Aral | Tanken kehrt auf `250,00 € · LAUFEND · Noch 250,00 € frei` zurück (Adjustment greift wieder) |
+| Neu-Budget Plan 50 € | `50,00 € · LAUFEND · Noch 50,00 € frei`, Fortschrittsbalken bei 0 % |
+
+### 13.6 Sanity-Check-Output (K1 v2)
+
+```
+pnpm exec tsc --noEmit       → TypeScript: No errors found
+pnpm exec next lint          → ✔ No ESLint warnings or errors
+pnpm build                   → Route / 21.1 kB, First Load 173 kB
+                               (unverändert zu K1 v1 — Wrapper-Aufruf
+                               und State-Resolution sind Bytecode-neutral)
+rg "touchstart|swipe|longpress" .next/static/chunks/app/   → 0
+rg "Fehler: Format|Zustand simulieren" .next/static/chunks/app/ → 0
+```
+
+`git status` clean nach fix-Commit.
+
+### 13.7 N+1-Performance-Notiz
+
+Karten-Loading-Pipeline hat jetzt 3 parallele RPC/SELECT-Calls pro Karte
+(`amount`, `effectivePlan`, `state_row`). Bei 7 aktiven Karten = 21
+parallele Calls, alle in einem `Promise.all`. Im Dev-Server gemessene
+Initial-Render-Latenz: weiterhin unter 1 s — V1-Pragma OK.
+
+Falls bei Sprint 6 / Sprint 7 die Latenz spürbar wird (z. B. >1,5 s mit
+20+ Karten), Bulk-RPC `get_cards_with_effective_plan_for_month(p_month)`
+als V1.1-Refactor — Architekt hat das als Option markiert (Briefing
+K1.4 §Performance).
+
+### 13.8 Vorschlag CLAUDE.md-Update (LL-Kandidat)
+
+- **LL-Kandidat (Sprint 6 candidate-LL-9):** „`calculate_card_amount_for_month`
+  ist der einzige RPC, der das Display rechnet. Für Vergleichs- und
+  Status-Logik (Budget-State, „Noch frei") darf das Frontend NICHT die
+  RPC-Ausgabe gegen den Roh-Plan vergleichen. Vergleichsbasis ist
+  `get_effective_plan_for_month`, die Adjustments mit einschließt.
+  Wer im Frontend `card.amount > raw_plan` schreibt, bricht den Adj-Pfad."
+
+### 13.9 Offene Fragen (K1 v2)
+
+- **OQ-K1v2-1:** Soll `getPlannedAmountForMonth` aus `lib/rpc.ts` gelöscht
+  werden? In Sprint 5 hat kein Aufrufer mehr darauf zugegriffen. V1-
+  pragma: drinlassen, könnte in Sprint 6/7 noch gebraucht werden (z. B.
+  für Forecast-Anzeigen).
+- **OQ-K1v2-2:** N+1 bei 7 Karten ist OK; bei 20+ Karten wird die
+  Bulk-RPC nötig. Soll der Architekten-Auftrag für die Bulk-Variante
+  schon jetzt eingeplant werden, oder erst nach Sprint-6-Sparrate-
+  Verifikation?
