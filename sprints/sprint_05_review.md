@@ -737,3 +737,114 @@ K1.4 §Performance).
   Bulk-RPC nötig. Soll der Architekten-Auftrag für die Bulk-Variante
   schon jetzt eingeplant werden, oder erst nach Sprint-6-Sparrate-
   Verifikation?
+
+---
+
+## 14. K2 — Overlay-Background-Harmonisierung (18. Mai 2026)
+
+### 14.1 Commit
+
+```
+… fix: K2 overlay background harmonization (sprint 5)
+     src/components/interaction-zone/interaction-zone.module.css | 15 +++++++++------
+     1 file changed, 9 insertions(+), 6 deletions(-)
+```
+
+Ein-Datei-Patch.
+
+### 14.2 Befund + Wurzel-Diagnose
+
+Re-Smoke nach K1 zeigte: Die drei Sprint-5-Overlays
+(`recurrence-popup`, `direct-create-overlay`, `linked-fragments-overlay`)
+waren in der Layout-Struktur (Modal-Box, Title-Hierarchie, Input-Stack,
+Button-Stack) konsistent zu `adjust-amount-overlay` (Sprint 4) — aber das
+**Modal-Background und der Backdrop wirkten transparent**: der Singularity
+Ring + Karten dahinter schienen durch.
+
+Diagnose-Pfad:
+1. Sprint-4-Vergleich: `.overlayBackdrop` und `.overlayModal` in
+   `cards.module.css` haben die Hintergrund-Werte **inline** gesetzt
+   (`background: rgba(28, 28, 30, .96)` direkt im Klassen-Body).
+2. Sprint-5-Vergleich: `.overlayBackdrop` und `.overlayModal` in
+   `interaction-zone.module.css` bezogen die Werte aus drei
+   CSS-Custom-Properties (`--overlay-modal-bg`, `--overlay-modal-border`,
+   `--overlay-backdrop`), die im `.interactionZone`-Root-Block definiert
+   waren.
+3. Beide Overlay-Familien werden via `createPortal(..., document.body)`
+   gemountet — also AUSSERHALB des `.interactionZone`-DOM-Subtrees.
+4. CSS-Custom-Properties werden via DOM-Inheritance an Kind-Elemente
+   weitergegeben. Der Portal-Hop reißt die DOM-Verbindung ab → die drei
+   `--overlay-*`-Properties sind im document.body-Kontext **nicht definiert**.
+5. `var(--overlay-modal-bg)` ohne Fallback-Argument fällt auf den
+   Initial-Wert der Property zurück. Für `background` ist das
+   `transparent` — daher das durchscheinende Modal.
+
+### 14.3 Fix
+
+[interaction-zone.module.css](src/components/interaction-zone/interaction-zone.module.css):
+
+- Drei Custom-Properties aus dem `.interactionZone`-Block entfernt
+  (`--overlay-modal-bg`, `--overlay-modal-border`, `--overlay-backdrop`).
+- Werte 1:1 in die `.overlayBackdrop` und `.overlayModal`-Klassen
+  hartkodiert — identisch zu Sprint-4-`cards.module.css`:
+
+| Selector | Property | Wert |
+|---|---|---|
+| `.overlayBackdrop` | `background` | `rgba(0, 0, 0, .55)` |
+| `.overlayBackdrop` | `backdrop-filter` | `blur(4px)` (war schon hartkodiert) |
+| `.overlayModal` | `background` | `rgba(28, 28, 30, .96)` |
+| `.overlayModal` | `border` | `.5px solid rgba(255, 255, 255, .1)` |
+
+Kurzkommentar im CSS-Block erklärt WHY (createPortal + Custom-Properties).
+
+Andere Custom-Properties auf `.interactionZone` (`--portal-*`, `--chev-*`,
+`--frag-*`, `--slot-*`, `--zone-label`) bleiben unverändert — sie werden
+nur in Elementen referenziert, die innerhalb des `.interactionZone`-DOM-
+Subtrees gerendert werden (Portal, Karussell, Stack), NICHT in
+Portal-mounted Overlays.
+
+### 14.4 Sanity-Check-Output (K2)
+
+```
+pnpm exec tsc --noEmit       → TypeScript: No errors found
+pnpm exec next lint          → ✔ No ESLint warnings or errors
+pnpm build                   → Route / 21.1 kB, First Load 173 kB
+                               (unverändert: nur CSS-Bytes gewandert,
+                               JS-Bundle identisch)
+rg "touchstart|swipe|longpress|Fehler: Format" .next/static/chunks/app/
+                             → 0
+```
+
+`git status` nach `fix:`-Commit clean.
+
+### 14.5 Akzeptanz
+
+Browser-Smoke wird vom User verifiziert (S8 Direct-Create-Overlay,
+S16 Linked-Fragments-Overlay, S18 Recurrence-Popup) — Erwartung:
+
+- Alle vier Overlays (Adjust-Amount + 3 neue) **visuell identisch** im
+  Background-Layer.
+- Ring und Karten dahinter **nicht mehr durchscheinend**.
+- LL-6 weiterhin eingehalten: `createPortal`, `position: fixed`,
+  Visibility ausschließlich via `useState`.
+
+### 14.6 Vorschlag CLAUDE.md-Update (LL-Kandidat)
+
+- **LL-Kandidat (Sprint 6 candidate-LL):** *CSS-Custom-Properties +
+  React-Portal mischen sich nicht.* Wenn eine Komponente Custom-
+  Properties auf einem Root-Wrapper definiert und Children
+  via `createPortal(..., document.body)` außerhalb dieses Wrappers
+  mountet, sind die Custom-Properties im Portal-Subtree NICHT inheriated.
+  `var(--name)` fällt auf den Initial-Wert der Property zurück
+  (für `background` = `transparent`). Diagnose-Pattern: Sprint-5-K2
+  (Portal-Overlay wirkt transparent, obwohl CSS-Werte scheinbar korrekt
+  sind).
+  Lösungen:
+  1. Werte direkt in die Portal-bound-Klassen schreiben (gewählter
+     Sprint-5-Ansatz, byte-identisch zu Sprint-4).
+  2. Custom-Properties auf `:root` (globals.css) definieren — dann via
+     `html`-Inheritance auch im Portal-Subtree verfügbar. Geeignet, wenn
+     der Wert wirklich global ist (z. B. Theme-Token).
+  3. CSS-Custom-Property explizit auf dem Portal-Mount-Knoten
+     (document.body oder ein dedizierter Portal-Container) setzen — selten
+     nötig.
