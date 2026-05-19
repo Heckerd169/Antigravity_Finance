@@ -338,7 +338,7 @@ Der Split rechnet immer fair, unabhängig davon wer real überwiesen hat. Wer ü
 - Miete 1.200 € (Fixkosten, GEMEINSAM, monatlich) — Fragment +1.200 € verknüpft
 - Strom 120 € (Fixkosten, GEMEINSAM, monatlich) — Offen, kein Fragment, kein Tap
 - Netflix 17,99 € (Fixkosten, ICH, monatlich) — manuell getappt
-- Tanken 200 € (Budget, ICH, monatlich) — Fragmente in Höhe von 180 € verknüpft
+- Tanken 200 € (Budget, ICH, monatlich) — Fragmente in Höhe von 180 € verknüpft, manuell getappt
 - Steuerrückzahlung 800 € (Einnahme, ICH, einmalig im März) — Fragment +800 € verknüpft
 
 **Berechnung Sparrate für März 2026:**
@@ -356,7 +356,7 @@ Fixkosten:
   = 809,99 €
 
 Budget:
-  Tanken (Realität 180 €, immer 100%)      =   180,00 €
+Tanken (Tap + Fragmente, Realität, 100%) =   180,00 €
 
 Sparrate = 3.900,00 − 809,99 − 180,00     = 2.910,01 €
 ```
