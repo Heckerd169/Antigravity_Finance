@@ -34,9 +34,11 @@
   --slot-icon: rgba(255, 255, 255, .15);
   --slot-label: rgba(255, 255, 255, .25);
   --zone-label: rgba(255, 255, 255, .18);
-  --overlay-modal-bg: rgba(28, 28, 30, .96);
-  --overlay-modal-border: rgba(255, 255, 255, .1);
-  --overlay-backdrop: rgba(0, 0, 0, .55);
+  /* K2.1: Overlay-Werte NICHT via Custom-Properties — Overlays werden via
+   * createPortal nach document.body gemountet, dort wirken die hier auf
+   * .interactionZone definierten Custom-Properties nicht mehr (DOM-Inheritance
+   * bricht am Portal-Hop). Werte stattdessen direkt in .overlayBackdrop /
+   * .overlayModal hartkodiert (analog Sprint-4-cards.module.css). */
 
   display: grid;
   grid-template-columns: 180px 1fr 220px;
@@ -455,14 +457,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--overlay-backdrop);
+  /* K2.1: Hartkodiert, Custom-Properties wirken via createPortal nicht (s.o.). */
+  background: rgba(0, 0, 0, .55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 
 .overlayModal {
-  background: var(--overlay-modal-bg);
-  border: .5px solid var(--overlay-modal-border);
+  background: rgba(28, 28, 30, .96);
+  border: .5px solid rgba(255, 255, 255, .1);
   border-radius: 16px;
   padding: 20px;
   width: 300px;
