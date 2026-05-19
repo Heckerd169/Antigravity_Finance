@@ -3,12 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { applyAdjustmentThisMonth, applyAdjustmentForward } from "./actions";
+import { formatAmount } from "@/lib/format";
 import styles from "./cards.module.css";
-
-const EUR_FMT = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 
 type AdjustAmountOverlayProps = {
   cardId: string;
@@ -115,7 +111,7 @@ export function AdjustAmountOverlay({
         <div className={styles.overlayTitle}>Betrag anpassen</div>
 
         <div className={styles.overlayCurrentValue}>
-          Aktuell: {EUR_FMT.format(currentAmount)} €
+          Aktuell: {formatAmount(currentAmount)} €
         </div>
 
         <div className={styles.overlayInputWrap}>

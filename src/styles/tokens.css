@@ -26,6 +26,10 @@
   --border-teal: rgba(62, 207, 175, 0.22);
   --border-red: rgba(255, 69, 58, 0.18);
 
+  /* Sprint 5 K1.3: Drop-Target-Outline (dezenter Grau-Ton, von Card-Hover
+   * und Status-Farben deutlich abgesetzt). */
+  --outline-drop: rgba(255, 255, 255, 0.35);
+
   /* ── Typografie (§3 Tabelle „Typographie") ────────────────────── */
   /* System-Font-Stack — bewusste Designentscheidung (PM, Sprint 0) */
   --font-stack-system: system-ui, -apple-system, "Helvetica Neue", sans-serif;

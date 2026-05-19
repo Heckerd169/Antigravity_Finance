@@ -444,6 +444,32 @@ export type Database = {
         Args: { p_month: string; p_user_id: string }
         Returns: number
       }
+      create_card_direct: {
+        Args: {
+          p_attribution: Database["public"]["Enums"]["card_attribution"]
+          p_first_active_month: string
+          p_frequency: Database["public"]["Enums"]["card_frequency"]
+          p_last_active_month?: string
+          p_name: string
+          p_planned_amount?: number
+          p_type: Database["public"]["Enums"]["card_type"]
+        }
+        Returns: string
+      }
+      create_card_from_fragment: {
+        Args: {
+          p_attribution: Database["public"]["Enums"]["card_attribution"]
+          p_first_active_month: string
+          p_fragment_id: string
+          p_frequency: Database["public"]["Enums"]["card_frequency"]
+          p_last_active_month: string
+          p_link_month: string
+          p_name: string
+          p_planned_amount: number
+          p_type: Database["public"]["Enums"]["card_type"]
+        }
+        Returns: string
+      }
       estimate_net_monthly: {
         Args: {
           p_gross_annual: number
@@ -454,6 +480,10 @@ export type Database = {
       }
       frequency_match: {
         Args: { p_card_id: string; p_transaction_date: string }
+        Returns: number
+      }
+      get_effective_plan_for_month: {
+        Args: { p_card_id: string; p_month: string }
         Returns: number
       }
       get_net_monthly_for_month: {
