@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom PM (Opus 4.7) nach jedem abgeschlossenen Sprint aktualisiert.
-> **Letzte Aktualisierung:** 16. Mai 2026 · **Nach Sprint:** 4 (Approved)
+> **Letzte Aktualisierung:** 17. Mai 2026 · **Nach Sprint:** 5 (Approved)
 
 ---
 
@@ -107,7 +107,7 @@ Antigravity_Finance/
 | 2 | Singularity Ring (§5) | 🟢 Done | sprints/sprint_02_briefing.md | 12. Mai 2026 |
 | 3 | Header / Timeline-Navigation (§6) | 🟢 Done | sprints/sprint_03_briefing.md | 14. Mai 2026 |
 | 4 | Karten — alle 3 Typen × alle Zustände (§7) | 🟢 Done | sprints/sprint_04_briefing.md | 16. Mai 2026 |
-| 5 | Untere Interaktionszone (§8) | — | — | — |
+| 5 | Untere Interaktionszone (§8) | 🟢 Done | sprints/sprint_05_briefing.md | 17. Mai 2026 |
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | — | — | — |
 | 7 | CSV-Import / Distiller (§11) | — | — | — |
 | 8 | Soft-Delete-Pattern (§2.4) | — | — | — |
@@ -201,6 +201,32 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
 - `get_split_factor` ist die einzige Karten-bezogene Hot-Path-RPC, die `p_user_id`
   erwartet (greift auf `income_timeline` zu, das nicht über Card-FK gefiltert wird).
 
+**Wichtige Schema-Befunde aus Sprint 5 (Untere Interaktionszone):**
+- DEFERRED-Constraint `cards_assert_initial_plan` erzwingt: jede neue `cards`-Row
+  muss in derselben Postgres-Transaktion eine korrespondierende
+  `card_planned_timeline`-Row haben. **Konsequenz:** Card-Anlage aus dem
+  Supabase-JS-Client kann NICHT als zwei sequentielle INSERTs erfolgen — der
+  zwischenzeitliche implizite COMMIT triggert den Constraint. Lösung: atomare
+  RPCs (`create_card_direct`, `create_card_from_fragment`) — siehe RPC-Block unten.
+- `card_fragment_links.month` ist semantisch das **Link-Month** (Periodenabgrenzung),
+  NICHT das Transaction-Date des Fragments. Beim Cross-Monat-Drop (User in
+  Mai-View, Fragment aus März auf Mai-Karte) setzt das Frontend `month = targetMonth`,
+  nicht `fragment.transaction_date`. Konflikt 4 §7.
+- View `fragments_with_status` ist live, `SECURITY INVOKER`-tunneled. Spalte
+  `status` ist `text` (nicht ENUM), Werte: `'UNASSIGNED'` / `'ASSIGNED'` /
+  `'AUTO_ABSORBED'`. RLS erbt über LEFT JOIN von `fragments` + `card_fragment_links`.
+- `calculate_card_amount_for_month` ist seit V1 vollständig **Fragment-aware**
+  inkl. aller §4.3-Edge-Cases (FIXED_COST/INCOME: Realität→Anpassung→Plan;
+  BUDGET: Plan zählt solange Fragmente ≤ Plan, sonst Realität; Tap-Kombinationen
+  §4.3.3 alle kodiert). Frontend ruft die RPC und vertraut dem Output — keine
+  Frontend-seitige Re-Implementierung der §4.3-Logik.
+- Helper-RPC `get_effective_plan_for_month(p_card_id, p_month)` (additiv, aus
+  Sprint 6 vorgezogen in Sprint 5 K1.4): liefert den Monats-Soll-Wert für
+  Vergleichs-Logik (Status-Label, „Noch frei"-Berechnung). Returns `0` falls
+  Karte inaktiv, sonst `card_monthly_states.adjusted_amount` falls gesetzt,
+  sonst `get_planned_amount_for_month(...)`. Frontend nutzt diese als
+  Vergleichsbasis statt `cards.planned_amount` (Roh-Plan).
+
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
 supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supabase/types.ts
@@ -234,6 +260,19 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
 9. **`effective_month` immer als String konstruieren** (`${yyyy}-${mm}-01`), niemals
    per `new Date(year, month - 1, 1)` — Timezone-Risiko. CHECK-Constraint setzt
    `date_trunc('month', ...)` voraus.
+10. **Karten-Typ in Sprint-Erwartungs-Tabellen explizit nennen** + §4.3-Sub-
+    Tabelle (4.3.1 FIXED_COST / 4.3.2 INCOME / 4.3.3 BUDGET) referenzieren.
+    Die Faustregel „Realität gewinnt" gilt nur für FIXED_COST/INCOME. BUDGET-
+    Karten zeigen Plan, solange Fragmente ≤ Plan (§4.3.3). Sichtbares Symptom
+    „ÜBERSCHRITTEN"-Status = BUDGET-only — Signal zur Typ-Verifikation bei
+    Briefing-Erstellung. (LL-12)
+11. **PM-Architekten-Verifikations-Reihenfolge bei Frontend↔RPC-Diskrepanzen:**
+    Bei vermuteter RPC-Logik-Bug muss der PM die Bug-Lokalisierung beim
+    Architekten verifizieren lassen, **bevor** ein RPC-Patch-Auftrag formuliert
+    wird. Beobachtetes RPC-Output ist nicht hinreichend für Schuldzuweisung —
+    die RPC könnte intern korrekt arbeiten und das Frontend könnte sie falsch
+    interpretieren. Sequenz: Diagnose-Sammlung → Architekt-Sanity-Check (mit
+    DB-Live-Zugriff) → Patch-Pfad-Entscheidung. (LL-11)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -263,6 +302,16 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
   `useState(isOpen)` gesteuert wird → sonst „Phantom-Sichtbarkeit" (DOM präsent,
   aber Cursor-Position macht es unsichtbar). Diagnose-Pattern: Sprint 4 K2.
   (LL-6)
+- **HTML5 Drag&Drop — Event-Delegation:** Drag-Quellen übertragen Identität via
+  `dataTransfer.setData("application/x-<typ>-id", id)` mit Custom-MIME-Type
+  statt globaler State-Variablen oder Refs. Drop-Targets prüfen den MIME-Type
+  via `dataTransfer.types.includes(...)` beim `dragover`, nicht den Source-State.
+  Erlaubt mehrere parallele Drag-Quellen ohne Cross-Talk. Drop-Targets MÜSSEN
+  `preventDefault()` auf `dragover` aufrufen — sonst feuert `drop` nicht. (LL-9)
+- **HTML5 Drag&Drop — Nested-Drag-Flackern:** `dragenter` feuert auch auf
+  Child-Elemente innerhalb des Drop-Targets, was Outline-Border flackern lässt.
+  Lösung: `useRef`-Counter — increment auf `dragenter`, decrement auf `dragleave`,
+  Outline aktiv wenn `counter > 0`, Counter-Reset auf `drop`. (LL-10)
 - Branch pro Sprint: `sprint/NN-<komponente>`
 
 ### Was Claude Code NIE macht
@@ -344,7 +393,8 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 2 (Singularity Ring) | ~~Opus 4.7~~ ✓ erledigt |
 | Sprint 3 (Header / Timeline-Navigation) | ~~Sonnet 4.6~~ ✓ erledigt |
 | Sprint 4 (Karten) | ~~Sonnet 4.6 + Opus 4.7 (für K2/K3)~~ ✓ erledigt |
-| Sprints 5, 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
+| Sprint 5 (Untere Interaktionszone) | ~~Sonnet 4.6~~ ✓ erledigt |
+| Sprints 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
 | Sprint 6 (Sparrate-Verifikation) | **Opus 4.7** — harter Gate, §4-Konflikte |
 | Sprint 7 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
 
@@ -675,3 +725,161 @@ Wenn Sprint 5 die Untere Interaktionszone (Fragments) baut und sich
 sinnvoller V1.1-Refactor — dann global, nicht ad-hoc. Bei Implementierung:
 LL-5-Reset-Pattern (`useEffect` auf `targetMonth`-Prop) pflichten, sonst
 überlebt optimistic State die Monatsnavigation falsch.
+
+### Sprint 5 · APPROVED 17. Mai 2026
+**Komponente:** Untere Interaktionszone (Design-Doku §8) — Portal links
+(CSV-Stub) / Karussell-Erweiterung mitte (Chevrons + Empty-Slot + Drop-
+Targets) / Fragment-Stack rechts (HTML5-DnD-Quellen aus
+`fragments_with_status`-View). Plus Eject-Flow über Kontextmenü-Option
+„Verknüpfte Fragmente" auf den Karten. Plus Bonus-Scope: linke-Flanke-
+Subzeile im Header gewired auf `fragments_with_status`-Count (Sprint-7-
+TODO aus Sprint 3 erledigt).
+
+**Voraussetzungen erfüllt:** Sprint 4 grün auf `main`. Architekt-Pre-
+Sprint-Vorarbeit am 17. Mai 2026 (zwei atomic Multi-INSERT-RPCs für
+DEFERRED-Constraint-Umgehung): `create_card_direct(p_name, p_type,
+p_attribution, p_frequency, p_first_active_month, p_last_active_month,
+p_planned_amount)` returns `uuid`, und `create_card_from_fragment(...
+plus p_fragment_id, p_link_month)` returns `uuid`. Beide
+`SECURITY INVOKER`, atomare Card+Plan-Inserts (+ Link bei der zweiten),
+defensive Server-Side-Validation (ONCE → first=last, BUDGET → ICH erzwingt).
+Test-Daten-Anreicherung via Architekten-SQL: 6 unzugeordnete Fragmente
+(4 Mai 2026 / 1 April / 1 März, idempotent via `ON CONFLICT (user_id,
+hash) DO NOTHING`) seedet, plus bestehendes Sprint-4-Edeka-Fragment
+unverändert. Branch `sprint/05-interaction-zone`.
+
+**Implementierung (9 Commits total: 1 chore + 1 feat + 3 fix + 4 docs):**
+- `src/lib/supabase/types.ts` (regenerated) — neue RPCs typed.
+- `src/lib/rpc.ts` (MODIFIED) — Wrapper für `create_card_direct`,
+  `create_card_from_fragment`, `get_effective_plan_for_month`. Alle
+  Throw-on-Error (LL-2).
+- `src/components/interaction-zone/` (NEU, ~12 Dateien) — `index.tsx`
+  (Server, Trinity-Layout + Data-Loading), `portal.tsx` (Client, 5-State
+  Machine mit Stub-Sequenz 2s Verarbeitung → 1.5s Erfolg → Reset),
+  `carousel.tsx` (Chevrons mit hide-when-not-scrollable + Empty-Slot),
+  `empty-slot.tsx` (Click + Drop-Target), `fragment-stack.tsx`,
+  `fragment-card.tsx`, `drop-target-wrapper.tsx` (wraps Sprint-4-Karten
+  ohne deren Internals zu touchen — A2-konform), `recurrence-popup.tsx`,
+  `direct-create-overlay.tsx`, `linked-fragments-overlay.tsx`,
+  `actions.ts` (5 Server Actions), `interaction-zone.module.css`,
+  `interaction-zone.types.ts`.
+- `src/components/cards/card-interactive.tsx` (MODIFIED, minimal) — neue
+  Kontextmenü-Option „Verknüpfte Fragmente" — conditional sichtbar nur
+  wenn ≥1 verknüpftes Fragment im `targetMonth`.
+- `src/components/cards/cards.module.css` (MODIFIED, minimal) — `min-height`
+  für Karten-Gleichgrößigkeit (K1.1).
+- `src/components/header-timeline/index.tsx` (MODIFIED) — Subzeile
+  linke Flanke aus Prop `unassignedPreviousMonthCount: number`, Labels
+  `Alles erledigt` / `1 Fragment offen` / `n Fragmente offen`.
+- `src/lib/format.ts` (NEU) — `formatEuro` mit 2 Nachkommastellen für
+  Karten, `formatEuroRing` ohne Dezimalen für Ring (K1.6).
+- `src/app/page.tsx` (MODIFIED) — Fragment-Loading, linke-Flanke-Count,
+  pro-Karte 3 Daten-Punkte (`displayed_amount`, `effective_plan`,
+  `fragment_sum`) via `Promise.all`.
+
+**Architektur-Entscheidungen:**
+- **E1** Chevron-Navigation hide-when-not-scrollable: Briefing-Spec war
+  „disabled wenn nicht scrollbar", User-Smoke akzeptierte „hidden" (UX-
+  Standard). Pragma-Pattern für UI-Navigation.
+- **E2** `DropTargetWrapper` als äußere Komponente um Sprint-4-Card —
+  hält Sprint 4 strukturell intakt (A2). Drop-Handler + Outline am
+  Wrapper, Card-Internals unberührt.
+- **E3** Portal-Dev-Buttons NODE_ENV-gated (analog Sprint-2-Force-
+  Override). Production-Bundle-Grep verifiziert 0 Treffer.
+- **E4** Drag-Type-Discriminator via `dataTransfer.types` + Custom-MIME
+  `application/x-fragment-id`. Erlaubt zukünftige Drag-Quellen (z. B.
+  Karten-Drag in Sprint 9) ohne Cross-Talk. → LL-9, LL-10.
+- **E5** Fragment-Stack zeigt alle Monate (nicht monatsgefiltert) —
+  Spec-konform mit §8 „Rohmasse". Cross-Monat-Drop setzt `link_month =
+  targetMonth`, nicht `fragment.transaction_date` (Konflikt 4 §7).
+- **E6** Overlays via `position: fixed` + Backdrop, harmonisiertes
+  CSS-Pattern mit Sprint-4-`adjust-amount-overlay`. Visibility
+  ausschließlich `useState(isOpen)`, keine Hover-Kopplung (LL-6).
+
+**Korrekturen während Sprint (2 Iterationen):**
+- **K1** (Sonnet 4.6) — fünf-Punkte-Korrektur nach Browser-Smoke:
+  K1.1 Karten-Größen via `min-height` vereinheitlicht.
+  K1.3 Drop-Outline von Teal auf Grau (Token-Variable für Drop-Outline
+  ergänzt).
+  K1.4 (kritisch) Frontend-Refactor: Vergleichsbasis ist nicht mehr
+  `cards.planned_amount` (Roh-Plan), sondern `get_effective_plan_for_month`
+  (Adjustment-aware). Status-Logik, „Noch frei"-Formel und
+  Fortschrittsbalken-Math nutzen `effective_plan` statt `planned_amount`.
+  Pro Karte 3 Daten-Werte: `displayed_amount` (aus
+  `calculate_card_amount_for_month`), `effective_plan` (neu), `fragment_sum`
+  (direktes Aggregat). N+1-Query-Pattern via `Promise.all` parallelisiert,
+  V1-Pragma; Bulk-RPC `get_cards_with_effective_plan_for_month` Sprint-6-
+  Vormerkung bei Latenz-Problem. → LL-11, LL-12.
+  K1.5 Overlay-Layout-Harmonisierung: drei neue Overlays übernehmen
+  Sprint-4-`adjust-amount-overlay`-Pattern (Modal-Box, Input-Stack,
+  Button-Stack, Titel-Hierarchie, Backdrop). Gemeinsame CSS-Klassen
+  extrahiert.
+  K1.6 `formatEuro` mit 2 Nachkommastellen für alle Karten + Sub-Texte +
+  Stack-Fragmente + Overlays. Ring nutzt eigene `formatEuroRing`-Variante
+  ohne Dezimalen.
+- **K2** (Sonnet 4.6) — Overlay-Background-Harmonisierung: K1.5 hatte
+  Layout korrigiert, aber Background-Color + Backdrop-Filter wichen vom
+  Sprint-4-Pattern ab (transparenter Hintergrund, Ring sichtbar). K2 hat
+  Background + Backdrop konsolidiert. Alle vier Overlays visuell identisch.
+
+**PM-Briefing-Korrektur K1.4 (LL-11-Trigger):** Initial-Briefing K1.4 v1
+formulierte einen RPC-Patch-Auftrag an den Architekten. Architekt
+verifizierte: `calculate_card_amount_for_month` ist seit V1 Fragment-aware
+und §4.3-konform; der Bug war Frontend-side (Roh-Plan-Vergleich statt
+Adjustment-aware-Vergleich). PM hat K1.4 v2 als Frontend-Refactor
+re-formuliert, Architekt hat additiv die Helper-RPC
+`get_effective_plan_for_month` aus Sprint 6 vorgezogen geliefert. Lesson:
+PM darf bei Frontend↔RPC-Diskrepanzen keinen Patch-Auftrag formulieren
+bevor Architekt die Bug-Lokalisierung verifiziert hat. → LL-11.
+
+**Smoke-Test-Korrektur K2 (LL-12-Trigger):** PM-Briefing K1.4 v2 hatte
+in der Akzeptanz-Tabelle für Tanken (BUDGET-Karte, Plan 200, Adj 250,
+Aral-Fragment 42,80) erwartet: `42,80 € · OFFEN`. Korrekt gemäß §4.3.3:
+`250 € · LAUFEND · Noch 207,20 € frei` — bei BUDGET zählt Plan, solange
+Fragmente ≤ Plan. PM hatte §4.3.1-Faustregel „Realität gewinnt"
+unzulässig auf BUDGET projiziert. Code war trotzdem korrekt, weil
+`calculate_card_amount_for_month` selbst BUDGET-aware ist. Lesson:
+Karten-Typ in Briefing-Erwartungs-Tabellen explizit nennen + §4.3-Sub-
+Tabelle referenzieren. → LL-12.
+
+**Browser-Smoke-Test (User):** S1–S24 alle grün nach K2. Sprint-5-Code-
+Diff ~2.700 LOC in 21 Files, Bundle +11 KB minified (deutlich unter
+Briefing-Prognose 40–60 KB). Production-Build-Greps clean (0 Touch/
+Swipe-Strings in `chunks/app/`, 0 Dev-Buttons-Strings).
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-9** (§7 Datei-Konventionen): Drag-Quellen via
+  `dataTransfer.setData("application/x-<typ>-id", id)`, Drop-Targets
+  prüfen MIME-Type via `dataTransfer.types`. Custom-MIME-Discriminator
+  statt globalem State. Drop-Targets MÜSSEN `preventDefault` auf
+  `dragover` aufrufen.
+- **LL-10** (§7 Datei-Konventionen): `useRef`-Counter gegen nested-
+  `dragenter`-Flackern auf Drop-Targets.
+- **LL-11** (§7 Grundregel 11): PM-Architekten-Verifikations-Reihenfolge
+  bei Frontend↔RPC-Diskrepanzen — Architekt-Sanity-Check vor Patch-Auftrag.
+- **LL-12** (§7 Grundregel 10): Karten-Typ in Briefing-Erwartungen
+  explizit nennen, §4.3-Sub-Tabelle referenzieren. „Realität gewinnt"
+  gilt nicht universell — BUDGET zeigt Plan solange Fragmente ≤ Plan.
+
+**Test-Daten-Lebenszyklus nach Sprint 5:** 7 Fragmente in DB (1 Sprint-
+4-Edeka + 6 Sprint-5-Seed); davon mindestens 2 ASSIGNED (Edeka ↔ Essen,
+Stadtwerke ↔ Wasser); ggf. 1 weiteres (Aral ↔ Tanken je nach Smoke-
+Endstand). 9 Karten (Sprint-4-Bestand + Sprint-5-Smoke-Anlagen „Wasser"
+FIXED_COST/GEMEINSAM/MONTHLY und ggf. „Testkarte" BUDGET/ICH/ONCE Mai
+2026). Inventur-SQL für Sprint-6-PM in `pm_handover_sprint_5.md` §3.
+
+**Sprint-6-Vormerkungen aus Sprint 5:**
+- **V1 BUDGET-Tap-Geste** — Read-Pfad ready
+  (`calculate_card_amount_for_month` ist §4.3.3-konform), Write-Pfad
+  offen. PM-Empfehlung: neue Architekten-RPC `toggle_card_manually_paid`
+  (analog FIXED_COST-Tap-Pfad).
+- **V2 Sprint-4-`CardsCarousel`-Orphan-Cleanup** — Sprint 5 nutzt eigenes
+  Karussell, Sprint-4-Komponente nicht mehr aufgerufen.
+- **V3 Bulk-RPC `get_cards_with_effective_plan_for_month`** — bedingt,
+  nur falls N+1-Query-Latenz beim User-Smoke spürbar.
+- **V4 Sprint-7-Distiller-Architekten-Vorklärung** — optional als
+  parallel-Architekten-Auftrag.
+
+**Modell-Empfehlung-Befund:** Sonnet 4.6 durchgehend, keine Opus-
+Eskalation nötig. K1+K2 waren CSS + Number-Format + Status-Logik-
+Refactor — Sonnet-Komfortzone.
