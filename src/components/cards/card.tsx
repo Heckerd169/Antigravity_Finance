@@ -85,12 +85,18 @@ function IconOverExclamation() {
 
 function resolveFixedCostState(card: EnrichedCard, isFuture: boolean): FixedCostState {
   if (isFuture) return "ghost";
-  return card.manuallyPaid ? "paid" : "open";
+  // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
+  // entweder reicht für Bezahlt-Status (Sprint 6 K1).
+  const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
+  return card.manuallyPaid || hasFragment ? "paid" : "open";
 }
 
 function resolveIncomeState(card: EnrichedCard, isFuture: boolean): IncomeState {
   if (isFuture) return "ghost";
-  return card.manuallyPaid ? "received" : "expected";
+  // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
+  // entweder reicht für Erhalten-Status (Sprint 6 K1).
+  const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
+  return card.manuallyPaid || hasFragment ? "received" : "expected";
 }
 
 function resolveBudgetState(card: EnrichedCard, isFuture: boolean): BudgetState {
