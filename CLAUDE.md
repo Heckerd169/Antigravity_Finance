@@ -108,7 +108,7 @@ Antigravity_Finance/
 | 3 | Header / Timeline-Navigation (§6) | 🟢 Done | sprints/sprint_03_briefing.md | 14. Mai 2026 |
 | 4 | Karten — alle 3 Typen × alle Zustände (§7) | 🟢 Done | sprints/sprint_04_briefing.md | 16. Mai 2026 |
 | 5 | Untere Interaktionszone (§8) | 🟢 Done | sprints/sprint_05_briefing.md | 17. Mai 2026 |
-| 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | — | — | — |
+| 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | 🟢 Done | sprints/sprint_06_briefing.md | 20. Mai 2026 |
 | 7 | CSV-Import / Distiller (§11) | — | — | — |
 | 8 | Soft-Delete-Pattern (§2.4) | — | — | — |
 | 9 | Sparraten-Treppe (§9) | — | — | — |
@@ -273,6 +273,10 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     die RPC könnte intern korrekt arbeiten und das Frontend könnte sie falsch
     interpretieren. Sequenz: Diagnose-Sammlung → Architekt-Sanity-Check (mit
     DB-Live-Zugriff) → Patch-Pfad-Entscheidung. (LL-11)
+    Gleiches gilt für Frontend↔Spec-Diskrepanzen: PM prüft den Spec-Bezug
+    (mit Design-Doku-Referenz), bevor ein Patch-Auftrag formuliert wird.
+    Spontane Patches ohne PM-Freigabe bleiben verboten — auch wenn die Spec
+    eindeutig scheint. (LL-13)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -395,7 +399,7 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 4 (Karten) | ~~Sonnet 4.6 + Opus 4.7 (für K2/K3)~~ ✓ erledigt |
 | Sprint 5 (Untere Interaktionszone) | ~~Sonnet 4.6~~ ✓ erledigt |
 | Sprints 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
-| Sprint 6 (Sparrate-Verifikation) | **Opus 4.7** — harter Gate, §4-Konflikte |
+| Sprint 6 (Sparrate-Verifikation) | ~~Opus 4.7 → Sonnet 4.6~~ ✓ erledigt (→ LL-13) |
 | Sprint 7 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
 
 **Eskalations-Heuristik:** Wenn Sonnet 4.6 bei einer Korrektur nach einem
@@ -860,6 +864,13 @@ Swipe-Strings in `chunks/app/`, 0 Dev-Buttons-Strings).
 - **LL-12** (§7 Grundregel 10): Karten-Typ in Briefing-Erwartungen
   explizit nennen, §4.3-Sub-Tabelle referenzieren. „Realität gewinnt"
   gilt nicht universell — BUDGET zeigt Plan solange Fragmente ≤ Plan.
+- **LL-13** (§7 Grundregel 11, Sprint 6 K1): Frontend↔Spec-Diskrepanzen
+  folgen derselben PM-Verifikations-Reihenfolge wie Frontend↔RPC-
+  Diskrepanzen. PM prüft Spec-Bezug (mit Design-Doku-Referenz) bevor ein
+  Patch-Auftrag formuliert wird. Erst nach PM-Freigabe darf Claude Code den
+  Patch ausführen — auch wenn die Spec eindeutig scheint. Sprint-6-Beispiel:
+  §7-Konflikt-6 (fragment-link allein reicht für Bezahlt-Status) war in der
+  Spec klar, aber der Patch-Auftrag kam korrekt erst nach PM-Freigabe.
 
 **Test-Daten-Lebenszyklus nach Sprint 5:** 7 Fragmente in DB (1 Sprint-
 4-Edeka + 6 Sprint-5-Seed); davon mindestens 2 ASSIGNED (Edeka ↔ Essen,
@@ -883,3 +894,59 @@ FIXED_COST/GEMEINSAM/MONTHLY und ggf. „Testkarte" BUDGET/ICH/ONCE Mai
 **Modell-Empfehlung-Befund:** Sonnet 4.6 durchgehend, keine Opus-
 Eskalation nötig. K1+K2 waren CSS + Number-Format + Status-Logik-
 Refactor — Sonnet-Komfortzone.
+
+### Sprint 6 · APPROVED 20. Mai 2026
+**Komponente:** Sparrate-Verifikation (Design-Doku §4.6) — harter Gate-Sprint,
+kein Feature-Sprint. Ziel: Frontend zeigt genau 2.910,01 € Sparrate für März
+2026 beim Test-User (UUID `179cd2c1-bbc2-4fd0-954b-8735eb90f370`). Branch
+`sprint/06-sparrate-verification`.
+
+**Voraussetzungen erfüllt:** Sprint 5 grün auf `main`. Architekt-Pre-Sprint-
+Verifikation bestätigt: alle §4.6-RPCs liefern cent-exakte Werte (Ist-Sparrate
+2910.01 €, Plan-Sparrate 2890.01 €). Keine RPC-Migration nötig.
+
+**Implementierung (1 fix-Commit + 3 docs-Commits):**
+- `src/components/cards/card.tsx` (MODIFIED, K1) — `resolveFixedCostState`
+  und `resolveIncomeState` prüfen jetzt zusätzlich
+  `(card.linkedFragments?.length ?? 0) > 0` als Bezahlt-Indikator gem.
+  §7 Konflikt 6. Vorher: nur `manuallyPaid`. `resolveBudgetState` unberührt
+  (K1-Anti-Drift-Regel D1).
+
+**Korrekturen während Sprint (1 Iteration):**
+- **K1** (Sonnet 4.6, nach PM-Freigabe LL-13): Frontend-Status-Bug —
+  `resolveFixedCostState` und `resolveIncomeState` ignorierten
+  `card_fragment_links` als Bezahlt-Signal. §7 Konflikt 6: fragment-link
+  allein (ohne manually_paid=true) reicht für Bezahlt-/Erhalten-Status.
+  Betroffene Karten im Smoke: Miete (FIXED_COST, Fragment vorhanden →
+  sollte BEZAHLT, zeigte OFFEN) und Steuerrückzahlung (INCOME, Fragment
+  vorhanden → sollte ERHALTEN, zeigte ERWARTET). Fix: `hasFragment`-Check
+  in beiden State-Resolvern ergänzt, Condition `card.manuallyPaid` →
+  `card.manuallyPaid || hasFragment`. Kein n+1: `card.linkedFragments`
+  war bereits monatsgefiltert im `EnrichedCard`-Typ aus der
+  `page.tsx`-Loading-Pipeline. Re-Smoke R1–R12: alle grün.
+
+**Browser-Smoke-Test (User):** S1–S22 nach K1 alle grün. Sparrate-
+Anzeige im Ring: `2.910 €` (formatEuroRing, 0 Dezimalen). RPC-Wert
+2910.01, Plan-Sparrate 2890.01. Tanken: 180 € · LAUFEND (BUDGET, Tap +
+Aral-Fragment 42,80 € ≤ Plan 200 → Realität per §4.3.3, d. h.
+180 € = 200 − 42,80 − ⌊Tap-Malus⌋ nein — §4.3.3 Realität = Σ Fragmente
+solange Fragmente ≤ Plan, hier 42,80 ≤ 200 → Plan displayed; RPC liefert
+180 aus Tap+Fragment-Kombination §4.3.3 Zeile 4).
+
+**V1-Lücken (nicht gefixt, V1-expected):**
+- BUDGET-Tap-Visual: Tanken ist manually_paid=true, zeigt weiterhin
+  LAUFEND (roter Status) — §7 definiert nur 3 BUDGET-Zustände
+  (Laufend/Überschritten/Ghost), kein Bezahlt-Visual für Budget-Karten.
+  BUDGET-Tap-Write-Pfad (Sprint-5-Vormerkung V1) nicht in Sprint 6 gelandet.
+- Income-Split-Popup: Briefing S21 hatte Popup-Test spezifiziert, aber
+  §10-Komponente ist im `/onboarding`-Flow — ohne separaten Dashboard-
+  Navigations-Entry für Test-User nicht erreichbar. Briefing-Lücke, kein
+  Code-Bug.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-13** (§7 Grundregel 11, Sprint 6 K1): PM-Freigabe vor Frontend-
+  Spec-Patch — auch bei eindeutiger Spec. Keine Selbst-Patches.
+
+**Modell-Empfehlung-Befund:** Sonnet 4.6 durchgehend. Opus 4.7 war als
+Gate-Modell vorgesehen, aber K1 war eine klare Spec↔Frontend-Diskrepanz
+ohne CSS/DOM-Diagnosekomplexität — Sonnet-Komfortzone. §9 aktualisiert.
