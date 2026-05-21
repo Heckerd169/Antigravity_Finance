@@ -5,6 +5,7 @@ import {
   calculateCardAmountForMonth,
   isCardActiveInMonth,
   getEffectivePlanForMonth,
+  getSplitFactor,
 } from "@/lib/rpc";
 import {
   addMonths,
@@ -13,6 +14,7 @@ import {
   ymToDbDate,
 } from "@/lib/months";
 import { DashboardRingStage } from "@/components/dashboard-ring-stage";
+import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
 import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
@@ -74,14 +76,21 @@ export default async function Home({ searchParams }: HomeProps) {
 
   let realCurrent: number | null = null;
   let realPlanned: number | null = null;
+  let splitFactor = 1.0;
   try {
-    [realCurrent, realPlanned] = await Promise.all([
+    [realCurrent, realPlanned, splitFactor] = await Promise.all([
       calculateSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
       calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
+      getSplitFactor(supabase, { userId: user!.id, month: targetDbDate }),
     ]);
   } catch (err) {
     console.error("Sparrate-RPCs fehlgeschlagen", err);
   }
+
+  const ichPercent = Math.round(splitFactor * 100);
+  const partnerPercent = 100 - ichPercent;
+  const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
+  const targetActiveMonth = { year: tmYear, month: tmMonth };
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
 
@@ -233,7 +242,29 @@ export default async function Home({ searchParams }: HomeProps) {
         unassignedPreviousMonthCount={unassignedPreviousMonthCount}
       />
 
-      <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
+      <div className={styles.ringRow}>
+        <IncomeLabel
+          person="ICH"
+          splitPercent={ichPercent}
+          initialGrossAnnual={ichLatest?.grossAnnual}
+          initialNetMonthly={ichLatest?.netMonthly}
+          counterpartGrossAnnual={partnerLatest?.grossAnnual}
+          activeMonth={targetActiveMonth}
+          taxClass={taxClass}
+          taxYear={taxYear}
+        />
+        <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
+        <IncomeLabel
+          person="PARTNER"
+          splitPercent={partnerPercent}
+          initialGrossAnnual={partnerLatest?.grossAnnual}
+          initialNetMonthly={partnerLatest?.netMonthly}
+          counterpartGrossAnnual={ichLatest?.grossAnnual}
+          activeMonth={targetActiveMonth}
+          taxClass={taxClass}
+          taxYear={taxYear}
+        />
+      </div>
 
       <InteractionZone
         fragments={fragments}
