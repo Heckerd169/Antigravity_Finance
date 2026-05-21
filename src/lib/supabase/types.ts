@@ -521,6 +521,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      toggle_card_manually_paid: {
+        Args: { p_card_id: string; p_month: string }
+        Returns: boolean
+      }
     }
     Enums: {
       card_attribution: "ICH" | "GEMEINSAM"
