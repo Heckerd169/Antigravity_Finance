@@ -127,6 +127,21 @@ export async function getSplitFactor(
   return data ?? 1.0;
 }
 
+/** Sprint 7: Idempotenter Toggle für manually_paid auf allen Card-Types.
+ *  RPC handelt Ownership-Check, Month-Range-Check und Day-Normalization intern.
+ *  Returns den neuen manually_paid-Status. Throw-on-Error per LL-2. */
+export async function toggleCardManuallyPaid(
+  client: AppSupabaseClient,
+  args: { cardId: string; month: string },
+): Promise<boolean> {
+  const { data, error } = await client.rpc("toggle_card_manually_paid", {
+    p_card_id: args.cardId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return data as boolean;
+}
+
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────
 
 export type CreateCardDirectArgs = {

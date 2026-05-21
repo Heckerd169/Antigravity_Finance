@@ -2,42 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { toggleCardManuallyPaid } from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
   const month = formData.get("month") as string; // "YYYY-MM-01"
-
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht authentifiziert");
-
-  // Aktuellen Tap-Status lesen
-  const { data: existing } = await supabase
-    .from("card_monthly_states")
-    .select("manually_paid")
-    .eq("card_id", cardId)
-    .eq("month", month)
-    .maybeSingle();
-
-  const currentPaid = existing?.manually_paid ?? false;
-
-  // UPSERT mit toggled manually_paid (Defense-in-Depth: kein UPDATE, CLAUDE.md §7 Regel 8)
-  const { error } = await supabase
-    .from("card_monthly_states")
-    .upsert(
-      {
-        card_id: cardId,
-        month,
-        manually_paid: !currentPaid,
-        user_id: user.id,
-      },
-      { onConflict: "card_id,month" },
-    );
-
-  if (error) throw error;
-
+  await toggleCardManuallyPaid(supabase, { cardId, month });
   revalidatePath("/", "page");
 }
 
