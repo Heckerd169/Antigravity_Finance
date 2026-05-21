@@ -1,6 +1,6 @@
 import type { EnrichedCard, FixedCostState, IncomeState, BudgetState } from "./cards.types";
 import { CardInteractive } from "./card-interactive";
-import { formatAmount, formatEuro } from "@/lib/format";
+import { formatEuro } from "@/lib/format";
 import styles from "./cards.module.css";
 
 /* K1.6: 2-Dezimalen-Formatter zentral in `lib/format.ts`. Ring (Sprint 2)
@@ -99,12 +99,18 @@ function resolveIncomeState(card: EnrichedCard, isFuture: boolean): IncomeState 
   return card.manuallyPaid || hasFragment ? "received" : "expected";
 }
 
-function resolveBudgetState(card: EnrichedCard, isFuture: boolean): BudgetState {
+function resolveBudgetState(
+  card: EnrichedCard,
+  isFuture: boolean,
+  isPast: boolean,
+  fragmentSum: number,
+): BudgetState {
   if (isFuture) return "ghost";
-  // K1.4: Vergleich gegen effectivePlan (Adjustment > Plan), nicht raw Plan.
-  // Tanken (Plan 200, Adj 250, kein Fragment) → amount=250, effectivePlan=250
-  // → 250 > 250 = false → "running" (vorher fälschlich "over").
-  return card.amount > card.effectivePlan ? "over" : "running";
+  // §3.4.4 Sprint-7-Spec (Briefing): vollständige State-Maschine
+  if (isPast && !card.manuallyPaid && fragmentSum === 0) return "ghost";
+  if (card.manuallyPaid) return "done";
+  if (fragmentSum > card.effectivePlan) return "over";
+  return "running";
 }
 
 /** K1.2/K1.4: „Spent" = Summe der Fragmentwerte (Realität). Getrennt von
@@ -250,34 +256,48 @@ function IncomeCard({
 function BudgetCard({
   card,
   state,
+  fragmentSum,
   month,
 }: {
   card: EnrichedCard;
   state: BudgetState;
+  fragmentSum: number;
   month: string;
 }) {
-  const stateClass = styles[state];
   const isGhost = state === "ghost";
-  // K1.4: Vergleichsbasis ist effectivePlan (Adjustment > Plan).
-  // K1.2: Spent ist Summe der Fragmentwerte — getrennt vom Anzeige-Betrag.
+  const isDone = state === "done";
   const effectivePlan = card.effectivePlan;
-  const spent = sumLinkedFragments(card);
-  const overshoot = Math.max(0, spent - effectivePlan);
-  const consumed = Math.min(spent, effectivePlan);
+
+  // Balken-Berechnung: für alle sichtbaren Zustände (§9.1)
+  const diff = effectivePlan - fragmentSum;
   const barWidth =
-    state === "over"
+    state === "over" || (isDone && diff < 0)
       ? 100
       : effectivePlan > 0
-      ? (consumed / effectivePlan) * 100
+      ? Math.min((fragmentSum / effectivePlan) * 100, 100)
       : 0;
+  const barIsOver = state === "over" || (isDone && diff < 0);
 
-  const restText =
-    state === "over"
-      ? `−${formatAmount(overshoot)} € über Plan`
-      : `Noch ${formatAmount(Math.max(0, effectivePlan - spent))} € frei`;
+  // Restbudget-Text (DD-D2: kein Minuszeichen bei Überschritten, §9.1)
+  let restText: string | null = null;
+  if (!isGhost) {
+    if (isDone) {
+      if (diff > 0) restText = `${formatEuro(diff)} nicht verbraucht`;
+      else if (diff < 0) restText = `${formatEuro(Math.abs(diff))} über Plan`;
+      // diff === 0 → kein Sub-Text (§9.1)
+    } else if (state === "over") {
+      restText = `${formatEuro(Math.abs(diff))} über Plan`;
+    } else {
+      restText = `Noch ${formatEuro(Math.max(0, diff))} frei`;
+    }
+  }
 
   const iconEl =
-    state === "over" ? (
+    isDone ? (
+      <div className={`${styles.icon} ${styles.iconPaid}`}>
+        <IconCheckmark />
+      </div>
+    ) : state === "over" ? (
       <div className={`${styles.icon} ${styles.iconOver}`}>
         <IconOverExclamation />
       </div>
@@ -291,22 +311,37 @@ function BudgetCard({
       </div>
     );
 
-  const stateLabel = state === "over" ? "Überschritten" : isGhost ? "Forecast" : "Laufend";
+  const stateLabel =
+    isDone ? "Abgeschlossen" :
+    state === "over" ? "Überschritten" :
+    isGhost ? "Forecast" :
+    "Laufend";
+
+  const stateLabelClass =
+    isDone ? styles.stateLabelTeal :
+    state === "over" ? styles.stateLabelRed :
+    styles.stateLabel;
+
+  const cardClass = isDone
+    ? `${styles.card} ${styles.done} ${styles.cardBudget}`
+    : `${styles.card} ${styles[state]} ${styles.cardBudget}`;
 
   return (
-    <div className={`${styles.card} ${stateClass} ${styles.cardBudget}`}>
+    <div className={cardClass}>
       <div className={styles.cardTop}>
         <div className={styles.cardLabel}>Budget</div>
         {iconEl}
       </div>
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
-      <div className={styles.stateLabel}>{stateLabel}</div>
+      <div className={stateLabelClass}>{stateLabel}</div>
 
-      {!isGhost && (
+      {!isGhost && restText && (
         <div
           className={`${styles.restAmount} ${
-            state === "over" ? styles.restAmountNeg : styles.restAmountPos
+            (state === "over") || (isDone && diff < 0)
+              ? styles.restAmountNeg
+              : styles.restAmountPos
           }`}
         >
           {restText}
@@ -320,23 +355,23 @@ function BudgetCard({
         <div className={styles.progressWrap}>
           <div
             className={`${styles.progressBar} ${
-              state === "over" ? styles.progressBarOver : styles.progressBarNorm
+              barIsOver ? styles.progressBarOver : styles.progressBarNorm
             }`}
             style={{ width: `${barWidth}%` }}
           />
         </div>
       )}
 
-      {/* Budget-Karten sind nicht tappable in Sprint 4 (kein Bezahlt-State in §7) */}
+      {/* Sprint 7: BUDGET ist jetzt tappable (§3.4.3). Ghost hat keinen Tap-Catcher. */}
       {!isGhost && (
         <CardInteractive
           cardId={card.id}
           cardName={card.name}
           month={month}
           currentAmount={card.amount}
-          tappable={false}
+          tappable
           linkedFragments={card.linkedFragments}
-          ariaLabel={card.name}
+          ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
         />
       )}
     </div>
@@ -348,10 +383,11 @@ function BudgetCard({
 type CardProps = {
   card: EnrichedCard;
   isFuture: boolean;
+  isPast: boolean;
   month: string; // "YYYY-MM-01"
 };
 
-export function Card({ card, isFuture, month }: CardProps) {
+export function Card({ card, isFuture, isPast, month }: CardProps) {
   if (card.type === "FIXED_COST") {
     const state = resolveFixedCostState(card, isFuture);
     return <FixedCostCard card={card} state={state} month={month} />;
@@ -363,6 +399,7 @@ export function Card({ card, isFuture, month }: CardProps) {
   }
 
   // BUDGET
-  const state = resolveBudgetState(card, isFuture);
-  return <BudgetCard card={card} state={state} month={month} />;
+  const fragmentSum = sumLinkedFragments(card);
+  const state = resolveBudgetState(card, isFuture, isPast, fragmentSum);
+  return <BudgetCard card={card} state={state} fragmentSum={fragmentSum} month={month} />;
 }

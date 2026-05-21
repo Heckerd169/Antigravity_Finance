@@ -110,6 +110,17 @@
   border-color: rgba(255, 69, 58, .35);
 }
 
+/* ---------- Budget-Abgeschlossen (Sprint 7 §9.1) ---------- */
+
+.done {
+  background: var(--bg-card-paid);
+  border-color: var(--border-teal);
+}
+
+.done .cardLabel { color: rgba(62, 207, 175, .45); }
+.done .cardName  { color: var(--text-primary); }
+.done .cardAmount { color: var(--text-primary); }
+
 /* ---------- Ghost (alle Typen) ---------- */
 
 .ghost {
@@ -243,6 +254,23 @@
 .running .stateLabel { color: rgba(255, 255, 255, .2); }
 .over .stateLabel { color: rgba(255, 69, 58, .55); }
 .ghost .stateLabel { color: var(--text-ghost); }
+
+/* Standalone State-Label-Varianten für Budget-done (Sprint 7) */
+.stateLabelTeal {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: rgba(62, 207, 175, .55);
+}
+
+.stateLabelRed {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: rgba(255, 69, 58, .55);
+}
 
 /* Restbudget (Budget-Karte) */
 .restAmount {

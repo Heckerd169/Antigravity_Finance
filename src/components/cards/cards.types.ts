@@ -6,7 +6,7 @@ export type CardFrequency = Database["public"]["Enums"]["card_frequency"];
 
 export type FixedCostState = "open" | "paid" | "ghost";
 export type IncomeState = "expected" | "received" | "ghost";
-export type BudgetState = "running" | "over" | "ghost";
+export type BudgetState = "running" | "over" | "done" | "ghost";
 
 /** Sprint 5: im targetMonth verknüpftes Fragment (für „Verknüpfte Fragmente"-Menüoption). */
 export type LinkedFragmentRef = {

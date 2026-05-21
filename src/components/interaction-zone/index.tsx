@@ -18,6 +18,7 @@ export function InteractionZone({
   currentMonth,
 }: InteractionZoneProps) {
   const isFuture = compareMonths(targetMonth, currentMonth) === 1;
+  const isPast = compareMonths(targetMonth, currentMonth) === -1;
 
   const items = cards.map((card: EnrichedCard) => ({
     id: card.id,
@@ -26,6 +27,7 @@ export function InteractionZone({
         key={card.id}
         card={card}
         isFuture={isFuture}
+        isPast={isPast}
         month={targetDbMonth}
       />
     ),
