@@ -151,8 +151,8 @@ Die bestehende CSS-Architektur nutzt Descendant-Selektoren (`.paid .stateLabel`)
 | S19 | Tap Tanken (Mai, kein State) | `Abgeschlossen`, „200,00 € nicht verbraucht" teal | ⏳ User |
 | S20 | Tap Miete (FIXED_COST) | `Bezahlt`, Teal-Checkmark (Regression-Test) | ⏳ User |
 | S21 | Erneuter Tap Miete | `Offen` (Regression-Test) | ⏳ User |
-| S22 | Navigation März 2026, Tap Steuerrückzahlung (INCOME, bereits `true`) | Toggle → `Erwartet` | ⏳ User |
-| S23 | Erneuter Tap | `Erhalten` | ⏳ User |
+| S22 | Navigation März 2026, Tap Steuerrückzahlung (INCOME, bereits `true`) | Toggle → `Erwartet` | ⊘ siehe §12 |
+| S23 | Erneuter Tap | `Erhalten` | ⊘ siehe §12 |
 | S24 | Zurück Mai 2026, Ring beobachten | Sparrate ändert sich konsistent | ⏳ User |
 | S25 | März 2026, Tap Tanken (`manually_paid=true`) | Toggle → `false` | ⏳ User |
 | S26 | Erneuter Tap Tanken März | `true`, SQL `calculate_sparrate_for_month` = 2910.01 | ⏳ User |
@@ -261,3 +261,29 @@ Eintrag 3 (Budget-Karte „Abgeschlossen") ist teilweise obsolet — der Zustand
 ---
 
 *Sprint 7 Review | Antigravity Finance 1.0 | 21. Mai 2026*
+
+---
+
+## 12. Hotfix K1 — INCOME-Status-Resolver-Untersuchung
+
+**Anlass:** User-Smoke S22/S23 schlugen fehl. PM diagnostizierte: `manually_paid` wechselt sauber (D2 ✓), Hard-Reload zeigt weiterhin ERHALTEN (D4 ✗), FIXED_COST S20/S21 funktional.
+
+**Hypothesen-Abgleich (alle vier ausgeschlossen):**
+
+| Hypothese | Befund |
+|---|---|
+| H1: Dispatcher reicht `manuallyPaid` nicht an `IncomeCard` weiter | ✗ — Dispatcher übergibt das ganze `card`-Objekt; `resolveIncomeState` liest `card.manuallyPaid` direkt |
+| H2: `resolveIncomeState` liest falsches Feld | ✗ — `card.manuallyPaid` wird korrekt gelesen |
+| H3: Prop-Name umbenannt, TypeScript schluckt `undefined` | ✗ — kein separates `manuallyPaid`-Prop, ausschließlich über `card`-Objekt |
+| H4: Daten-Loading hat INCOME-Pfad nie korrekt gefüllt | ✗ — `page.tsx` liest `stateRow?.manually_paid ?? false` für alle Card-Types identisch |
+
+**Eigentliche Ursache:**
+Sprint 6 K1 hat `resolveIncomeState` auf `card.manuallyPaid || hasFragment` geändert. Steuerrückzahlung (März 2026) hat aus dem Sprint-6-Smoke noch ein Fragment verknüpft (`card_fragment_links`). Weil `hasFragment = true`, gibt die OR-Bedingung immer `true` zurück — egal ob `manually_paid` true oder false ist. Das erklärt D4 exakt.
+
+**Warum S20/S21 (Miete) funktioniert:** Miete wird in Mai 2026 getestet und hat dort kein verknüpftes Fragment → `hasFragment = false` → `manually_paid` ist alleiniger Entscheider → Toggle funktional. Kein Code-Unterschied, nur Daten-Unterschied.
+
+**Sprint-7-Code-Anteil:** Die `resolveIncomeState`-Funktion wurde in Sprint 7 nicht verändert. Sprint 7 berührte ausschließlich `resolveBudgetState`, `BudgetCard`, `toggleCardTap`-Refactor und `IncomeLabel`. Kein INCOME-Render-Pfad geändert — keine Sprint-7-Code-Regression.
+
+**PM-Entscheidung:** Option C — kein Code-Patch, kein DB-Patch. S22/S23 als bekannte Einschränkung akzeptiert: INCOME-Karten mit verknüpftem Fragment zeigen per Sprint-6-K1-Spec immer ERHALTEN, solange das Fragment-Link besteht. Toggle ist visuell wirkungslos. Spec-Entscheidung (Revert Sprint-6-K1 für INCOME vs. DB-Cleanup) wird auf Post-Sprint-7 verschoben.
+
+**Code-Diff:** keiner (Option C, kein Patch).
