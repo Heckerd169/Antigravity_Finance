@@ -553,7 +553,7 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 - Interaktion: Keine — Ghost Cards sind nicht interaktiv
 - Border-Stil: Solid, KEINE gestrichelte Border
 
-### Budget-Karte — 3 Zustände
+### Budget-Karte — 4 Zustände
 
 Zusätzlich zu den Fixkosten-Eigenschaften: Fortschrittsbalken (`3px`) an Unterkante + Restbudget-Anzeige + Padding-Bottom `18px`.
 
@@ -564,15 +564,42 @@ Zusätzlich zu den Fixkosten-Eigenschaften: Fortschrittsbalken (`3px`) an Unterk
 - Kartenname + Betrag: `rgba(255,255,255,.45)`
 - Status: `Laufend` · Restbudget: `Noch X € frei` in `rgba(62,207,175,.40)`
 - Balken: `rgba(62,207,175,.45)` · Breite = verbrauchter %
+- Interaktion: Tap → Abgeschlossen
 
 **Überschritten:**
 - Background: `#160A08` · Border: `rgba(255,69,58,.35)`
 - Kartenname: `#ffffff` · Betrag: `#FF453A`
-- Status: `Überschritten` · Restbudget: `−X € über Plan` in `rgba(255,69,58,.65)`
+- Status: `Überschritten` · Restbudget: `X € über Plan` in `rgba(255,69,58,.65)`
 - Balken: `#FF453A` · Breite = 100%
+- Interaktion: Tap → Abgeschlossen
+
+**Abgeschlossen** *(neu seit Sprint 7, 21.05.2026)*:
+- Background: `#0A140E` · Border: `rgba(62,207,175,.22)` (analog FIXED_COST-Bezahlt)
+- Kartenname + Betrag: `#ffffff`
+- Status-Label: `Abgeschlossen` · `rgba(62,207,175,.55)`
+- Icon: Teal-Checkmark `rgba(62,207,175,.85)` auf `rgba(62,207,175,.1)` bg, Border `rgba(62,207,175,.28)`
+- Balken **bleibt sichtbar**, Farbe + Breite je nach Sub-Variante:
+  - `fragment_sum < effective_plan`: Balken teal `rgba(62,207,175,.45)`, Breite = verbrauchter %
+  - `fragment_sum > effective_plan`: Balken rot `#FF453A`, Breite 100%
+  - `fragment_sum = effective_plan`: Balken teal, Breite 100%
+- Restbudget-Text (`diff = effective_plan − fragment_sum`, X = `|diff|`):
+  - `diff > 0` → `X € nicht verbraucht` in teal `rgba(62,207,175,.55)`
+  - `diff < 0` → `X € über Plan` in rot `rgba(255,69,58,.65)` (Icon bleibt teal — User hat Überschreitung akzeptiert)
+  - `diff = 0` → kein Sub-Text (nur Status-Label sichtbar)
+- Interaktion: Tap → zurück zu Laufend / Überschritten je nach `fragment_sum` vs. `effective_plan`
 
 **Ghost (Forecast):**
 - Identisch zu Fixkosten-Ghost-Variante
+- Tap nicht möglich (Ghost ist nicht interaktiv, §7 Konflikt 3)
+
+**Interaktions-Matrix BUDGET-Tap:**
+
+| Vor-Tap | Nach-Tap | Berechnungs-Wert (§4.3.3) |
+|---|---|---|
+| Laufend (`fragment_sum ≤ plan`) | Abgeschlossen | `fragment_sum` (auch `0`, wenn keine Fragmente) |
+| Überschritten (`fragment_sum > plan`) | Abgeschlossen | `fragment_sum` (Realität) |
+| Abgeschlossen (`manually_paid=true`) | Laufend / Überschritten | Plan oder Realität, je nach Fragment-Lage |
+| Ghost | (nicht tappable) | — |
 
 ### Einnahmen-Karte — 2 Zustände
 
