@@ -109,10 +109,10 @@ Antigravity_Finance/
 | 4 | Karten — alle 3 Typen × alle Zustände (§7) | 🟢 Done | sprints/sprint_04_briefing.md | 16. Mai 2026 |
 | 5 | Untere Interaktionszone (§8) | 🟢 Done | sprints/sprint_05_briefing.md | 17. Mai 2026 |
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | 🟢 Done | sprints/sprint_06_briefing.md | 20. Mai 2026 |
-| 7 | CSV-Import / Distiller (§11) | — | — | — |
-| 8 | Soft-Delete-Pattern (§2.4) | — | — | — |
-| 9 | Sparraten-Treppe (§9) | — | — | — |
-
+| 7 | UI-Komplettierung (V1 BUDGET-Tap + V6 §10 Income-Split-Trigger + V2 Cleanup) | 🟢 Done | sprints/sprint_07_briefing.md | 21. Mai 2026 |
+| 8 | CSV-Import / Distiller (§11) | — | — | — |
+| 9 | Soft-Delete-Pattern (§2.4) | — | — | — |
+| 10 | Sparraten-Treppe (§9) | — | — | — |
 Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 
 **Sprint 6 ist der harte Gate** für Sprints 2–5. Wenn der dort spezifizierte Test-Case
@@ -132,9 +132,11 @@ die Design-Doku.
 - `karten_final_v4.html` zeigt eine Budget-Karte mit „Gemeinsam"-Attribution („Essen 260 €")
   — Design-Doku §7 verbietet das explizit (Budget = immer ICH, datenbankseitig durch
   Constraint abgesichert). Prototyp-Visual ignorieren.
-- `karten_final_v4.html` zeigt einen Budget-Zustand „Abgeschlossen" mit „X € nicht
-  verbraucht" — Design-Doku §7 spezifiziert für Budget nur 3 Zustände (Laufend,
-  Überschritten, Ghost). Kein „Abgeschlossen". Prototyp-Visual ignorieren.
+- ~~`karten_final_v4.html` zeigt einen Budget-Zustand „Abgeschlossen" mit „X € nicht
+  verbraucht" — Design-Doku §7 spezifiziert für Budget nur 3 Zustände~~
+  → **Aufgehoben durch Sprint 7 (21.05.2026):** Budget-Karten haben ab Sprint 7
+  vier Zustände inkl. „Abgeschlossen". Design-Doku §7 in diesem Patch-Lauf
+  aktualisiert. Prototyp-Visual ist jetzt produktiv.
 
 **Sektionen, die Claude Code immer prüft:**
 
@@ -277,6 +279,25 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     (mit Design-Doku-Referenz), bevor ein Patch-Auftrag formuliert wird.
     Spontane Patches ohne PM-Freigabe bleiben verboten — auch wenn die Spec
     eindeutig scheint. (LL-13)
+    12. **Phasen-sequenzielle Multi-Komponenten-Sprints.** Wenn ein Sprint mehrere
+    unabhängige Komponenten umfasst (Sprint 7 = V1 BUDGET-Tap + V6 Income-Split-
+    Trigger + V2 Cleanup), ist eine sequenzielle Phasen-Struktur mit eigenen
+    Commits pro Phase verbindlich. Phase N+1 startet erst nach grünem Smoke +
+    Commit von Phase N. Vorteile: Diagnose-Klarheit bei Bug-Befunden (rote Phase
+    blockiert nicht die anderen), atomare Reverts via einzelnen Phase-Commit,
+    Smoke-Disziplin pro Phase erzwingt schrittweise Verifikation. Anti-Pattern:
+    drei Phasen in einem Riesen-Commit zu mischen — bei Bug nicht reversibel.
+    (LL-14)
+13. **PM-Smoke-Test-Plans gegen Cross-Sprint-Konflikt-Regeln prüfen.** Vor
+    Sprint-Briefing-Approval prüft der PM jeden Smoke-Schritt explizit gegen
+    alle aktiven §7-Konflikte und Sprint-K-Logiken aus früheren Sprints, um
+    keine inhärent unmögliche Erwartung zu spec'n. Sprint-7-K1-Episode: S22
+    erwartete Tap-Toggle auf einer Fragment-verlinkten INCOME-Karte → Sprint-
+    6-K1-Logik (`manuallyPaid || hasFragment`) verhindert visuellen Wechsel.
+    Diagnose-Aufwand wäre vermeidbar gewesen durch Cross-Check beim Briefing-
+    Entwurf. Auch: PM-Smoke-Tests müssen die Test-Daten-Eigenschaften
+    (insbesondere `card_fragment_links`-Status pro Karte/Monat) explizit
+    berücksichtigen — nicht nur den Card-Type. (LL-15)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -398,9 +419,11 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 3 (Header / Timeline-Navigation) | ~~Sonnet 4.6~~ ✓ erledigt |
 | Sprint 4 (Karten) | ~~Sonnet 4.6 + Opus 4.7 (für K2/K3)~~ ✓ erledigt |
 | Sprint 5 (Untere Interaktionszone) | ~~Sonnet 4.6~~ ✓ erledigt |
-| Sprints 8, 9 (UI-Komponenten) | **Sonnet 4.6** — Routine gegen klare Spec |
 | Sprint 6 (Sparrate-Verifikation) | ~~Opus 4.7 → Sonnet 4.6~~ ✓ erledigt (→ LL-13) |
-| Sprint 7 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
+| Sprint 7 (UI-Komplettierung V1+V6+V2) | ~~Sonnet 4.6~~ ✓ erledigt — Briefing klar spec'd, kein Opus-Eskalations-Bedarf |
+| Sprint 8 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
+| Sprint 9 (Soft-Delete-Pattern) | **Sonnet 4.6** — Routine gegen klare Spec |
+| Sprint 10 (Sparraten-Treppe) | **Sonnet 4.6** — UI-Komponente |
 
 **Eskalations-Heuristik:** Wenn Sonnet 4.6 bei einer Korrektur nach einem
 erfolglosen Fix-Versuch immer noch nicht alle Symptome löst, direkt auf Opus 4.7
@@ -950,3 +973,91 @@ solange Fragmente ≤ Plan, hier 42,80 ≤ 200 → Plan displayed; RPC liefert
 **Modell-Empfehlung-Befund:** Sonnet 4.6 durchgehend. Opus 4.7 war als
 Gate-Modell vorgesehen, aber K1 war eine klare Spec↔Frontend-Diskrepanz
 ohne CSS/DOM-Diagnosekomplexität — Sonnet-Komfortzone. §9 aktualisiert.
+
+### Sprint 7 · APPROVED 21. Mai 2026
+**Komponente:** UI-Komplettierung — V1 BUDGET-Tap-UI (neuer §7-Zustand
+„Abgeschlossen") + V6 §10 Income-Split-Popup-Dashboard-Trigger (klickbare
+ICH/PARTNER-Labels neben dem Ring) + V2 `CardsCarousel`-Orphan-Cleanup. Drei
+sequenzielle Phasen, Phasen-eigene Commits gemäß LL-14. Branch
+`sprint/07-ui-completion`.
+
+**Voraussetzungen erfüllt:** Sprints 0–6 grün auf `main`. Architekt-Pre-
+Sprint-7 Stufe 1 (RPC `toggle_card_manually_paid` 7/7 PASS, idempotenter
+Toggle, Past-Month-Policy B). Architekt-Stufe 2 (Test-Daten Mai 2026:
+Hobby + Auswärts Essen + 2 Fragmente) liefert verifiziert §4.6-Anker
+unangetastet.
+
+**Implementierung (6 Commits auf `sprint/07-ui-completion`):**
+- `docs: sprint 7 briefing`
+- `chore: regenerate supabase types after toggle_card_manually_paid RPC` —
+  `src/lib/supabase/types.ts` mit neuer RPC-Signatur typisiert
+- `chore: remove orphaned sprint-4 cards carousel wrapper` —
+  `src/components/cards/index.tsx` (Phase 1, V2-Cleanup)
+- `feat: wire income-split popup to dashboard click trigger (v6)` — neue
+  Komponente `src/components/income-labels/` (Label-Avatare + Klick-Trigger),
+  `src/app/page.tsx` rendert Ring-Row in Flex mit ICH/PARTNER-Labels;
+  bestehende `src/components/income-split/`-Komponente unverändert,
+  Dashboard-Trigger nutzt `isFirstIncomeEntry={false}` → Steuerklasse-
+  Sektion versteckt (Phase 2, V6)
+- `feat: enable budget card tap with abgeschlossen visual state (v1)` —
+  RPC-Wrapper `toggleCardManuallyPaid` in `src/lib/rpc.ts` (Throw-on-Error);
+  Server Action `toggleCardTap` refactored auf RPC, einheitlicher Schreibpfad
+  für alle 3 Card-Types; Tap-Catcher für BUDGET aktiviert; neuer §7-Zustand
+  `Abgeschlossen` für BUDGET in `src/components/cards/card.tsx` +
+  `cards.module.css` (Phase 3, V1)
+- `docs: sprint 7 review` mit K1-Diagnose-Append (kein Code-Patch)
+
+**Korrekturen während Sprint:** keine. K1 (siehe unten) war Diagnose-only.
+
+**K1 — Diagnose-only, kein Code-Bug:** User-Smoke S22/S23 schlugen fehl
+(Tap auf Steuerrückzahlung INCOME März → kein visueller Wechsel). Tiefen-
+Diagnose ergab: DB-Toggle funktional (D2-VOR `false`, NACH `true`), aber
+Sprint-6-K1-Logik (`resolveIncomeState`: `card.manuallyPaid || hasFragment`)
+verhindert visuellen Statuswechsel bei Fragment-verlinkter Karte. Sprint-
+7-Code unverändert in `resolveIncomeState`. PM-Smoke-Test-Spec-Fehler,
+nicht Sprint-7-Regression. PM-Entscheidung 21.05.2026: kein Patch, S22/S23
+als ⊘ markiert. → LL-15.
+
+**Browser-Smoke-Test (User):** 19/22 grün. Alle BUDGET-Visual-Pfade (S13/S14/
+S17/S18/S19 inkl. neue ABGESCHLOSSEN-Sub-Varianten für `diff > 0` teal und
+`diff < 0` rot mit Teal-Checkmark), Income-Split-Dashboard-Trigger (S3/S4/S7/
+S8/S10), FIXED_COST-Tap-Regression (S20/S21), BUDGET-Past-Month-Toggle
+(S25/S26 → §4.6-Anker `2910.01` bestätigt). 1× ✗ S5 (PM-Spec-Fehler in
+Briefing-Erwartung; tatsächliches Verhalten korrekt — bei höherem Brutto
+ohne Netto-Änderung sinkt die Sparrate erwartungskonform). 2× ⊘ S22/S23
+(K1, siehe oben).
+
+**V1-Lücken / Sprint-8-Vorlauf:**
+- INCOME-Tap auf Fragment-verlinkter Karte ist visueller NoOp (Sprint-6-K1-
+  Logik). Reevaluation §7 Konflikt 6 für INCOME mit Design-Direktor in
+  Sprint 8 — soll Tap-Catcher visuell NoOp bleiben oder gar nicht rendern?
+- Test-User-Setup hat keine MONTHLY-INCOME-Karte ohne Fragment-Link →
+  INCOME-Tap-Toggle-Pfad ist nicht sinnvoll smoke-bar. Architekt-Auftrag
+  Pre-Sprint-8: MONTHLY-INCOME-Karte anlegen (z. B. „Lohn ICH" 3.100 €
+  net, MONTHLY, first_active Januar 2026, keine Fragmente).
+- BUDGET-Ghost-Bedingung (`isPast && !manuallyPaid && fragment_sum == 0`)
+  ist spec-konform implementiert, aber nicht im Standard-Smoke testbar
+  (Test-Daten-Lücke). Optional Sprint-8-Erweiterung.
+- DEV-Buttons in `dashboard-dev-panel.tsx` bleiben NODE_ENV-gated. Production-
+  Bundle elidiert sie via Tree-Shaking — bewusste Sprint-7-Entscheidung
+  zur Refactor-Risiko-Minimierung.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-14** (§7 Grundregel 12, Sprint 7 PM-Pattern): Phasen-sequenzielle
+  Multi-Komponenten-Sprints.
+- **LL-15** (§7 Grundregel 13, Sprint 7 K1): PM-Smoke-Test-Plans gegen
+  Cross-Sprint-Konflikt-Regeln prüfen.
+
+**Schreibpfad-Vereinheitlichung:** `toggle_card_manually_paid` ist seit
+Sprint 7 der **einzige** Schreibweg auf `card_monthly_states.manually_paid`
+für alle Card-Types (FIXED_COST, INCOME, BUDGET). Kein dualer UPSERT-Pfad
+mehr in `src/components/cards/actions.ts`. AD2 Sprint 7.
+
+**Design-Doku §7-Patch:** Sektion „Budget-Karte — 3 Zustände" zu
+„4 Zustände" aktualisiert (separater Doku-Patch durch PM nach Sprint-7-
+Approval). §5 Bekannte Abweichungen Eintrag 3 als aufgehoben markiert.
+
+**Modell-Empfehlung-Befund:** Sonnet 4.6 durchgehend. Briefing-Spec war
+klar genug, keine CSS/DOM-Diagnose-Komplexität. Eskalations-Heuristik §9
+nicht ausgelöst. Sprint 7 bestätigt LL-14 + Spec-präzise Briefings als
+verlässliche Sonnet-Komfortzone für UI-Komplettierungs-Sprints.
