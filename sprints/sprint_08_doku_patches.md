@@ -55,4 +55,8 @@ Prototyp `csv_import_drop_distill.html`).
 **Anzuhängender Satz:**
 
 > **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt).
-> Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`.
+> Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`,
+> finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`,
+> de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus
+> derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung
+> 22.05.2026).

@@ -190,7 +190,8 @@ export default async function Home({ searchParams }: HomeProps) {
       "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at",
     )
     .order("transaction_date", { ascending: true })
-    .order("imported_at", { ascending: true });
+    .order("imported_at", { ascending: true })
+    .order("description", { ascending: true });
 
   const fragments: FragmentRow[] = (rawFragments ?? [])
     .filter(
@@ -235,7 +236,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
   // P5: Stack-Sortierung (§10/§11) — unzugeordnete Fragmente zuerst (Arbeits-
   // fläche oben), zugeordnete/gedimmte unten. Innerhalb beider Gruppen:
-  // transaction_date ASC, Tiebreaker imported_at ASC. ISO-Strings → lexikografisch.
+  // transaction_date ASC, dann imported_at ASC. Finaler Tiebreaker: Beschreibung
+  // alphabetisch aufsteigend (de-DE) — nötig, weil Same-Day-Buchungen aus
+  // derselben Import-Charge identisches imported_at haben (PM-Entscheidung
+  // 22.05.2026; sichert AC-Sort-3 Reproduzierbarkeit). ISO-Strings → lexikografisch.
   const cmpStr = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
   fragments.sort((a, b) => {
     const ga = a.status === "UNASSIGNED" ? 0 : 1;
@@ -243,7 +247,9 @@ export default async function Home({ searchParams }: HomeProps) {
     if (ga !== gb) return ga - gb;
     const dateCmp = cmpStr(a.transaction_date, b.transaction_date);
     if (dateCmp !== 0) return dateCmp;
-    return cmpStr(a.importedAt ?? "", b.importedAt ?? "");
+    const impCmp = cmpStr(a.importedAt ?? "", b.importedAt ?? "");
+    if (impCmp !== 0) return impCmp;
+    return a.description.localeCompare(b.description, "de-DE");
   });
 
   // ── Linked-Fragments pro Karte für den targetMonth berechnen ─────────────
