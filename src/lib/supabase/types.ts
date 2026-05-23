@@ -510,6 +510,7 @@ export type Database = {
         Args: { p_card_name: string; p_description: string }
         Returns: number
       }
+      process_csv_import: { Args: { p_rows: Json }; Returns: Json }
       restore_deletion: { Args: { p_id: string }; Returns: boolean }
       schedule_deletion: {
         Args: {
