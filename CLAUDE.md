@@ -110,7 +110,7 @@ Antigravity_Finance/
 | 5 | Untere Interaktionszone (§8) | 🟢 Done | sprints/sprint_05_briefing.md | 17. Mai 2026 |
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | 🟢 Done | sprints/sprint_06_briefing.md | 20. Mai 2026 |
 | 7 | UI-Komplettierung (V1 BUDGET-Tap + V6 §10 Income-Split-Trigger + V2 Cleanup) | 🟢 Done | sprints/sprint_07_briefing.md | 21. Mai 2026 |
-| 8 | CSV-Import / Distiller (§11) | — | — | — |
+| 8 | CSV-Import / Distiller (§11) |  🟢 Done | sprints/sprint_08_briefing.md | 23.05.2026 |
 | 9 | Soft-Delete-Pattern (§2.4) | — | — | — |
 | 10 | Sparraten-Treppe (§9) | — | — | — |
 Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
@@ -298,6 +298,21 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Entwurf. Auch: PM-Smoke-Tests müssen die Test-Daten-Eigenschaften
     (insbesondere `card_fragment_links`-Status pro Karte/Monat) explizit
     berücksichtigen — nicht nur den Card-Type. (LL-15)
+14. **Doku-Patches durch Claude Code als separate Patch-Datei.** Claude Code
+    editiert die Design-Doku und die Schema-Doku NIE selbst (siehe „Was Claude
+    Code NIE macht"). Wenn ein Briefing Doku-Patches fordert (AC5-Pattern),
+    liefert Claude Code diese ausschließlich als separate Patch-Datei
+    `sprints/sprint_NN_doku_patches.md` mit Anker + Patch-Satz pro Stelle. Der
+    PM verifiziert die Patches und gibt sie zur Anwendung frei. Etabliert in
+    Sprint 8. (LL-16)
+15. **`app_config`-Schwellen server-seitig lesen + State-Gating dort.**
+    Konfigurierbare Schwellen (Konfidenz, Badge, Auto-Absorb, etc.) werden
+    server-seitig aus `app_config` gelesen und das State-Gating dort
+    vorgenommen. Client-Components erhalten nur aufgelöste Werte (z. B.
+    `suggestedCardName` statt rohem `confidence` + Schwelle). Spec-Defaults
+    dürfen nur als Defense-in-Depth-Fallback hartcodiert sein. Hält Regel 5
+    (`app_config` als Single-Source-of-Truth) ein und vermeidet Schwellen-Drift
+    zwischen DB-Logik und UI-Logik. Etabliert in Sprint 8 P4. (LL-17)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -1061,3 +1076,133 @@ Approval). §5 Bekannte Abweichungen Eintrag 3 als aufgehoben markiert.
 klar genug, keine CSS/DOM-Diagnose-Komplexität. Eskalations-Heuristik §9
 nicht ausgelöst. Sprint 7 bestätigt LL-14 + Spec-präzise Briefings als
 verlässliche Sonnet-Komfortzone für UI-Komplettierungs-Sprints.
+
+### Sprint 8 · APPROVED 23. Mai 2026
+**Komponente:** CSV-Import + Distiller (§11) DKB-only + Konflikt-6-Cleanup
+INCOME-Tap-Catcher + Mini-Patches Fragment-Stack-Sortierung (§10 Spec-Lücke)
+und Income-Split-Avatar-Icon (pre-existing Gap). Sieben sequenzielle Phasen,
+Phasen-eigene Commits gemäß LL-14. Branch `sprint/08-csv-import`.
+
+**Voraussetzungen erfüllt:** Sprints 0–7 grün auf `main`. Architekt-Pre-Sprint-8
+Stufe 1 (Test-Karte „Nebenjob" — INCOME / MONTHLY / `first_active_month
+2026-05-01` / `planned_amount 200,00 €` / ohne Fragment-Link) erfüllt
+Sprint-7-V1-Lücke. Architekt-Pre-Sprint-8 Stufe 2 (Distiller-Architektur-
+Entscheidungen + RPC-Inventur): K-B/K-C atomare RPC + DB-seitiger Hash via
+`pgcrypto.digest`, RPCs `calculate_match_confidence` / `name_similarity` /
+`amount_match` / `frequency_match` LIVE + §11-konform. §4.6-Anker (`2910.01`)
+intakt.
+
+**Architekt-Sprint-Lieferung:** RPC `process_csv_import(p_rows jsonb)
+RETURNS jsonb` LIVE in V2-Stand. V1 hatte PL/pgSQL-Pitfall `INSERT ... ON
+CONFLICT DO NOTHING RETURNING id INTO v_var` (Variable bleibt NULL bei
+Conflict-Pfad trotz INSERT-Erfolg) — Architekt-seitig via CTE-Pattern gefixt.
+Frontend nicht betroffen. Enum-Klarstellung: `card_fragment_links.origin`
+nutzt `'AUTO_ABSORBED'` (Past Tense, konsistent mit `'MANUAL_DROP'`).
+
+**Implementierung (7 Commits auf `sprint/08-csv-import`):**
+- `sprint-8 p0: income tap-catcher only renders when no fragment linked` —
+  `IncomeCard` (`card.tsx`): `tappable = !hasFragment`, `renderTapCatcher`
+  per DD-Spec. `cards.module.css`: `.notTappable { cursor: default }` +
+  Hover-Lift-Suppression. State-Resolution unverändert. (Phase P0)
+- `sprint-8 p1: dkb csv parser with format detection and error classification`
+  — neues framework-freies Modul `src/lib/dkb-csv.ts`. Format-Heuristik
+  (Header `"Buchungsdatum"` in ersten 8 Zeilen + `;`-Separator), CSV-Tokenizer
+  byte-exakt (kein Trimming), Feld-Mapping `DD.MM.YY` → ISO / deutscher Betrag
+  / DKB-Bank-Adapter `description = "{Empfänger} | {Verwendungszweck}"`.
+  14/14 interne Unit-Tests grün. (Phase P1)
+- `chore: regenerate supabase types for process_csv_import` —
+  `src/lib/supabase/types.ts`
+- `sprint-8 p2: wire portal to process_csv_import rpc with full state machine`
+  — `processCsvImport`-Wrapper in `rpc.ts` (Throw-on-Error), Server-Action
+  `processCsvImportAction`, `portal.tsx`-Stub raus, echte Pipeline-State-Machine
+  gemäß §11. Dev-Buttons NODE_ENV-gated, Tree-Shaking intakt. (Phase P2)
+- `sprint-8 p3: fragment stack refresh after import` — `processCsvImportAction`
+  ruft `revalidatePath("/", "page")` nach RPC, RSC-Refetch-Pattern statt
+  Realtime-Subscription. (Phase P3)
+- `sprint-8 p4: ai suggestion badge rendering on fragment cards` —
+  `FragmentRow` um `suggestedCardName` erweitert, Server-seitige Schwellen-
+  Lesung via `app_config` (`badge_threshold` / `auto_absorption_threshold`),
+  Badge-Text `KI-Vorschlag: {Name}` mit generischem Yellow-Soft-Akzent
+  `rgba(255,200,60,.5)` (OQ1-Default). (Phase P4)
+- `sprint-8 p5: fragment stack sort order (unassigned first, transaction_date asc)`
+  — `FragmentRow` um `importedAt` erweitert, Comparator in `page.tsx`
+  (4-stufig: Gruppe UNASSIGNED zuerst, dann `transaction_date ASC`,
+  `imported_at ASC`, finaler Tiebreaker `description ASC` de-DE).
+  PM-Patch-Auftrag wegen §10/§11-Spec-Lücke. (Phase P5)
+- `sprint-8 p6: income split avatar icon (lucide User)` — inline-SVG
+  Person-Silhouette in `.avatar`-Container für ICH + PARTNER, 1:1 aus Prototyp
+  `income_split_final.html`. PM-Scope-Expansion wegen pre-existing Gap. (Phase P6)
+- `docs: sprint 8 design-doc + claude.md patches` + `docs: sprint 8 closing artifacts`
+
+**Doku-Patches (PM-Anwendung nach Sprint-Approval):**
+- Design-Doku §7 Konflikt 6: INCOME-Spezialregel (Tap-Catcher nicht gerendert
+  wenn `hasFragment === true`, Cursor `default`, `manually_paid` nicht
+  UI-schreibbar). DD-Approval 22.05.2026.
+- Design-Doku §11 Hash-Algorithmus: Bank-Adapter (DKB-Format, Pipe-Separator).
+- Design-Doku §11 Schwellwert: Mehrfach-Match-Tiebreaker (höchster Score
+  gewinnt, Tie → alphabetisch erster Karten-Name) — Sprint-8-OQ2/OQ3.
+- Design-Doku §10 Fragment-Stack: Sortier-Regel (4-stufig) — Sprint-8-P5
+  Spec-Lücke.
+
+**Schema-Doku-Rotation:** Schema-Doku v2 → v3 als Architekten-Lieferung am
+Sprint-8-Close abgeschlossen (23.05.2026). Ersetzt v2 als aktiven Snapshot.
+Dokumentiert alle 6 neuen RPCs der Sprints 2–8, drei neue `fragments`-Spalten
+(`confidence`, `suggested_card_id`, `imported_at`), `cards.deleted_at`
+(Soft-Delete-Marker), `card_monthly_states.adjustment_scope` + `closed_at`-
+Semantik aktualisiert (von `toggle_card_manually_paid` genutzt), View
+`fragments_with_status` mit `AUTO_ABSORBED`-Status, neue Section 11 mit 13
+funktionalen Indexes. v2 bleibt als historischer Snapshot.
+
+**Browser-Smoke-Test (User):** S1.1/S1.2 grün (Konflikt-6-Cleanup INCOME),
+S2.1–S2.4 grün (Parser intern, via Claude Code), S3.1/S3.2/S3.4/S5.1 grün
+(echter DKB-CSV: Import / Re-Import-Dedup / Cross-Account-Pfad-A /
+§4.6-Anker = `2910.01`). S3.3 (Stack-Sortierung) initial undefiniert →
+PM-Patch P5 → grün. S4 (Badge + Auto-Absorb mit synthetischer CSV) im
+realen Smoke organisch erfüllt durch echtes DKB-CSV — `KI-Vorschlag`-Badge
++ Auto-Absorb beobachtet.
+
+**OQ-Entscheidungen:**
+- OQ1 (Badge-Farbe): generisches `rgba(255,200,60,.5)` Yellow-Soft für alle
+  KI-Badges. Karten-spezifische Farben = V2-C-Vormerkung.
+- OQ2/OQ3 (Mehrfach-Match): höchster Score gewinnt, Tie → alphabetisch
+  erster Karten-Name. In §11 dokumentiert (Doku-Patch oben), RPC-seitig in
+  `process_csv_import` deterministisch implementiert.
+
+**PM-Mini-Patches:**
+- P5 (Sortier-Regel): Spec-Lücke in §10/§11, beim Browser-Smoke aufgefallen
+  (S3.3 zeigte kein erkennbares Muster). PM-Entscheidung mit empirischer
+  Referenz aus Prototyp `csv_import_drop_distill.html`. Tiebreaker-Erweiterung
+  am Same-Day + Same-Import-Charge-Befund: `description ASC` (de-DE) als
+  4. Schlüssel ergänzt.
+- P6 (Avatar-Icon): pre-existing Gap im Income-Split-Component (Kreis leer,
+  Avatar fehlte für ICH + PARTNER). User-Beobachtung beim S3.3-Smoke. PM-
+  approved als Scope-Expansion.
+
+**V1-Lücken / Sprint-9-Vorlauf:**
+- V2-A: Cortal-Consors-Parser (anderes Format, 12 Vor-Header-Zeilen,
+  `DD.MM.YYYY`, getrennte Betrags-/Währungs-Spalte). Sprint-Kandidat.
+- V2-B: IBAN-Filter / `INTERNAL_TRANSFER`-Status für Cross-Account-Bewegungen.
+  Aktuell Pfad A (User lässt Cross-Account-Fragmente unzugeordnet). Schema-
+  Erweiterung `profiles.own_ibans[]` + `fragments.transfer_type` nötig.
+  Sprint-Kandidat, ggf. zusammen mit V2-A.
+- V2-C: Karten-spezifische Badge-Farben.
+- V2-D: Drag-&-Drop von Fragmenten auf Karten — Existenz-Status prüfen.
+- Soft-Delete-Pattern Karten (§2.4) — UX-Lücke „Karte aus Vergangenheit
+  löschen", Sprint-9-Kandidat.
+- Sparraten-Treppe (§9) — UI-Komponente, Sprint-9-Kandidat.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-16** (§7 Grundregel 14, Sprint 8 Doku-Patch-Pattern): Claude Code
+  editiert Design-/Schema-Doku NIE selbst, liefert Patches als separate Datei.
+- **LL-17** (§7 Grundregel 15, Sprint 8 P4): `app_config`-Schwellen
+  server-seitig lesen, State-Gating dort, Client erhält nur aufgelöste Werte.
+
+**Bundle-Stand:** Route `/` 22.4 kB (+1.0 kB ggü. Sprint 7: 21.4 kB),
+First Load JS 174 kB (+1 kB ggü. Sprint 7: 173 kB). Im Budget. CSV-Parser
++ Avatar-SVG erklären den Zuwachs.
+
+**Modell-Empfehlung-Befund:** Opus 4.7 wegen Hash-Determinismus, atomarer
+RPC-Verkabelung, mehrphasiger Pipeline-Reihenfolge. Sprint 8 ohne Spec-
+Verstoß, zwei PM-genehmigte Scope-Expansionen (P5, P6), keine LL-13-
+Verletzung — Claude Code hat in beiden Fällen gestoppt und PM-Freigabe
+abgewartet. Eskalations-Heuristik §9 bestätigt für Daten-Pipeline-Sprints.

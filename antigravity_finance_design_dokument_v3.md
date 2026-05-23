@@ -679,7 +679,7 @@ Realität (Fragment) gewinnt immer. Prioritätskette: **Realität → Anpassung 
 
 **Konflikt 6 — Manuell bezahlt + Eject:**
 `manually_paid` und `card_fragment_links` sind unabhängig. Eject entfernt nur den Link — `manually_paid` bleibt erhalten. Karte bleibt Bezahlt.
-
+INCOME-Spezialregel: Ist `hasFragment === true`, wird der Tap-Catcher nicht gerendert und der Cursor bleibt `default`. `manually_paid` wird in diesem Fall nicht über die UI geschrieben.
 ---
 
 ## 8. Komponente: Untere Interaktionszone
@@ -723,6 +723,8 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Fragmente sind Drag-Quellen
 - Zugeordnete Fragmente: `opacity: 0.22`, `pointer-events: none`
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
+
+- **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
@@ -936,6 +938,8 @@ Dabei:
 
 **Implementiert als DB-Garantie:** Tabelle `fragments` hat `UNIQUE(user_id, hash)`. Distiller arbeitet mit `INSERT ... ON CONFLICT DO NOTHING` — keine Race Conditions, keine Anwendungs-Logik nötig.
 
+**Bank-Adapter (DKB-Format, DD-approved):** `description_raw` wird gebildet als `"{Zahlungsempfänger*in} | {Verwendungszweck}"` — beide Felder byte-exakt aus der CSV-Quelle, ohne Trimming, ohne Normalisierung. Pipe-Separator mit Spaces als Trenner. Hash-Determinismus bleibt erhalten.
+
 ### Konfidenz-Berechnung
 
 Für jedes neu importierte Fragment berechnet der Distiller pro aktive Karte einen Konfidenz-Score zwischen 0 und 1.
@@ -975,6 +979,8 @@ Binär. 1.00 wenn die Karte im Fragment-Monat aktiv ist (= Frequenz-Treffer), so
 | 0.20 – 0.60 | Score zu schwach für Vorschlag. Kein Badge. Fragment bleibt unzugeordnet. |
 | 0.60 – 0.95 | Fragment im Stack mit Badge `KI-Vorschlag: [Karten-Name]`. User entscheidet manuell. |
 | > 0.95 | Auto-Absorption. Karte wird automatisch grün. Kein User-Eingriff nötig. Vollständig lautlos. |
+
+**Mehrfach-Match:** Matchen mehrere Karten in derselben Konfidenz-Range (0.60–0.95 für Badge bzw. > 0.95 für Auto-Absorption), gewinnt die Karte mit dem höchsten Score, deterministisch. Bei Score-Gleichstand entscheidet der alphabetisch erste Karten-Name.
 
 ### Konfidenz-Beispiel — End-to-End
 
