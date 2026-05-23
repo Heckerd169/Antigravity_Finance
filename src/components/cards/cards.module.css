@@ -135,6 +135,17 @@
   opacity: .65;
 }
 
+/* §7 Konflikt 6 (Sprint 8 P0): INCOME-Karte mit Fragment-Link ist nicht tappbar.
+ * Kein Tap-Catcher gerendert → Cursor bleibt default, kein Hover-Lift-Hinweis.
+ * Das ⋯-Kontextmenü (Verknüpfte Fragmente / Betrag anpassen) bleibt aktiv. */
+.notTappable {
+  cursor: default;
+}
+
+.notTappable:hover:not(.ghost) {
+  transform: none;
+}
+
 /* ---------- Card Internal Layout ---------- */
 
 .cardTop {

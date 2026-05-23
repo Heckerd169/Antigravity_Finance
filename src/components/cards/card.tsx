@@ -207,6 +207,11 @@ function IncomeCard({
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
+  // §7 Konflikt 6 (Sprint 8 P0): Bei Fragment-Link wird der Tap-Catcher nicht
+  // gerendert (manually_paid nicht über die UI schreibbar) und der Cursor bleibt
+  // default. Der Erhalten-Status kommt ohnehin schon aus dem Fragment.
+  const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
+  const tappable = !hasFragment;
 
   const iconEl =
     state === "received" ? (
@@ -226,7 +231,11 @@ function IncomeCard({
   const stateLabel = state === "received" ? "Erhalten" : isGhost ? "Forecast" : "Erwartet";
 
   return (
-    <div className={`${styles.card} ${stateClass}`}>
+    <div
+      className={`${styles.card} ${stateClass} ${
+        !isGhost && !tappable ? styles.notTappable : ""
+      }`}
+    >
       <div className={styles.cardTop}>
         <div className={styles.cardLabel}>Einnahmen</div>
         {iconEl}
@@ -242,7 +251,7 @@ function IncomeCard({
           cardName={card.name}
           month={month}
           currentAmount={card.amount}
-          tappable
+          tappable={tappable}
           linkedFragments={card.linkedFragments}
           ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
         />
