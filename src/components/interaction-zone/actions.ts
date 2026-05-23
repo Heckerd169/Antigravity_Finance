@@ -52,8 +52,9 @@ export async function linkFragmentToCard(
 
 // ── CSV-Import (Sprint 8) ────────────────────────────────────────────────────
 
-/** Ruft die atomare Distiller-RPC. Der Fragment-Stack-Refresh erfolgt in P3
- *  (revalidatePath) — hier nur der reine RPC-Aufruf. */
+/** Ruft die atomare Distiller-RPC und revalidiert das Dashboard. Der
+ *  revalidatePath liefert dem aufrufenden Client-Component das aktualisierte
+ *  RSC-Payload zurück → Fragment-Stack zeigt neue Fragmente, ohne Reload (P3). */
 export async function processCsvImportAction(
   rows: CsvImportRow[],
 ): Promise<CsvImportResult> {
@@ -63,7 +64,10 @@ export async function processCsvImportAction(
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Nicht authentifiziert");
 
-  return processCsvImport(supabase, rows);
+  const result = await processCsvImport(supabase, rows);
+
+  revalidatePath("/", "page");
+  return result;
 }
 
 // ── Eject Fragment ──────────────────────────────────────────────────────────
