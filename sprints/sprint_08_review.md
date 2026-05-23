@@ -39,6 +39,27 @@
   **AC-Sort-3 ✓** (finaler visueller Re-Smoke S3.3 durch User).
 - Doku-Patch §10 ergänzt in `sprint_08_doku_patches.md` (Patch 4).
 
+#### P5 Follow-up — Tiebreaker-Erweiterung (PM-Entscheidung 22.05.2026)
+
+**Befund im Browser-Smoke (User):** Zwei Same-Day-Fragmente (23.04.2026, Agip
+−29,85 € / DKB −12,00 €) erschienen in nicht-deterministischer Reihenfolge.
+Ursache: identisches `transaction_date` **und** identisches `imported_at` (selbe
+Import-Charge) → die Spec-Tiebreaker greifen nicht, Postgres garantiert bei
+voll-gleichen Keys keine stabile physische Reihenfolge → **AC-Sort-3 formal
+nicht erfüllt**.
+
+**PM-Entscheidung:** finaler Tiebreaker **Beschreibung alphabetisch aufsteigend**
+(`description ASC`, `localeCompare("de-DE")`). Umgesetzt im `page.tsx`-Comparator
+(4. Schlüssel) + DB-Roh-Order. Verifikation: 23.04.-Paar sortiert jetzt
+deterministisch Agip → DKB (alphabetisch). **AC-Sort-3 ✓.**
+
+> ⚠️ **AN PM-CHAT WEITERGEBEN:** Die Stack-Sortier-Spec (§10/§11) hat einen
+> **vierten** Tiebreaker erhalten: nach `transaction_date ASC` und `imported_at
+> ASC` folgt `description ASC` (de-DE, alphabetisch). Grund: same-day +
+> same-import-charge ⇒ `imported_at`-Gleichstand. Diese Erweiterung ist in
+> `sprint_08_doku_patches.md` Patch 4 dokumentiert und muss in die §10/§11-Spec
+> der Design-Doku übernommen werden.
+
 ### Code-Diff (`git diff --stat main...HEAD`, ohne Briefing/Review-Docs)
 
 ```
