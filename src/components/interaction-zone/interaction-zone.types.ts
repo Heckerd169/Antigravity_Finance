@@ -16,6 +16,9 @@ export type FragmentRow = {
   status: "UNASSIGNED" | "ASSIGNED" | "AUTO_ABSORBED";
   assigned_card_id: string | null;
   assigned_month: string | null; // "YYYY-MM-01"
+  /** Sprint 8 P5: Import-Zeitpunkt (ISO-Timestamp) — deterministischer
+   *  Tiebreaker für die Stack-Sortierung bei gleichem transaction_date. */
+  importedAt: string | null;
   /** Sprint 8: aufgelöster KI-Vorschlag-Karten-Name, falls confidence im
    *  Badge-Bereich [badge_threshold, auto_absorption_threshold) liegt und ein
    *  suggested_card_id gesetzt ist. Sonst null → kein Badge. Die Schwellen-

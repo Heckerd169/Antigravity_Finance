@@ -44,3 +44,15 @@ Absatz „Mehrfach-Match".
 > (0.60–0.95 für Badge bzw. > 0.95 für Auto-Absorption), gewinnt die Karte mit dem
 > höchsten Score, deterministisch. Bei Score-Gleichstand entscheidet der
 > alphabetisch erste Karten-Name.
+
+---
+
+## Patch 4 — §10 Fragment-Stack-Sortierung (Spec-Lücke, anhängen, Phase P5)
+
+**Anker:** Abschnitt zum Fragment-Stack-Verhalten in §10 (DD-empirisch aus
+Prototyp `csv_import_drop_distill.html`).
+
+**Anzuhängender Satz:**
+
+> **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt).
+> Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`.

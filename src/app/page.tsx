@@ -180,14 +180,17 @@ export default async function Home({ searchParams }: HomeProps) {
   const autoAbsorbThreshold =
     thresholdByKey.get("confidence.auto_absorption_threshold") ?? 0.95;
 
-  // ── Fragmente (alle Monate, sortiert DESC) ───────────────────────────────
+  // ── Fragmente (alle Monate) ──────────────────────────────────────────────
+  // Roh-Order aufsteigend (transaction_date, imported_at) für deterministische
+  // Tiebreaks; finale Gruppen-Sortierung (unzugeordnet zuerst) erfolgt unten in JS.
 
   const { data: rawFragments } = await supabase
     .from("fragments_with_status")
     .select(
-      "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id",
+      "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at",
     )
-    .order("transaction_date", { ascending: false });
+    .order("transaction_date", { ascending: true })
+    .order("imported_at", { ascending: true });
 
   const fragments: FragmentRow[] = (rawFragments ?? [])
     .filter(
@@ -226,8 +229,22 @@ export default async function Home({ searchParams }: HomeProps) {
         assigned_card_id: f.assigned_card_id,
         assigned_month: f.assigned_month,
         suggestedCardName,
+        importedAt: f.imported_at,
       };
     });
+
+  // P5: Stack-Sortierung (§10/§11) — unzugeordnete Fragmente zuerst (Arbeits-
+  // fläche oben), zugeordnete/gedimmte unten. Innerhalb beider Gruppen:
+  // transaction_date ASC, Tiebreaker imported_at ASC. ISO-Strings → lexikografisch.
+  const cmpStr = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+  fragments.sort((a, b) => {
+    const ga = a.status === "UNASSIGNED" ? 0 : 1;
+    const gb = b.status === "UNASSIGNED" ? 0 : 1;
+    if (ga !== gb) return ga - gb;
+    const dateCmp = cmpStr(a.transaction_date, b.transaction_date);
+    if (dateCmp !== 0) return dateCmp;
+    return cmpStr(a.importedAt ?? "", b.importedAt ?? "");
+  });
 
   // ── Linked-Fragments pro Karte für den targetMonth berechnen ─────────────
 
