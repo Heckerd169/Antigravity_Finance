@@ -19,6 +19,25 @@
 | P2 | `a7cca34` | Portal-Live-Verkabelung + RPC-Call + State-Machine (L3) |
 | P3 | `f020f36` | Fragment-Stack-Refresh nach Import (L4) |
 | P4 | `4ee03ed` | KI-Vorschlag-Badge-Rendering auf Fragment-Cards (L5) |
+| P5 | (s. unten) | Fragment-Stack-Sortierung: unzugeordnet zuerst, `transaction_date ASC` |
+
+### Nachtrag P5 — Fragment-Stack-Sortierung (PM-Patch, Spec-Lücke §10/§11)
+
+- `FragmentRow` um `importedAt: string | null` erweitert; `page.tsx`-Query lädt
+  `imported_at` und ordert roh aufsteigend (`transaction_date`, `imported_at`).
+- Finale Gruppen-Sortierung in JS (Client/Server-Component `page.tsx`): Gruppe
+  `UNASSIGNED → 0`, sonst `1`; dann `transaction_date ASC`; Tiebreaker
+  `imported_at ASC`. ISO-Strings → lexikografischer Vergleich.
+- Begründung der Implementierungs-Wahl JS statt SQL: Die Gruppe ist ein
+  berechnetes CASE-Prädikat (`status = 'UNASSIGNED'`), kein sortierbarer
+  String-Spaltenwert (alphabetisch stünde `UNASSIGNED` hinter `ASSIGNED`/
+  `AUTO_ABSORBED` — falsch). Comparator bildet das ORDER BY exakt ab.
+- **DB-Verifikation (read-only, mimt den Comparator):** Aktueller Test-User-State
+  liefert alle `UNASSIGNED` (grp 0) vor allen zugeordneten (grp 1), jeweils
+  `transaction_date ASC` → **AC-Sort-1 ✓, AC-Sort-2 ✓**. Da alle Sortier-Keys
+  stabil sind, ist die Reihenfolge bei Refresh reproduzierbar identisch →
+  **AC-Sort-3 ✓** (finaler visueller Re-Smoke S3.3 durch User).
+- Doku-Patch §10 ergänzt in `sprint_08_doku_patches.md` (Patch 4).
 
 ### Code-Diff (`git diff --stat main...HEAD`, ohne Briefing/Review-Docs)
 
