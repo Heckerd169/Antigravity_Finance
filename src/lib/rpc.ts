@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 
 export type AppSupabaseClient = SupabaseClient<Database>;
 
@@ -140,6 +140,37 @@ export async function toggleCardManuallyPaid(
   });
   if (error) throw error;
   return data as boolean;
+}
+
+// ── Sprint 8: CSV-Import / Distiller ─────────────────────────────────────────
+
+/** Eine an `process_csv_import` übergebene Zeile (= Output des DKB-Parsers). */
+export type CsvImportRow = {
+  transaction_date: string; // ISO "YYYY-MM-DD"
+  amount: number;
+  description: string; // byte-exakt, "{Empfänger} | {Verwendungszweck}"
+};
+
+/** Rückgabe von `process_csv_import`. */
+export type CsvImportResult = {
+  inserted_count: number;
+  skipped_duplicates_count: number;
+  auto_absorbed_count: number;
+  fragment_ids: string[];
+};
+
+/** Atomare Distiller-RPC: Hash-Dedup + Konfidenz-Matching pro neuem Fragment.
+ *  Eine Transaktion, vollständig rollback-fähig. Throw-on-Error (LL-2). */
+export async function processCsvImport(
+  client: AppSupabaseClient,
+  rows: CsvImportRow[],
+): Promise<CsvImportResult> {
+  const { data, error } = await client.rpc("process_csv_import", {
+    // jsonb-Parameter; generierter Typ ist `Json`, daher Cast über unknown.
+    p_rows: rows as unknown as Json,
+  });
+  if (error) throw error;
+  return data as unknown as CsvImportResult;
 }
 
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────

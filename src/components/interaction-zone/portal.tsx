@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { parseDkbCsv } from "@/lib/dkb-csv";
+import { processCsvImportAction } from "./actions";
 import styles from "./interaction-zone.module.css";
 
 /* ============================================================
-   Portal (Option-A-Stub) — Design-Doku §8 + §11.
-   5 Zustände sichtbar; nur 3 davon (default, drag-over, processing→success)
-   sind in V1 von Code-Logik triggerbar. Die 3 Fehler-Varianten sind nur
-   über NODE_ENV-gated Dev-Buttons erreichbar.
-
-   Kein File-Parser, kein DB-Call, kein FileReader (bewusst — Sprint 7).
+   Portal — Design-Doku §8 + §11. Sprint 8: Live-Pipeline.
+   Drop/File-Picker → FileReader (UTF-8) → DKB-Parser → atomare RPC
+   process_csv_import → State-Machine (processing → success/error).
+   Fehler-Klassen (format/empty/corrupt) kommen aus dem Parser bzw. einem
+   RPC-Fehler. Die 4 Dev-Buttons (NODE_ENV-gated) simulieren Visuals ohne Datei.
    ============================================================ */
 
 type PortalState =
@@ -57,16 +58,22 @@ export function Portal({ targetMonth }: PortalProps) {
     }
   }
 
-  function runSuccessSequence() {
+  /** Dev-only Visual-Simulation (kein echter Import). */
+  function runFakeSuccessSequence() {
     clearTimer();
     setState("processing");
     timerRef.current = setTimeout(() => {
-      setState("success");
-      timerRef.current = setTimeout(() => {
-        setState("default");
-        timerRef.current = null;
-      }, SUCCESS_MS);
+      enterSuccess();
     }, PROCESSING_MS);
+  }
+
+  function enterSuccess() {
+    clearTimer();
+    setState("success");
+    timerRef.current = setTimeout(() => {
+      setState("default");
+      timerRef.current = null;
+    }, SUCCESS_MS);
   }
 
   function runErrorSequence(kind: "format" | "empty" | "corrupt") {
@@ -76,6 +83,42 @@ export function Portal({ targetMonth }: PortalProps) {
       setState("default");
       timerRef.current = null;
     }, ERROR_MS);
+  }
+
+  /** Echte Import-Pipeline (Briefing §4). „processing" hält für die tatsächliche
+   *  Dauer von Lesen + Parsen + RPC; danach Erfolg (1.5 s) oder Fehler (4 s). */
+  async function runImport(file: File) {
+    clearTimer();
+    setState("processing");
+
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      runErrorSequence("corrupt");
+      return;
+    }
+
+    const parsed = parseDkbCsv(text);
+    if (!parsed.ok) {
+      runErrorSequence(parsed.errorClass);
+      return;
+    }
+
+    try {
+      const result = await processCsvImportAction(parsed.rows);
+      console.info(
+        `CSV-Import: ${result.inserted_count} neu, ` +
+          `${result.skipped_duplicates_count} Duplikate, ` +
+          `${result.auto_absorbed_count} auto-absorbiert`,
+      );
+    } catch (err) {
+      console.error("CSV-Import-RPC fehlgeschlagen", err);
+      runErrorSequence("corrupt");
+      return;
+    }
+
+    enterSuccess();
   }
 
   function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
@@ -106,7 +149,12 @@ export function Portal({ targetMonth }: PortalProps) {
     e.preventDefault();
     e.stopPropagation();
     dragCounter.current = 0;
-    runSuccessSequence();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) {
+      setState("default");
+      return;
+    }
+    void runImport(file);
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -114,7 +162,7 @@ export function Portal({ targetMonth }: PortalProps) {
     if (!file) return;
     // Eingabewert leeren, damit derselbe Filename erneut ausgewählt werden kann.
     e.target.value = "";
-    runSuccessSequence();
+    void runImport(file);
   }
 
   const stateClass = stateClassNameFor(state);
@@ -157,7 +205,7 @@ export function Portal({ targetMonth }: PortalProps) {
       {process.env.NODE_ENV === "development" && (
         <PortalDevButtons
           onTriggerError={runErrorSequence}
-          onTriggerSuccess={runSuccessSequence}
+          onTriggerSuccess={runFakeSuccessSequence}
         />
       )}
     </div>

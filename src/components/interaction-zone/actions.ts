@@ -5,8 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   createCardDirect,
   createCardFromFragment,
+  processCsvImport,
   type CreateCardDirectArgs,
   type CreateCardFromFragmentArgs,
+  type CsvImportRow,
+  type CsvImportResult,
 } from "@/lib/rpc";
 import type {
   CardAttribution,
@@ -45,6 +48,22 @@ export async function linkFragmentToCard(
   if (error) throw error;
 
   revalidatePath("/", "page");
+}
+
+// ── CSV-Import (Sprint 8) ────────────────────────────────────────────────────
+
+/** Ruft die atomare Distiller-RPC. Der Fragment-Stack-Refresh erfolgt in P3
+ *  (revalidatePath) — hier nur der reine RPC-Aufruf. */
+export async function processCsvImportAction(
+  rows: CsvImportRow[],
+): Promise<CsvImportResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht authentifiziert");
+
+  return processCsvImport(supabase, rows);
 }
 
 // ── Eject Fragment ──────────────────────────────────────────────────────────
