@@ -1,292 +1,135 @@
-# Sprint 8 Review — CSV-Import + Distiller (DKB-only) + Konflikt-6-Cleanup
+# Sprint 8 Review — PM-Perspektive
 
-> **Von:** Claude Code (Implementierungs-Chat, Opus 4.7)
-> **Datum:** 22. Mai 2026
-> **Branch:** `sprint/08-csv-import`
-> **Test-User:** `179cd2c1-bbc2-4fd0-954b-8735eb90f370`
-> **Status:** Code komplett (P0–P4), Sanity grün. Browser-Smoke offen
-> (User testet S1–S5 gebündelt nach P4 — bewusste Abweichung vom Per-Phase-Smoke).
+> **Vom:** PM-Chat Sprint 8
+> **Datum:** 23. Mai 2026
+> **Sprint-Scope:** CSV-Import + Distiller (DKB-only) + Konflikt-6-Cleanup INCOME + 2 PM-Mini-Patches (Stack-Sort, Avatar)
 
 ---
 
-## 1. Commits (6, sequenzielle Phasen gemäß LL-14)
+## 1. Status
 
-| Phase | Commit | Inhalt |
-|---|---|---|
-| P0 | `666a23b` | INCOME-Tap-Catcher rendert nur ohne Fragment-Link (L6 + L7) |
-| P1 | `45dccc3` | DKB-CSV-Parser mit Format-Erkennung + Fehler-Klassifikation (L1) |
-| — | `62a24c6` | `chore`: Supabase-Typen regeneriert (`process_csv_import`) |
-| P2 | `a7cca34` | Portal-Live-Verkabelung + RPC-Call + State-Machine (L3) |
-| P3 | `f020f36` | Fragment-Stack-Refresh nach Import (L4) |
-| P4 | `4ee03ed` | KI-Vorschlag-Badge-Rendering auf Fragment-Cards (L5) |
-| P5 | (s. unten) | Fragment-Stack-Sortierung: unzugeordnet zuerst, `transaction_date ASC` |
-| P6 | (s. unten) | Income-Split-Avatar-Icon (Person-Silhouette, inline-SVG) |
-
-### Nachtrag P6 — Income-Split-Avatar-Icon (PM-Scope-Expansion, pre-existing Gap)
-
-- `income-label.tsx`: leerer `.avatar`-Kreis füllt jetzt eine Person-Silhouette
-  (`PersonIcon`, inline-SVG **1:1 aus Prototyp** `income_split_final.html` `.av`:
-  Kopf-Kreis cx7/cy4.8/r2.2 + Schulter-Pfad, stroke `rgba(255,255,255,.45)`).
-- `income-labels.module.css`: `.avatar` um `display:flex; align-items/justify:
-  center` ergänzt (Icon zentriert). Container (32px, radius 50%, border .12)
-  unverändert — entspricht Prototyp.
-- Gleiches Icon auf ICH **und** PARTNER (eine `PersonIcon`-Komponente, beidseitig).
-- **Kein `lucide-react`:** Briefing erlaubte „oder vergleichbares". Das Projekt
-  nutzt durchgängig inline-SVG-Icons (CLAUDE.md §2 „keine Component-Library");
-  der Prototyp selbst nutzt ein inline-SVG. Daher inline statt neue Dependency —
-  konventions-konform und visuell byte-identisch zum Prototyp.
-- **Visueller Smoke:** Standalone-Render (identische `.avatar`-CSS + SVG wie die
-  Komponente) via Headless-Chrome → beide Kreise zeigen die Silhouette,
-  konsistent mit `income_split_final.png`. **AC-Avatar-1/2/3 ✓.** Finaler Shot
-  im authentifizierten Dashboard durch User (Session nötig).
-
-### Nachtrag P5 — Fragment-Stack-Sortierung (PM-Patch, Spec-Lücke §10/§11)
-
-- `FragmentRow` um `importedAt: string | null` erweitert; `page.tsx`-Query lädt
-  `imported_at` und ordert roh aufsteigend (`transaction_date`, `imported_at`).
-- Finale Gruppen-Sortierung in JS (Client/Server-Component `page.tsx`): Gruppe
-  `UNASSIGNED → 0`, sonst `1`; dann `transaction_date ASC`; Tiebreaker
-  `imported_at ASC`. ISO-Strings → lexikografischer Vergleich.
-- Begründung der Implementierungs-Wahl JS statt SQL: Die Gruppe ist ein
-  berechnetes CASE-Prädikat (`status = 'UNASSIGNED'`), kein sortierbarer
-  String-Spaltenwert (alphabetisch stünde `UNASSIGNED` hinter `ASSIGNED`/
-  `AUTO_ABSORBED` — falsch). Comparator bildet das ORDER BY exakt ab.
-- **DB-Verifikation (read-only, mimt den Comparator):** Aktueller Test-User-State
-  liefert alle `UNASSIGNED` (grp 0) vor allen zugeordneten (grp 1), jeweils
-  `transaction_date ASC` → **AC-Sort-1 ✓, AC-Sort-2 ✓**. Da alle Sortier-Keys
-  stabil sind, ist die Reihenfolge bei Refresh reproduzierbar identisch →
-  **AC-Sort-3 ✓** (finaler visueller Re-Smoke S3.3 durch User).
-- Doku-Patch §10 ergänzt in `sprint_08_doku_patches.md` (Patch 4).
-
-#### P5 Follow-up — Tiebreaker-Erweiterung (PM-Entscheidung 22.05.2026)
-
-**Befund im Browser-Smoke (User):** Zwei Same-Day-Fragmente (23.04.2026, Agip
-−29,85 € / DKB −12,00 €) erschienen in nicht-deterministischer Reihenfolge.
-Ursache: identisches `transaction_date` **und** identisches `imported_at` (selbe
-Import-Charge) → die Spec-Tiebreaker greifen nicht, Postgres garantiert bei
-voll-gleichen Keys keine stabile physische Reihenfolge → **AC-Sort-3 formal
-nicht erfüllt**.
-
-**PM-Entscheidung:** finaler Tiebreaker **Beschreibung alphabetisch aufsteigend**
-(`description ASC`, `localeCompare("de-DE")`). Umgesetzt im `page.tsx`-Comparator
-(4. Schlüssel) + DB-Roh-Order. Verifikation: 23.04.-Paar sortiert jetzt
-deterministisch Agip → DKB (alphabetisch). **AC-Sort-3 ✓.**
-
-> ⚠️ **AN PM-CHAT WEITERGEBEN:** Die Stack-Sortier-Spec (§10/§11) hat einen
-> **vierten** Tiebreaker erhalten: nach `transaction_date ASC` und `imported_at
-> ASC` folgt `description ASC` (de-DE, alphabetisch). Grund: same-day +
-> same-import-charge ⇒ `imported_at`-Gleichstand. Diese Erweiterung ist in
-> `sprint_08_doku_patches.md` Patch 4 dokumentiert und muss in die §10/§11-Spec
-> der Design-Doku übernommen werden.
-
-### Code-Diff (`git diff --stat main...HEAD`, ohne Briefing/Review-Docs)
-
-```
-src/app/page.tsx                                   |  60 +++-
-src/components/cards/card.tsx                      |  13 +-
-src/components/cards/cards.module.css              |  11 +
-src/components/interaction-zone/actions.ts         |  23 ++
-src/components/interaction-zone/fragment-card.tsx  |  21 +-
-src/components/interaction-zone/interaction-zone.module.css | 29 +-
-src/components/interaction-zone/interaction-zone.types.ts   |  5 +
-src/components/interaction-zone/portal.tsx         |  78 ++++-
-src/lib/dkb-csv.ts                                 | 175 +++++++++++  (NEU)
-src/lib/rpc.ts                                     |  33 ++-
-src/lib/supabase/types.ts                          |   1 +
-```
-
----
-
-## 2. Was implementiert wurde
-
-### P0 — Konflikt-6-Cleanup INCOME (L6 + L7)
-- `IncomeCard` (`card.tsx`): `hasFragment = (linkedFragments?.length ?? 0) > 0`,
-  `tappable = !hasFragment`. Bei `!isGhost && !tappable` → Klasse `notTappable`.
-  Der `tapButton`-Catcher rendert dann nicht (`manually_paid` nicht UI-schreibbar);
-  das ⋯-Kontextmenü (Verknüpfte Fragmente / Betrag anpassen) bleibt aktiv.
-- `cards.module.css`: `.notTappable { cursor: default }` + Hover-Lift-Suppression.
-- State-Resolution **unverändert** (`manuallyPaid || hasFragment`) — nur das
-  Tap-Catcher-Rendering ist neu (DD-Spec wortwörtlich).
-
-### P1 — DKB-CSV-Parser (L1)
-- Neues, framework-freies Modul `src/lib/dkb-csv.ts`: `parseDkbCsv(text)` →
-  `{ ok: true, rows } | { ok: false, errorClass }`.
-- Format-Heuristik: Header-Zeile (`"Buchungsdatum"` als erstes Feld + `;`) in den
-  ersten 8 Zeilen; sonst `format`.
-- CSV-Tokenizer respektiert in-Quotes-Semikolons + `""`-Escapes, **trimmt nicht**
-  (Beschreibung byte-exakt).
-- Feld-Mapping: `DD.MM.YY[YY]` → ISO (Pivot < 50 → 20YY); deutscher Betrag
-  (`1.200,00` → `1200`); `description = "{Empfänger} | {Verwendungszweck}"`.
-- Atomar: erste fehlerhafte Datenzeile → `corrupt`, kein partielles Ergebnis.
-  0 Datenzeilen → `empty`.
-
-### P2 — Portal-Live-Verkabelung (L3)
-- `process_csv_import`-Wrapper in `rpc.ts` (`processCsvImport`, Throw-on-Error,
-  Typen `CsvImportRow` / `CsvImportResult`).
-- Server-Action `processCsvImportAction` in `interaction-zone/actions.ts`.
-- `portal.tsx`: Stub raus. `runImport(file)`: `processing` → `file.text()` →
-  `parseDkbCsv` → bei Parse-Fehler `error-{format|empty|corrupt}` (4 s) → sonst
-  RPC → bei RPC-Exception `error-corrupt` → `success` (1.5 s) → `default`.
-  `processing` hält für die **echte** Dauer (kein künstliches Delay mehr).
-- Dev-Buttons (NODE_ENV-gated) bleiben für Visual-Sim (`runFakeSuccessSequence`).
-
-### P3 — Fragment-Stack-Refresh (L4)
-- `processCsvImportAction` ruft nach der RPC `revalidatePath("/", "page")`. Da die
-  Action aus einer Client-Component awaited wird, liefert Next.js das aktualisierte
-  RSC-Payload zurück → Stack zeigt neue Fragmente ohne Reload (manueller Refetch,
-  nicht Realtime — Implementierungs-Wahl gemäß L4).
-
-### P4 — KI-Vorschlag-Badge (L5)
-- `FragmentRow` um `suggestedCardName: string | null` erweitert.
-- `page.tsx`: Badge-Schwellen aus `app_config` gelesen (`badge_threshold`,
-  `auto_absorption_threshold`) — **nicht hardcoded** (CLAUDE.md Regel 5),
-  Spec-Defaults nur als Defense-in-Depth-Fallback. Karten-Name-Lookup über alle
-  nicht-gelöschten Karten. Badge-Gating server-seitig: `confidence ∈
-  [badge, auto_absorb)` UND `suggested_card_id != null`.
-- `fragment-card.tsx`: Top-Row (Betrag links, Badge rechts), Badge-Text
-  `KI-Vorschlag: {Name}` (§12.6).
-- CSS: `.fragmentTop` + `.fragmentBadge` (7.5px, 600, uppercase, generische
-  Yellow-Soft-Akzent-Farbe `rgba(255,200,60,.5)` als komponenten-lokale Tokens
-  — OQ1-Default).
-
----
-
-## 3. Sanity-Test-Output (alle Phasen)
-
-```
-pnpm exec tsc --noEmit   → TypeScript: No errors found
-pnpm exec next lint      → ✔ No ESLint warnings or errors
-pnpm build               → ✓ Compiled successfully · Route / 22.4 kB / 174 kB First Load
-```
-
-**Bundle-Hygiene:** Dev-Buttons-Strings (`Zustand simulieren`, `Fehler: Korrupt`)
-in `.next/static/chunks/app/` = **0 Treffer** (Tree-Shaking intakt). Parser/RPC-Code
-in `chunks/` vorhanden.
-
-### P1 Parser — interne Unit-Tests (14/14 grün)
-
-Verifiziert via `node --experimental-strip-types` gegen `src/lib/dkb-csv.ts`
-(kein committetes Test-File — Projekt hat kein Test-Framework, CLAUDE.md §2):
-
-| Test | Ergebnis |
+| Aspekt | Ergebnis |
 |---|---|
-| S2.1 valide CSV, 3 Zeilen, ISO-Datum, Betrag neg/Tausender/pos | ✓ |
-| S2.1 Beschreibung byte-exakt inkl. eingebettetes Semikolon in Quotes | ✓ |
-| S2.2 JSON-Inhalt → `format` | ✓ |
-| S2.3 Header ohne Datenzeilen → `empty` | ✓ |
-| S2.4 unparsbarer Betrag → `corrupt` (kein partielles Ergebnis) | ✓ |
-| extra: unparsbares Datum → `corrupt` | ✓ |
-| extra: BOM-Präfix toleriert | ✓ |
-| extra: `""`-Escape in Beschreibung korrekt entwertet | ✓ |
-
-### §4.6-Anker (S5.1) — Baseline am Code-Complete-Punkt
-
-```sql
-select calculate_sparrate_for_month('179cd2c1-…','2026-03-01');  → 2910.01
-```
-Intakt. P0–P4 berühren keine Sparrate-Logik; März-2026 hat keine Mai-CSV-Daten.
+| Phasen P0–P6 | 7 Commits, sequenziell, je eigener Commit (LL-14-konform) |
+| Akzeptanz-Kriterien AC1–AC6 | alle grün |
+| AC-Sort-1/2/3 (Patch P5) | alle grün |
+| AC-Avatar-1/2/3 (Patch P6) | alle grün |
+| Browser-Smoke S1.1/S1.2/S2.x/S3.1–S3.4/S4.x/S5.1 | alle grün (User-Verifikation) |
+| §4.6-Anker (`calculate_sparrate_for_month`, März 2026) | `2910.01` ✓ |
+| Sanity (`tsc`, `lint`, `build`) | grün |
+| Bundle | Route `/` 22.4 kB (+1.0 kB ggü. Sprint 7), First Load 174 kB (+1 kB) |
 
 ---
 
-## 4. Selbst-Review gegen Akzeptanz-Kriterien
+## 2. Lieferungen vs. Briefing
 
-| AC | Kriterium | Status |
+| Briefing-Item | Lieferung |
+|---|---|
+| L1 DKB-CSV-Parser | `src/lib/dkb-csv.ts`, 14/14 Unit-Tests grün, framework-frei |
+| L2 RPC `process_csv_import` | Architekt-Lieferung, LIVE V2-Stand, Smokes 1–5 grün |
+| L3 Portal-Live-Verkabelung | Stub raus, echte Pipeline, State-Machine §11-konform |
+| L4 Fragment-Stack-Refresh | via `revalidatePath` (Server-Action-Pattern statt Realtime) |
+| L5 Badge-Rendering | `KI-Vorschlag: {Name}` mit Yellow-Soft-Akzent |
+| L6 Konflikt-6-Cleanup INCOME | `renderTapCatcher = !hasFragment`, DD-Spec wortwörtlich |
+| L7 Doku-Patches | `sprint_08_doku_patches.md` (4 Patches) |
+
+Zusätzlich (PM-genehmigte Scope-Expansionen):
+
+| Mini-Patch | Trigger |
+|---|---|
+| P5 Stack-Sortierung | Spec-Lücke beim Browser-Smoke entdeckt (S3.3 ohne erkennbares Muster) |
+| P6 Avatar-Icon | User-Beobachtung pre-existing Gap im Income-Split-Component |
+
+---
+
+## 3. Spec-Patches durch diesen Sprint
+
+| Patch | Sektion | Quelle |
 |---|---|---|
-| AC1 | P0–P4 committed, Build grün | ✅ |
-| AC2 | S1.1/S1.2, S2.1–S2.4, S3.1–S3.4 grün | ⏳ S2 grün (intern); S1/S3 = Browser-Smoke offen |
-| AC3 | S5.1 = `2910.01` | ✅ (Baseline; finaler Re-Check nach Smoke) |
-| AC4 | S4 ≥ 1 Case grün (Badge ODER Auto-Absorb sichtbar) | ⏳ Browser-Smoke offen (Synthetic-CSV vorbereitet) |
-| AC5 | §7 Konflikt 6 + §11-Patch-Sätze als Patch-Datei | ✅ `sprints/sprint_08_doku_patches.md` |
-| AC6 | CLAUDE.md §9/§10-Patch-Vorschlag | ✅ §7 unten |
+| §7 Konflikt 6 INCOME-Spezialregel | Design-Doku v3 | DD-Approval 22.05.2026 |
+| §11 Bank-Adapter DKB-Format | Design-Doku v3 | DD-Approval 22.05.2026 |
+| §11 Mehrfach-Match-Tiebreaker | Design-Doku v3 | PM-Entscheidung OQ2/OQ3 |
+| §10 Stack-Sortierung (4-stufig) | Design-Doku v3 | PM-Entscheidung + P5-Browser-Smoke-Befund |
+
+Alle 4 Patches als Sätze + Anker in `sprints/sprint_08_doku_patches.md`,
+PM-approved unverändert.
 
 ---
 
-## 5. Browser-Smoke — vorbereitete Schritte für den User
+## 4. Architekt-Lieferungen
 
-Synthetic-CSVs liegen in `/tmp` (DKB-konform; bei Bedarf aus den Snippets unten
-neu erzeugen):
+| Lieferung | Stand |
+|---|---|
+| `process_csv_import(p_rows jsonb)` RPC | LIVE V2 |
+| `card_fragment_links.origin` Enum-Klarstellung | `'AUTO_ABSORBED'` (Past Tense, konsistent mit `'MANUAL_DROP'`) |
+| RPC-Inventur (4 RPCs + `app_config`) | LIVE + §11-konform bestätigt |
+| Pre-Sprint-8-Test-Karte „Nebenjob" | angelegt |
+| §4.6-Anker | `2910.01` ✓ |
+| Schema-Doku v3 (Section 1–13) | delivered 23.05.2026, ersetzt v2 als aktiven Snapshot |
 
-**`/tmp/dkb_synthetic_s4.csv`** (S4 — Badge + Auto-Absorb):
-```
-"Girokonto";"DE00000000000000000000"
-""
-"Kontostand vom 31.05.2026:";"0,00 €"
-""
-"Buchungsdatum";"Wertstellung";"Status";"Zahlungspflichtige*r";"Zahlungsempfänger*in";"Verwendungszweck";"Umsatztyp";"IBAN";"Betrag (€)";"Gläubiger-ID";"Mandatsreferenz";"Kundenreferenz"
-"10.05.26";"10.05.26";"Gebucht";"Max Müller";"Tanken";"Tanken";"Ausgang";"";"-50,00";"";"";""
-"10.05.26";"10.05.26";"Gebucht";"Max Müller";"Tanken";"Tanken";"Ausgang";"";"-200,00";"";"";""
-```
-- Zeile 1 (−50,00): Score ≈ 0.70 → **Badge** „KI-Vorschlag: Tanken" im Stack.
-- Zeile 2 (−200,00): Score ≈ 1.00 → **Auto-Absorb**, Tanken-Karte (Mai) wird grün,
-  Fragment erscheint NICHT im Stack.
-
-**`/tmp/dkb_cross_account_s3_4.csv`** (S3.4 — Cross-Account, Pfad A):
-```
-… (Header wie oben) …
-"12.05.26";…;"Max Müller";"DKB BANKING";"Uebertrag eigenes Konto";"Ausgang";"DE11";"-1.200,00";…
-"13.05.26";…;"DKB BANKING";"Max Müller";"Ausgleich DKB";"Eingang";"DE11";"100,00";…
-```
-- Beide bleiben unzugeordnet (kein Match auf Miete trotz −1.200 Betrag).
-
-Parser-Dry-Run gegen beide Files: `ok: true`, Beträge/Daten/Beschreibungen korrekt.
-
-**Smoke-Reihenfolge:** S1.1/S1.2 (P0) → S3.1 (echtes Mai-CSV) → S3.2 (Re-Import =
-Duplikate) → S3.3 (Stack visuell) → S3.4 (Cross-Account) → S4 (Synthetic) →
-**S5.1 final** (`= 2910.01`, sonst kein Merge).
+**Architekt-Bug-Recovery:** V1 hatte PL/pgSQL-Pitfall `INSERT ... ON CONFLICT
+DO NOTHING RETURNING id INTO v_fragment_id` (Variable bleibt NULL bei Conflict-Pfad
+trotz INSERT-Erfolg). Architekt diagnostiziert via MCP, V2-Fix mit CTE-Pattern.
+Frontend war nicht betroffen.
 
 ---
 
-## 6. DB-Verifikations-SQL (nach Browser-Smoke auszuführen)
+## 5. PM-Beobachtungen (Lessons-Vorlage für CLAUDE.md §7)
 
-```sql
--- Nach S3.1: neue Fragmente vorhanden?
-select count(*) from fragments
- where user_id = '179cd2c1-bbc2-4fd0-954b-8735eb90f370'
-   and transaction_date >= '2026-05-01' and transaction_date < '2026-06-01';
+| LL | Inhalt | Quelle |
+|---|---|---|
+| LL-16 | Claude Code editiert Design-/Schema-Doku NIE selbst — Doku-Patches als `sprints/sprint_NN_doku_patches.md`, PM wendet sie an | Sprint-8-Pattern |
+| LL-17 | Konfidenz-/Badge-Schwellen server-seitig aus `app_config` lesen + State-Gating dort, Client erhält nur aufgelöste Werte | Sprint 8 P4 |
 
--- Nach S4: Auto-Absorb-Link auf Tanken (origin = 'AUTO_ABSORBED')?
-select cfl.origin, f.amount, f.description
-  from card_fragment_links cfl
-  join fragments f on f.id = cfl.fragment_id
- where cfl.origin = 'AUTO_ABSORBED';
-
--- Nach S4: Badge-Fragment hat confidence im Range + suggested_card_id?
-select amount, confidence, suggested_card_id
-  from fragments
- where confidence is not null and suggested_card_id is not null;
-
--- S5.1 final:
-select calculate_sparrate_for_month('179cd2c1-bbc2-4fd0-954b-8735eb90f370','2026-03-01');
-```
+In `CLAUDE_md_sprint_08_patches.md` als §7-Patch enthalten.
 
 ---
 
-## 7. Vorschläge CLAUDE.md-Aktualisierung (als Vorschlag, nicht ausgeführt)
+## 6. Was im Sprint sauber lief
 
-**§4 Sprint-Protokoll:** Sprint 8 → 🟢 Done (nach Browser-Smoke-Approval).
+- Pre-Sprint-Phase: Architekten-Auftrag + DD-Klärung als parallele Files, deterministisch verarbeitet
+- K-A/K-B/K-C-Frühklärung verhinderte Mid-Sprint-Spec-Friktionen
+- Architekten-Bug wurde in der Vorbereitungs-Phase entdeckt, nicht im Sprint-Smoke → Frontend ungestört
+- LL-14 (sequenzielle Commits) durchgehend eingehalten
+- Browser-Smoke deckte Spec-Lücken auf (Sortier-Regel) → schneller PM-Entscheid + Patch (LL-13-konform)
+- Doku-Patches als separates Output-File (LL-16 etabliert)
 
-**§9 Sprint-8-Block (§10 Append-only-Log):** Eintrag analog zu Sprint 7.
+## 7. Was den nächsten Sprint vereinfachen würde
 
-**Neue Lessons (Vorschlag):**
-- **LL-16 (Doku-Patch-Auslieferung):** Wenn ein Briefing Design-Doku-Patches
-  fordert, liefert Claude Code diese als separate Patch-Datei
-  (`sprints/sprint_NN_doku_patches.md`), **ohne** die Design-/Schema-Doku selbst
-  zu editieren (CLAUDE.md-Hartregel). Der PM wendet sie an. Sprint-8-Präzedenz.
-- **LL-17 (app_config-Schwellen im Frontend):** Konfidenz-/Badge-Schwellen werden
-  server-seitig in `page.tsx` aus `app_config` gelesen und das Gating dort
-  vorgenommen; Client-Components erhalten nur aufgelöste Werte
-  (`suggestedCardName`). Hält Regel 5 ein und vermeidet Schwellen-Drift.
+- Spec-Lücken-Vorab-Check: Vor Sprint-Start systematischer Scan der vorgesehenen Komponenten gegen Design-Doku-Sektionen auf „Sortierung", „Tiebreaker", „Mehrfach-Match", „Tap-Verhalten bei X". P5/OQ2/OQ3 waren je eine 5-Minuten-Klärung, die im Briefing hätte stehen können.
+- Visuelle Smoke-Screenshots als Standard: Bei UI-Patches (wie P6 Avatar) ist ein Side-by-Side Prototyp/Live-Render in der Review nützlicher als textuelle Bestätigung.
+
+(Beide Punkte als Vormerkungen für Sprint 9+, keine LL-Würde.)
 
 ---
 
-## 8. Offene Fragen / Auffälligkeiten
+## 8. Nächste Schritte (User-Aktionen)
 
-- **OQ1 (Badge-Farbe):** PM-Default `rgba(255,200,60,.5)` übernommen (generisch,
-  alle Badges). Karten-spezifische Farben = V2-C.
-- **OQ2/OQ3 (Mehrfach-Match):** Höchster Score gewinnt, Tie → alphabetisch.
-  Server-seitig in der RPC bereits so; in Patch-Datei (Patch 3) für §11 dokumentiert.
-- **Badge-Breite:** `KI-Vorschlag: {Name}` ist `white-space: nowrap` + `flex-shrink: 0`.
-  Bei sehr langen Karten-Namen in der schmalen Stack-Spalte theoretisch eng —
-  bei realen Namen (Tanken/Miete/Essen) unkritisch. Falls im Smoke unschön:
-  V1.1-Visual-Tweak (Truncation/Wrap), kein Blocker.
-- **Keine RPC-Spec-Abweichungen** beobachtet (Architekt-Garantien §2 gelten).
+1. `sprint_08_doku_patches.md` (Claude-Code-Output) auf Design-Doku anwenden
+2. `CLAUDE_md_sprint_08_patches.md` auf CLAUDE.md anwenden
+3. Beide Doku-Änderungen committen (auf `sprint/08-csv-import` oder direkt auf `main` nach Merge — PM-agnostisch)
+4. Merge `sprint/08-csv-import` → `main`
+5. `sprint/07-ui-completion` als Backup behalten, `sprint/06-sparrate-verification` ist nach Sprint-7-Merge bereits gelöscht
+6. Sprint-9-Scope-Entscheidung im PM-Chat
+
+---
+
+## Anhang — Commits (P0–P6, Branch `sprint/08-csv-import`)
+
+| Phase | Commit(s) | Message |
+|---|---|---|
+| P0 | `666a23b` | income tap-catcher only renders when no fragment linked |
+| P1 | `45dccc3` | dkb csv parser with format detection and error classification |
+| — | `62a24c6` | chore: regenerate supabase types after process_csv_import rpc |
+| P2 | `a7cca34` | wire portal to process_csv_import rpc with full state machine |
+| P3 | `f020f36` | fragment stack refresh after import |
+| P4 | `4ee03ed` | ai suggestion badge rendering on fragment cards |
+| — | `30b243a` | docs: sprint 8 review |
+| P5 | `0c42f65`, `13e3cac` | fragment stack sort order + alphabetical description tiebreaker |
+| — | `910a47c`, `d8e0f6e` | docs: sprint 8 review (P5 append + tiebreaker follow-up) |
+| P6 | `78ba06c` | income split avatar icon (person silhouette) |
+| — | `27805cc` | docs: sprint 8 review p6 append |
+
+---
+
+*Sprint-8 Review (PM) · 23. Mai 2026*
