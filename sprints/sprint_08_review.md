@@ -20,6 +20,25 @@
 | P3 | `f020f36` | Fragment-Stack-Refresh nach Import (L4) |
 | P4 | `4ee03ed` | KI-Vorschlag-Badge-Rendering auf Fragment-Cards (L5) |
 | P5 | (s. unten) | Fragment-Stack-Sortierung: unzugeordnet zuerst, `transaction_date ASC` |
+| P6 | (s. unten) | Income-Split-Avatar-Icon (Person-Silhouette, inline-SVG) |
+
+### Nachtrag P6 — Income-Split-Avatar-Icon (PM-Scope-Expansion, pre-existing Gap)
+
+- `income-label.tsx`: leerer `.avatar`-Kreis füllt jetzt eine Person-Silhouette
+  (`PersonIcon`, inline-SVG **1:1 aus Prototyp** `income_split_final.html` `.av`:
+  Kopf-Kreis cx7/cy4.8/r2.2 + Schulter-Pfad, stroke `rgba(255,255,255,.45)`).
+- `income-labels.module.css`: `.avatar` um `display:flex; align-items/justify:
+  center` ergänzt (Icon zentriert). Container (32px, radius 50%, border .12)
+  unverändert — entspricht Prototyp.
+- Gleiches Icon auf ICH **und** PARTNER (eine `PersonIcon`-Komponente, beidseitig).
+- **Kein `lucide-react`:** Briefing erlaubte „oder vergleichbares". Das Projekt
+  nutzt durchgängig inline-SVG-Icons (CLAUDE.md §2 „keine Component-Library");
+  der Prototyp selbst nutzt ein inline-SVG. Daher inline statt neue Dependency —
+  konventions-konform und visuell byte-identisch zum Prototyp.
+- **Visueller Smoke:** Standalone-Render (identische `.avatar`-CSS + SVG wie die
+  Komponente) via Headless-Chrome → beide Kreise zeigen die Silhouette,
+  konsistent mit `income_split_final.png`. **AC-Avatar-1/2/3 ✓.** Finaler Shot
+  im authentifizierten Dashboard durch User (Session nötig).
 
 ### Nachtrag P5 — Fragment-Stack-Sortierung (PM-Patch, Spec-Lücke §10/§11)
 
