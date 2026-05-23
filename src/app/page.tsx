@@ -101,6 +101,13 @@ export default async function Home({ searchParams }: HomeProps) {
     .order("type", { ascending: true })
     .order("name", { ascending: true });
 
+  // Name-Lookup über ALLE nicht-gelöschten Karten (auch monats-inaktive) —
+  // ein suggested_card_id kann auf eine Karte zeigen, die im targetMonth nicht
+  // aktiv ist. Für die Badge-Auflösung (§6) brauchen wir den Namen trotzdem.
+  const cardNameById = new Map<string, string>(
+    (rawCards ?? []).map((c) => [c.id, c.name]),
+  );
+
   let enrichedCards: EnrichedCard[] = [];
 
   if (rawCards && rawCards.length > 0) {
@@ -155,12 +162,30 @@ export default async function Home({ searchParams }: HomeProps) {
     );
   }
 
+  // ── Badge-Schwellen aus app_config (§11, CLAUDE.md Regel 5: nicht hardcoden).
+  // Fallback auf Spec-Defaults nur als Defense-in-Depth, falls Row fehlt. ─────
+
+  const { data: thresholdRows } = await supabase
+    .from("app_config")
+    .select("key, value")
+    .in("key", [
+      "confidence.badge_threshold",
+      "confidence.auto_absorption_threshold",
+    ]);
+
+  const thresholdByKey = new Map(
+    (thresholdRows ?? []).map((r) => [r.key, Number(r.value)]),
+  );
+  const badgeThreshold = thresholdByKey.get("confidence.badge_threshold") ?? 0.6;
+  const autoAbsorbThreshold =
+    thresholdByKey.get("confidence.auto_absorption_threshold") ?? 0.95;
+
   // ── Fragmente (alle Monate, sortiert DESC) ───────────────────────────────
 
   const { data: rawFragments } = await supabase
     .from("fragments_with_status")
     .select(
-      "id, amount, description, transaction_date, status, assigned_card_id, assigned_month",
+      "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id",
     )
     .order("transaction_date", { ascending: false });
 
@@ -179,15 +204,30 @@ export default async function Home({ searchParams }: HomeProps) {
         f.transaction_date !== null &&
         f.status !== null,
     )
-    .map((f) => ({
-      id: f.id,
-      amount: Number(f.amount),
-      description: f.description,
-      transaction_date: f.transaction_date,
-      status: f.status as FragmentRow["status"],
-      assigned_card_id: f.assigned_card_id,
-      assigned_month: f.assigned_month,
-    }));
+    .map((f) => {
+      // Badge nur im Bereich [badge_threshold, auto_absorption_threshold) UND
+      // mit gesetztem suggested_card_id (§6). Karten-Name via Lookup; zeigt die
+      // Karte ins Leere (gelöscht), kein Badge.
+      const conf = f.confidence != null ? Number(f.confidence) : null;
+      const suggestedCardName =
+        f.suggested_card_id != null &&
+        conf != null &&
+        conf >= badgeThreshold &&
+        conf < autoAbsorbThreshold
+          ? cardNameById.get(f.suggested_card_id) ?? null
+          : null;
+
+      return {
+        id: f.id,
+        amount: Number(f.amount),
+        description: f.description,
+        transaction_date: f.transaction_date,
+        status: f.status as FragmentRow["status"],
+        assigned_card_id: f.assigned_card_id,
+        assigned_month: f.assigned_month,
+        suggestedCardName,
+      };
+    });
 
   // ── Linked-Fragments pro Karte für den targetMonth berechnen ─────────────
 

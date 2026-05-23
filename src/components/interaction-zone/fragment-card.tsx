@@ -35,13 +35,20 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           : `${fragment.description}, ${sign}${formatAmount(abs)} Euro`
       }
     >
-      <div
-        className={`${styles.fragmentAmount} ${
-          isPos ? styles.fragmentAmountPos : styles.fragmentAmountNeg
-        }`}
-      >
-        {sign}
-        {formatAmount(abs)} €
+      <div className={styles.fragmentTop}>
+        <div
+          className={`${styles.fragmentAmount} ${
+            isPos ? styles.fragmentAmountPos : styles.fragmentAmountNeg
+          }`}
+        >
+          {sign}
+          {formatAmount(abs)} €
+        </div>
+        {fragment.suggestedCardName && (
+          <div className={styles.fragmentBadge}>
+            KI-Vorschlag: {fragment.suggestedCardName}
+          </div>
+        )}
       </div>
       <div className={styles.fragmentDesc} title={fragment.description}>
         {fragment.description}

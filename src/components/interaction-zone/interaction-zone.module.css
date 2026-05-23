@@ -27,6 +27,11 @@
   --frag-border: rgba(255, 255, 255, .07);
   --frag-desc: rgba(255, 255, 255, .28);
   --frag-date: rgba(255, 255, 255, .15);
+  /* KI-Vorschlag-Badge — generische Akzent-Farbe (OQ1, Sprint 8). Karten-
+   * spezifische Farben sind V2-Vormerkung. Yellow-Soft wie Prototyp .essen. */
+  --frag-badge-bg: rgba(255, 200, 60, .08);
+  --frag-badge-color: rgba(255, 200, 60, .5);
+  --frag-badge-border: rgba(255, 200, 60, .15);
   --slot-border: rgba(255, 255, 255, .12);
   --slot-border-hover: rgba(62, 207, 175, .35);
   --slot-border-drag: rgba(62, 207, 175, .5);
@@ -409,13 +414,35 @@
   pointer-events: none;
 }
 
+.fragmentTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
 .fragmentAmount {
   font-size: 16px;
   font-weight: 200;
   letter-spacing: -.8px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  margin-bottom: 3px;
+}
+
+.fragmentBadge {
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  white-space: nowrap;
+  background: var(--frag-badge-bg);
+  color: var(--frag-badge-color);
+  border: .5px solid var(--frag-badge-border);
 }
 
 .fragmentAmountNeg {
