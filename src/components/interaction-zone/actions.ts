@@ -8,6 +8,7 @@ import {
   processCsvImport,
   type CreateCardDirectArgs,
   type CreateCardFromFragmentArgs,
+  type CsvFormatHint,
   type CsvImportRow,
   type CsvImportResult,
 } from "@/lib/rpc";
@@ -57,6 +58,7 @@ export async function linkFragmentToCard(
  *  RSC-Payload zurück → Fragment-Stack zeigt neue Fragmente, ohne Reload (P3). */
 export async function processCsvImportAction(
   rows: CsvImportRow[],
+  formatHint: CsvFormatHint,
 ): Promise<CsvImportResult> {
   const supabase = createClient();
   const {
@@ -64,7 +66,7 @@ export async function processCsvImportAction(
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Nicht authentifiziert");
 
-  const result = await processCsvImport(supabase, rows);
+  const result = await processCsvImport(supabase, rows, formatHint);
 
   revalidatePath("/", "page");
   return result;

@@ -144,30 +144,44 @@ export async function toggleCardManuallyPaid(
 
 // ── Sprint 8: CSV-Import / Distiller ─────────────────────────────────────────
 
-/** Eine an `process_csv_import` übergebene Zeile (= Output des DKB-Parsers). */
+/** Eine an `process_csv_import` übergebene Zeile (= Parser-/Router-Ausgabe).
+ *  Sprint 9: trägt zusätzlich die Gegen-IBAN (counterparty_iban). */
 export type CsvImportRow = {
   transaction_date: string; // ISO "YYYY-MM-DD"
   amount: number;
-  description: string; // byte-exakt, "{Empfänger} | {Verwendungszweck}"
+  description: string; // byte-exakt, Bank-Adapter-Format
+  counterparty_iban: string | null; // Sprint 9; null = unbekannt
 };
 
-/** Rückgabe von `process_csv_import`. */
+/** p_format_hint-Werte der RPC `process_csv_import` (Sprint 9). */
+export type CsvFormatHint = "DKB" | "CORTAL_CONSORS";
+
+/** Rückgabe von `process_csv_import`. Sprint 9 erweitert um drei Backfill-Counter. */
 export type CsvImportResult = {
   inserted_count: number;
   skipped_duplicates_count: number;
   auto_absorbed_count: number;
   fragment_ids: string[];
+  /** Bestehende Fragmente, deren counterparty_iban per ON CONFLICT nachgefüllt wurde. */
+  iban_backfilled_count: number;
+  /** Fragmente, die als INTERNAL_TRANSFER reklassifiziert wurden. */
+  internal_transfers_count: number;
+  /** Karten-Zuordnungen, die wegen Transfer-Reklassifikation gelöst wurden. */
+  links_removed_for_transfers_count: number;
 };
 
-/** Atomare Distiller-RPC: Hash-Dedup + Konfidenz-Matching pro neuem Fragment.
- *  Eine Transaktion, vollständig rollback-fähig. Throw-on-Error (LL-2). */
+/** Atomare Distiller-RPC: Hash-Dedup + Konfidenz-Matching + IBAN-Backfill +
+ *  Cross-Account-Erkennung (Sprint 9). Eine Transaktion, vollständig rollback-
+ *  fähig. Throw-on-Error (LL-2). p_format_hint default 'DKB' (DB-seitig). */
 export async function processCsvImport(
   client: AppSupabaseClient,
   rows: CsvImportRow[],
+  formatHint: CsvFormatHint = "DKB",
 ): Promise<CsvImportResult> {
   const { data, error } = await client.rpc("process_csv_import", {
     // jsonb-Parameter; generierter Typ ist `Json`, daher Cast über unknown.
     p_rows: rows as unknown as Json,
+    p_format_hint: formatHint,
   });
   if (error) throw error;
   return data as unknown as CsvImportResult;

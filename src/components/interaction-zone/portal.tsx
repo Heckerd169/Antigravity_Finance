@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { parseDkbCsv } from "@/lib/dkb-csv";
+import { routeAndParseCsv } from "@/lib/csv-format-router";
 import { processCsvImportAction } from "./actions";
 import styles from "./interaction-zone.module.css";
 
@@ -99,18 +99,21 @@ export function Portal({ targetMonth }: PortalProps) {
       return;
     }
 
-    const parsed = parseDkbCsv(text);
+    const parsed = routeAndParseCsv(text);
     if (!parsed.ok) {
       runErrorSequence(parsed.errorClass);
       return;
     }
 
     try {
-      const result = await processCsvImportAction(parsed.rows);
+      const result = await processCsvImportAction(parsed.rows, parsed.formatHint);
       console.info(
-        `CSV-Import: ${result.inserted_count} neu, ` +
+        `CSV-Import (${parsed.formatHint}): ${result.inserted_count} neu, ` +
           `${result.skipped_duplicates_count} Duplikate, ` +
-          `${result.auto_absorbed_count} auto-absorbiert`,
+          `${result.auto_absorbed_count} auto-absorbiert, ` +
+          `${result.iban_backfilled_count} IBAN-Backfill, ` +
+          `${result.internal_transfers_count} Transfers, ` +
+          `${result.links_removed_for_transfers_count} Links gelöst`,
       );
     } catch (err) {
       console.error("CSV-Import-RPC fehlgeschlagen", err);
