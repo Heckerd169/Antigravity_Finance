@@ -19,6 +19,9 @@ export type DkbCsvRow = {
   amount: number;
   /** "{Zahlungsempfänger*in} | {Verwendungszweck}", byte-exakt. */
   description: string;
+  /** Gegen-IBAN (Spalte "IBAN"). Leerer Wert -> null (Sprint 9 P0, Briefing §4).
+   *  NICHT Hash-Bestandteil; Re-Import füllt sie per ON CONFLICT DO UPDATE nach. */
+  counterparty_iban: string | null;
 };
 
 /** Fehler-Klassifikation gemäß Briefing §3 → Portal-State (§11). */
@@ -32,6 +35,7 @@ const HEADER_FIRST_FIELD = "Buchungsdatum";
 const COL_PAYEE = "Zahlungsempfänger*in";
 const COL_PURPOSE = "Verwendungszweck";
 const COL_AMOUNT = "Betrag (€)";
+const COL_IBAN = "IBAN";
 /** Format-Heuristik prüft nur die ersten N Zeilen auf den Header-Anker. */
 const HEADER_SCAN_LINES = 8;
 
@@ -59,6 +63,9 @@ export function parseDkbCsv(text: string): DkbParseResult {
   const idxPayee = header.indexOf(COL_PAYEE);
   const idxPurpose = header.indexOf(COL_PURPOSE);
   const idxAmount = header.indexOf(COL_AMOUNT);
+  // IBAN ist additiv (Sprint 9): fehlt die Spalte (älterer Export), bleibt
+  // counterparty_iban null — kein Format-Fehler, damit Sprint-8-CSVs weiter laufen.
+  const idxIban = header.indexOf(COL_IBAN);
   if (idxDate === -1 || idxPayee === -1 || idxPurpose === -1 || idxAmount === -1) {
     return { ok: false, errorClass: "format" };
   }
@@ -88,10 +95,13 @@ export function parseDkbCsv(text: string): DkbParseResult {
     // Byte-exakt: keine Transformation der Beschreibungs-Felder.
     const payee = fields[idxPayee] ?? "";
     const purpose = fields[idxPurpose] ?? "";
+    // Gegen-IBAN: leerer / fehlender Wert -> null (Briefing §4).
+    const ibanRaw = idxIban === -1 ? "" : (fields[idxIban] ?? "");
     rows.push({
       transaction_date: transactionDate,
       amount,
       description: `${payee} | ${purpose}`,
+      counterparty_iban: ibanRaw === "" ? null : ibanRaw,
     });
   }
 
