@@ -702,6 +702,8 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Leere Datei: `Keine Transaktionen — Datei enthält keine Einträge`
 - Korrupte Datei: `Datei fehlerhaft — Datei konnte nicht gelesen werden`
 
+**Backfill-Report-Toast (Sprint 9):** Nach einem CSV-Import erscheint direkt unter dem Portal (Drop-Zone) eine kurze Quittung, sofern mindestens einer der Counter `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count` > 0 ist. Der Toast zeigt nur die Counter > 0, je eine Kurzzeile (`N Fragmente mit IBAN ergänzt` / `M Bewegungen als Transfer erkannt` / `K Karten-Zuordnungen gelöst`), ist 4 s sichtbar (Fade-In/Fade-Out) und nicht interaktiv. Bei sukzessivem Re-Import zeigt jeder Toast nur die Counter des aktuellen Imports, nicht kumulativ.
+
 ### Karussell (Mitte)
 
 - Sortierung: Fixkosten → Einnahmen → Budget
@@ -725,6 +727,7 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
+- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment hat **kein** Tap-/Drag-Verhalten (Cursor `default`, `pointer-events: none`). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
@@ -940,6 +943,8 @@ Dabei:
 
 **Bank-Adapter (DKB-Format, DD-approved):** `description_raw` wird gebildet als `"{Zahlungsempfänger*in} | {Verwendungszweck}"` — beide Felder byte-exakt aus der CSV-Quelle, ohne Trimming, ohne Normalisierung. Pipe-Separator mit Spaces als Trenner. Hash-Determinismus bleibt erhalten.
 
+**Bank-Adapter (Cortal-Consors-Format, DD-approved, Sprint 9):** `description_raw` wird gebildet als `"{Sender / Empfänger} | {Buchungstext} | {Verwendungszweck}"` — alle drei Felder byte-exakt aus der CSV-Quelle, ohne Trimming, ohne Normalisierung. Pipe-Separator mit Spaces als Trenner (drei Felder, zwei Separatoren). `n/a`-Werte werden als Literal `"n/a"` belassen (kein NULL für Description-Bestandteile). Hash-Formel unverändert: `sha256(transaction_date | amount_fixed | description_raw)`. `counterparty_iban` ist **nicht** Hash-Bestandteil — damit trifft ein Re-Import bestehende Hashes und füllt die IBAN per `ON CONFLICT DO UPDATE` nachträglich (Backfill).
+
 ### Konfidenz-Berechnung
 
 Für jedes neu importierte Fragment berechnet der Distiller pro aktive Karte einen Konfidenz-Score zwischen 0 und 1.
@@ -981,6 +986,8 @@ Binär. 1.00 wenn die Karte im Fragment-Monat aktiv ist (= Frequenz-Treffer), so
 | > 0.95 | Auto-Absorption. Karte wird automatisch grün. Kein User-Eingriff nötig. Vollständig lautlos. |
 
 **Mehrfach-Match:** Matchen mehrere Karten in derselben Konfidenz-Range (0.60–0.95 für Badge bzw. > 0.95 für Auto-Absorption), gewinnt die Karte mit dem höchsten Score, deterministisch. Bei Score-Gleichstand entscheidet der alphabetisch erste Karten-Name.
+
+**Cross-Account-Erkennung (`INTERNAL_TRANSFER`, Sprint 9):** `profiles.own_ibans text[]` führt die eigenen Konto-IBANs des Users. Beim Import wird jede Zeile, deren `counterparty_iban` in `own_ibans` enthalten ist, als `fragments.transfer_type = 'INTERNAL_TRANSFER'` markiert (greift sowohl für neu eingefügte Fragmente als auch für IBAN-Backfill bestehender Fragmente). Eine Transfer-Markierung löst bestehende `card_fragment_links`-Zuordnungen des Fragments und bereinigt eine etwaige KI-Vorschlag-Markierung (`suggested_card_id` / `confidence`) — ein Transfer kann nicht gleichzeitig einer Karte zugeordnet sein (Daten-Invariante). Im View `fragments_with_status` hat der Status `'INTERNAL_TRANSFER'` die höchste Priorität und schlägt `UNASSIGNED` / `ASSIGNED` / `AUTO_ABSORBED`. **Konsequenz:** Jede Bewegung zwischen zwei eigenen Konten wird markiert — nicht nur ausdrücklich als „Übertrag/Sparen" betitelte, sondern auch Erstattungen, Geschenke etc., sofern sie über ein eigenes Konto laufen. Das ist gewollt: der Geld-Saldo verlässt das Gesamtvermögen nicht.
 
 ### Konfidenz-Beispiel — End-to-End
 

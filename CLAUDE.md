@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom PM (Opus 4.7) nach jedem abgeschlossenen Sprint aktualisiert.
-> **Letzte Aktualisierung:** 17. Mai 2026 · **Nach Sprint:** 5 (Approved)
+> **Letzte Aktualisierung:** 24. Mai 2026 · **Nach Sprint:** 9 (Approved)
 
 ---
 
@@ -82,6 +82,9 @@ Antigravity_Finance/
 │   │   │   ├── middleware.ts
 │   │   │   └── types.ts                               ← generiert via supabase gen types
 │   │   ├── rpc.ts                                     ← typisierter RPC-Wrapper (Sprint 1)
+│   │   ├── dkb-csv.ts                                 ← DKB-CSV-Parser (Sprint 8)
+│   │   ├── cortal-csv.ts                              ← Cortal-Consors-CSV-Parser (Sprint 9)
+│   │   ├── csv-format-router.ts                       ← Format-Router DKB/Cortal (Sprint 9)
 │   │   └── tokens.ts                                  ← (optional, entsteht beim ersten JS-Konsumenten, voraussichtlich Sprint 2)
 │   ├── middleware.ts                                  ← Edge Middleware mit Matcher
 │   └── styles/
@@ -111,8 +114,8 @@ Antigravity_Finance/
 | 6 | Sparrate-Verifikation (§4.6 Test-Case = 2.910,01 €) | 🟢 Done | sprints/sprint_06_briefing.md | 20. Mai 2026 |
 | 7 | UI-Komplettierung (V1 BUDGET-Tap + V6 §10 Income-Split-Trigger + V2 Cleanup) | 🟢 Done | sprints/sprint_07_briefing.md | 21. Mai 2026 |
 | 8 | CSV-Import / Distiller (§11) |  🟢 Done | sprints/sprint_08_briefing.md | 23.05.2026 |
-| 9 | Soft-Delete-Pattern (§2.4) | — | — | — |
-| 10 | Sparraten-Treppe (§9) | — | — | — |
+| 9 | Cortal-Consors-Parser + Cross-Account-Transfer-Erkennung (§11) | 🟢 Done | sprints/sprint_09_briefing.md | 24.05.2026 |
+| 10 | Soft-Delete-Pattern (§2.4) ODER Sparraten-Treppe (§9) | — | — | — |
 Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 
 **Sprint 6 ist der harte Gate** für Sprints 2–5. Wenn der dort spezifizierte Test-Case
@@ -229,6 +232,17 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
   sonst `get_planned_amount_for_month(...)`. Frontend nutzt diese als
   Vergleichsbasis statt `cards.planned_amount` (Roh-Plan).
 
+**Wichtige Schema-Befunde aus Sprint 9 (Cortal + Cross-Account):**
+- `profiles.own_ibans text[]` (NOT NULL DEFAULT `'{}'`) führt die eigenen Konto-IBANs des Users. Treiber der `INTERNAL_TRANSFER`-Markierung beim CSV-Import.
+- `fragments.counterparty_iban text NULL` — Gegen-IBAN aus der CSV-Quelle (DKB Spalte „IBAN", Cortal Spalte 4 „IBAN"). **Nicht** Hash-Bestandteil — damit trifft ein Re-Import bestehende Hashes und füllt die IBAN per `ON CONFLICT DO UPDATE WHERE counterparty_iban IS NULL` nachträglich (Backfill-Pfad).
+- `fragments.transfer_type text NULL` mit `CHECK (transfer_type IS NULL OR transfer_type = 'INTERNAL_TRANSFER')`. Partial-Index `idx_fragments_transfer_type` auf `(user_id, transfer_type) WHERE transfer_type IS NOT NULL`. Bewusst `text` statt Enum, um künftige Typen (`'EXTERNAL_TRANSFER'`, `'INTERNAL_KK'`) ohne Migration zu ermöglichen.
+- `process_csv_import` jetzt mit Signatur `(p_rows jsonb, p_format_hint text DEFAULT 'DKB')`. `p_format_hint` ist V1 noch nicht aktiv im RPC-Body (Future-Proof-Parameter; Validierung auf `'DKB'` / `'CORTAL_CONSORS'`). Description-Normalisierung pro Bank-Format geschieht frontseitig im jeweiligen Parser. Hash-Adapter bleibt im RPC (Single-Source-of-Truth für Idempotenz).
+- Pipeline-Logik: UPSERT mit `ON CONFLICT (user_id, hash) DO UPDATE SET counterparty_iban = EXCLUDED.counterparty_iban WHERE fragments.counterparty_iban IS NULL` → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` → bei Transfer-Markierung werden bestehende `card_fragment_links` gelöst und `suggested_card_id`/`confidence` auf NULL gesetzt (Daten-Invariante: Transfer kann nicht gleichzeitig gelinkt sein) → Confidence-Loop nur für echte INSERTs ohne Transfer.
+- Return-Schema erweitert um drei Counter: `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count`.
+- View `fragments_with_status`: zwei neue Spalten am Ende (`counterparty_iban`, `transfer_type`). Neuer `status`-Wert `'INTERNAL_TRANSFER'` mit höchster Priorität (schlägt `UNASSIGNED` / `ASSIGNED` / `AUTO_ABSORBED`).
+- `calculate_sparrate_for_month` ist **nicht** angepasst worden — sie liest keine Fragmente direkt, sondern aggregiert nur Karten-Amounts via `calculate_card_amount_for_month`. Daten-Invariante (Links werden bei Transfer-Markierung gelöst) garantiert per Konstruktion, dass `INTERNAL_TRANSFER`-Fragmente nie über `card_fragment_links` in die Sparrate fließen. Defense-in-Depth-Patch `AND f.transfer_type IS DISTINCT FROM 'INTERNAL_TRANSFER'` in `calculate_card_amount_for_month` ist als Architekten-Folge-Sprint vorgemerkt (V7'').
+- **Schema-Doku v3 ist gegenüber diesen Änderungen noch nicht aktualisiert** — Schema-Doku v3 → v3.1 Pflege ist als V6'' vorgemerkt (Architekten-Lieferung).
+
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
 supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supabase/types.ts
@@ -313,6 +327,24 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     dürfen nur als Defense-in-Depth-Fallback hartcodiert sein. Hält Regel 5
     (`app_config` als Single-Source-of-Truth) ein und vermeidet Schwellen-Drift
     zwischen DB-Logik und UI-Logik. Etabliert in Sprint 8 P4. (LL-17)
+16. **Live-RPC-E2E ohne Persistenz via RAISE-Rollback-Dry-Run.** Wenn ein
+    Sprint eine Server-Action gegen eine mutierende RPC verkabelt und der
+    Browser-Smoke dem User vorbehalten ist, kann Claude Code den E2E-Contract
+    trotzdem nicht-destruktiv verifizieren: `DO`-Block mit
+    `set_config('request.jwt.claims', ..., true)` (setzt `auth.uid()`), RPC-
+    Aufruf mit echten Parser-Zeilen, dann `RAISE EXCEPTION 'RESULT=%', r::text`
+    — die Exception rollt alle Mutationen zurück und transportiert das Return-
+    JSON in der Fehlermeldung. Bestätigt Row-Shape, Parameter-Akzeptanz und
+    Return-Schema gegen die echte DB, ohne den geteilten Test-State zu
+    verändern. Etabliert in Sprint 9 P3/P4. (LL-18)
+17. **AC regel-basiert, nicht instanz-basiert formulieren.** Sprint-9-AC4
+    nannte „mindestens 3 + die drei benannten Bewegungen" als Erwartung für
+    `internal_transfers_count`. Die RPC markiert per Regel
+    `counterparty_iban = ANY(own_ibans)` aber alle Eigen-Konto-Transfers
+    (im Test-State 7 pro Seite, nicht 3). Das ist korrektes Verhalten — der
+    AC war narrative-eng. PM-Lesson: Akzeptanz-Kriterien formulieren die
+    erwartete Regel, nicht die erwarteten konkreten Instanzen, sofern die
+    Regel über die Test-Daten hinaus gilt. (LL-19)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -436,9 +468,9 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 5 (Untere Interaktionszone) | ~~Sonnet 4.6~~ ✓ erledigt |
 | Sprint 6 (Sparrate-Verifikation) | ~~Opus 4.7 → Sonnet 4.6~~ ✓ erledigt (→ LL-13) |
 | Sprint 7 (UI-Komplettierung V1+V6+V2) | ~~Sonnet 4.6~~ ✓ erledigt — Briefing klar spec'd, kein Opus-Eskalations-Bedarf |
-| Sprint 8 (CSV-Import / Distiller) | **Opus 4.7** — Konfidenz-Logik, Hash-Determinismus |
-| Sprint 9 (Soft-Delete-Pattern) | **Sonnet 4.6** — Routine gegen klare Spec |
-| Sprint 10 (Sparraten-Treppe) | **Sonnet 4.6** — UI-Komponente |
+| Sprint 8 (CSV-Import / Distiller) | ~~Opus 4.7~~ ✓ erledigt — Konfidenz-Logik, Hash-Determinismus |
+| Sprint 9 (Cortal-Parser + Cross-Account) | ~~Opus 4.7~~ ✓ erledigt — Multi-Parser, Format-Router, Hash-Sensibilität |
+| Sprint 10 (offen — Soft-Delete-Pattern oder Sparraten-Treppe) | **Sonnet 4.6** — Routine gegen klare Spec, beide Kandidaten UI-orientiert |
 
 **Eskalations-Heuristik:** Wenn Sonnet 4.6 bei einer Korrektur nach einem
 erfolglosen Fix-Versuch immer noch nicht alle Symptome löst, direkt auf Opus 4.7
@@ -1206,3 +1238,165 @@ RPC-Verkabelung, mehrphasiger Pipeline-Reihenfolge. Sprint 8 ohne Spec-
 Verstoß, zwei PM-genehmigte Scope-Expansionen (P5, P6), keine LL-13-
 Verletzung — Claude Code hat in beiden Fällen gestoppt und PM-Freigabe
 abgewartet. Eskalations-Heuristik §9 bestätigt für Daten-Pipeline-Sprints.
+
+### Sprint 9 · APPROVED 24. Mai 2026
+**Komponente:** Cortal-Consors-Parser + Cross-Account-Transfer-Erkennung (§11
+Bank-Adapter-Erweiterung + §8 Fragment-Stack-Status `INTERNAL_TRANSFER` + §8
+Backfill-Report-Toast). Vier sequenzielle Phasen + Parser-Vorbereitung (P0),
+Phasen-eigene Commits gemäß LL-14. Branch `sprint/09-cortal-transfer`.
+
+**Voraussetzungen erfüllt:** Sprints 0–8 grün auf `main`. Architekt-Pre-Sprint-9
+Stufe 1 (Schema-Erweiterung `profiles.own_ibans` + `fragments.counterparty_iban`
++ `fragments.transfer_type` mit CHECK + Partial-Index, RPC `process_csv_import`
+V2 → V3 mit `p_format_hint`, View `fragments_with_status` um zwei Spalten +
+Status `'INTERNAL_TRANSFER'` erweitert) abgeschlossen 24.05.2026. Initial-Daten
+Test-User: `own_ibans = {DE13120300001051422572 (DKB), DE84760300800853562991
+(Cortal)}`. §4.6-Anker (`2910.01`) intakt nach Migration.
+
+**Architekt-Sprint-Lieferung Stufe 1 (Sandbox 10/10 grün):**
+- Migration + RPC V3 + View-Update + §4.6-Anker-Verifikation
+- OQ-A Backfill: Variante (i) per User-getriebenem Re-Import mit
+  `ON CONFLICT DO UPDATE SET counterparty_iban WHERE counterparty_iban IS NULL`.
+  Hash bleibt V2-Formel — `counterparty_iban` ist nicht Hash-Bestandteil.
+- OQ-B Konflikt Transfer + bestehender Karten-Link: Variante (ii) — Link wird
+  gelöst, Fragment wird `INTERNAL_TRANSFER`, Counter `links_removed_for_transfers_count`
+  getrackt, Suggestion (`suggested_card_id`/`confidence`) zurückgesetzt.
+  `manually_paid=true` bleibt orthogonal erhalten.
+- OQ-C Hash-Adapter: bank-agnostisch im RPC, `p_format_hint` als Future-Proof-
+  Slot ohne aktive Body-Logik in V1. Frontend normalisiert pro Bank-Format zu
+  `(date, amount, description, counterparty_iban)`, RPC hasht bank-übergreifend
+  einheitlich (Single-Source-of-Truth für Idempotenz).
+- `calculate_sparrate_for_month` bewusst nicht angefasst (liest keine Fragmente
+  direkt). Defense-in-Depth-Patch für `calculate_card_amount_for_month` als
+  V7'' für Folge-Sprint vorgemerkt.
+
+**Implementierung (5 Phase-Commits + chore + docs auf `sprint/09-cortal-transfer`):**
+- `chore: regenerate supabase types …` — `types.ts` auf RPC-V3-Signatur +
+  `counterparty_iban` / `transfer_type` (View + `fragments` + `profiles.own_ibans`).
+- `sprint-9 p0: dkb parser extracts counterparty iban` — `src/lib/dkb-csv.ts`
+  liest Spalte 8 („IBAN") als `counterparty_iban` (leerer Wert → `null`, nicht
+  Hash-Bestandteil). (Phase P0)
+- `sprint-9 p1: cortal-consors csv parser with format detection` — neues
+  framework-freies Modul `src/lib/cortal-csv.ts` (145 LOC). Strikter Header-
+  Anker mit Trailing-Space (OQ4 entschieden: byte-exakt), 10 Vor-Header-Zeilen,
+  unquoted Werte, `DD.MM.YYYY`-Datum, getrennte Betrag/Währung-Spalten, drei-
+  Feld-Description `"{Sender / Empfänger} | {Buchungstext} | {Verwendungszweck}"`,
+  `n/a` → null bei IBAN, nicht-EUR-Währung → corrupt. (Phase P1)
+- `sprint-9 p2: csv format router routes to dkb or cortal parser` — neues
+  Modul `src/lib/csv-format-router.ts` (63 LOC). Cortal-vor-DKB-Routing-
+  Reihenfolge (beide nutzen `;`, aber Cortal unquoted + distinkter Header).
+  Semantik: `errorClass: "format"` → nächsten Parser probieren;
+  `"empty"`/`"corrupt"` → durchreichen (Format hat gepasst, Daten fehlerhaft).
+  (Phase P2)
+- `sprint-9 p3: wire process_csv_import v3 with format hint and counterparty iban`
+  — Server-Action + `rpc.ts`-Wrapper erweitert um `p_format_hint` + `counterparty_iban`
+  pro Zeile. `CsvImportResult` mit drei neuen Countern. `portal.tsx` nutzt jetzt
+  den Format-Router. (Phase P3)
+- `sprint-9 p4: render internal transfer fragments dimmed with badge and backfill toast`
+  — `FragmentCard` mit eigener CSS-Klasse `.fragmentCardTransfer` (Opacity 0.45,
+  `pointer-events: none`) statt der `locked`-Klasse (0.22). Badge „TRANSFER"
+  über eigene Token-Triplet (`--frag-transfer-badge-*`, Grau-Soft
+  `rgba(140,140,140,.5)`). Status-Priorität im Render: `isTransfer` schlägt
+  `isLocked` und KI-Vorschlag-Badge. `Portal`-Component hält Toast-State
+  mit `id`-basiertem Remount für Animation-Restart, CSS-Animation
+  `backfillToastLife 4s`, Unmount per Timer. LL-5-Reset bei Monatswechsel.
+  (Phase P4)
+- `docs: sprint 9 design-doc + claude.md patches` + Closing-Artefakte.
+
+**Doku-Patches (PM-Anwendung nach Sprint-Approval):**
+- Design-Doku §11 Hash-Algorithmus: Cortal-Consors-Bank-Adapter (drei Felder,
+  Pipe-Separator, `n/a`-Literal, `counterparty_iban` nicht Hash-Bestandteil).
+- Design-Doku §11 Cross-Account-Erkennung: `INTERNAL_TRANSFER`-Pipeline-Block
+  am Ende von §11 (own_ibans → counterparty_iban → transfer_type, Link-Auflösung
+  bei Reklassifikation, Konsequenz „alle Eigen-Konto-Bewegungen, nicht nur
+  betitelte Überträge").
+- Design-Doku §8 Fragment-Stack: Rendering-Regel `INTERNAL_TRANSFER` (Opacity
+  0.45, Badge „TRANSFER" Grau-Soft, kein Tap, Status schlägt alle anderen,
+  zählt nicht in Arbeitsfläche oben und nicht in „N Fragmente offen"-Header-
+  Flanke).
+- Design-Doku §8 Portal: Backfill-Report-Toast (direkt unter Drop-Zone, drei
+  Counter-Zeilen, 4 s Fade, nicht interaktiv).
+
+**Schema-Doku-Status:** v3 bleibt aktiv, ist aber nicht mit den Sprint-9-
+Stufe-1-Änderungen synchronisiert (siehe §6-Block). Schema-Doku v3 → v3.1
+Pflege als V6'' vorgemerkt — Architekten-Lieferung.
+
+**Browser-Smoke-Test (User):**
+- S1.1–S1.3 grün (DKB-Parser-Erweiterung gegen echtes Sample, Hash-Stabilität
+  verifiziert).
+- S2.1–S2.5 grün (Cortal-Parser gegen echtes Sample, n/a-IBAN, Effekten-Zeile,
+  nicht-EUR → corrupt, Format-Drift-Robustheit).
+- S3.1–S3.3 grün (Format-Router: DKB → DKB, Cortal → Cortal, unbekannt →
+  error-format).
+- S4 E2E nicht-persistierend via RAISE-Rollback-Dry-Run (LL-18 etabliert):
+  DKB-Re-Import → `inserted: 0`, `iban_backfilled: 54`, `transfers: 7`,
+  `links_removed: 0`. Cortal-Erst-Import → `inserted: 8`, `transfers: 7`
+  (alle außer Effekten-Zeile mit null-IBAN). Sandbox-Wert deckungsgleich.
+- S5.1–S5.3 grün im echten Browser: Transfer-Fragmente gedimmt (0.45) mit
+  Grau-Soft TRANSFER-Badge, Tap ohne Effekt, Backfill-Toast unter Portal
+  mit korrekten Counter-Zeilen + Fade nach 4 s.
+- S6.1 grün: `calculate_sparrate_for_month(test-user, '2026-03-01') = 2910.01`
+  nach echtem DKB-Re-Import + Cortal-Erst-Import.
+
+**OQ-Entscheidungen:**
+- OQ1 (Cortal-Description-Adapter): drei Felder mit Pipe-Separator, byte-exakt,
+  `n/a`-Literal belassen. In §11 dokumentiert.
+- OQ2 (Nicht-EUR-Währung Cortal): `error-corrupt`, gesamter Import verworfen.
+  Cross-Currency out of scope V1.
+- OQ3 (Backfill-Toast-Position): direkt unter dem Portal (Drop-Zone) — Toast
+  ist Pipeline-Feedback (Quittung der Import-Aktion), nicht Stack-Inhalt.
+  In §8 dokumentiert.
+- OQ4 (Cortal-Header-Trailing-Space): strikt byte-exakt. Format-Änderungen
+  bei Cortal sind dann neu zu spec'n (V2-Vormerkung).
+
+**PM-Klärungs-Episoden:**
+- Pre-Sprint-9 Stufe-1-Klärungsbrief (Architekt → PM): Spec-Drift gegen DB-
+  Realität bei `fragments.counterparty_iban` (Spalte existierte im Briefing
+  ohne Schema-Basis), `profiles.user_id` vs `profiles.id` (PK-Naming),
+  `fragments.hash` vs `external_hash` (Spalten-Naming). PM-Bestätigung
+  Variante (A) für counterparty_iban + still angleichen für PK + Hash.
+  LL-15-Anwendung: PM hatte Schema-Doku v3 vor Brief-Versand nicht
+  spaltenscharf geprüft. Brief-Workflow weiterhin korrekt — Architekt hat
+  Lieferung angehalten.
+- AC4-Narrative-Klärung: Erwartung „mind. 3 + die drei benannten" war
+  narrative-eng, RPC markiert per Regel 7 pro Seite. Korrektes Verhalten,
+  AC nachgeschärft als LL-19.
+
+**V1-Lücken / Sprint-10-Vorlauf:**
+- V3'' (V2-C): Karten-spezifische Badge-Farben.
+- V4'': Soft-Delete-Pattern Karten (§2.4) — UX-Lücke „Karte aus Vergangenheit
+  löschen".
+- V5'': Sparraten-Treppe (§9) — UI-Komponente.
+- V6'': Schema-Doku v3 → v3.1 Pflege (Architekten-Lieferung).
+- V7'': Defense-in-Depth-Patch `calculate_card_amount_for_month` —
+  `AND f.transfer_type IS DISTINCT FROM 'INTERNAL_TRANSFER'`. Aktuell durch
+  OQ-B-Daten-Invariante abgesichert, explizit > implizit.
+- V8'' (V2-Web-App): `INTERNAL_TRANSFER`-Fragmente komplett aus Fragment-Stack
+  ausblenden (eigener Reiter / Settings-Toggle). V1 nutzt Variante (b) gedimmt+Badge.
+- V9'': Backfill-Toast-UX-Verbesserung — bei hohem Migrations-Counter (z. B.
+  „54 Fragmente mit IBAN ergänzt") Formulierung anpassen („alle Fragmente
+  nachgepflegt"). V1 zeigt exakte Zahl.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-18** (§7 Grundregel 16, Sprint 9 P3/P4): Live-RPC-E2E ohne Persistenz
+  via RAISE-Rollback-Dry-Run als nicht-destruktive E2E-Verifikations-Technik
+  für mutierende RPCs.
+- **LL-19** (§7 Grundregel 17, Sprint 9 AC4-Episode): Akzeptanz-Kriterien
+  regel-basiert formulieren, nicht instanz-basiert, sofern die Regel über
+  Test-Daten hinaus gilt.
+
+**PM-Lesson (nicht als LL kodifiziert, intern dokumentiert):**
+Schema-Doku v3 spaltenscharf prüfen vor Architekten-Briefen — die Stufe-1-
+Klärungs-Episode hätte durch sorgfältigeres Lesen vermieden werden können.
+LL-15 deckt das prinzipiell schon ab; Sprint-9-Praxis bestätigt die Regel.
+
+**Bundle-Stand:** 10 Dateien geändert (`src/`), +403 / -24 LOC. Zwei neue
+Module (`cortal-csv.ts`, `csv-format-router.ts`). `tsc` clean, `next lint`
+0/0, `next build` 0 Errors / 0 Warnings. Bundle-Hygiene clean (0 Dev-Button-
+Treffer in `chunks/app/`).
+
+**Modell-Empfehlung-Befund:** Opus 4.7 wegen Multi-Parser-Architektur,
+Format-Router-Semantik, Hash-Determinismus-Sensibilität (counterparty_iban
+bewusst nicht im Hash) und UI-Status-Hierarchie. Eskalations-Heuristik §9
+bestätigt — Sonnet hätte LL-13-Risiko bei der Status-Prioritäts-Logik.
+Sprint 9 ohne Spec-Verstoß, keine LL-13-Verletzung.
