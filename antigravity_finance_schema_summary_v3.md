@@ -1,8 +1,8 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–8)
-**Datum:** 23. Mai 2026
+**Version:** 3.1
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches)
+**Datum:** 24. Mai 2026
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**
 
@@ -18,11 +18,23 @@
 - Constraint-Klarstellung: `card_planned_timeline.positive_planned` ist `≥ 0`, nicht `> 0`
 - Section 9: `closed_at` ist nicht mehr reserviert — siehe Punkt zu `toggle_card_manually_paid` unten
 
+**Änderungen v3 → v3.1 (Sprint-9-Stufe-1 + Pre-Sprint-10):**
+
+- `profiles`: +1 Spalte — `own_ibans text[] NOT NULL DEFAULT '{}'` (Liste eigener IBANs für Cross-Account-Transfer-Erkennung)
+- `fragments`: +2 Spalten — `counterparty_iban text NULL`, `transfer_type text NULL` (CHECK: NULL oder `'INTERNAL_TRANSFER'`)
+- 1 neuer Partial-Index: `idx_fragments_transfer_type` auf `(user_id, transfer_type) WHERE transfer_type IS NOT NULL`
+- `process_csv_import`-Signatur erweitert: zweiter Parameter `p_format_hint text DEFAULT 'DKB'` (Future-Proof-Slot für format-spezifische Logik, in Stufe 1 nicht aktiv im Body); `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten; Return-JSON um `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count` erweitert
+- 1 neue RPC: `toggle_card_hidden(card_id, hidden)` für UI-Soft-Delete-Toggle (Sprint 10 V4'')
+- View `fragments_with_status`: +2 Spalten am Ende (`counterparty_iban`, `transfer_type`); zusätzlicher Status-Wert `'INTERNAL_TRANSFER'` (höchste Priorität, schlägt alle anderen Stati)
+- **Snapshot-Integritäts-Patch (Pre-Sprint-10):** `is_card_active_in_month` filtert nicht mehr auf `deleted_at` — die zwei Sparrate-RPCs aggregieren jetzt korrekt über hidden Karten. Hide ist UI-Concern, nicht Berechnungs-Concern. Konsumenten mit echtem Hide-Bedarf (`process_csv_import`-Match-Loop, `toggle_card_manually_paid`-Ownership-Check) filtern explizit
+- **Defense-in-Depth-Patch (Pre-Sprint-10):** `calculate_card_amount_for_month` schließt `INTERNAL_TRANSFER`-Fragmente explizit aus dem Aggregat-Sub-Query aus (OQ-B-Daten-Invariante garantiert das bereits, expliziter Filter schützt vor Drift)
+- Sprint-9-OQ-A/B/C-Pattern dokumentiert (siehe Section 7 + Section 9)
+
 ---
 
 ## 1. Was gebaut wurde
 
-10 Tabellen, 1 View, **19 App-RPCs** (+ 5 Trigger-Funktionen), **5 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
+10 Tabellen, 1 View, **21 App-RPCs** (+ 5 Trigger-Funktionen), **5 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
 
 ```
    IDENTITÄT          EINKOMMEN              KARTEN                   FRAGMENTE
@@ -129,6 +141,12 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 | `get_net_monthly_for_month(user_id, person, month)` | Netto-Anzeige | `numeric` |
 | `get_split_factor(user_id, month)` | "ICH 60%" / "PARTNER 40%"-Anzeige | `numeric` (0..1) |
 
+### Beim UI-Hide (Sprint 10)
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `toggle_card_hidden(card_id, hidden boolean)` | Karte aus allen UI-Monatsansichten verbergen (`hidden=true`) oder Hide rückgängig machen (`hidden=false`). Deterministischer Server-Vertrag, kein implicit Toggle. Wirkt **nicht** auf Sparraten-Aggregation — §2.1 Snapshot-Integrität bleibt unberührt | `boolean` (der gesetzte `hidden`-Zustand) |
+
 ### Beim Karten-CRUD (Sprint 5)
 
 Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED-Trigger scheitern würden:
@@ -144,11 +162,11 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 |---|---|---|
 | `toggle_card_manually_paid(card_id, month)` | Karte als „bezahlt" markieren oder zurücknehmen. Idempotent in der Hinsicht, dass mehrfacher Aufruf deterministisch togglet. Verweigert Toggle, wenn `card_monthly_states.closed_at IS NOT NULL` | `boolean` (Wert **nach** dem Toggle) |
 
-### Beim CSV-Import (Sprint 8)
+### Beim CSV-Import (Sprint 8 + Sprint 9)
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `process_csv_import(p_rows jsonb)` | Atomare Distiller-Pipeline: SHA-256-Hash → INSERT mit ON CONFLICT → Match-Loop → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. | `jsonb` (`{inserted_count, skipped_duplicates_count, auto_absorbed_count, fragment_ids[]}`) |
+| `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` ist Future-Proof-Slot, in Stufe 1 nicht aktiv im Body. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
 | `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score, gewichtete Summe aus den drei Sub-Scores | `numeric` (0..1) |
 | `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) | `numeric` |
 | `amount_match(fragment_amount, planned)` | Bracket-Score (`<1%→1.00`, `<5%→0.85`, `<15%→0.60`, `<30%→0.30`, sonst `0.00`) | `numeric` |
@@ -167,7 +185,7 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | `schedule_deletion(entity_type, entity_id, payload)` | Aktion in Trash legen mit auto-berechnetem `expires_at` | `uuid` (Trash-ID) |
 | `restore_deletion(trash_id)` | "Rückgängig"-Klick | `boolean` |
 
-**RPC-Inventur-Summe:** 19 App-RPCs, alle `SECURITY INVOKER` außer den beiden Service-Hooks `handle_new_user` und `rls_auto_enable`, die DEFINER sind. Alle Read-Path-RPCs sind `STABLE` (Cache-fähig pro Transaktion), Schreib-RPCs sind `VOLATILE`.
+**RPC-Inventur-Summe:** 21 App-RPCs, alle `SECURITY INVOKER` außer den beiden Service-Hooks `handle_new_user` und `rls_auto_enable`, die DEFINER sind. Alle Read-Path-RPCs sind `STABLE` (Cache-fähig pro Transaktion), Schreib-RPCs sind `VOLATILE`.
 
 ---
 
@@ -189,7 +207,9 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 | **Letzte Zahlung in Monat X** | RPC `schedule_deletion('CARD_END', card_id, {...})` |
 | **Karte hard-löschen (nie genutzt)** | RPC `schedule_deletion('CARD', card_id, {})` |
 | **Rückgängig-Klick** | RPC `restore_deletion(trash_id)` |
-| **CSV-Import** | RPC `process_csv_import(p_rows jsonb)` — atomar, eine Transaktion |
+| **CSV-Import (DKB)** | RPC `process_csv_import(p_rows, 'DKB')` — atomar, eine Transaktion |
+| **CSV-Import (Cortal Consors)** | RPC `process_csv_import(p_rows, 'CORTAL_CONSORS')` — selbe RPC, andere Format-Hint, identische Pipeline |
+| **Karte aus UI verbergen / Hide rückgängig** | RPC `toggle_card_hidden(card_id, true/false)` — wirkt nicht auf Sparrate |
 | **Sparrate für Ring (Ist)** | RPC `calculate_sparrate_for_month(user_id, month)` |
 | **Sparrate Plan-Linie** | RPC `calculate_planned_sparrate_for_month(user_id, month)` |
 | **„Soll-Wert" für Status-Label / „Noch X frei"** | RPC `get_effective_plan_for_month(card_id, month)` |
@@ -204,7 +224,7 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 |---|---|
 | **profiles** | Cascade über `auth.users`-Löschung — DSGVO-Vollbereinigung |
 | **income_timeline** | Append-only in V1. Kein Lösch-Pfad im Frontend |
-| **cards** | Drei Pfade: (a) **Hard-Delete** wenn nie genutzt — Cascade auf alle Children. (b) **Soft-End** über `last_active_month` — bleibt historisch sichtbar. (c) **Soft-Delete** via `deleted_at`-Spalte (UI-Hide ohne Hard-Delete). Hot-Path-Queries filtern via `WHERE deleted_at IS NULL` (auch funktionaler Index `idx_cards_user_active`) |
+| **cards** | Drei Pfade: (a) **Hard-Delete** wenn nie genutzt — Cascade auf alle Children. (b) **Soft-End** über `last_active_month` — bleibt historisch sichtbar. (c) **Soft-Delete (UI-Hide)** via `deleted_at`-Spalte über RPC `toggle_card_hidden`. **Wichtig:** `deleted_at`-Filterung ist UI-Concern, nicht Berechnungs-Concern — Sparraten-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`) ignorieren `deleted_at` (§2.1 Snapshot-Integrität). Nur Surfaces, die UI-Sicht produzieren, filtern explizit über `WHERE deleted_at IS NULL` (Karten-Karussell, Detail-Overlay, Stack-Suggestion, KI-Vorschlag-Badge sowie der Match-Loop in `process_csv_import` und der Ownership-Check in `toggle_card_manually_paid`). Funktionaler Index `idx_cards_user_active (user_id) WHERE deleted_at IS NULL` beschleunigt diese UI-Queries. |
 | **card_planned_timeline** | Cascade-Delete bei Karten-Hard-Delete. Sonst append-only |
 | **card_monthly_states** | Cascade-Delete bei Karten-Hard-Delete. State-Reset (= DELETE) nach UI-Logik möglich |
 | **card_fragment_links** | DELETE bei Eject. Cascade bei Karten- oder Fragment-Hard-Delete |
@@ -225,8 +245,10 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 | **Karten-Lebensdauer** | `last_active_month` setzt das Ende, ohne historische Monate zu beeinflussen |
 | **Monats-Anpassungen** | `card_monthly_states.adjusted_amount` wirkt nur in dem einen Monat, `adjustment_scope` dokumentiert die ursprüngliche User-Intention |
 | **Eingefrorene Monate** | `card_monthly_states.closed_at IS NOT NULL` blockiert weitere Mutationen über `toggle_card_manually_paid` |
+| **Cross-Account-Transfers** | `fragments.transfer_type = 'INTERNAL_TRANSFER'` markiert Bewegungen zwischen eigenen Konten (`counterparty_iban = ANY(profiles.own_ibans)`). Solche Fragmente werden in `calculate_card_amount_for_month` explizit aus dem Aggregat ausgeschlossen — Sparrate spiegelt nur echte Einnahmen/Ausgaben. OQ-B-Daten-Invariante: bei Transfer-Markierung wird ein eventuell bestehender `card_fragment_link` gelöst (Counter `links_removed_for_transfers_count` im RPC-Return) und Suggestion-State (`confidence`/`suggested_card_id`) zurückgesetzt |
+| **UI-Hide ändert keine Aggregation** | `cards.deleted_at IS NOT NULL` schließt eine Karte aus allen UI-Monatsansichten aus, hat aber **keinen Effekt** auf `calculate_sparrate_for_month` / `calculate_planned_sparrate_for_month`. Historische Sparraten bleiben unverändert, auch wenn der User eine Karte verbirgt, die in Vergangenheit Beträge beigesteuert hat |
 | **Fragmente** | Sind Geldflüsse — können in der Zeit nicht "verschoben" werden. Eject ist DELETE des Links, nicht des Fragments. `imported_at` dokumentiert Import-Zeitpunkt |
-| **CSV-Re-Imports** | `fragments.hash` = SHA-256 über `transaction_date || '|' || amount_fixed || '|' || description_raw`. UNIQUE-Constraint auf `(user_id, hash)` macht Re-Imports deterministisch idempotent |
+| **CSV-Re-Imports** | `fragments.hash` = SHA-256 über `transaction_date || '|' || amount_fixed || '|' || description_raw`. `counterparty_iban` ist **bewusst nicht** Hash-Bestandteil (siehe OQ-A) — Re-Imports treffen den existierenden Hash und backfillen die IBAN-Spalte via `ON CONFLICT (user_id, hash) DO UPDATE SET counterparty_iban = EXCLUDED.counterparty_iban WHERE fragments.counterparty_iban IS NULL`. UNIQUE-Constraint auf `(user_id, hash)` macht Re-Imports deterministisch idempotent |
 | **Sparrate** | Niemals als Spalte gespeichert. Funktion liest deterministisch aus den eingefrorenen Quellen |
 
 → **Eine Plan-Anpassung im April 2026 ändert niemals die Sparrate vom Februar 2026.** Garantiert durch das Schema selbst, nicht durch Anwendungslogik.
@@ -270,10 +292,24 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 | Kategorie-Vorhersage | Karten-Zuordnung reicht für V1 | Eigenes Modell pro User |
 | Steuerklasse-Wechsel via UI | Aufwand vs. Nutzen | Settings-Bereich in V2, ändert `profiles.tax_class` |
 | Manueller Monatsabschluss-UI | Wird vom Distiller-Workflow nicht benötigt | `card_monthly_states.closed_at` ist als Block-Mechanik bereits da (siehe `toggle_card_manually_paid`-RPC) — UI dazu kann später beliebig kommen |
+| Paired-Fragment-Verlinkung (`paired_fragment_id`) | Stufe-1-Cross-Account-Erkennung kommt mit Single-Side-Markierung aus — kein Spiegel-Paar nötig | Mögliche V2-Erweiterung wenn Multi-Account-Reconciliation gefragt |
+| IBAN-Format-Validierung in der DB | Stufe-1 vertraut Frontend-Validierung (Sprint 9 Cortal-Parser) | Optionale CHECK-Constraint über regex_match in V2 |
+| UI für Verwaltung von `own_ibans` | Aktuell nur via Service-Role oder Migration setzbar | Settings-Bereich in V2 oder Sprint-9-Folge-Sprint |
+| Hide-Rückgängig-UI ("Verborgene Karten anzeigen") | V1-Use-Case ist „einmal verborgen, bleibt verborgen" + 5s-Toast-Rückgängig | Mögliche V2-Erweiterung; `toggle_card_hidden(card_id, false)` ist Server-seitig bereits verfügbar |
 
 **Schema-Hinweis V3 — `card_monthly_states.closed_at`:** In v2 war das Feld reserviert und ungenutzt. In v3 wird es erstmals konsumiert: `toggle_card_manually_paid` verweigert die Mutation, wenn die Row für diesen Monat `closed_at IS NOT NULL` hat. Damit hat das Feld eine erste echte Semantik („dieser Monat ist abgeschlossen, kein weiterer Toggle erlaubt"). Geschrieben wird `closed_at` aktuell von keiner Frontend-Operation — das bleibt für eine zukünftige Edge-Function oder Settings-UI offen.
 
 **Schema-Hinweis V3 — `card_monthly_states.adjustment_scope`:** Default `'THIS_MONTH'`. Werte: `THIS_MONTH | FORWARD`. Aktuell dokumentiert die Spalte die ursprüngliche User-Intention für ein Adjustment (siehe Design-Doku §7 „Betrag anpassen, nur diesen Monat" vs. „… ab nächstem Monat"). Die `FORWARD`-Semantik wird vom Anzeige-Pfad **nicht** ausgewertet — eine zukünftige UI-Erweiterung könnte die Werte für „künftige Monate noch nicht überschritten" o. ä. nutzen.
+
+**Schema-Hinweis V3.1 — Cross-Account-Pattern (Sprint 9 OQ-A/B/C):**
+
+- **OQ-A — Backfill bestehender Fragmente:** User-getriebener Re-Import via `ON CONFLICT (user_id, hash) DO UPDATE SET counterparty_iban = EXCLUDED.counterparty_iban WHERE fragments.counterparty_iban IS NULL`. Hash-Formel unverändert zu Sprint 8 (`transaction_date || '|' || amount_fixed || '|' || description_raw`), damit Re-Import den vorhandenen Eintrag deterministisch trifft. `counterparty_iban` ist explizit kein Hash-Bestandteil.
+- **OQ-B — Konflikt Transfer + bestehender Karten-Link:** Bei Transfer-Markierung wird ein eventuell bestehender `card_fragment_link` gelöst, `confidence`/`suggested_card_id` werden zurückgesetzt, Counter `links_removed_for_transfers_count` im RPC-Return getrackt. `manually_paid` bleibt orthogonal unberührt.
+- **OQ-C — Hash-Adapter:** Hash-Logik im RPC, nicht im Frontend (Single-Source-of-Truth für Idempotenz). `p_format_hint` ist Future-Proof-Slot ohne aktive Logik in Stufe 1 — wenn künftige Bank-Formate format-spezifische Description-Normalisierung brauchen, wird das hier eingehängt.
+
+**Schema-Hinweis V3.1 — `is_card_active_in_month` ohne Hide-Concern:**
+
+Die Funktion ist seit Pre-Sprint-10 strikt Frequenz/Range-Check. Sie filtert `cards.deleted_at` **nicht** mehr. Konsumenten, die hidden Karten ausschließen müssen, filtern explizit über `cards.deleted_at IS NULL` in ihrer eigenen Query — diese Konsumenten sind aktuell `process_csv_import` (Match-Loop) und `toggle_card_manually_paid` (Ownership-Check). Die Sparrate-RPCs **dürfen nicht filtern** (§2.1 Snapshot-Integrität).
 
 ---
 
@@ -313,6 +349,8 @@ for (const row of expired.data) {
 
 **Hinweis V1:** Aktuell genutzte ENUM-Werte sind `CARD_END` und `CARD`. `CARD_FRAGMENT_LINK` und `FRAGMENT` bleiben für V2 reserviert (Eject und Fragment-Delete laufen direkt ohne Trash-Umweg).
 
+**Hinweis V3.1:** Soft-Delete von Karten (`cards.deleted_at`) läuft **nicht** über die Cleanup-Edge-Function. Hide ist explizit reversibel (5s-Toast-„Rückgängig" via `toggle_card_hidden(card_id, false)`) und ohne Retention-Limit — der User soll die Karte selbst entscheiden, ob sie verborgen bleibt. Ein User-Pfad zum Wieder-Einblenden ist V2-Vormerkung.
+
 ### 10.2 Migration als versionierte Datei ablegen
 
 Die Migrationen in `supabase/migrations/` reproduzierbar halten. Sprint 5–8 hat 6 zusätzliche RPCs / Spalten / Trigger eingeführt, die in einer eigenen 0002…-Migrationsdatei zusammengefasst werden sollten.
@@ -325,7 +363,7 @@ Nach Sprint 5–8-Erweiterungen einmal:
 supabase gen types typescript --project-id <id> > src/lib/supabase-types.ts
 ```
 
-Damit kennen die TS-Typen die fünf neuen RPCs (`create_card_direct`, `create_card_from_fragment`, `get_effective_plan_for_month`, `toggle_card_manually_paid`, `process_csv_import`, `calculate_planned_sparrate_for_month`) und die drei neuen Fragment-Spalten (`confidence`, `suggested_card_id`, `imported_at`).
+Damit kennen die TS-Typen alle neuen RPCs der letzten Sprints (`create_card_direct`, `create_card_from_fragment`, `get_effective_plan_for_month`, `toggle_card_manually_paid`, `process_csv_import`, `calculate_planned_sparrate_for_month`, `toggle_card_hidden`), die neuen Fragment-Spalten (`confidence`, `suggested_card_id`, `imported_at`, `counterparty_iban`, `transfer_type`), die neue `profiles.own_ibans`-Spalte und die erweiterte `process_csv_import`-Signatur mit zwei Parametern.
 
 ---
 
@@ -341,6 +379,7 @@ Sechs funktionale / partielle Indexes über die v2-PK/UK-Indexes hinaus:
 | `card_monthly_states` | `idx_states_card_month`, `idx_states_user_month` | Monats-State-Lookup |
 | `card_fragment_links` | `idx_links_card_month`, `idx_links_user_month` | Realitäts-Sum-Lookup |
 | `fragments` | `idx_fragments_user_date`, `idx_fragments_description_trgm` (GIN auf `description gin_trgm_ops`) | Roh-Liste + Distiller-Trigram-Score |
+| `fragments` | `idx_fragments_transfer_type` (partial, `WHERE transfer_type IS NOT NULL`) | Schneller Filter für Transfer-Sicht in UI |
 | `income_timeline` | `idx_income_timeline_lookup (user_id, person, effective_month DESC)` | Netto-Forward-Inheritance |
 | `net_estimation_brackets` | `idx_brackets_lookup (tax_class, tax_year, gross_annual_min)` | Bracket-Lookup |
 | `deleted_entities` | `idx_deleted_pending`, `idx_deleted_user_pending` (beide partial `WHERE restored_at IS NULL`) | Cleanup-Edge-Function-Polling |
@@ -389,4 +428,4 @@ Eine vollständig instrumentierte Datenbank für Antigravity Finance 1.0 — ink
 
 ---
 
-*Architekt-Persona | Antigravity Finance 1.0 | 23. Mai 2026*
+*Architekt-Persona | Antigravity Finance 1.0 | 24. Mai 2026*
