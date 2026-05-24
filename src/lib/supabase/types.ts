@@ -251,6 +251,7 @@ export type Database = {
         Row: {
           amount: number
           confidence: number | null
+          counterparty_iban: string | null
           created_at: string
           description: string
           hash: string
@@ -258,11 +259,13 @@ export type Database = {
           imported_at: string
           suggested_card_id: string | null
           transaction_date: string
+          transfer_type: string | null
           user_id: string
         }
         Insert: {
           amount: number
           confidence?: number | null
+          counterparty_iban?: string | null
           created_at?: string
           description: string
           hash: string
@@ -270,11 +273,13 @@ export type Database = {
           imported_at?: string
           suggested_card_id?: string | null
           transaction_date: string
+          transfer_type?: string | null
           user_id: string
         }
         Update: {
           amount?: number
           confidence?: number | null
+          counterparty_iban?: string | null
           created_at?: string
           description?: string
           hash?: string
@@ -282,6 +287,7 @@ export type Database = {
           imported_at?: string
           suggested_card_id?: string | null
           transaction_date?: string
+          transfer_type?: string | null
           user_id?: string
         }
         Relationships: [
@@ -359,6 +365,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           onboarded_at: string | null
+          own_ibans: string[]
           partner_name: string | null
           tax_class: number | null
           tax_year: number | null
@@ -369,6 +376,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           onboarded_at?: string | null
+          own_ibans?: string[]
           partner_name?: string | null
           tax_class?: number | null
           tax_year?: number | null
@@ -379,6 +387,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           onboarded_at?: string | null
+          own_ibans?: string[]
           partner_name?: string | null
           tax_class?: number | null
           tax_year?: number | null
@@ -395,6 +404,7 @@ export type Database = {
           assigned_card_id: string | null
           assigned_month: string | null
           confidence: number | null
+          counterparty_iban: string | null
           created_at: string | null
           description: string | null
           hash: string | null
@@ -403,6 +413,7 @@ export type Database = {
           status: string | null
           suggested_card_id: string | null
           transaction_date: string | null
+          transfer_type: string | null
           user_id: string | null
         }
         Relationships: [
@@ -510,7 +521,10 @@ export type Database = {
         Args: { p_card_name: string; p_description: string }
         Returns: number
       }
-      process_csv_import: { Args: { p_rows: Json }; Returns: Json }
+      process_csv_import: {
+        Args: { p_format_hint?: string; p_rows: Json }
+        Returns: Json
+      }
       restore_deletion: { Args: { p_id: string }; Returns: boolean }
       schedule_deletion: {
         Args: {
