@@ -22,17 +22,27 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
   const sign = isPos ? "+" : "−";
   const abs = Math.abs(fragment.amount);
 
+  // Sprint 9: INTERNAL_TRANSFER schlägt alle anderen Stati (§6.1). Eigenes
+  // Dimming (0.45) + TRANSFER-Badge, kein Drag/Tap. Höchste Status-Priorität,
+  // daher VOR dem isLocked-Styling und vor dem KI-Vorschlag-Badge geprüft.
+  const isTransfer = fragment.status === "INTERNAL_TRANSFER";
+  const stateClass = isTransfer
+    ? styles.fragmentCardTransfer
+    : isLocked
+      ? styles.fragmentCardLocked
+      : "";
+
   return (
     <div
-      className={`${styles.fragmentCard} ${
-        isLocked ? styles.fragmentCardLocked : ""
-      }`}
-      draggable={!isLocked}
+      className={`${styles.fragmentCard} ${stateClass}`}
+      draggable={!isLocked && !isTransfer}
       data-fragment-id={fragment.id}
       aria-label={
-        isLocked
-          ? `${fragment.description} (zugeordnet)`
-          : `${fragment.description}, ${sign}${formatAmount(abs)} Euro`
+        isTransfer
+          ? `${fragment.description} (Transfer zwischen eigenen Konten)`
+          : isLocked
+            ? `${fragment.description} (zugeordnet)`
+            : `${fragment.description}, ${sign}${formatAmount(abs)} Euro`
       }
     >
       <div className={styles.fragmentTop}>
@@ -44,10 +54,16 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           {sign}
           {formatAmount(abs)} €
         </div>
-        {fragment.suggestedCardName && (
-          <div className={styles.fragmentBadge}>
-            KI-Vorschlag: {fragment.suggestedCardName}
+        {isTransfer ? (
+          <div className={`${styles.fragmentBadge} ${styles.fragmentBadgeTransfer}`}>
+            Transfer
           </div>
+        ) : (
+          fragment.suggestedCardName && (
+            <div className={styles.fragmentBadge}>
+              KI-Vorschlag: {fragment.suggestedCardName}
+            </div>
+          )
         )}
       </div>
       <div className={styles.fragmentDesc} title={fragment.description}>

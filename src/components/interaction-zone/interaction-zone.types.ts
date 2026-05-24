@@ -13,7 +13,7 @@ export type FragmentRow = {
   amount: number;
   description: string;
   transaction_date: string; // ISO "YYYY-MM-DD"
-  status: "UNASSIGNED" | "ASSIGNED" | "AUTO_ABSORBED";
+  status: "UNASSIGNED" | "ASSIGNED" | "AUTO_ABSORBED" | "INTERNAL_TRANSFER";
   assigned_card_id: string | null;
   assigned_month: string | null; // "YYYY-MM-01"
   /** Sprint 8 P5: Import-Zeitpunkt (ISO-Timestamp) — deterministischer

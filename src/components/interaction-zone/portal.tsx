@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { routeAndParseCsv } from "@/lib/csv-format-router";
+import type { CsvImportResult } from "@/lib/rpc";
 import { processCsvImportAction } from "./actions";
 import styles from "./interaction-zone.module.css";
 
@@ -25,6 +26,11 @@ type PortalState =
 const SUCCESS_MS = 1500;
 const PROCESSING_MS = 2000;
 const ERROR_MS = 4000;
+const TOAST_MS = 4000;
+
+/** Eine Backfill-Toast-Instanz. `id` erzwingt Remount → Animation-Restart bei
+ *  sukzessiven Importen (jeder Toast zeigt nur die Counter seines Imports). */
+type BackfillToast = { id: number; lines: string[] };
 
 type PortalProps = {
   /** "YYYY-MM" — bei Wechsel wird der Portal-State zurückgesetzt (LL-5). */
@@ -33,23 +39,44 @@ type PortalProps = {
 
 export function Portal({ targetMonth }: PortalProps) {
   const [state, setState] = useState<PortalState>("default");
+  const [toast, setToast] = useState<BackfillToast | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastIdRef = useRef(0);
   /** dragenter feuert auch auf Kinder → Counter, damit Border nicht flackert. */
   const dragCounter = useRef(0);
 
-  // LL-5: Bei targetMonth-Wechsel hartes Reset (Timer + State).
+  // LL-5: Bei targetMonth-Wechsel hartes Reset (Timer + State + Toast).
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     dragCounter.current = 0;
     setState("default");
+    setToast(null);
   }, [targetMonth]);
 
   // Cleanup beim Unmount — vermeidet Memory-Leak.
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
+
+  /** Backfill-Report-Toast (§6.2): zeigt nur Counter > 0, 4 s, dann Fade-Out. */
+  function showBackfillToast(lines: string[]) {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    if (lines.length === 0) {
+      setToast(null);
+      return;
+    }
+    toastIdRef.current += 1;
+    setToast({ id: toastIdRef.current, lines });
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, TOAST_MS);
+  }
 
   function clearTimer() {
     if (timerRef.current) {
@@ -115,6 +142,7 @@ export function Portal({ targetMonth }: PortalProps) {
           `${result.internal_transfers_count} Transfers, ` +
           `${result.links_removed_for_transfers_count} Links gelöst`,
       );
+      showBackfillToast(buildBackfillLines(result));
     } catch (err) {
       console.error("CSV-Import-RPC fehlgeschlagen", err);
       runErrorSequence("corrupt");
@@ -204,6 +232,21 @@ export function Portal({ targetMonth }: PortalProps) {
         <div className={styles.portalLabel}>{label}</div>
         <div className={styles.portalSubLabel}>{subLabel}</div>
       </div>
+
+      {toast && (
+        <div
+          key={toast.id}
+          className={styles.backfillToast}
+          role="status"
+          aria-live="polite"
+        >
+          {toast.lines.map((line, i) => (
+            <div key={i} className={styles.backfillToastLine}>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
 
       {process.env.NODE_ENV === "development" && (
         <PortalDevButtons
@@ -398,6 +441,21 @@ function PortalDevButtons({
 }
 
 // ── Helper ──────────────────────────────────────────────────────────────────
+
+/** §6.2: Backfill-Toast-Zeilen — nur Counter > 0, in fester Reihenfolge. */
+function buildBackfillLines(r: CsvImportResult): string[] {
+  const lines: string[] = [];
+  if (r.iban_backfilled_count > 0) {
+    lines.push(`${r.iban_backfilled_count} Fragmente mit IBAN ergänzt`);
+  }
+  if (r.internal_transfers_count > 0) {
+    lines.push(`${r.internal_transfers_count} Bewegungen als Transfer erkannt`);
+  }
+  if (r.links_removed_for_transfers_count > 0) {
+    lines.push(`${r.links_removed_for_transfers_count} Karten-Zuordnungen gelöst`);
+  }
+  return lines;
+}
 
 /** dataTransfer.types enthält "Files" wenn ein OS-File gezogen wird.
  *  Fragmente nutzen unseren MIME-Type, deshalb hier explizit auf "Files"

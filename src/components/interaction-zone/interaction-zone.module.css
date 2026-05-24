@@ -32,6 +32,15 @@
   --frag-badge-bg: rgba(255, 200, 60, .08);
   --frag-badge-color: rgba(255, 200, 60, .5);
   --frag-badge-border: rgba(255, 200, 60, .15);
+  /* TRANSFER-Badge (Sprint 9 §6.1) — neutrales Grau-Soft, bewusst NICHT das
+   * Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar. */
+  --frag-transfer-badge-bg: rgba(140, 140, 140, .08);
+  --frag-transfer-badge-color: rgba(140, 140, 140, .5);
+  --frag-transfer-badge-border: rgba(140, 140, 140, .15);
+  /* Backfill-Report-Toast (Sprint 9 §6.2) */
+  --toast-bg: #141416;
+  --toast-border: rgba(255, 255, 255, .08);
+  --toast-text: rgba(255, 255, 255, .45);
   --slot-border: rgba(255, 255, 255, .12);
   --slot-border-hover: rgba(62, 207, 175, .35);
   --slot-border-drag: rgba(62, 207, 175, .5);
@@ -225,6 +234,36 @@
   margin-top: 6px;
 }
 
+/* Backfill-Report-Toast (Sprint 9 §6.2) — direkt unter dem Portal. Quittung
+   der Import-Aktion: Soft-Card, Subtext-Typo, keine Interaktion. Fade-In +
+   Fade-Out über 4 s in einer Animation (Komponente unmountet bei Ablauf). */
+.backfillToast {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--toast-bg);
+  border: 1px solid var(--toast-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+  animation: backfillToastLife 4s ease both;
+}
+
+.backfillToastLine {
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--toast-text);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes backfillToastLife {
+  0% { opacity: 0; transform: translateY(-4px); }
+  8% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-2px); }
+}
+
 /* ============================================================
    CAROUSEL (Wrapper für Sprint-4-Karten + Empty-Slot + Chevrons)
    ============================================================ */
@@ -414,6 +453,14 @@
   pointer-events: none;
 }
 
+/* Sprint 9 §6.1: Cross-Account-Transfer — gedimmt (0.45, heller als locked),
+   kein Drag/Tap. pointer-events:none unterdrückt jeden Hover-/Tap-Effekt. */
+.fragmentCardTransfer {
+  opacity: .45;
+  cursor: default;
+  pointer-events: none;
+}
+
 .fragmentTop {
   display: flex;
   align-items: flex-start;
@@ -443,6 +490,13 @@
   background: var(--frag-badge-bg);
   color: var(--frag-badge-color);
   border: .5px solid var(--frag-badge-border);
+}
+
+/* TRANSFER-Badge — gleiche Typo wie KI-Vorschlag-Badge, nur Grau-Soft (§6.1). */
+.fragmentBadgeTransfer {
+  background: var(--frag-transfer-badge-bg);
+  color: var(--frag-transfer-badge-color);
+  border-color: var(--frag-transfer-badge-border);
 }
 
 .fragmentAmountNeg {
