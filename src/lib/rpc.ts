@@ -142,6 +142,22 @@ export async function toggleCardManuallyPaid(
   return data as boolean;
 }
 
+/** Sprint 10: Soft-Delete-Toggle (UI-Hide via cards.deleted_at). Idempotent.
+ *  p_hidden=true → deleted_at=now(); false → deleted_at=NULL. Fremduser → RAISES.
+ *  Returns den neuen hidden-Zustand (deleted_at IS NOT NULL). Throw-on-Error (LL-2).
+ *  Sparrate bleibt snapshot-integer — Hide ist reiner UI-Concern (§2.1). */
+export async function toggleCardHidden(
+  client: AppSupabaseClient,
+  args: { cardId: string; hidden: boolean },
+): Promise<boolean> {
+  const { data, error } = await client.rpc("toggle_card_hidden", {
+    p_card_id: args.cardId,
+    p_hidden: args.hidden,
+  });
+  if (error) throw error;
+  return data as boolean;
+}
+
 // ── Sprint 8: CSV-Import / Distiller ─────────────────────────────────────────
 
 /** Eine an `process_csv_import` übergebene Zeile (= Parser-/Router-Ausgabe).

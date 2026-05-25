@@ -1,8 +1,8 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 2.0
-**Status:** Freigegeben — vollständig synchronisiert mit Schema-Dokumentation v2
-**Datum:** April 2026
+**Version:** 3.0 (Sprint-10-Stand)
+**Status:** Freigegeben — vollständig synchronisiert mit Schema-Doku v3.1 (Sprint 0–10 + Pre-Sprint-10-Patches)
+**Datum:** 25. Mai 2026
 **Primäres Referenzdokument für Claude Code**
 
 > **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary_v2.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
@@ -144,6 +144,9 @@ Zwei destruktive Aktionen werden über einen Trash-Mechanismus gepuffert:
 **Mehrere parallele Toasts:**
 - Stacken vertikal — neuester Toast erscheint unten, ältere schieben sich nach oben
 - Maximum 2 gleichzeitig sichtbar — bei drittem Toast wird der älteste verdrängt
+
+**„Verbergen" (UI-Hide, V1 implementiert, Sprint 10):** Neben den beiden destruktiven Aktionen (`CARD_END`, `CARD`) gibt es eine nicht-destruktive Verberg-Geste. Sie setzt `cards.deleted_at` per RPC `toggle_card_hidden(p_card_id, p_hidden)` (idempotent; `true` → `deleted_at = now()`, `false` → `NULL`) und blendet die Karte sofort aus allen UI-Surfaces aus (`WHERE deleted_at IS NULL`). Ein 5-Sekunden-Toast unten Mitte bietet „Rückgängig"; nach Ablauf bleibt die Karte verborgen (V1: kein „Versteckte Karten verwalten"-Pfad — V2). Past-Month-Verbergen ist erlaubt (keine Sperre). **Snapshot-Integrität (§2.1):** `deleted_at` ist ein reiner UI-Concern — die Sparrate-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`, `is_card_active_in_month`) ignorieren `deleted_at`, sodass eine spätere Verberg-Aktion keine historische Sparrate ändert. Verifiziert (Sprint 10): Karte „Netflix" verbergen lässt März 2026 = 2.910,01 € unverändert.
+
 
 ### 2.5 Modell 1 — Karten als Templates + Pro-Monat-State
 
@@ -648,6 +651,11 @@ Erscheint bei Hover oben links — Default: unsichtbar.
 
 **„Karte löschen" (Hard-Delete):** Nur möglich wenn die Karte nie genutzt wurde (kein State, keine Fragmente). Triggert ebenfalls 5-Sekunden-Toast mit „Rückgängig".
 
+**„Verbergen" (Sprint 10, UI-Hide via `deleted_at`):** Konsolidierter Eintrag im bestehenden `⋯`-Kontextmenü (oben links, sichtbar bei Karten-Hover). Auslöser für das UI-Hide aus §2.4. **PM-Entscheidung Sprint 10:** „Verbergen" wird in das bestehende Kontextmenü konsolidiert (statt eines separaten Dreipunkt-Menüs oben rechts) — folgt dem Single-Menu-Modell aus §12.4. Der Eintrag steht nach „Betrag anpassen".
+
+**Ghost-/Forecast-Karten sind verbergbar (Sprint 10):** Karten im Ghost-/Forecast-Zustand (alle Zukunfts-Karten; vergangene BUDGET-Karten ohne Tap und ohne Fragmente) zeigen ein reduziertes Kontextmenü mit **nur** „Verbergen" (kein Tap-Catcher, kein „Betrag anpassen"). So ist das Hide-Affordance auf jeder Karte verfügbar, ohne Ghost-Karten sonst interaktiv zu machen.
+
+
 ### Karten-Frequenzen
 
 Fünf Frequenzen verfügbar (siehe Mapping in 2.6):
@@ -790,11 +798,17 @@ Die Treppe ist die Summe der monatlichen Sparraten — und jede dieser monatlich
 
 Statisch innerhalb eines Kalenderjahres. Legende zeigt `Vorjahr [Jahr]` in Gold — kein Betrag in der Legende.
 
+**Vorjahres-Endwert = kumulierter Jahresendwert (PM-bestätigt, Sprint 10):** Die gold-gestrichelte Linie zeigt die **kumulierte** Jahres-Sparrate des Vorjahres (Σ Jan–Dez X-1, also der Treppen-Endpunkt des Vorjahres) — auf derselben Skala wie die kumulierte Treppe. **Sonderfall:** Liefert das Vorjahr für alle 12 Monate `NULL` (keine Income-Basis, z. B. vor dem ersten getrackten Jahr), entfällt die Linie ganz — eine Linie bei 0 € wäre irreführend („nichts gespart" vs. „keine Daten"). Ein Teiljahr mit einzelnen `NULL`-Monaten summiert dagegen normal (NULL = 0).
+
 ### Interaktion
 
 **Hover:** Tooltip mit Monatsname · monatliche % (primär) · IST kumuliert · Plan kumuliert · Ereignis-Hinweis (⚠ in Gold wenn vorhanden)
 
+**„% monatlich" im Tooltip (Sprint 10):** Die Primärzeile des Hover-Tooltips zeigt die monatliche Sparrate als Anteil am Haushalts-Netto (ICH + PARTNER `net_monthly` des jeweils jüngsten Income-Slots). Fehlt eine Netto-Basis, fällt die Zeile auf den €-Monatswert zurück. Monatsgenauer Nenner (statt jüngster Slot) ist V2-Vormerkung.
+
 **Klick (Teal-Punkt):** Kompakte Abweichungs-Erklärungszeile unter dem Chart — max. 3 Treiber. Zweiter Klick schließt.
+
+**Abweichungs-Treiber sind V2 (Sprint 10):** Die Klick-Erklärungszeile unter dem Chart ist in V1 ein statischer Hinweis („Treiber-Hinweis: V2"), da die Definition von Ausreißern und die Top-3-Abweichungstreiber laut dieser §9 ein Analytics-Feature für V2 sind. Entsprechend werden in V1 auch keine ⚠-Ereignis-Annotationen an Dots gezeichnet (es existiert keine Ausreißer-Datenquelle).
 
 **Treppe wird rot:** Ausschließlich wenn kumulierte Sparrate negativ — nicht bei einzelnem Defizitmonat.
 
@@ -805,6 +819,7 @@ Statisch innerhalb eines Kalenderjahres. Legende zeigt `Vorjahr [Jahr]` in Gold 
 - Kein Toggle %-Ansicht / kumulierte Ansicht
 - Keine Forecast-Trennlinie im finalen Dashboard
 - Kein permanentes Abweichungs-Label
+- **Tooling ≠ Produkt (Sprint 10):** Die Opacity-Slider und die Jahres-Simulations-Buttons aus dem Prototyp `sparrate_treppe_final_v2.html` sind Werkzeuge, kein Produkt (analog zum Slider-Ausschluss beim Singularity Ring, §5). Das aktive Jahr ergibt sich aus dem `month`-URL-Param
 
 ---
 

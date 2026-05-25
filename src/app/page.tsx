@@ -14,10 +14,14 @@ import {
   ymToDbDate,
 } from "@/lib/months";
 import { DashboardRingStage } from "@/components/dashboard-ring-stage";
+import { Treppe } from "@/components/treppe";
+import { loadTreppeData } from "@/components/treppe/loader";
+import type { TreppeData } from "@/components/treppe/treppe.types";
 import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
 import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
+import { CardHideProvider } from "@/components/cards/card-hide-provider";
 import type { FragmentRow } from "@/components/interaction-zone/interaction-zone.types";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
@@ -91,6 +95,26 @@ export default async function Home({ searchParams }: HomeProps) {
   const partnerPercent = 100 - ichPercent;
   const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
   const targetActiveMonth = { year: tmYear, month: tmMonth };
+
+  // ── Sparraten-Treppe (Phase 1) — 12 Monate × (Ist + Plan) + Vorjahres-Endwert.
+  // Sparrate-RPCs sind snapshot-integer (kein deleted_at-Filter, Briefing A2).
+  // netMonthly = Haushalts-Netto (ICH + PARTNER) als „% monatlich"-Nenner im Tooltip.
+  const householdNet =
+    ichLatest === null && partnerLatest === null
+      ? null
+      : (ichLatest?.netMonthly ?? 0) + (partnerLatest?.netMonthly ?? 0);
+
+  let treppeData: TreppeData | null = null;
+  try {
+    treppeData = await loadTreppeData(supabase, {
+      userId: user!.id,
+      activeYear: tmYear,
+      currentCalendarYear: activeMonth.year,
+      netMonthly: householdNet,
+    });
+  } catch (err) {
+    console.error("Treppe-Daten-Load fehlgeschlagen", err);
+  }
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
 
@@ -329,13 +353,17 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       </div>
 
-      <InteractionZone
-        fragments={fragments}
-        cards={enrichedCards}
-        targetMonth={targetMonth}
-        targetDbMonth={targetDbDate}
-        currentMonth={currentMonth}
-      />
+      {treppeData && <Treppe data={treppeData} />}
+
+      <CardHideProvider>
+        <InteractionZone
+          fragments={fragments}
+          cards={enrichedCards}
+          targetMonth={targetMonth}
+          targetDbMonth={targetDbDate}
+          currentMonth={currentMonth}
+        />
+      </CardHideProvider>
 
       {showDevTriggers && (
         <DashboardDevPanel

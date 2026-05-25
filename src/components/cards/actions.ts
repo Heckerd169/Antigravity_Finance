@@ -2,13 +2,29 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { toggleCardManuallyPaid } from "@/lib/rpc";
+import { toggleCardManuallyPaid, toggleCardHidden } from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
   const month = formData.get("month") as string; // "YYYY-MM-01"
   const supabase = createClient();
   await toggleCardManuallyPaid(supabase, { cardId, month });
+  revalidatePath("/", "page");
+}
+
+/** Sprint 10 Phase 2: Karte verbergen (Soft-Delete via deleted_at). Past-Month
+ *  erlaubt (keine Sperre, L2.7). revalidatePath lässt die Karte aus allen
+ *  UI-Surfaces verschwinden; Sparrate bleibt unberührt (snapshot-integer). */
+export async function hideCard(cardId: string): Promise<void> {
+  const supabase = createClient();
+  await toggleCardHidden(supabase, { cardId, hidden: true });
+  revalidatePath("/", "page");
+}
+
+/** Sprint 10 Phase 2: Verbergen rückgängig (deleted_at = NULL). Vom 5s-Toast. */
+export async function unhideCard(cardId: string): Promise<void> {
+  const supabase = createClient();
+  await toggleCardHidden(supabase, { cardId, hidden: false });
   revalidatePath("/", "page");
 }
 

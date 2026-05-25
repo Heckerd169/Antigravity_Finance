@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toggleCardTap } from "./actions";
+import { useCardHide } from "./card-hide-provider";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
 import type { LinkedFragmentRef } from "./cards.types";
@@ -18,6 +19,10 @@ type CardInteractiveProps = {
   /** Sprint 5: im aktuellen Monat verknüpfte Fragmente. Wenn länger 0,
    *  erscheint die Menüoption „Verknüpfte Fragmente". */
   linkedFragments?: LinkedFragmentRef[];
+  /** Sprint 10: Ghost/Forecast-Karten — Menü zeigt NUR „Verbergen", kein
+   *  Tap-Catcher, kein „Betrag anpassen". Hält das Hide-Affordance auf jeder
+   *  Karte (L2.1) ohne Ghost-Karten sonst interaktiv zu machen. */
+  hideOnly?: boolean;
 };
 
 export function CardInteractive({
@@ -28,7 +33,9 @@ export function CardInteractive({
   tappable,
   ariaLabel,
   linkedFragments,
+  hideOnly = false,
 }: CardInteractiveProps) {
+  const effectiveTappable = tappable && !hideOnly;
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -36,6 +43,7 @@ export function CardInteractive({
   const iconRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const hasLinkedFragments = (linkedFragments?.length ?? 0) > 0;
+  const requestHide = useCardHide();
 
   // LL-5: Wenn der Monat wechselt (month-Prop ändert sich) oder die letzte
   // Verknüpfung weg ist, das Linked-Overlay schließen — sonst zeigt es Daten
@@ -93,10 +101,16 @@ export function CardInteractive({
     setLinkedOverlayOpen(true);
   }
 
+  function handleHideClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    requestHide(cardId, cardName);
+  }
+
   return (
     <>
       {/* Unsichtbarer Tap-Button über die gesamte Karte (nur für tappable Karten) */}
-      {tappable && (
+      {effectiveTappable && (
         <form action={toggleCardTap}>
           <input type="hidden" name="cardId" value={cardId} />
           <input type="hidden" name="month" value={month} />
@@ -126,7 +140,7 @@ export function CardInteractive({
           style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
           role="menu"
         >
-          {hasLinkedFragments && (
+          {!hideOnly && hasLinkedFragments && (
             <button
               type="button"
               className={styles.contextMenuItem}
@@ -136,13 +150,23 @@ export function CardInteractive({
               Verknüpfte Fragmente
             </button>
           )}
+          {!hideOnly && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleAdjustClick}
+              role="menuitem"
+            >
+              Betrag anpassen
+            </button>
+          )}
           <button
             type="button"
             className={styles.contextMenuItem}
-            onClick={handleAdjustClick}
+            onClick={handleHideClick}
             role="menuitem"
           >
-            Betrag anpassen
+            Verbergen
           </button>
         </div>,
         document.body
