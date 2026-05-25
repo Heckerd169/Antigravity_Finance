@@ -21,6 +21,7 @@ import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
 import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
+import { CardHideProvider } from "@/components/cards/card-hide-provider";
 import type { FragmentRow } from "@/components/interaction-zone/interaction-zone.types";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
@@ -354,13 +355,15 @@ export default async function Home({ searchParams }: HomeProps) {
 
       {treppeData && <Treppe data={treppeData} />}
 
-      <InteractionZone
-        fragments={fragments}
-        cards={enrichedCards}
-        targetMonth={targetMonth}
-        targetDbMonth={targetDbDate}
-        currentMonth={currentMonth}
-      />
+      <CardHideProvider>
+        <InteractionZone
+          fragments={fragments}
+          cards={enrichedCards}
+          targetMonth={targetMonth}
+          targetDbMonth={targetDbDate}
+          currentMonth={currentMonth}
+        />
+      </CardHideProvider>
 
       {showDevTriggers && (
         <DashboardDevPanel

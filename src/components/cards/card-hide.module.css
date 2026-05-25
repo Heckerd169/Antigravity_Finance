@@ -1,0 +1,100 @@
+/*
+ * Soft-Delete-Rückgängig-Toast (Sprint 10 Phase 2). Unten Mitte (A9 — bewusst
+ * anders als der Sprint-9-Backfill-Toast oben). Visuelle Spec aus Design-Doku
+ * §2.4 Toast-UI (Background, Border, Radius, Eintritts-Animation, Fortschrittsbalken).
+ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 12px 16px;
+
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+
+  animation: hideToastIn 280ms cubic-bezier(0.2, 0, 0.1, 1);
+}
+
+/* §2.4 Austritts-Animation: opacity 1 → 0, 200ms ease (nach Ablauf der 5 s). */
+.toastExiting {
+  animation: hideToastOut 200ms ease forwards;
+}
+
+@keyframes hideToastOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes hideToastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.toastText {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: -0.1px;
+}
+
+.undoButton {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-stack-system);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-teal);
+  cursor: pointer;
+}
+
+.undoButton:hover {
+  text-decoration: underline;
+}
+
+/* Fortschrittsbalken: läuft 100% → 0% in 5 s (§2.4 — entspricht der UI-Wartezeit). */
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1.5px;
+  width: 100%;
+  background: rgba(62, 207, 175, 0.35);
+  transform-origin: left center;
+  animation: hideToastProgress 5s linear forwards;
+}
+
+@keyframes hideToastProgress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

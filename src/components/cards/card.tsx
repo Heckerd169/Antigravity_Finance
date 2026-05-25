@@ -179,17 +179,16 @@ function FixedCostCard({
       <div className={styles.stateLabel}>{stateLabel}</div>
       <MetaRow attribution={card.attribution} />
 
-      {!isGhost && (
-        <CardInteractive
-          cardId={card.id}
-          cardName={card.name}
-          month={month}
-          currentAmount={card.amount}
-          tappable
-          linkedFragments={card.linkedFragments}
-          ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
-        />
-      )}
+      <CardInteractive
+        cardId={card.id}
+        cardName={card.name}
+        month={month}
+        currentAmount={card.amount}
+        tappable
+        hideOnly={isGhost}
+        linkedFragments={card.linkedFragments}
+        ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
+      />
     </div>
   );
 }
@@ -245,17 +244,16 @@ function IncomeCard({
       <div className={styles.stateLabel}>{stateLabel}</div>
       <MetaRow attribution={card.attribution} />
 
-      {!isGhost && (
-        <CardInteractive
-          cardId={card.id}
-          cardName={card.name}
-          month={month}
-          currentAmount={card.amount}
-          tappable={tappable}
-          linkedFragments={card.linkedFragments}
-          ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
-        />
-      )}
+      <CardInteractive
+        cardId={card.id}
+        cardName={card.name}
+        month={month}
+        currentAmount={card.amount}
+        tappable={tappable}
+        hideOnly={isGhost}
+        linkedFragments={card.linkedFragments}
+        ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
+      />
     </div>
   );
 }
@@ -371,18 +369,18 @@ function BudgetCard({
         </div>
       )}
 
-      {/* Sprint 7: BUDGET ist jetzt tappable (§3.4.3). Ghost hat keinen Tap-Catcher. */}
-      {!isGhost && (
-        <CardInteractive
-          cardId={card.id}
-          cardName={card.name}
-          month={month}
-          currentAmount={card.amount}
-          tappable
-          linkedFragments={card.linkedFragments}
-          ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
-        />
-      )}
+      {/* Sprint 7: BUDGET ist jetzt tappable (§3.4.3). Ghost: nur Verbergen-Menü,
+          kein Tap-Catcher (Sprint 10 hideOnly). */}
+      <CardInteractive
+        cardId={card.id}
+        cardName={card.name}
+        month={month}
+        currentAmount={card.amount}
+        tappable
+        hideOnly={isGhost}
+        linkedFragments={card.linkedFragments}
+        ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
+      />
     </div>
   );
 }
