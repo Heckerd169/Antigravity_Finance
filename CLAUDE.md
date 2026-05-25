@@ -115,7 +115,7 @@ Antigravity_Finance/
 | 7 | UI-Komplettierung (V1 BUDGET-Tap + V6 §10 Income-Split-Trigger + V2 Cleanup) | 🟢 Done | sprints/sprint_07_briefing.md | 21. Mai 2026 |
 | 8 | CSV-Import / Distiller (§11) |  🟢 Done | sprints/sprint_08_briefing.md | 23.05.2026 |
 | 9 | Cortal-Consors-Parser + Cross-Account-Transfer-Erkennung (§11) | 🟢 Done | sprints/sprint_09_briefing.md | 24.05.2026 |
-| 10 | Soft-Delete-Pattern (§2.4) ODER Sparraten-Treppe (§9) | — | — | — |
+| 10 | Soft-Delete-Pattern (§2.4) + Sparraten-Treppe (§9) | 🟢 Done | sprints/sprint_10_briefing.md | 25.05.2026 |
 Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 
 **Sprint 6 ist der harte Gate** für Sprints 2–5. Wenn der dort spezifizierte Test-Case
@@ -345,6 +345,15 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     AC war narrative-eng. PM-Lesson: Akzeptanz-Kriterien formulieren die
     erwartete Regel, nicht die erwarteten konkreten Instanzen, sofern die
     Regel über die Test-Daten hinaus gilt. (LL-19)
+18. **Spec-Mehrdeutigkeit Perf-Budget vs. Semantik — Semantik gewinnt, aber
+    PM klärt.** Wenn ein Briefing eine Berechnung sowohl narrativ/semantisch
+    (§-autoritativ) als auch über ein Performance-/Aufwands-Budget beschreibt
+    und die beiden sich widersprechen (Sprint 10: „Vorjahres-Dezember-Wert" +
+    „12×2+1 Calls" vs. §9 „Jahresendwert" = kumuliert), ist das Budget
+    deskriptiv, die §-Semantik normativ. Claude Code rät nicht — PM-Klärung
+    vor Implementierung, auch wenn die §-Lesart eindeutig erscheint (LL-13).
+    Zusätzlich: datenlose Referenz-Werte (alle-NULL-Vorjahr) als „keine
+    Anzeige" behandeln, nicht als 0. (LL-20)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -470,7 +479,7 @@ PM-Chat — siehe Sprint 1 Handover als Referenz-Pattern.
 | Sprint 7 (UI-Komplettierung V1+V6+V2) | ~~Sonnet 4.6~~ ✓ erledigt — Briefing klar spec'd, kein Opus-Eskalations-Bedarf |
 | Sprint 8 (CSV-Import / Distiller) | ~~Opus 4.7~~ ✓ erledigt — Konfidenz-Logik, Hash-Determinismus |
 | Sprint 9 (Cortal-Parser + Cross-Account) | ~~Opus 4.7~~ ✓ erledigt — Multi-Parser, Format-Router, Hash-Sensibilität |
-| Sprint 10 (offen — Soft-Delete-Pattern oder Sparraten-Treppe) | **Sonnet 4.6** — Routine gegen klare Spec, beide Kandidaten UI-orientiert |
+| Sprint 10 (Treppe + Soft-Delete) | ~~Sonnet 4.6~~ ✓ erledigt — als Opus 4.7 gefahren; UI-orientiert, aber zwei Spec-Klärungen (Vorjahres-Linie-Semantik, Verbergen-Menü-Position) + ein Ghost-Hide-Diagnose-Befund machten PM-Gating-Disziplin (LL-13) wertvoll. Keine CSS/DOM-Diagnosekomplexität. |
 
 **Eskalations-Heuristik:** Wenn Sonnet 4.6 bei einer Korrektur nach einem
 erfolglosen Fix-Versuch immer noch nicht alle Symptome löst, direkt auf Opus 4.7
@@ -1400,3 +1409,97 @@ Format-Router-Semantik, Hash-Determinismus-Sensibilität (counterparty_iban
 bewusst nicht im Hash) und UI-Status-Hierarchie. Eskalations-Heuristik §9
 bestätigt — Sonnet hätte LL-13-Risiko bei der Status-Prioritäts-Logik.
 Sprint 9 ohne Spec-Verstoß, keine LL-13-Verletzung.
+
+---
+
+### Sprint 10 · APPROVED 25. Mai 2026
+
+**Komponente:** Sparraten-Treppe (§9, V5'') + Soft-Delete-Karten (§2.4-
+Erweiterung, V4''). Zwei sequenzielle Phasen + Doku-Phase (LL-14). Branch
+`sprint/10-treppe-soft-delete`.
+
+**Voraussetzungen erfüllt:** Sprints 0–9 grün. Architekt-Pre-Sprint-10 live:
+V7''-Defense-in-Depth (`calculate_card_amount_for_month` schließt
+INTERNAL_TRANSFER aus), C.2-Migrationen (Sparrate-/Plan-/Active-RPCs ohne
+`deleted_at`-Filter = snapshot-integer), C.3 RPC `toggle_card_hidden`.
+§4.6-Anker `2910.01` über alle 4 Migrationen stabil.
+
+**Implementierung (3 Commits + chore):**
+- `sprint-10 p1: sparraten-treppe …` — neue Komponente `src/components/treppe/`
+  (SVG, ResizeObserver, kumulierte Teal/Grau-Treppe, gold-gestrichelte
+  Vorjahres-Linie, Hover-Tooltip, Klick-Abweichungszeile). `loader.ts`:
+  12×2 RPCs + Vorjahres-Endwert via Promise.all, ohne `deleted_at`-Filter.
+- `chore: regenerate supabase types after toggle_card_hidden RPC`.
+- `sprint-10 p2: soft-delete cards …` — `toggleCardHidden`-Wrapper,
+  hide/unhide-Actions, `CardHideProvider` (Context + 5s-Undo-Toast unten
+  Mitte, Portal), „Verbergen" im bestehenden Kontextmenü, `hideOnly`-Modus
+  für Ghost.
+- `docs: sprint 10 doku + claude.md patches`.
+
+**PM-Entscheidungen während des Sprints (LL-13-konform, kein Spontan-Patch):**
+- **Vorjahres-Linie = kumulierter Jahresendwert** (Σ Jan–Dez X-1), nicht der
+  einzelne Dezember-Monatswert (Briefing-L1.2/Perf-Budget vs. §9-Semantik;
+  §9 gewinnt). Bei komplett datenlosem Vorjahr → keine Linie statt 0-€-
+  Linie. → LL-20 in §7 Grundregel 18 kodifiziert.
+- **Test-Daten-Seed (PM-approved):** ICH-`income_timeline`-Slot 2025-01-01
+  (gross 36.000 / net 1.800) gesetzt, damit die 2026-Ansicht eine echte
+  Gold-Vorjahres-Linie (21.600 €) zeigt (A1.5). Per RAISE-Rollback-Dry-Run
+  vorab verifiziert: §4.6-Anker März 2026 = 2910.01 unverändert (Forward-
+  Inheritance schattet 2025 für 2026).
+- **„Verbergen"-Menü konsolidiert** ins bestehende `···`-Menü oben links
+  (Design-Doku §12.4 Single-Menu), bewusste Abweichung von der Briefing-§5-
+  Position „oben rechts".
+- **Ghost-Hide-Fix (S17-Befund):** Ghost/Forecast-Karten hatten gar kein
+  Hide-Affordance (CardInteractive war hinter `!isGhost` gegated). Fix:
+  `hideOnly`-Modus (nur „Verbergen", kein Tap/Betrag-anpassen), auf jeder
+  Karte gerendert. Erfüllt L2.1 + A2.12.
+
+**Browser-Smoke (User):** Phase 1 S1–S5 grün; Phase 2 S6–S17 grün (S17 nach
+Ghost-Hide-Fix). Snapshot-Integrität verifiziert (Netflix verbergen → März/
+Mai 2026 unverändert). Test-State nach Smoke zurückgesetzt (alle
+`deleted_at = NULL`).
+
+**UI-Filter-Anker (A2.11):** Einzige `from("cards")`-Query (Karussell +
+`cardNameById`-Badge-Lookup) filtert `deleted_at IS NULL`; Sparrate-Surfaces
+(Ring, Treppe) filtern NICHT. Kein separates `lib/cards.ts`/`lib/distiller.ts`
+— Karten-Loading liegt inline in `page.tsx`.
+
+**Bundle-Stand:** Route `/` 26.2 kB (+3.8 kB ggü. Sprint 9: 22.4 kB),
+First Load 178 kB. SVG-Treppe + Toast-Provider erklären den Zuwachs.
+`tsc` 0, `next lint` 0/0, `next build` 0 Errors. Kein Dev-Helper in
+Sprint 10 → A3.3 n/a.
+
+**Lessons Learned in CLAUDE.md integriert:**
+- **LL-20** (§7 Grundregel 18, Sprint 10 Vorjahres-Linie-Episode):
+  Spec-Mehrdeutigkeit Perf-Budget vs. Semantik — §-Semantik ist normativ,
+  PM-Klärung vor Implementierung; datenlose Referenz-Werte ≠ 0.
+
+**V1-Lücken / V2-Vormerkungen:**
+- V2: „Versteckte Karten verwalten / wieder einblenden"-Pfad (Settings/
+  Overlay).
+- V2: Bestätigungs-Dialog vor Verbergen (V1 = direkt + 5s-Undo).
+- V2: Treppe-Multi-Year-Rolling-Window (V1 = Kalenderjahr).
+- V2: Treppen-Klick-Abweichungs-Treiber-Heuristik im Backend (V1 = statischer
+  „V2"-Hinweis, keine ⚠-Annotationen).
+- V2: Treppe-Rot-Spec bei negativer Kumulation (§9 nennt Verhalten, keine
+  Farb-Spec — V1-Test-Daten lösen es nicht aus).
+- V2: Monatsgenauer Nenner für „% monatlich"-Tooltip (V1 = jüngster
+  Income-Slot).
+- V2-C: Karten-spezifische Badge-Farben (V3'', offen seit Sprint 8; aus
+  ursprünglich geplantem Sprint 11 verschoben).
+- V6'' (Pre-Sprint-10): Schema-Doku v3 → v3.1 Pflege geliefert und vom PM
+  angewendet (Commit `docs: schema-doku v3 → v3.1`).
+
+**Modell-Empfehlung-Befund:** Opus 4.7 gefahren statt Sonnet 4.6 (§9-Plan).
+UI-orientiert, klare Specs — die drei Klärungs-/Diagnose-Punkte (Vorjahres-
+Linie, Verbergen-Menü, Ghost-Hide) waren Spec-Lesart- und Render-Gating-
+Fragen, keine Modell-Grenzfälle. Sonnet 4.6 wäre laut §9-Empfehlung
+ausreichend gewesen. Bestätigt: reine UI-Sprints mit klaren Specs bleiben
+Sonnet-Komfortzone, sofern keine Mehrdeutigkeit in der Spec — Sprint 10
+hatte Mehrdeutigkeit (§9 Vorjahres-Semantik), daher LL-20.
+
+**V1-Komplettheits-Status nach Sprint 10:** Technisch alle V1-Voraussetzungen
+erfüllt (Onboarding, Auth/RLS, CSV-Import DKB+Cortal, Sparrate cent-exakt,
+Sparraten-Treppe, Soft-Delete). V3'' Badge-Farben in V2-Backlog verschoben
+(User-Entscheidung 25.05.2026 — Option A: kein Sprint 11, direkt Go-Live).
+Pre-Live-Phase startet.
