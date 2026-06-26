@@ -75,7 +75,14 @@ function computeRingState(current: number, plan: number): RingState {
         posOffset,
         negOffset: C,
         centerColor,
-        subtext: `+${formatPct((pct - 1) * 100)}${NBSP}% über Plan`,
+        // N4a (v2-01): Vorzeichen de-dupliziert. Das Prefix „+" ist die einzige
+        // Vorzeichen-Quelle; der Wert geht per Math.abs vorzeichenlos in formatPct.
+        // Vorher konnte bei negativem Plan-Nenner (plan < 0 ≤ current) der Term
+        // (pct-1)*100 negativ werden → formatPct hängte ein „−" an → „+−X %".
+        // Konsistent mit dem Defizit-Zweig unten (MINUS + Math.abs). Reines
+        // Anzeige-Fix, keine Berechnungs-Änderung. (Cap-Strategie bei winzigem/
+        // negativem Nenner = N4b, Cluster 3 — hier bewusst NICHT entschieden.)
+        subtext: `+${formatPct(Math.abs((pct - 1) * 100))}${NBSP}% über Plan`,
         subtextColor: "teal",
       };
     }
