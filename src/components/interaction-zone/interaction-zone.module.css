@@ -329,7 +329,11 @@
    Wrapper, damit das Outline-Visual greift. */
 .dropTargetWrap {
   position: relative;
-  flex-shrink: 0;
+  /* N2 (v2-01): Karten-Slot fix auf Spec-136px (Design §7 „Breite 136px").
+   * `flex: 0 0 136px` = grow 0 / shrink 0 / basis 136px — der Flex-Slot kann
+   * bei langem Karten-Inhalt weder wachsen noch schrumpfen. Die innere .card ist
+   * 136px (border-box) und füllt den Slot exakt. */
+  flex: 0 0 136px;
   border-radius: 14px;
   transition: outline .12s;
 }
