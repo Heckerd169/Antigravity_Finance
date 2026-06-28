@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welle V1 — M3-Mockup · Antigravity Finance 2.0</title>
+<style>
+:root{
+  --bg:#0D0D0F;
+  --teal:62,207,175;        /* #3ECFAF */
+  --red:255,69,58;          /* #FF453A */
+  --gold:255,200,60;        /* Ereignis / Vorjahr */
+  --ink-1:rgba(255,255,255,.92);
+  --ink-2:rgba(255,255,255,.55);
+  --ink-3:rgba(255,255,255,.28);
+  --ink-4:rgba(255,255,255,.18);
+  --line:rgba(255,255,255,.07);
+  --panel:#1C1C1E;
+  --font:system-ui,-apple-system,'Helvetica Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#08080a;color:var(--ink-1);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:22px 16px 40px;gap:14px;
+  background:radial-gradient(120% 90% at 50% 0%,#0e0e12 0%,#08080a 60%,#060608 100%)}
+
+/* ---------- DEV PANEL (Tooling ≠ Produkt) ---------- */
+.dev{width:100%;max-width:1120px;background:#101014;border:.5px solid var(--line);
+  border-radius:12px;padding:11px 16px;display:flex;flex-wrap:wrap;align-items:center;
+  gap:10px 22px}
+.dev-tag{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(255,170,90,.8);margin-right:6px}
+.dev-grp{display:flex;align-items:center;gap:8px}
+.dev-lbl{font-size:10px;font-weight:500;color:var(--ink-3);letter-spacing:.2px}
+.dev-btn{padding:4px 10px;border-radius:6px;border:.5px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);font-size:10px;font-weight:500;color:var(--ink-2);
+  cursor:pointer;transition:.15s;font-family:var(--font)}
+.dev-btn:hover{background:rgba(255,255,255,.09);color:var(--ink-1)}
+.dev-btn.on{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.28)}
+.dev-month{font-size:11px;font-weight:500;color:var(--ink-1);min-width:78px;text-align:center;
+  font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;width:110px;height:2px;border-radius:1px;
+  background:rgba(255,255,255,.12);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  background:#fff;border-radius:50%;cursor:pointer}
+.dev-val{font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums;width:30px}
+
+/* ---------- STAGE (Single Surface) ---------- */
+.stage{width:100%;max-width:1120px;background:var(--bg);border-radius:22px;
+  border:.5px solid rgba(255,255,255,.05);overflow:hidden;position:relative;
+  box-shadow:0 30px 80px -40px rgba(0,0,0,.9)}
+
+/* header / timeline (§6) */
+.hdr{position:relative;z-index:6;display:flex;justify-content:space-between;
+  align-items:flex-start;padding:22px 30px 0}
+.hdr-flank{width:200px}
+.hdr-flank.r{text-align:right}
+.hdr-fm{font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:.2px}
+.hdr-fs{font-size:11px;font-weight:300;color:var(--ink-4);margin-top:2px}
+.hdr-center{text-align:center;flex:1}
+.hdr-month{font-size:21px;font-weight:600;letter-spacing:.3px;color:#fff}
+.hdr-pill{display:inline-block;margin-top:7px;padding:3px 11px;border-radius:20px;
+  background:rgba(255,255,255,.07);font-size:9.5px;font-weight:600;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--ink-2)}
+.hdr-outlier{font-size:11px;font-weight:300;color:rgba(255,200,60,.65);margin-top:8px;
+  min-height:15px;opacity:0;transition:opacity .25s}
+
+/* the field: wave (behind) + ring (front, pointer-transparent) */
+.field{position:relative;height:392px;margin-top:-6px}
+#wave{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+.ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:252px;height:252px;z-index:2;pointer-events:none}      /* ← interaktions-transparent */
+.ring svg{display:block}
+.ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;pointer-events:none}
+.ring-glass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:196px;height:196px;border-radius:50%;
+  background:radial-gradient(circle,rgba(15,15,18,.62) 0%,rgba(13,13,15,.30) 70%,transparent 100%);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:1;pointer-events:none}
+.ra{font-size:34px;font-weight:200;letter-spacing:-1.8px;line-height:1.05;
+  font-variant-numeric:tabular-nums}
+.rl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--ink-4);margin-top:9px}
+.rp{font-size:12px;font-weight:300;letter-spacing:-.2px;margin-top:5px;
+  font-variant-numeric:tabular-nums}
+/* income-split flanks (Kontext, §10) */
+.split{position:absolute;top:50%;transform:translateY(-50%);z-index:2;text-align:center;
+  pointer-events:none}
+.split.l{left:calc(50% - 232px)}
+.split.r{right:calc(50% - 232px)}
+.split-ic{width:34px;height:34px;border-radius:50%;border:.5px solid rgba(255,255,255,.18);
+  margin:0 auto 7px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);
+  font-size:15px}
+.split-pct{font-size:15px;font-weight:300;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.split-lbl{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--ink-4);margin-top:3px}
+
+/* scrub overlay elements (ABOVE the ring) */
+.guide{position:absolute;top:24px;bottom:34px;width:1px;background:rgba(255,255,255,.22);
+  z-index:5;pointer-events:none;opacity:0;transition:opacity .12s}
+.hpt{position:absolute;width:9px;height:9px;border-radius:50%;z-index:5;pointer-events:none;
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .12s;
+  box-shadow:0 0 10px 2px rgba(0,0,0,.5)}
+.tt{position:absolute;z-index:7;pointer-events:none;background:var(--panel);
+  border:.5px solid rgba(255,255,255,.1);border-radius:11px;padding:11px 14px;min-width:206px;
+  opacity:0;transition:opacity .13s;box-shadow:0 12px 40px -12px rgba(0,0,0,.8)}
+.tt-m{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:6px}
+.tt-v{font-size:18px;font-weight:200;letter-spacing:-.6px;font-variant-numeric:tabular-nums;
+  margin-bottom:8px}
+.tt-row{display:flex;justify-content:space-between;gap:18px;margin-top:4px;align-items:baseline}
+.tt-l{font-size:9px;font-weight:500;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-4)}
+.tt-n{font-size:12px;font-weight:300;font-variant-numeric:tabular-nums}
+.tt-div{height:.5px;background:var(--line);margin:8px 0}
+.tt-drv{font-size:10px;font-weight:300;color:var(--ink-2);line-height:1.5}
+.tt-drv .tag{font-size:8px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  color:rgba(255,170,90,.7);margin-right:5px}
+.tt-hint{font-size:9px;color:var(--ink-4);margin-top:7px;font-style:italic}
+
+/* interaction zone placeholder (außerhalb M3) */
+.zone{position:relative;z-index:6;border-top:.5px solid var(--line);padding:13px 30px;
+  display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.012)}
+.zone-lbl{font-size:9.5px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--ink-4)}
+
+/* OFFEN legend */
+.offen{width:100%;max-width:1120px;background:#0c0c10;border:.5px dashed rgba(255,170,90,.22);
+  border-radius:12px;padding:13px 18px}
+.offen.hide{display:none}
+.offen-h{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:rgba(255,170,90,.8);margin-bottom:9px}
+.offen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:7px 22px}
+.offen-it{font-size:11px;color:var(--ink-2);line-height:1.5}
+.offen-it b{color:var(--ink-1);font-weight:600}
+.offen-it .k{display:inline-block;min-width:30px;font-weight:700;color:rgba(255,170,90,.85)}
+
+/* popup (kumulierte TREPPE) */
+.ov{position:fixed;inset:0;background:rgba(4,4,6,.66);backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);z-index:50;display:none;align-items:center;
+  justify-content:center;padding:24px}
+.ov.show{display:flex}
+.pop{width:100%;max-width:680px;background:var(--bg);border:.5px solid rgba(255,255,255,.08);
+  border-radius:18px;padding:24px 26px 20px;position:relative;
+  box-shadow:0 40px 100px -30px rgba(0,0,0,.9)}
+.pop-x{position:absolute;top:16px;right:18px;width:26px;height:26px;border-radius:50%;
+  border:.5px solid rgba(255,255,255,.12);background:none;color:var(--ink-3);cursor:pointer;
+  font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center}
+.pop-x:hover{color:var(--ink-1);background:rgba(255,255,255,.06)}
+.pop-k{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-3)}
+.pop-hero{font-size:38px;font-weight:200;letter-spacing:-1.6px;font-variant-numeric:tabular-nums;
+  margin-top:4px;color:rgb(var(--teal))}
+.pop-sub{font-size:11px;font-weight:300;color:var(--ink-3);margin-top:2px}
+#popcv{display:block;width:100%;margin-top:14px}
+.pop-dev{margin-top:10px;padding:9px 13px;background:rgba(255,69,58,.05);
+  border:.5px solid rgba(255,69,58,.14);border-radius:9px;font-size:11px;color:var(--ink-2);
+  line-height:1.55;display:none}
+.pop-dev.show{display:block}
+.pop-dev b{color:var(--ink-1);font-weight:500}
+.pop-open{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 16px}
+.pop-open span{font-size:10px;color:var(--ink-4)}
+.pop-open .k{font-weight:700;color:rgba(255,170,90,.7);margin-right:4px}
+.cap{width:100%;max-width:1120px;font-size:10px;color:var(--ink-4);text-align:center;
+  line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- ============== DEV PANEL ============== -->
+<div class="dev">
+  <span class="dev-tag">Dev · Tooling ≠ Produkt · nicht im Build</span>
+  <div class="dev-grp">
+    <span class="dev-lbl">Aktiver Monat</span>
+    <button class="dev-btn" onclick="stepMonth(-1)">‹</button>
+    <span class="dev-month" id="dm"></span>
+    <button class="dev-btn" onclick="stepMonth(1)">›</button>
+  </div>
+  <div class="dev-grp">
+    <span class="dev-lbl">Okt</span>
+    <button class="dev-btn on" id="b-neg" onclick="toggleNeg()">negativ (M10)</button>
+  </div>
+  <div class="dev-grp">
+    <span class="dev-lbl">Vorjahr (B6)</span>
+    <button class="dev-btn on" id="b-vj" onclick="toggleVorjahr()">vorhanden</button>
+  </div>
+  <div class="dev-grp">
+    <span class="dev-lbl">Offen-Marker</span>
+    <button class="dev-btn on" id="b-off" onclick="toggleOffen()">ein</button>
+  </div>
+  <div class="dev-grp">
+    <span class="dev-lbl">Wellen-Opacity</span>
+    <input type="range" id="op" min="20" max="100" step="5" value="80">
+    <span class="dev-val" id="opv">0.80</span>
+  </div>
+</div>
+
+<!-- ============== STAGE ============== -->
+<div class="stage">
+  <div class="hdr">
+    <div class="hdr-flank">
+      <div class="hdr-fm" id="fl-m">FEB 2026</div>
+      <div class="hdr-fs">Alles erledigt</div>
+    </div>
+    <div class="hdr-center">
+      <div class="hdr-month" id="hm">März 2026</div>
+      <div class="hdr-pill">Laufend</div>
+      <div class="hdr-outlier" id="ol">Autoversicherung 650 € · Okt</div>
+    </div>
+    <div class="hdr-flank r">
+      <div class="hdr-fm" id="fr-m">APR 2026</div>
+      <div class="hdr-fs">Kein Ausreißer</div>
+    </div>
+  </div>
+
+  <div class="field" id="field">
+    <canvas id="wave"></canvas>
+
+    <div class="split l"><div class="split-ic">👤</div><div class="split-pct">60 %</div><div class="split-lbl">Ich</div></div>
+    <div class="split r"><div class="split-ic">👤</div><div class="split-pct">40 %</div><div class="split-lbl">Partner</div></div>
+
+    <div class="ring-glass"></div>
+    <div class="ring">
+      <svg width="252" height="252" viewBox="0 0 252 252">
+        <circle cx="126" cy="126" r="98" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="9"/>
+        <circle id="aneg" cx="126" cy="126" r="98" fill="none" stroke="rgb(255,69,58)" stroke-width="9"
+          stroke-linecap="round" style="stroke-dasharray:615.75;stroke-dashoffset:615.75;
+          transform-box:fill-box;transform-origin:center;transform:scaleX(-1) rotate(90deg);
+          transition:stroke-dashoffset .7s cubic-bezier(.22,0,.08,1)"/>
+        <circle id="apos" cx="126" cy="126" r="98" fill="none" stroke="rgb(62,207,175)" stroke-width="9"
+          stroke-linecap="round" style="stroke-dasharray:615.75;stroke-dashoffset:615.75;
+          transform-box:fill-box;transform-origin:center;transform:rotate(90deg);
+          transition:stroke-dashoffset .7s cubic-bezier(.22,0,.08,1)"/>
+        <circle cx="126" cy="224" r="3.3" fill="rgba(255,255,255,.22)"/>
+        <circle cx="126" cy="28"  r="3.3" fill="rgba(255,255,255,.22)"/>
+      </svg>
+      <div class="ring-c">
+        <div class="ra" id="ra">+850 €</div>
+        <div class="rl">Sparrate</div>
+        <div class="rp" id="rp"></div>
+      </div>
+    </div>
+
+    <div class="guide" id="guide"></div>
+    <div class="hpt" id="hpt"></div>
+    <div class="tt" id="tt">
+      <div class="tt-m" id="tt-m"></div>
+      <div class="tt-v" id="tt-v"></div>
+      <div class="tt-row"><span class="tt-l">IST</span><span class="tt-n" id="tt-ist"></span></div>
+      <div class="tt-row" style="margin-top:3px"><span class="tt-l">Plan</span><span class="tt-n" id="tt-plan"></span></div>
+      <div class="tt-div"></div>
+      <div class="tt-drv" id="tt-drv"></div>
+      <div class="tt-hint">Klick öffnet die kumulierte Treppe</div>
+    </div>
+  </div>
+
+  <div class="zone">
+    <span class="zone-lbl">Interaktionszone · Portal · Karussell · Rohmasse — außerhalb M3-Scope</span>
+  </div>
+</div>
+
+<!-- ============== OFFEN LEGEND ============== -->
+<div class="offen" id="offen">
+  <div class="offen-h">Bewusst offen — sichtbar gemacht, NICHT gelöst (Cluster 3 / B)</div>
+  <div class="offen-grid">
+    <div class="offen-it"><span class="k">M10</span> <b>Negativer Monat (Okt)</b> — Richtung gesetzt: Fläche = Ausgaben-Rot. Kumulierte Rot-Spec (B3) noch offen.</div>
+    <div class="offen-it"><span class="k">N4b</span> <b>Plan-Nenner-Degeneration</b> — auf der EUR-Welle moot, betrifft die %-Anzeige des Rings.</div>
+    <div class="offen-it"><span class="k">B6</span> <b>Vorjahres-Linie</b> — umgesetzt: gold-gestrichelt im Popup; datenloses Vorjahr → Linie entfällt.</div>
+    <div class="offen-it"><span class="k">B1</span> <b>Fenster</b> — Kalenderjahr als Default; final offen.</div>
+    <div class="offen-it"><span class="k">B2</span> <b>Treiber-Heuristik</b> — Tooltip/Popup zeigen Beispieldaten.</div>
+    <div class="offen-it"><span class="k">B3</span> <b>Rot bei negativer Kumulation</b> — Popup-Spec offen (hier nicht ausgelöst).</div>
+    <div class="offen-it"><span class="k">B4</span> <b>Monatsgenauer %-Nenner</b> — nicht dargestellt (Welle = EUR).</div>
+  </div>
+</div>
+
+<div class="cap">Welle V1 · M3-Mockup · verkörpert die Design-Direktor-Festlegung · Mockup = Referenz, nicht Wahrheit · bei Konflikt gewinnt der Doku-§</div>
+
+<!-- ============== POPUP (kumulierte Treppe) ============== -->
+<div class="ov" id="ov">
+  <div class="pop">
+    <button class="pop-x" onclick="closePop()">✕</button>
+    <div class="pop-k">Kumulierte Sparrate 2026</div>
+    <div class="pop-hero" id="pop-hero">+8.880 €</div>
+    <div class="pop-sub">IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber</div>
+    <canvas id="popcv"></canvas>
+    <div class="pop-dev" id="pop-dev"></div>
+    <div class="pop-open">
+      <span><span class="k">B6</span>Vorjahr gold-gestrichelt · ohne Daten entfällt</span>
+      <span><span class="k">B1</span>Fenster: Kalenderjahr (offen)</span>
+      <span><span class="k">B3</span>Rot b. neg. Kumulation offen</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- data (Beispiel; B2-Heuristik offen) ---------------- */
+var monthsShort=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+var monthsFull=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var YEAR=2026;
+var istBase=[620,910,850,780,1020,680,740,560,890,-180,830,1180];  /* monatliche Sparrate € */
+var plan   =[800,800,800,800,800,800,800,800,800, 800,800, 800];
+var octNeg=true;
+var REALIZED=2;   /* letzter realisierter Monat-Index (März) → Teal bis hier, danach Gold */
+var active=2;
+var waveOp=0.8;   /* FESTGELEGT — Produktionswert */
+var prevYearEnd=7200;   /* B6: kumulierter Vorjahres-Jahresendwert (Beispiel) */
+var hasPrevYear=true;   /* B6: datenloses Vorjahr → Linie entfällt (keine 0-€-Linie) */
+
+/* B2-Platzhalter: drei Treiber je Monat (Beispieldaten) */
+var drivers={
+  2:['Miete 1.200 €','Strom 120 €','Netflix 17,99 €'],
+  7:['Urlaub 420 €','Restaurants 180 €','Tanken 95 €'],
+  9:['Autoversicherung 650 €','Tanken 178 €','Strom 120 €']
+};
+
+/* ---------------- helpers ---------------- */
+function de(v,d){return (v==null?0:v).toLocaleString('de-DE',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+function fmtE(v){return (v>=0?'+':'−')+de(Math.abs(v),0)+'\u00a0€';}
+function ist(){var a=istBase.slice();a[9]=octNeg?-180:470;return a;}
+function tealS(a){return 'rgba(62,207,175,'+a+')';}
+function goldS(a){return 'rgba(255,200,60,'+a+')';}   /* nur Ereignis/Vorjahr (Popup, später) */
+function graS(a){return 'rgba(255,255,255,'+a+')';}    /* Forecast = Grau, analog Ghost-Cards */
+function redS(a){return 'rgba(255,69,58,'+a+')';}      /* Ausgaben-Rot #FF453A */
+
+/* ---------------- ring (§5) ---------------- */
+var C=2*Math.PI*98, hC=C/2;
+function updRing(){
+  var v=ist()[active], P=plan[active], pct=v/P;
+  var col=v<0?'rgb(255,69,58)':(v<=P?'#fff':'rgb(62,207,175)');
+  var ra=document.getElementById('ra'); ra.textContent=fmtE(v); ra.style.color=col;
+  var apos=document.getElementById('apos'), aneg=document.getElementById('aneg'), rp=document.getElementById('rp');
+  if(v>=0){
+    var fill=Math.min(pct*hC,C-0.5);
+    apos.style.strokeDashoffset=(C-fill).toFixed(2); aneg.style.strokeDashoffset=C.toFixed(2);
+    if(v>P){rp.textContent='+'+de((pct-1)*100,1)+'\u00a0% über Plan'; rp.style.color='rgb(62,207,175)';}
+    else{rp.textContent=de(pct*100,1)+'\u00a0% von Plan'; rp.style.color='rgba(255,255,255,.3)';}
+  } else {
+    var nf=Math.min(Math.abs(pct),1)*hC;
+    aneg.style.strokeDashoffset=(C-nf).toFixed(2); apos.style.strokeDashoffset=C.toFixed(2);
+    rp.textContent='−'+de(Math.abs(pct)*100,1)+'\u00a0% Defizit'; rp.style.color='rgb(255,69,58)';
+  }
+}
+
+/* ---------------- header (§6) ---------------- */
+function updHeader(){
+  document.getElementById('hm').textContent=monthsFull[active]+' '+YEAR;
+  document.getElementById('dm').textContent=monthsShort[active]+' '+YEAR;
+  var pv=active>0?monthsShort[active-1]:'Dez', nx=active<11?monthsShort[active+1]:'Jan';
+  document.getElementById('fl-m').textContent=(pv+' '+(active>0?YEAR:YEAR-1)).toUpperCase();
+  document.getElementById('fr-m').textContent=(nx+' '+(active<11?YEAR:YEAR+1)).toUpperCase();
+  var ol=document.getElementById('ol');                  /* Platz immer reserviert (min-height) */
+  ol.textContent='Autoversicherung 650 €';               /* nur Sichtbarkeit schaltet → kein Sprung */
+  ol.style.opacity=(active===9)?'1':'0';
+}
+
+/* ---------------- wave (Canvas, hinter dem Ring) ---------------- */
+var field=document.getElementById('field'), cv=document.getElementById('wave'), ctx=cv.getContext('2d');
+var pts=[];  /* CSS-px-Koordinaten je Monat */
+var hov=-1;
+
+function smooth(c,p){
+  c.moveTo(p[0].x,p[0].y);
+  for(var i=0;i<p.length-1;i++){
+    var p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p[i+1];
+    c.bezierCurveTo(p1.x+(p2.x-p0.x)/6,p1.y+(p2.y-p0.y)/6,
+                    p2.x-(p3.x-p1.x)/6,p2.y-(p3.y-p1.y)/6,p2.x,p2.y);
+  }
+}
+function resizeWave(){
+  var dpr=window.devicePixelRatio||1, w=field.offsetWidth, h=field.offsetHeight;
+  cv.style.width=w+'px'; cv.style.height=h+'px'; cv.width=w*dpr; cv.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0); drawWave();
+}
+function drawWave(){
+  var w=field.offsetWidth, h=field.offsetHeight; ctx.clearRect(0,0,w,h);
+  var d=ist();
+  var padL=18,padR=18,padT=30,padB=34, cW=w-padL-padR, cH=h-padT-padB;
+  var vals=d.concat([0]); var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  var rng=(mx-mn)||1; var stepX=cW/11;
+  function xOf(i){return padL+i*stepX;}
+  function yOf(v){return padT+cH-(v-mn)/rng*cH;}
+  var y0=yOf(0);
+
+  pts=[]; for(var i=0;i<12;i++)pts.push({x:xOf(i),y:yOf(d[i]),val:d[i]});
+
+  /* baseline (Null) */
+  ctx.beginPath();ctx.moveTo(padL,y0);ctx.lineTo(padL+cW,y0);
+  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=.5;ctx.stroke();
+
+  /* area fill — Teal (realisiert) → Grau (Forecast, analog Ghost-Cards) */
+  var fa=waveOp*0.30, sa=waveOp*0.92;
+  var tEnd=REALIZED/11, gStart=Math.min(1,(REALIZED+1)/11);
+  function hueGrad(alpha){
+    var g=ctx.createLinearGradient(xOf(0),0,xOf(11),0);
+    g.addColorStop(0,tealS(alpha)); g.addColorStop(tEnd,tealS(alpha));
+    g.addColorStop(gStart,graS(alpha)); g.addColorStop(1,graS(alpha)); return g;
+  }
+  function areaPath(){
+    ctx.beginPath();ctx.moveTo(pts[0].x,y0);ctx.lineTo(pts[0].x,pts[0].y);
+    smoothInto(ctx,pts);ctx.lineTo(pts[11].x,y0);ctx.closePath();
+  }
+  areaPath();ctx.fillStyle=hueGrad(fa);ctx.fill();
+
+  /* negativer Bereich → Ausgaben-Rot (M10-Richtung aus Feedback) */
+  if(mn<0){
+    ctx.save();ctx.beginPath();ctx.rect(padL,y0,cW,padT+cH-y0);ctx.clip();
+    areaPath();ctx.fillStyle=redS(waveOp*0.40);ctx.fill();ctx.restore();
+  }
+
+  /* stroke — Regime-Farbe, negativer Abschnitt rot überzeichnet */
+  ctx.beginPath();smooth(ctx,pts);
+  ctx.strokeStyle=hueGrad(sa);ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();
+  if(mn<0){
+    ctx.save();ctx.beginPath();ctx.rect(padL,y0,cW,padT+cH-y0);ctx.clip();
+    ctx.beginPath();smooth(ctx,pts);
+    ctx.strokeStyle=redS(sa);ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();ctx.restore();
+  }
+
+  /* aktiver-Monat-Marker */
+  var ap=pts[active];
+  ctx.beginPath();ctx.arc(ap.x,ap.y,5,0,7);ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
+  ctx.beginPath();ctx.arc(ap.x,ap.y,9,0,7);ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=1;ctx.stroke();
+
+  /* (kein Ereignis-Marker mehr) — AUSSCHLIESSLICH der aktive Monat zeigt einen Kreis */
+
+  /* Monats-Labels */
+  for(var i=0;i<12;i++){
+    ctx.font='500 8px system-ui';
+    ctx.fillStyle=i===active?'rgba(255,255,255,.5)':'rgba(255,255,255,.18)';
+    ctx.textAlign='center';ctx.fillText(monthsShort[i],xOf(i),h-6);
+  }
+  positionHover();
+}
+function smoothInto(c,p){ /* nur Kurvensegmente (für Flächen-Pfad nach moveTo) */
+  for(var i=0;i<p.length-1;i++){
+    var p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p[i+1];
+    c.bezierCurveTo(p1.x+(p2.x-p0.x)/6,p1.y+(p2.y-p0.y)/6,
+                    p2.x-(p3.x-p1.x)/6,p2.y-(p3.y-p1.y)/6,p2.x,p2.y);
+  }
+}
+
+/* ---------------- scrub (durch den Ring hindurch) ---------------- */
+var guide=document.getElementById('guide'),hpt=document.getElementById('hpt'),tt=document.getElementById('tt');
+function positionHover(){
+  if(hov<0||!pts[hov]){guide.style.opacity='0';tt.style.opacity='0';return;}
+  var p=pts[hov], d=ist();
+  guide.style.left=p.x+'px';guide.style.opacity='1';
+  var realized=hov<=REALIZED;
+  var col=d[hov]<0?'rgb(255,69,58)':(realized?'rgb(62,207,175)':'rgba(255,255,255,.65)');
+  document.getElementById('tt-m').textContent=monthsFull[hov]+' '+YEAR+(realized?' · IST':' · Forecast');
+  var v=document.getElementById('tt-v');v.textContent=fmtE(d[hov]);v.style.color=col;
+  document.getElementById('tt-ist').textContent=fmtE(d[hov]);
+  document.getElementById('tt-plan').textContent=fmtE(plan[hov]);
+  var drv=document.getElementById('tt-drv');
+  if(drivers[hov]){drv.innerHTML='<span class="tag">Treiber</span>'+drivers[hov][0];}
+  else{drv.innerHTML='<span class="tag">Treiber</span><span style="color:rgba(255,255,255,.3)">B2-Heuristik offen</span>';}
+  /* Tooltip über dem Ring positionieren, Ring-Mitte meiden */
+  var fw=field.offsetWidth, tw=220;
+  var tx=p.x+16; if(tx+tw>fw-8)tx=p.x-tw-16; if(tx<8)tx=8;
+  var ty=Math.max(8,p.y-150); if(p.y<150)ty=p.y+24;
+  tt.style.left=tx+'px';tt.style.top=ty+'px';tt.style.opacity='1';
+}
+field.addEventListener('mousemove',function(e){
+  var r=field.getBoundingClientRect(), mx=e.clientX-r.left, best=-1,bd=1e9;
+  for(var i=0;i<pts.length;i++){var dd=Math.abs(pts[i].x-mx);if(dd<bd){bd=dd;best=i;}}
+  hov=best; field.style.cursor='pointer'; positionHover();
+});
+field.addEventListener('mouseleave',function(){hov=-1;positionHover();field.style.cursor='default';});
+field.addEventListener('click',function(){openPop();});
+
+/* ---------------- popup: kumulierte TREPPE ---------------- */
+var ov=document.getElementById('ov'),popcv=document.getElementById('popcv'),pctx=popcv.getContext('2d');
+var popPts=[],popSel=-1;
+function cumul(a){var r=[],s=0;for(var i=0;i<a.length;i++){s+=a[i];r.push(s);}return r;}
+function openPop(){
+  var k=cumul(ist());
+  document.getElementById('pop-hero').textContent=fmtE(k[11]);
+  popSel=-1;document.getElementById('pop-dev').classList.remove('show');
+  ov.classList.add('show');setTimeout(drawPop,30);
+}
+function closePop(){ov.classList.remove('show');}
+ov.addEventListener('click',function(e){if(e.target===ov)closePop();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePop();});
+function resizePop(){var dpr=window.devicePixelRatio||1,w=popcv.parentElement.offsetWidth-52,h=200;
+  popcv.style.width=w+'px';popcv.style.height=h+'px';popcv.width=w*dpr;popcv.height=h*dpr;
+  pctx.setTransform(dpr,0,0,dpr,0,0);}
+function drawPop(){
+  resizePop();
+  var w=parseFloat(popcv.style.width),h=200,k=cumul(ist()),kp=cumul(plan);
+  pctx.clearRect(0,0,w,h);
+  var padL=8,padR=58,padT=14,padB=22,cW=w-padL-padR,cH=h-padT-padB,stepX=cW/11;
+  var vals=k.concat(kp).concat([0]);if(hasPrevYear)vals.push(prevYearEnd);
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rng=(mx-mn)||1;
+  function xOf(i){return padL+i*stepX;}function yOf(v){return padT+cH-(v-mn)/rng*cH;}
+  popPts=[];for(var i=0;i<12;i++)popPts.push({x:xOf(i),y:yOf(k[i]),val:k[i]});
+  /* Null-Linie */
+  pctx.beginPath();pctx.moveTo(padL,yOf(0));pctx.lineTo(padL+cW,yOf(0));
+  pctx.strokeStyle='rgba(255,255,255,.07)';pctx.lineWidth=.5;pctx.stroke();
+  function stair(kk,f0,f1,strk){
+    pctx.beginPath();pctx.moveTo(xOf(0),yOf(0));pctx.lineTo(xOf(0),yOf(kk[0]));
+    for(var i=1;i<12;i++){pctx.lineTo(xOf(i),yOf(kk[i-1]));pctx.lineTo(xOf(i),yOf(kk[i]));}
+    pctx.lineTo(xOf(11),yOf(0));pctx.closePath();
+    var g=pctx.createLinearGradient(0,padT,0,padT+cH);
+    g.addColorStop(0,f0);g.addColorStop(1,f1);pctx.fillStyle=g;pctx.fill();
+    pctx.beginPath();pctx.moveTo(xOf(0),yOf(kk[0]));
+    for(var i=1;i<12;i++){pctx.lineTo(xOf(i),yOf(kk[i-1]));pctx.lineTo(xOf(i),yOf(kk[i]));}
+    pctx.strokeStyle=strk;pctx.lineWidth=1.5;pctx.lineJoin='round';pctx.stroke();
+  }
+  /* graue Plan-Treppe (kumuliert) — hinter IST */
+  stair(kp, graS(0.09), graS(0.01), graS(0.45));
+  /* teal IST-Treppe (kumuliert) */
+  stair(k, tealS(0.28), tealS(0.02), tealS(0.85));
+  /* B6: Vorjahres-Linie (gold-gestrichelt) — datenloses Vorjahr → entfällt (keine 0-€-Linie) */
+  if(hasPrevYear){
+    var yp=yOf(prevYearEnd);
+    pctx.save();pctx.setLineDash([5,4]);
+    pctx.beginPath();pctx.moveTo(padL,yp);pctx.lineTo(padL+cW,yp);
+    pctx.strokeStyle=goldS(0.55);pctx.lineWidth=1;pctx.stroke();pctx.restore();
+    var ly=Math.max(padT+6,Math.min(padT+cH-6,yp));   /* Betrag rechts NEBEN der Linie, außerhalb */
+    pctx.font='600 9px system-ui';pctx.fillStyle=goldS(0.85);
+    pctx.textAlign='left';pctx.textBaseline='middle';
+    pctx.fillText(fmtE(prevYearEnd),padL+cW+8,ly);
+    pctx.textBaseline='alphabetic';
+  }
+  /* Punkte + Labels (IST) */
+  for(var i=0;i<12;i++){
+    var sel=i===popSel;
+    pctx.beginPath();pctx.arc(xOf(i),yOf(k[i]),sel?5:2.4,0,7);
+    pctx.fillStyle=tealS(sel?1:0.7);pctx.fill();
+    pctx.font='500 8px system-ui';pctx.fillStyle='rgba(255,255,255,.18)';pctx.textAlign='center';
+    pctx.fillText(monthsShort[i],xOf(i),h-5);
+  }
+}
+popcv.addEventListener('click',function(e){
+  var r=popcv.getBoundingClientRect(),mx=e.clientX-r.left,best=-1,bd=1e9;
+  for(var i=0;i<popPts.length;i++){var dd=Math.abs(popPts[i].x-mx);if(dd<bd){bd=dd;best=i;}}
+  if(bd<40){popSel=(popSel===best?-1:best);
+    var box=document.getElementById('pop-dev');
+    if(popSel>=0&&drivers[popSel]){
+      box.innerHTML='<b>'+monthsFull[popSel]+' '+YEAR+'</b> · drei Positionen (B2-Beispiel): '+drivers[popSel].join(' · ');
+      box.classList.add('show');
+    } else if(popSel>=0){
+      box.innerHTML='<b>'+monthsFull[popSel]+' '+YEAR+'</b> · Treiber: B2-Heuristik offen.';box.classList.add('show');
+    } else box.classList.remove('show');
+    drawPop();
+  }
+});
+
+/* ---------------- dev controls ---------------- */
+function stepMonth(d){active=(active+d+12)%12;updRing();updHeader();drawWave();}
+function toggleNeg(){octNeg=!octNeg;document.getElementById('b-neg').classList.toggle('on',octNeg);
+  document.getElementById('b-neg').textContent=octNeg?'negativ (M10)':'positiv';
+  updRing();drawWave();}
+function toggleVorjahr(){hasPrevYear=!hasPrevYear;
+  var b=document.getElementById('b-vj');b.classList.toggle('on',hasPrevYear);
+  b.textContent=hasPrevYear?'vorhanden':'keine Daten';
+  if(ov.classList.contains('show'))drawPop();}
+function toggleOffen(){var o=document.getElementById('offen');o.classList.toggle('hide');
+  document.getElementById('b-off').classList.toggle('on');
+  document.getElementById('b-off').textContent=o.classList.contains('hide')?'aus':'ein';}
+document.getElementById('op').addEventListener('input',function(){
+  waveOp=this.value/100;document.getElementById('opv').textContent=waveOp.toFixed(2);drawWave();});
+
+/* ---------------- init ---------------- */
+window.addEventListener('resize',function(){resizeWave();if(ov.classList.contains('show'))drawPop();});
+updRing();updHeader();resizeWave();setTimeout(resizeWave,60);
+</script>
+</body>
+</html>

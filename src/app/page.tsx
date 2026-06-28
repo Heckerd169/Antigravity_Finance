@@ -299,6 +299,19 @@ export default async function Home({ searchParams }: HomeProps) {
     card.linkedFragments = linkedByCardId.get(card.id) ?? [];
   }
 
+  // ── N1 (v2-01): Rohmasse zeigt nur den angezeigten Monat ─────────────────
+  // Single-Surface „ein Monat" (CLAUDE.md §1, Design §8): der Fragment-Stack
+  // zeigt ausschließlich Fragmente, deren transaction_date im targetMonth liegt
+  // (String-Vergleich „YYYY-MM", timezone-stabil — keine new Date()-Konstruktion,
+  // Regel 9). Die volle `fragments`-Liste bleibt oben für `linkedByCardId`
+  // erhalten: ein Cross-Monat-Link (assigned_month = targetMonth, transaction_date
+  // in anderem Monat) erscheint weiterhin als verknüpftes Fragment auf der Karte,
+  // ohne im Stack des targetMonth aufzutauchen. Sparrate-RPCs lesen nicht aus
+  // dieser Liste — die Berechnung bleibt unberührt (Regel 7.1 / Briefing A2/A5).
+  const monthFragments = fragments.filter(
+    (f) => f.transaction_date.slice(0, 7) === targetMonth,
+  );
+
   // ── Linke-Flanke-Count: UNASSIGNED-Fragmente im Vormonat ─────────────────
 
   const { count: unassignedPreviousCountRaw } = await supabase
@@ -357,7 +370,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
       <CardHideProvider>
         <InteractionZone
-          fragments={fragments}
+          fragments={monthFragments}
           cards={enrichedCards}
           targetMonth={targetMonth}
           targetDbMonth={targetDbDate}
