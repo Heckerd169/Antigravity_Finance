@@ -217,6 +217,14 @@
   font-weight: 500;
   letter-spacing: -.2px;
   margin-bottom: 2px;
+  /* N3 (v2-01): langer Name bleibt in der 136px-Karten-Begrenzung — eine Zeile,
+   * Ellipsis (gleiches Pattern wie .fragmentDesc / .linkedRowDesc). Verhindert
+   * horizontales Überlaufen über den Kartenrand und vertikales Strecken durch
+   * Mehrzeiligkeit. overflow:hidden bleibt auf .cardName beschränkt — NIE auf
+   * .card selbst (würde Kontext-Icon / Tap-Catcher clippen, Sprint-4 E3). */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .open .cardName,
