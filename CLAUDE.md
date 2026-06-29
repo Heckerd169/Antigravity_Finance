@@ -118,6 +118,17 @@ Antigravity_Finance/
 | 10 | Soft-Delete-Pattern (§2.4) + Sparraten-Treppe (§9) | 🟢 Done | sprints/sprint_10_briefing.md | 25.05.2026 |
 Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 
+### Sprint-Protokoll V2
+
+| Sprint | Thema | Status | Briefing | Approval |
+|---|---|---|---|---|
+| v2-01 | Bug-Sprint N1–N4a (direkt auf Prod, Option A) | 🟢 Done | sprints/sprint_v2-01_briefing.md | 26.06.2026 |
+
+**Doku-Stand nach v2-01:** Design-Doku **v3.1.1** (M3 Welle/Popup + v2-01-Patches), Schema-Doku v3.1.
+**N4b / N5:** bewusst offen → Design-Direktor Cluster 3 (nicht in v2-01 entschieden).
+
+**V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
+
 **Sprint 6 ist der harte Gate** für Sprints 2–5. Wenn der dort spezifizierte Test-Case
 nicht exakt `2.910,01 €` liefert, gehen die betroffenen Komponenten zurück in Korrektur.
 

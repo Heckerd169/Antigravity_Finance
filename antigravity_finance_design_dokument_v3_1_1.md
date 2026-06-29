@@ -1,11 +1,15 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.0 (Sprint-10-Stand)
-**Status:** Freigegeben — vollständig synchronisiert mit Schema-Doku v3.1 (Sprint 0–10 + Pre-Sprint-10-Patches)
-**Datum:** 25. Mai 2026
+**Version:** 3.1.1 (V2 · v2-01)
+**Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
+**Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
 
 > **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary_v2.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
+>
+> **Changelog v3.1 (26.06.2026):** §9 „Sparraten-Treppe" → „Jahres-Welle + Popup (kumulierte Treppe)" — M3 ersetzt das V1-Treppen-Layout; §5 Ring interaktions-transparent; §6 Header-Subzeile mit reservierter Zeilenhöhe; neuer Token `--wave-opacity 0.80`; §12.8-Copy angepasst. Offen → Cluster 3: N4b (Ring-%-Subzeile), B3 (kumulativ-negativ-Rot im Popup).
+>
+> **Changelog v3.1.1 (26.06.2026, Sprint v2-01):** §8 Fragment-Stack Monats-Scope (N1); §7 Kartenname-Overflow (N3); §4.7/§13 Umkehr — Zuordnungs-Monat = Transaktions-Monat, Periodenabgrenzung (allocation≠transaction) nicht mehr verfolgt; manueller Cross-Monat-Drop entfällt.
 
 ---
 
@@ -19,7 +23,7 @@
 6. [Komponente: Header / Timeline-Navigation](#6-komponente-header--timeline-navigation)
 7. [Komponente: Karten (Fixkosten, Budget, Einnahmen)](#7-komponente-karten-fixkosten-budget-einnahmen)
 8. [Komponente: Untere Interaktionszone](#8-komponente-untere-interaktionszone)
-9. [Komponente: Sparraten-Treppe](#9-komponente-sparraten-treppe)
+9. [Komponente: Jahres-Welle + Popup (kumulierte Treppe)](#9-komponente-jahres-welle--popup-kumulierte-treppe)
 10. [Komponente: Income / Partner-Split](#10-komponente-income--partner-split)
 11. [Komponente: CSV-Import / Drop & Distill](#11-komponente-csv-import--drop--distill)
 12. [Bekannte Limitationen V1](#12-bekannte-limitationen-v1)
@@ -216,6 +220,7 @@ Claude Code soll dieses Feld in V1 ignorieren.
 | `--border-subtle` | `rgba(255,255,255,.07)` | Standard-Border |
 | `--border-teal` | `rgba(62,207,175,.22)` | Bezahlt-Border |
 | `--border-red` | `rgba(255,69,58,.18)` | Offen-Border |
+| `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
 
 ### Typographie
 
@@ -372,6 +377,8 @@ Beim CSV-Import können Fragmente mit `transaction_date` in vergangenen Monaten 
 
 Dies ist konsistent mit Snapshot-Integrität: Plan und Gehalt bleiben unangetastet, eine bessere Datenbasis ergibt automatisch eine bessere Berechnung.
 
+**Zuordnungs-Monat = Transaktions-Monat (v2-01-Regel):** Ein Fragment wird ausschließlich einer Karte *seines eigenen* Transaktions-Monats zugeordnet — `card_fragment_links.month` = Monat von `transaction_date`. Die rückwirkende Verknüpfung oben betrifft daher die *Vergangenheit desselben Monats* (z. B. ein März-Fragment auf eine März-Karte, sichtbar im März-View), nicht eine monatsübergreifende Zuordnung. Ein Cross-Monat-Drop aus dem Stack eines anderen Monats existiert nicht (v2-01/N1). Bestehende Verknüpfungen mit `month ≠ transaction_date`-Monat (falls im Altbestand) bleiben als historische Fakten eingefroren — sie werden nicht retroaktiv umgezogen (§2.1).
+
 ---
 
 ## 5. Komponente: Singularity Ring
@@ -394,6 +401,9 @@ Herzstück des Dashboards. Zeigt die tatsächliche Sparrate im Zentrum. Der Arc 
 | Dots (6 + 12 Uhr) | `rgba(255,255,255,.22)`, `r=3.5px` |
 | Dot 6 Uhr (Nullpunkt) | `cx=124, cy=222` |
 | Dot 12 Uhr (Plan) | `cx=124, cy=26` |
+| Pointer-Events | **`none` — interaktions-transparent (M3, §9)** |
+
+**Interaktions-Transparenz (M3):** Der Ring ist `pointer-events:none`. Das Welle-Scrubbing (§9) läuft durch ihn hindurch; Führungslinie + Tooltip der Welle rendern über dem Ring. Der Ring trägt weiterhin Ring-Zahl + den einen aktiven-Monat-Kreis — beide vom Header-aktiven Monat gesteuert, nicht von der Welle-Einfärbung.
 
 ### Zentrumszahl
 
@@ -505,6 +515,8 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 - `[Bezeichnung] [Betrag]` z.B. `Autoversicherung 650 €`
 - **Definition Ausreißer:** TBD im Architekten-Chat (V1: Karte mit Frequenz nicht-monatlich und Plan > 200 € — funktional ableitbar, aber Schwellwert ist tunbar)
 
+**Kein Layout-Sprung (M3):** Die Ausreißer-Subzeile erscheint nur im betroffenen Monat, ihre Zeilenhöhe ist permanent reserviert (`min-height`). Beim Monatswechsel schaltet ausschließlich die Sichtbarkeit (`opacity`), nie die Höhe — die Komposition aus Ring + Welle bleibt sprungfrei.
+
 ### Was explizit NICHT
 - Keine „Gestern/Morgen"-Labels
 - Kein Sprung zum nächsten Event-Monat
@@ -519,6 +531,7 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 | Eigenschaft | Wert |
 |---|---|
 | Breite | `136px` |
+| Kartenname-Overflow | Eine Zeile, abgeschnitten mit Ellipsis (`…`) innerhalb der 136px-Breite (Pattern wie Fragment-Beschreibung §8) |
 | Border-Radius | `14px` |
 | Padding | `14px 13px 12px` |
 | Opacity (aktiv) | `0.75` |
@@ -677,7 +690,7 @@ Fragment-Betrag ≠ Plan → dezente Subzeile: `Betrag weicht vom Plan ab — an
 Anzeige-Betrag = Summe aller Fragmente. Karte wird grün ausschließlich durch manuellen Tap. Detail-Overlay zeigt Liste aller Fragmente mit `×`-Icon zum Eject.
 
 **Konflikt 3 — Vorauszahlung (V1-Limitation):**
-Ghost Cards sind nicht interaktiv — kein Fragment-Drop aus anderen Monaten. Workaround: „Betrag anpassen auf 0 €, nur diesen Monat". V2-Plan: Periodenabgrenzung über `card_fragment_links.month`.
+Ghost Cards sind nicht interaktiv — kein Fragment-Drop aus anderen Monaten. Workaround: „Betrag anpassen auf 0 €, nur diesen Monat". Periodenabgrenzung wird **nicht** verfolgt (v2-01-Regel: Zuordnungs-Monat = Transaktions-Monat).
 
 **Konflikt 4 — Fragment-Drop auf eine Karte in einem vergangenen Monat:**
 Fragment wird akzeptiert. Sparrate des Vergangenheitsmonats wird beim nächsten Render neu berechnet (Plan und Gehalt bleiben eingefroren, Realität wird präziser eingebracht — siehe 4.7).
@@ -731,6 +744,7 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Vertikales Scrollen, Mausrad / Scrollbar (`3px`, dezent)
 - Keine Chevrons
 - Fragmente sind Drag-Quellen
+- **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7).
 - Zugeordnete Fragmente: `opacity: 0.22`, `pointer-events: none`
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
@@ -747,79 +761,61 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 
 ---
 
-## 9. Komponente: Sparraten-Treppe
+## 9. Komponente: Jahres-Welle + Popup (kumulierte Treppe)
 
 ### Funktion
 
-Ersetzt die ursprüngliche Wellen-Visualisierung. Hintergrund-Element — trägt die strategische Jahresaussage.
+**M3 ersetzt das V1-Treppen-Layout.** Die Jahres-Visualisierung ist eine **monatliche EUR-Welle hinter dem zentrierten Ring**. Die kumulierte Sicht (vormals inline-Treppe) zieht in ein **On-Demand-Popup** um. Die Welle ist Hintergrund-Element auf gleicher Fläche wie der Ring (§5); das Popup ist die **einzige** Heimat der kumulierten Treppe.
 
-### Visuelle Spezifikation
+### Welle — Visuelle Spezifikation
 
 | Eigenschaft | Wert |
 |---|---|
-| Opacity Teal (Standard) | `0.50` |
-| Opacity Grau (Standard) | `0.30` |
-| Stroke-Width | `1.5px` |
-| Dot-Radius normal | `2.5px` |
-| Dot-Radius hover | `5px` |
-| Nulllinie | `rgba(255,255,255,.08)`, `0.5px` |
-| Vorjahres-Linie | `rgba(255,200,60,.3)`, `1px`, gestrichelt `[4,4]` |
-| Vorjahres-Label | Nur Betrag (kein Jahresname) · `rgba(255,200,60,0.75)` |
+| Y-Achse | monatliche Sparrate in **EUR** (konsistent zu Ring + kumulierter Sicht) |
+| Fenster | **Kalenderjahr Jan–Dez (B1)** |
+| Opacity | **`0.80`** (Token `--wave-opacity`) |
+| Realisiert | **Teal** `#3ECFAF` |
+| Forecast | **Grau** (Ghost-Analogie, vgl. `--bg-card-ghost` / `--text-ghost`) |
+| Negativer Monat | **Ausgaben-Rot** `#FF453A` (Fläche + Linie unter Null) |
+| Aktiver-Monat-Marker | **genau ein Kreis** — der im Header gewählte aktive Monat. Kein Hover-Punkt, kein Ereignis-Kreis |
 
-**Jahresend-Labels:** Nur der Vorjahreswert erscheint rechts neben der gestrichelten Linie. Teal- und Grau-Treppe haben keine Jahresend-Labels (verhindert Überlagerungen).
+**Regime-Grenze Teal→Grau (DD-bestätigt):** Teal reicht **bis einschließlich dem letzten realisierten (abgeschlossenen) Monat** („jetzt"), fix und **unabhängig vom Header-aktiven Monat**. Der aktive Monat steuert nur die Ring-Zahl (§5) und den einen Kreis — **nicht** die Einfärbung. Navigation in einen Zukunftsmonat färbt nichts um (Teal = Fakt, Grau = Prognose).
+
+**Verdeckung (Kernpunkt):** Der Ring liegt grafisch vor der Welle, ist aber **interaktions-transparent** (§5, `pointer-events:none`). Die Monatswahl ist **positions-basiertes Scrubbing über die volle Breite** (nicht punkt-genau); Führungslinie + Tooltip rendern **über** dem Ring. Damit ist auch die Jahresmitte hinter dem Ring voll erreichbar — der V1-„Umweg" entfällt.
+
+**Welle-Hover → Tooltip:** Monatsname, IST €, Plan €, **Top-1-Treiber**. Der IST-vs-Plan-Vergleich lebt hier, nicht als zweite Welle.
+
+### Popup (kumulierte Treppe) — Spezifikation
+
+Klick auf die Welle öffnet ein **Single-Surface-Overlay**, dismissible per Klick-außen / Escape, **kein Tooling, keine Slider**. Inhalt:
+
+- **Kumulierte Treppe** als Stufen: **IST (teal) + Plan (grau)**.
+- **Jahressumme als Held** (z. B. „+8.880 €").
+- **Monatsklick → Top-3-Treiber** dieses Monats.
+- **Unterzeile/Legende:** „IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber".
+
+**B6 — Vorjahres-Linie (nur Popup):** gold-gestrichelte Linie (`[5,4]`) auf dem **kumulierten Vorjahres-Jahresendwert** (Σ Jan–Dez X-1), auf derselben Skala wie die Treppe. Der **Betrag steht im rechten Gutter, außerhalb der Plotfläche**; die Legende „Vorjahr (gold)" in der Unterzeile. **Datenloses Vorjahr → Linie entfällt komplett** (keine 0-€-Linie; „nichts gespart" ≠ „keine Daten"). Ein Teiljahr mit einzelnen `NULL`-Monaten summiert normal (NULL = 0). Die **monatliche Welle führt keine** Vorjahres-Referenz — ein kumulierter Endwert ergibt nur auf kumulierter Fläche Sinn.
 
 ### Berechnungslogik
 
-Die Treppe ist die Summe der monatlichen Sparraten — und jede dieser monatlichen Sparraten wird durch dieselbe Funktion `calculate_sparrate_for_month(user_id, M)` berechnet (siehe Section 4). Das Verhalten unterscheidet sich automatisch nach Zeitraum, weil die Daten-Inputs sich unterscheiden:
+Die kumulierte Treppe ist die Summe der monatlichen Sparraten; jede monatliche Sparrate liefert `calculate_sparrate_for_month(user_id, M)` (siehe Section 4), das sich automatisch nach Zeitraum unterscheidet:
 
-- **Vergangene Monate (M < heute):** Karten-Status ist eingefroren. Offene Karten zählen mit Plan-Wert nach Modell α (siehe 2.3). Fragment-Summen sind final.
-- **Aktueller Monat (M = heute):** Hybridsicht. Bisher Realisiertes ersetzt Plan, der Rest läuft mit Plan.
-- **Zukünftige Monate (M > heute):** Keine Fragmente, keine Taps. Alle aktiven Karten zählen mit ihrem dann gültigen Planwert.
+- **Vergangene Monate (M < heute):** eingefroren; offene Karten zählen mit Plan nach Modell α (2.3); Fragment-Summen final.
+- **Aktueller Monat (M = heute):** Hybridsicht — Realisiertes ersetzt Plan, Rest läuft mit Plan.
+- **Zukünftige Monate (M > heute):** keine Fragmente/Taps; aktive Karten zählen mit dann gültigem Plan.
 
-**Geplante kumulierte Sparrate (Grau-Treppe):**
-```
-Σ geplante Sparrate Januar bis Monat X
-```
-
-**Tatsächliche kumulierte Sparrate (Teal-Treppe, Standpunkt Monat M):**
-```
-Σ Sparrate von Januar bis Dezember
-  — wobei für jeden Monat M' die Funktion calculate_sparrate_for_month(M') 
-    automatisch das passende Verhalten liefert (Vergangenheit / Gegenwart / Forecast)
-```
-
-### Vorjahres-Referenzwert
-
-| Aktives Jahr | Darstellung |
-|---|---|
-| Jahr X | Linie + Betrag = Jahresendwert Jahr X-1 |
-| Jahr X-1 (Vergangenheit) | Linie + Betrag = Jahresendwert Jahr X-2 |
-| Jahr X+1 (Zukunft) | Keine Linie, kein Betrag — Vorjahr nicht abgeschlossen |
-
-Statisch innerhalb eines Kalenderjahres. Legende zeigt `Vorjahr [Jahr]` in Gold — kein Betrag in der Legende.
-
-**Vorjahres-Endwert = kumulierter Jahresendwert (PM-bestätigt, Sprint 10):** Die gold-gestrichelte Linie zeigt die **kumulierte** Jahres-Sparrate des Vorjahres (Σ Jan–Dez X-1, also der Treppen-Endpunkt des Vorjahres) — auf derselben Skala wie die kumulierte Treppe. **Sonderfall:** Liefert das Vorjahr für alle 12 Monate `NULL` (keine Income-Basis, z. B. vor dem ersten getrackten Jahr), entfällt die Linie ganz — eine Linie bei 0 € wäre irreführend („nichts gespart" vs. „keine Daten"). Ein Teiljahr mit einzelnen `NULL`-Monaten summiert dagegen normal (NULL = 0).
-
-### Interaktion
-
-**Hover:** Tooltip mit Monatsname · monatliche % (primär) · IST kumuliert · Plan kumuliert · Ereignis-Hinweis (⚠ in Gold wenn vorhanden)
-
-**„% monatlich" im Tooltip (Sprint 10):** Die Primärzeile des Hover-Tooltips zeigt die monatliche Sparrate als Anteil am Haushalts-Netto (ICH + PARTNER `net_monthly` des jeweils jüngsten Income-Slots). Fehlt eine Netto-Basis, fällt die Zeile auf den €-Monatswert zurück. Monatsgenauer Nenner (statt jüngster Slot) ist V2-Vormerkung.
-
-**Klick (Teal-Punkt):** Kompakte Abweichungs-Erklärungszeile unter dem Chart — max. 3 Treiber. Zweiter Klick schließt.
-
-**Abweichungs-Treiber sind V2 (Sprint 10):** Die Klick-Erklärungszeile unter dem Chart ist in V1 ein statischer Hinweis („Treiber-Hinweis: V2"), da die Definition von Ausreißern und die Top-3-Abweichungstreiber laut dieser §9 ein Analytics-Feature für V2 sind. Entsprechend werden in V1 auch keine ⚠-Ereignis-Annotationen an Dots gezeichnet (es existiert keine Ausreißer-Datenquelle).
-
-**Treppe wird rot:** Ausschließlich wenn kumulierte Sparrate negativ — nicht bei einzelnem Defizitmonat.
-
-**Ereignis-Annotation:** Ausreißer-Monate erhalten ⚠-Kreis (`rgba(255,200,60,.65)`, `1.5px`). Definition Ausreißer und Top-3-Abweichungstreiber: TBD (Analytics-Feature für V2 — in V1 nicht im Scope).
+**Geplante kumulierte Sparrate (Grau-Treppe):** Σ geplante Sparrate Januar bis Monat X.
+**Tatsächliche kumulierte Sparrate (Teal-Treppe):** Σ `calculate_sparrate_for_month(M')` Januar bis Dezember.
 
 ### Was explizit NICHT
-- Keine zwei Wellen
-- Kein Toggle %-Ansicht / kumulierte Ansicht
-- Keine Forecast-Trennlinie im finalen Dashboard
-- Kein permanentes Abweichungs-Label
-- **Tooling ≠ Produkt (Sprint 10):** Die Opacity-Slider und die Jahres-Simulations-Buttons aus dem Prototyp `sparrate_treppe_final_v2.html` sind Werkzeuge, kein Produkt (analog zum Slider-Ausschluss beim Singularity Ring, §5). Das aktive Jahr ergibt sich aus dem `month`-URL-Param
+- Keine zwei Wellen (IST-vs-Plan lebt im Tooltip, nicht als zweite Welle)
+- Kein Toggle %-/kumulierte Ansicht; keine kumulierte Sicht außerhalb des Popups
+- Kein permanentes Abweichungs-Label; kein Hover-Punkt; kein Ereignis-Kreis auf der Welle
+- Kein Tooling im Produkt (das Dev-Panel des Prototyps `welle_v1.html` ist Werkzeug, kein Produkt — analog Slider-Ausschluss §5). Das aktive Jahr ergibt sich aus dem `month`-URL-Param
+
+### Offen — Cluster 3 (nicht in M3)
+- **N4b** — Degeneration der Ring-%-Subzeile bei winzigem Plan-Nenner: auf der EUR-Welle **moot**, betrifft nur §5. *(Slot — wird mit Cluster 3 gefüllt.)*
+- **B3** — Rot bei **kumulativ** negativer Sparrate im Popup. *(Slot — wird mit Cluster 3 gefüllt; M10-monatlich ist bereits entschieden: negativer Monat = Ausgaben-Rot.)*
 
 ---
 
@@ -1184,15 +1180,17 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Illustrativ-Hinweis Split-Vorschau | `(nur illustrativ)` |
 | Confirm-Button | `Übernehmen` |
 
-### 12.8 Sparraten-Treppe
+### 12.8 Jahres-Welle + Popup
 
 | Kontext | Text |
 |---|---|
-| Legende — Teal-Treppe | `Tatsächlich kumuliert` |
-| Legende — Grau-Treppe | `Geplant kumuliert` |
-| Legende — Vorjahres-Referenz | `Vorjahr [Jahr]` |
-| Tooltip — IST-Wert | `IST kumuliert` |
-| Tooltip — Plan-Wert | `Plan kumuliert` |
+| Welle-Tooltip — Kopf | `[Monat] [Jahr] · IST` bzw. `· Forecast` |
+| Welle-Tooltip — Zeilen | `IST` / `Plan` (€-Werte) |
+| Welle-Tooltip — Treiber | `Treiber: [Top-1]` (B2-Heuristik offen) |
+| Popup — Titel | `Kumulierte Sparrate [Jahr]` |
+| Popup — Held | Jahressumme (€) |
+| Popup — Unterzeile | `IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber` |
+| Popup — Monatsklick | drei Positionen (Top-3-Treiber, B2-Heuristik offen) |
 
 ---
 
@@ -1200,7 +1198,7 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 
 | Limitation | Workaround V1 | V2-Plan |
 |---|---|---|
-| Keine Periodenabgrenzung (Vorauszahlungen) | Betrag anpassen auf 0 €, nur diesen Monat | `transactionMonth` vs. `allocationMonth` über `card_fragment_links.month` |
+| Keine Periodenabgrenzung (Vorauszahlungen) | Betrag anpassen auf 0 €, nur diesen Monat | **Nicht verfolgt (v2-01):** Zuordnungs-Monat = Transaktions-Monat ist Regel; keine `transactionMonth`/`allocationMonth`-Divergenz |
 | Keine rückwirkende Gehaltskorrektur mit Fairness-Delta | Nutzer muss korrekten Startmonat wählen | Rückwirkende Korrektur mit Ausgleichsworkflow |
 | Kein PDF/Excel-Import | CSV only | PDF-Parser, Excel-Import |
 | Kein Clustering von Fragmenten | Manuelle Zuordnung | Automatisches Clustering |
@@ -1224,7 +1222,7 @@ Komponente für Komponente — nicht monolithisch. Nach jeder Komponente Review 
 6. **Sparrate-Berechnungslogik (Frontend-Integration)** — Verifikation aller Zustandskonflikte gegen `calculate_sparrate_for_month()`.
 7. **CSV-Import / Distiller** — Upload, Hash-Bildung, Konfidenz-Berechnung, Auto-Absorption, Fragment-Generierung.
 8. **Soft-Delete-Pattern** — Toast-UI, `schedule_deletion()` und `restore_deletion()` RPCs, Cleanup-Edge-Function.
-9. **Sparraten-Treppe** — Berechnung über RPC-Schleife, Tooltip, Vorjahres-Logik, Ereignis-Annotation.
+9. **Jahres-Welle + Popup** — monatliche EUR-Welle hinter dem Ring (Teal/Grau/Rot, Scrub durch den Ring), Klick → Popup mit kumulierter Treppe (IST+Plan), Jahressumme, Vorjahres-Linie (B6), Top-1/Top-3-Treiber. Ersetzt das V1-Treppen-Layout.
 
 **Kritischer Pfad:** Schritt 1 (Onboarding + Income) ist Voraussetzung für alles. Schritt 6 (Sparrate-Verifikation) ist die Grundlage für die finalen Komponenten.
 
