@@ -109,4 +109,20 @@ Claude Code hat keinen Browser — programmatisch verifiziert sind Build, Datenp
 
 ---
 
-*Sprint v2-02 Review · Antigravity Finance 2.0 · 4. Juli 2026*
+## K1 — Korrektur nach User-Smoke (4. Juli 2026)
+
+**Symptome (3 User-Screenshots):** Welle riesig statt hinter dem Ring, überlagert die Karten, nur Jan–Jun sichtbar, Seite scrollt horizontal + vertikal.
+
+**Root Cause 1 (Port-Bug):** `<canvas>` ist ein **Replaced Element** — bei `position:absolute` stretcht `inset:0` nicht auf die Containergröße; `width/height:auto` = intrinsische **Bitmap**-Größe. Da die Bitmap auf `Feldgröße × devicePixelRatio` gesetzt wird, war das Canvas-Element auf Retina (dpr 2) **doppelt so groß wie das Feld**, ankerte oben links und lief nach rechts unten über die ganze Seite. Die Port-Vorlage setzt `cv.style.width/height` explizit im JS — genau diese Zeile war beim Port durch das (für Divs korrekte, für Canvas wirkungslose) `inset:0` ersetzt worden. **Fix:** `.canvas { width:100%; height:100% }`.
+
+**Root Cause 2 (Single Surface):** `main` war seit V1 `min-height:100dvh` — die Seite durfte höher werden als der Viewport. Auf User-Anweisung (Ein Screen ohne Scrollen, §1) jetzt viewport-gebunden: `main { height:100dvh; overflow-y:auto }` (Fallback nur für degenerierte Fenster), Gaps 24→14 / Padding gestrafft, Welle-Stage als flexibles Element (`flex:1 1 280px`, Floor 280px = Ring 248 + Luft) — die Welle adaptiert über den bestehenden ResizeObserver. Header + Welle/Ring + Interaktionszone teilen sich exakt einen Viewport. Hinweis: Im Development-Modus können die NODE_ENV-gated Dev-Panels die Seite über den Viewport drücken (dann greift der Fallback-Scroll); Production ist davon frei.
+
+**Verifikation (Claude Code, Headless Chrome 1437×807 @2x):** Repro-Datei mit beiden Varianten — die Bug-Variante reproduziert die User-Screenshots exakt (Beweis der Diagnose), die Fix-Variante zeigt die Welle im Feld hinter dem Ring, alle 12 Monats-Labels, kein Scroll. `tsc`/`lint`/`build` clean, Bundle unverändert 27.5 kB.
+
+**Commit:** `v2-02 K1: fix — Canvas auf Feldgröße begrenzt + Single-Viewport-Layout`.
+
+**Lesson für CLAUDE.md (Vorschlag):** Replaced Elements (`<canvas>`, `<img>`, `<video>`) in absoluten Overlay-/Hintergrund-Positionen brauchen IMMER explizite `width/height` (CSS oder `style=`) — `inset:0` allein genügt nur für normale Elemente. Verwandt mit LL-6 (Overlay-Clipping), aber eigener Mechanismus.
+
+---
+
+*Sprint v2-02 Review · Antigravity Finance 2.0 · 4. Juli 2026 (K1-Append)*
