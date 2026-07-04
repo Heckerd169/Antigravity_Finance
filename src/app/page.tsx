@@ -14,9 +14,6 @@ import {
   ymToDbDate,
 } from "@/lib/months";
 import { DashboardRingStage } from "@/components/dashboard-ring-stage";
-import { Treppe } from "@/components/treppe";
-import { loadTreppeData } from "@/components/treppe/loader";
-import type { TreppeData } from "@/components/treppe/treppe.types";
 import { WelleStage } from "@/components/welle";
 import { loadWelleData } from "@/components/welle/loader";
 import type { WelleData } from "@/components/welle/welle.types";
@@ -99,27 +96,11 @@ export default async function Home({ searchParams }: HomeProps) {
   const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
   const targetActiveMonth = { year: tmYear, month: tmMonth };
 
-  // ── Sparraten-Treppe (Phase 1) — 12 Monate × (Ist + Plan) + Vorjahres-Endwert.
-  // Sparrate-RPCs sind snapshot-integer (kein deleted_at-Filter, Briefing A2).
-  // netMonthly = Haushalts-Netto (ICH + PARTNER) als „% monatlich"-Nenner im Tooltip.
-  const householdNet =
-    ichLatest === null && partnerLatest === null
-      ? null
-      : (ichLatest?.netMonthly ?? 0) + (partnerLatest?.netMonthly ?? 0);
-
-  let treppeData: TreppeData | null = null;
-  try {
-    treppeData = await loadTreppeData(supabase, {
-      userId: user!.id,
-      activeYear: tmYear,
-      currentCalendarYear: activeMonth.year,
-      netMonthly: householdNet,
-    });
-  } catch (err) {
-    console.error("Treppe-Daten-Load fehlgeschlagen", err);
-  }
-
-  // ── Jahres-Welle (§9, v2-02) — Loop über bestehende RPCs (Briefing §3). ──
+  // ── Jahres-Welle (§9, v2-02) — Loop über bestehende RPCs (Briefing §3).
+  // Ersetzt seit v2-02 P5 das V1-Inline-Treppen-Layout: die kumulierte Sicht
+  // lebt ausschließlich im Welle-Popup (§9), die Rechenlogik (Aufsummierung
+  // der Monats-RPC-Werte) einmalig im Welle-Loader. Sparrate-RPCs bleiben
+  // snapshot-integer (kein deleted_at-Filter, Pre-Sprint-10-C.2). ──────────
   // D1: Regime-Grenze Teal→Grau = letzter realisierter Monat („jetzt"), fix
   // pro Kalenderjahr-Fenster und unabhängig vom Header-aktiven targetMonth:
   // Vergangenheitsjahr → ganz Teal (11), Zukunftsjahr → ganz Grau (-1), im
@@ -398,8 +379,6 @@ export default async function Home({ searchParams }: HomeProps) {
           />
         }
       />
-
-      {treppeData && <Treppe data={treppeData} />}
 
       <CardHideProvider>
         <InteractionZone
