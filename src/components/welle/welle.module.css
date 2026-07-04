@@ -2,6 +2,15 @@
   /* §9 Visual-Spec: Wellen-Deckkraft — Token-Quelle für draw.ts (readWaveOpacity). */
   --wave-opacity: 0.80;
 
+  /* Komponent-lokale Farb-Vars (Pattern Sprint-3-E2, analog header-timeline). */
+  --wave-guide: rgba(255, 255, 255, 0.22);
+  --wave-tt-bg: #1c1c1e;
+  --wave-tt-border: rgba(255, 255, 255, 0.1);
+  --wave-tt-muted: rgba(255, 255, 255, 0.28);
+  --wave-tt-faint: rgba(255, 255, 255, 0.18);
+  --wave-tt-driver-tag: rgba(255, 170, 90, 0.7);
+  --wave-tt-divider: rgba(255, 255, 255, 0.07);
+
   position: relative;
   height: 392px;
 }
@@ -13,14 +22,17 @@
   z-index: 1;
 }
 
-/* Ring grafisch VOR der Welle (§9 Verdeckung). Die Interaktions-Transparenz
- * (§5 pointer-events: none) liegt auf dem Ring-Stage-Wrapper selbst. */
+/* Ring grafisch VOR der Welle, aber interaktions-transparent (§5 M3):
+ * pointer-events:none lässt das Scrubbing durch den Ring hindurch —
+ * die Jahresmitte hinter dem Ring bleibt voll erreichbar (§9 Verdeckung).
+ * Das Dev-Force-Panel re-aktiviert pointer-events lokal (dev-only). */
 .ringSlot {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 2;
+  pointer-events: none;
 }
 
 /* Port aus welle_v1.html (.ring-glass): radialer Abdunkler + leichter Blur
@@ -61,4 +73,95 @@
 .splitRight {
   left: calc(50% + 148px);
   transform: translateY(-50%);
+}
+
+/* ── Scrub-Overlay: Führungslinie + Tooltip ÜBER dem Ring (§9) ─────────── */
+
+.guide {
+  position: absolute;
+  top: 24px;
+  bottom: 34px;
+  width: 1px;
+  background: var(--wave-guide);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+  background: var(--wave-tt-bg);
+  border: 0.5px solid var(--wave-tt-border);
+  border-radius: 11px;
+  padding: 11px 14px;
+  min-width: 206px;
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.8);
+}
+
+.ttMonth {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--wave-tt-muted);
+  margin-bottom: 6px;
+}
+
+.ttValue {
+  font-size: 18px;
+  font-weight: 200;
+  letter-spacing: -0.6px;
+  font-variant-numeric: var(--typo-numeric-variant);
+  margin-bottom: 8px;
+}
+
+.ttRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 3px;
+  align-items: baseline;
+}
+
+.ttLabel {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wave-tt-faint);
+}
+
+.ttNum {
+  font-size: 12px;
+  font-weight: 300;
+  font-variant-numeric: var(--typo-numeric-variant);
+  color: var(--text-primary);
+}
+
+.ttDivider {
+  height: 0.5px;
+  background: var(--wave-tt-divider);
+  margin: 8px 0;
+}
+
+.ttDriver {
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.ttDriverTag {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wave-tt-driver-tag);
+  margin-right: 5px;
+}
+
+.ttDriverPlaceholder {
+  color: var(--wave-tt-muted);
+  font-style: italic;
 }

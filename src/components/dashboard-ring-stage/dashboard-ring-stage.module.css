@@ -1,8 +1,11 @@
 .wrapper {
   /* v2-02: Der Wrapper lebt jetzt absolut zentriert in der Welle-Stage (§9).
    * position:relative + absolutes Dev-Panel halten die Ring-Zentrierung exakt —
-   * das Panel (dev-only) hängt unterhalb, ohne die Wrapper-Höhe zu verändern. */
+   * das Panel (dev-only) hängt unterhalb, ohne die Wrapper-Höhe zu verändern.
+   * §5 M3: Ring ist interaktions-transparent — das Welle-Scrubbing läuft
+   * durch ihn hindurch. */
   position: relative;
+  pointer-events: none;
 }
 
 .devPanel {
@@ -10,6 +13,8 @@
   top: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
+  /* Dev-Panel bleibt bedienbar trotz interaktions-transparentem Ring-Wrapper. */
+  pointer-events: auto;
   width: max-content;
   max-width: 90vw;
   display: flex;
