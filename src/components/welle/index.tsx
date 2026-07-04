@@ -4,30 +4,24 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   MONTHS_FULL,
   drawWave,
+  fmtSignedEuro,
   graS,
   redS,
   tealS,
   type WavePoint,
 } from "./draw";
 import { getTop1Driver } from "./drivers-stub";
+import { WellePopup } from "./popup";
 import type { WelleData, WelleStageProps } from "./welle.types";
 import styles from "./welle.module.css";
 
 const DEFAULT_WAVE_OPACITY = 0.8;
-const NBSP = " ";
-const MINUS = "−";
 
 /** Liest das Token --wave-opacity vom Feld (§9); Fallback nur Defense-in-Depth. */
 function readWaveOpacity(el: HTMLElement): number {
   const raw = getComputedStyle(el).getPropertyValue("--wave-opacity");
   const parsed = Number.parseFloat(raw);
   return Number.isFinite(parsed) ? parsed : DEFAULT_WAVE_OPACITY;
-}
-
-/** Vorzeichen-explizites EUR-Format ohne Dezimalen (analog Ring/Port-Vorlage). */
-function fmtSignedEuro(v: number): string {
-  const sign = v >= 0 ? "+" : MINUS;
-  return `${sign}${Math.abs(Math.round(v)).toLocaleString("de-DE")}${NBSP}€`;
 }
 
 /**
@@ -40,6 +34,10 @@ function fmtSignedEuro(v: number): string {
  * Feldbreite (nächster Monat zur Cursor-X-Position, nicht punkt-genau) — der
  * Ring ist pointer-events:none, damit auch die Jahresmitte hinter ihm voll
  * erreichbar ist. Führungslinie + Tooltip rendern ÜBER dem Ring.
+ *
+ * Klick auf die Welle öffnet das Popup mit der kumulierten Treppe (§9);
+ * interaktive Kind-Elemente (Income-Labels, Dev-Panel) sind über
+ * data-wave-block vom Popup-Trigger ausgenommen.
  */
 export function WelleStage({
   data,
@@ -54,6 +52,7 @@ export function WelleStage({
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [pts, setPts] = useState<WavePoint[]>([]);
   const [hovIdx, setHovIdx] = useState<number>(-1);
+  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
 
   useLayoutEffect(() => {
     const el = fieldRef.current;
@@ -65,10 +64,11 @@ export function WelleStage({
     return () => ro.disconnect();
   }, []);
 
-  // LL-5: Soft-Navigation un-mountet nicht — Hover-State beim Jahres-/
-  // Datenwechsel explizit zurücksetzen.
+  // LL-5: Soft-Navigation un-mountet nicht — Hover- und Popup-State beim
+  // Jahres-/Datenwechsel explizit zurücksetzen.
   useEffect(() => {
     setHovIdx(-1);
+    setIsPopupOpen(false);
   }, [data]);
 
   // Redraw bei Daten-/Monats-/Größen-Wechsel. Der aktive-Monat-Kreis wandert
@@ -97,9 +97,9 @@ export function WelleStage({
   }, [data, size, activeMonthIndex, realizedMonthIndex]);
 
   // Positions-basiertes Scrubbing: nächster Monatspunkt zur Cursor-X-Position.
-  // Events aus Kind-Elementen (Ring pointer-events:none ausgenommen — die
-  // durchfallenden Events treffen direkt Canvas/Feld) bubblen hierher, damit
-  // die volle Breite inkl. Income-Label-Zonen scrubbt.
+  // Events aus Kind-Elementen bubblen hierher, damit die volle Breite inkl.
+  // Income-Label-Zonen scrubbt; durch den Ring fallen sie dank
+  // pointer-events:none direkt auf Canvas/Feld durch.
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>): void {
     if (!data || pts.length === 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -116,40 +116,63 @@ export function WelleStage({
     if (best !== hovIdx) setHovIdx(best);
   }
 
+  // Klick auf die Welle → Popup (§9). Interaktive Kind-Elemente (Income-Labels
+  // inkl. deren Overlays, Dev-Panel) tragen data-wave-block und triggern nicht.
+  function handleClick(e: React.MouseEvent<HTMLDivElement>): void {
+    if (!data) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-wave-block]")) return;
+    setIsPopupOpen(true);
+  }
+
   const hovPoint = hovIdx >= 0 ? pts[hovIdx] : undefined;
 
   return (
-    <div
-      className={styles.field}
-      ref={fieldRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setHovIdx(-1)}
-    >
-      {data && <canvas ref={canvasRef} className={styles.canvas} />}
+    <>
+      <div
+        className={`${styles.field} ${data ? styles.fieldInteractive : ""}`}
+        ref={fieldRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHovIdx(-1)}
+        onClick={handleClick}
+      >
+        {data && <canvas ref={canvasRef} className={styles.canvas} />}
 
-      <div className={`${styles.split} ${styles.splitLeft}`}>{leftSlot}</div>
+        <div className={`${styles.split} ${styles.splitLeft}`} data-wave-block>
+          {leftSlot}
+        </div>
 
-      {/* Glass-Backdrop hinter der Ring-Mitte (Port aus welle_v1.html .ring-glass):
-          hält die Ring-Zahl über der Welle lesbar. */}
-      <div className={styles.ringGlass} aria-hidden="true" />
-      <div className={styles.ringSlot}>{ringSlot}</div>
+        {/* Glass-Backdrop hinter der Ring-Mitte (Port aus welle_v1.html .ring-glass):
+            hält die Ring-Zahl über der Welle lesbar. */}
+        <div className={styles.ringGlass} aria-hidden="true" />
+        <div className={styles.ringSlot} data-wave-block>
+          {ringSlot}
+        </div>
 
-      <div className={`${styles.split} ${styles.splitRight}`}>{rightSlot}</div>
+        <div className={`${styles.split} ${styles.splitRight}`} data-wave-block>
+          {rightSlot}
+        </div>
 
-      {/* Führungslinie + Tooltip ÜBER dem Ring (§9 Verdeckung) */}
-      {data && hovPoint && (
-        <>
-          <div className={styles.guide} style={{ left: hovPoint.x }} />
-          <WelleTooltip
-            data={data}
-            idx={hovIdx}
-            point={hovPoint}
-            fieldWidth={size.w}
-            realizedMonthIndex={realizedMonthIndex}
-          />
-        </>
+        {/* Führungslinie + Tooltip ÜBER dem Ring (§9 Verdeckung) */}
+        {data && hovPoint && (
+          <>
+            <div className={styles.guide} style={{ left: hovPoint.x }} />
+            <WelleTooltip
+              data={data}
+              idx={hovIdx}
+              point={hovPoint}
+              fieldWidth={size.w}
+              realizedMonthIndex={realizedMonthIndex}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Popup als Sibling — Klicks im Popup bubblen nicht in den Feld-Handler. */}
+      {data && isPopupOpen && (
+        <WellePopup data={data} onClose={() => setIsPopupOpen(false)} />
       )}
-    </div>
+    </>
   );
 }
 
@@ -203,6 +226,7 @@ function WelleTooltip({ data, idx, point, fieldWidth, realizedMonthIndex }: Tool
           {driver.label}
         </span>
       </div>
+      <div className={styles.ttHint}>Klick öffnet die kumulierte Treppe</div>
     </div>
   );
 }

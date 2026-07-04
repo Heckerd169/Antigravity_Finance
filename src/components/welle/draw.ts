@@ -30,9 +30,22 @@ const TEAL = "62,207,175"; // --color-teal
 const RED = "255,69,58"; // --color-red (negativer Monat, §9 M10)
 const GRAY = "255,255,255"; // Forecast-Grau (Ghost-Analogie, §9)
 
+const GOLD = "255,200,60"; // --color-gold-Basis (Vorjahr, B6)
+
 export const tealS = (a: number): string => `rgba(${TEAL},${a})`;
 export const redS = (a: number): string => `rgba(${RED},${a})`;
 export const graS = (a: number): string => `rgba(${GRAY},${a})`;
+export const goldS = (a: number): string => `rgba(${GOLD},${a})`;
+
+const NBSP = " ";
+const MINUS = "−";
+
+/** Vorzeichen-explizites EUR-Format ohne Dezimalen (analog Ring/Port-Vorlage).
+ *  Lebt in draw.ts, weil auch Canvas-Text (B6-Gutter-Betrag) es braucht. */
+export function fmtSignedEuro(v: number): string {
+  const sign = v >= 0 ? "+" : MINUS;
+  return `${sign}${Math.abs(Math.round(v)).toLocaleString("de-DE")}${NBSP}€`;
+}
 
 export type WaveParams = {
   /** CSS-Pixel-Breite/-Höhe des Felds (DPR-Transform macht der Aufrufer). */
@@ -201,6 +214,131 @@ export function drawWave(
     ctx.fillStyle = i === activeIndex ? graS(0.5) : graS(0.18);
     ctx.textAlign = "center";
     ctx.fillText(MONTHS_SHORT[i], xOf(i), h - 6);
+  }
+
+  return pts;
+}
+
+/* ── Popup: kumulierte Treppe (§9, Port aus welle_v1.html drawPop) ────────── */
+
+export type PopupStairParams = {
+  /** CSS-Pixel-Maße der Plotfläche (DPR-Transform macht der Aufrufer). */
+  width: number;
+  height: number;
+  /** Kumulierte IST-Werte Jan→Dez (Teal-Treppe). */
+  istCum: number[];
+  /** Kumulierte Plan-Werte Jan→Dez (Grau-Treppe). */
+  planCum: number[];
+  /** B6: kumulierter Vorjahres-Jahresendwert; null → Linie entfällt komplett. */
+  prevYearEnd: number | null;
+  /** Ausgewählter Monat (Top-3-Treiber) oder -1. */
+  selectedIndex: number;
+};
+
+// Rechter Gutter (58px) reserviert den Platz für den B6-Betrag AUSSERHALB der
+// Plotfläche (§9: „Betrag steht im rechten Gutter").
+const POP_PAD_L = 8;
+const POP_PAD_R = 58;
+const POP_PAD_T = 14;
+const POP_PAD_B = 22;
+
+/**
+ * Zeichnet die kumulierte IST/Plan-Treppe des Popups und liefert die
+ * IST-Punktkoordinaten (CSS-Pixel) für den Monatsklick zurück.
+ */
+export function drawPopupStair(
+  ctx: CanvasRenderingContext2D,
+  params: PopupStairParams,
+): WavePoint[] {
+  const { width: w, height: h, istCum, planCum, prevYearEnd, selectedIndex } = params;
+  ctx.clearRect(0, 0, w, h);
+
+  const cW = w - POP_PAD_L - POP_PAD_R;
+  const cH = h - POP_PAD_T - POP_PAD_B;
+  const stepX = cW / 11;
+  const all = [...istCum, ...planCum, 0];
+  if (prevYearEnd !== null) all.push(prevYearEnd);
+  const mn = Math.min(...all);
+  const mx = Math.max(...all);
+  const rng = mx - mn || 1;
+  const xOf = (i: number): number => POP_PAD_L + i * stepX;
+  const yOf = (v: number): number => POP_PAD_T + cH - ((v - mn) / rng) * cH;
+
+  const pts: WavePoint[] = istCum.map((val, i) => ({ x: xOf(i), y: yOf(val), val }));
+
+  // Nulllinie
+  ctx.beginPath();
+  ctx.moveTo(POP_PAD_L, yOf(0));
+  ctx.lineTo(POP_PAD_L + cW, yOf(0));
+  ctx.strokeStyle = graS(0.07);
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // Stufen-Treppe: Wert wird bis zum Folgemonat gehalten, dann vertikaler Sprung.
+  const stair = (cum: number[], fillTop: string, fillBottom: string, stroke: string): void => {
+    ctx.beginPath();
+    ctx.moveTo(xOf(0), yOf(0));
+    ctx.lineTo(xOf(0), yOf(cum[0]));
+    for (let i = 1; i < 12; i++) {
+      ctx.lineTo(xOf(i), yOf(cum[i - 1]));
+      ctx.lineTo(xOf(i), yOf(cum[i]));
+    }
+    ctx.lineTo(xOf(11), yOf(0));
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, POP_PAD_T, 0, POP_PAD_T + cH);
+    g.addColorStop(0, fillTop);
+    g.addColorStop(1, fillBottom);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(xOf(0), yOf(cum[0]));
+    for (let i = 1; i < 12; i++) {
+      ctx.lineTo(xOf(i), yOf(cum[i - 1]));
+      ctx.lineTo(xOf(i), yOf(cum[i]));
+    }
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+  };
+
+  // Plan (grau, kumuliert) hinter IST (teal, kumuliert)
+  stair(planCum, graS(0.09), graS(0.01), graS(0.45));
+  stair(istCum, tealS(0.28), tealS(0.02), tealS(0.85));
+
+  // B6: Vorjahres-Linie gold-gestrichelt [5,4]; Betrag rechts NEBEN der Linie im
+  // Gutter, außerhalb der Plotfläche. Datenloses Vorjahr → entfällt komplett.
+  if (prevYearEnd !== null) {
+    const yp = yOf(prevYearEnd);
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(POP_PAD_L, yp);
+    ctx.lineTo(POP_PAD_L + cW, yp);
+    ctx.strokeStyle = goldS(0.55);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    const ly = Math.max(POP_PAD_T + 6, Math.min(POP_PAD_T + cH - 6, yp));
+    ctx.font = "600 9px system-ui";
+    ctx.fillStyle = goldS(0.85);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(fmtSignedEuro(prevYearEnd), POP_PAD_L + cW + 8, ly);
+    ctx.textBaseline = "alphabetic";
+  }
+
+  // IST-Punkte + Monats-Labels; ausgewählter Monat hervorgehoben
+  for (let i = 0; i < 12; i++) {
+    const sel = i === selectedIndex;
+    ctx.beginPath();
+    ctx.arc(xOf(i), yOf(istCum[i]), sel ? 5 : 2.4, 0, Math.PI * 2);
+    ctx.fillStyle = tealS(sel ? 1 : 0.7);
+    ctx.fill();
+    ctx.font = "500 8px system-ui";
+    ctx.fillStyle = graS(0.18);
+    ctx.textAlign = "center";
+    ctx.fillText(MONTHS_SHORT[i], xOf(i), h - 5);
   }
 
   return pts;

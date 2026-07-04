@@ -165,3 +165,121 @@
   color: var(--wave-tt-muted);
   font-style: italic;
 }
+
+.ttHint {
+  font-size: 9px;
+  color: var(--wave-tt-faint);
+  margin-top: 7px;
+  font-style: italic;
+}
+
+/* Klick auf die Welle öffnet das Popup — Zeige-Cursor nur mit Daten. */
+.fieldInteractive {
+  cursor: pointer;
+}
+
+/* ── Popup: kumulierte Treppe (§9) — Overlay-Pattern analog Sprint-4/5 ──── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.66);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.popup {
+  width: 100%;
+  max-width: 680px;
+  background: var(--bg-primary);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 24px 26px 20px;
+  position: relative;
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9);
+}
+
+.popupClose {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  background: none;
+  color: var(--wave-tt-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-stack-system);
+}
+
+.popupClose:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.popupKicker {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--wave-tt-muted);
+}
+
+.popupHero {
+  font-size: 38px;
+  font-weight: 200;
+  letter-spacing: -1.6px;
+  font-variant-numeric: var(--typo-numeric-variant);
+  margin-top: 4px;
+  color: var(--color-teal);
+}
+
+.popupSub {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--wave-tt-muted);
+  margin-top: 2px;
+}
+
+.popupChart {
+  margin-top: 14px;
+}
+
+.popupCanvas {
+  display: block;
+  width: 100%;
+  height: 200px;
+  cursor: pointer;
+}
+
+.popupDrivers {
+  margin-top: 10px;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid var(--border-subtle);
+  border-radius: 9px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.popupDrivers strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.popupDriverPlaceholder {
+  color: var(--wave-tt-muted);
+  font-style: italic;
+}
