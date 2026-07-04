@@ -17,6 +17,9 @@ import { DashboardRingStage } from "@/components/dashboard-ring-stage";
 import { Treppe } from "@/components/treppe";
 import { loadTreppeData } from "@/components/treppe/loader";
 import type { TreppeData } from "@/components/treppe/treppe.types";
+import { WelleStage } from "@/components/welle";
+import { loadWelleData } from "@/components/welle/loader";
+import type { WelleData } from "@/components/welle/welle.types";
 import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
 import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
@@ -114,6 +117,27 @@ export default async function Home({ searchParams }: HomeProps) {
     });
   } catch (err) {
     console.error("Treppe-Daten-Load fehlgeschlagen", err);
+  }
+
+  // ── Jahres-Welle (§9, v2-02) — Loop über bestehende RPCs (Briefing §3). ──
+  // D1: Regime-Grenze Teal→Grau = letzter realisierter Monat („jetzt"), fix
+  // pro Kalenderjahr-Fenster und unabhängig vom Header-aktiven targetMonth:
+  // Vergangenheitsjahr → ganz Teal (11), Zukunftsjahr → ganz Grau (-1), im
+  // laufenden Jahr → Index des aktuellen Kalendermonats (Port-Vorlage REALIZED).
+  const [curYear, curMonthNum] = currentMonth.split("-").map(Number);
+  const realizedMonthIndex =
+    tmYear < curYear ? 11 : tmYear > curYear ? -1 : curMonthNum - 1;
+  const activeMonthIndex = tmMonth - 1;
+
+  let welleData: WelleData | null = null;
+  try {
+    welleData = await loadWelleData(supabase, {
+      userId: user!.id,
+      activeYear: tmYear,
+      currentCalendarYear: activeMonth.year,
+    });
+  } catch (err) {
+    console.error("Welle-Daten-Load fehlgeschlagen", err);
   }
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
@@ -342,29 +366,38 @@ export default async function Home({ searchParams }: HomeProps) {
         unassignedPreviousMonthCount={unassignedPreviousMonthCount}
       />
 
-      <div className={styles.ringRow}>
-        <IncomeLabel
-          person="ICH"
-          splitPercent={ichPercent}
-          initialGrossAnnual={ichLatest?.grossAnnual}
-          initialNetMonthly={ichLatest?.netMonthly}
-          counterpartGrossAnnual={partnerLatest?.grossAnnual}
-          activeMonth={targetActiveMonth}
-          taxClass={taxClass}
-          taxYear={taxYear}
-        />
-        <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
-        <IncomeLabel
-          person="PARTNER"
-          splitPercent={partnerPercent}
-          initialGrossAnnual={partnerLatest?.grossAnnual}
-          initialNetMonthly={partnerLatest?.netMonthly}
-          counterpartGrossAnnual={ichLatest?.grossAnnual}
-          activeMonth={targetActiveMonth}
-          taxClass={taxClass}
-          taxYear={taxYear}
-        />
-      </div>
+      <WelleStage
+        data={welleData}
+        activeMonthIndex={activeMonthIndex}
+        realizedMonthIndex={realizedMonthIndex}
+        leftSlot={
+          <IncomeLabel
+            person="ICH"
+            splitPercent={ichPercent}
+            initialGrossAnnual={ichLatest?.grossAnnual}
+            initialNetMonthly={ichLatest?.netMonthly}
+            counterpartGrossAnnual={partnerLatest?.grossAnnual}
+            activeMonth={targetActiveMonth}
+            taxClass={taxClass}
+            taxYear={taxYear}
+          />
+        }
+        ringSlot={
+          <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
+        }
+        rightSlot={
+          <IncomeLabel
+            person="PARTNER"
+            splitPercent={partnerPercent}
+            initialGrossAnnual={partnerLatest?.grossAnnual}
+            initialNetMonthly={partnerLatest?.netMonthly}
+            counterpartGrossAnnual={ichLatest?.grossAnnual}
+            activeMonth={targetActiveMonth}
+            taxClass={taxClass}
+            taxYear={taxYear}
+          />
+        }
+      />
 
       {treppeData && <Treppe data={treppeData} />}
 

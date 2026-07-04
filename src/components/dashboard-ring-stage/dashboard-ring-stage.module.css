@@ -1,11 +1,17 @@
 .wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
+  /* v2-02: Der Wrapper lebt jetzt absolut zentriert in der Welle-Stage (§9).
+   * position:relative + absolutes Dev-Panel halten die Ring-Zentrierung exakt —
+   * das Panel (dev-only) hängt unterhalb, ohne die Wrapper-Höhe zu verändern. */
+  position: relative;
 }
 
 .devPanel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 90vw;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -16,6 +22,7 @@
   background: rgba(255, 200, 60, 0.04);
   flex-wrap: wrap;
   justify-content: center;
+  z-index: 8;
 }
 
 .devLabel {

@@ -1,0 +1,64 @@
+.field {
+  /* §9 Visual-Spec: Wellen-Deckkraft — Token-Quelle für draw.ts (readWaveOpacity). */
+  --wave-opacity: 0.80;
+
+  position: relative;
+  height: 392px;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  z-index: 1;
+}
+
+/* Ring grafisch VOR der Welle (§9 Verdeckung). Die Interaktions-Transparenz
+ * (§5 pointer-events: none) liegt auf dem Ring-Stage-Wrapper selbst. */
+.ringSlot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* Port aus welle_v1.html (.ring-glass): radialer Abdunkler + leichter Blur
+ * hinter der Ring-Mitte — Lesbarkeit der Zentrumszahl über der Welle. */
+.ringGlass {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 196px;
+  height: 196px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(15, 15, 18, 0.62) 0%,
+    rgba(13, 13, 15, 0.3) 70%,
+    transparent 100%
+  );
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Income-Labels flankieren den Ring (Abstand wie ehem. .ringRow: 24px Gap
+ * zur Ring-Kante, Ring-Breite 248px → Kante bei 50% ± 124px). */
+.split {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+}
+
+.splitLeft {
+  right: calc(50% + 148px);
+  transform: translateY(-50%);
+}
+
+.splitRight {
+  left: calc(50% + 148px);
+  transform: translateY(-50%);
+}

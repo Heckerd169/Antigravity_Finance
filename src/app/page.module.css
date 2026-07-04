@@ -39,14 +39,6 @@
   color: var(--text-primary);
 }
 
-.ringRow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-
 .devPanel {
   display: flex;
   align-items: center;
