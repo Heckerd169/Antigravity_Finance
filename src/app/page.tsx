@@ -347,38 +347,40 @@ export default async function Home({ searchParams }: HomeProps) {
         unassignedPreviousMonthCount={unassignedPreviousMonthCount}
       />
 
-      <WelleStage
-        data={welleData}
-        activeMonthIndex={activeMonthIndex}
-        realizedMonthIndex={realizedMonthIndex}
-        leftSlot={
-          <IncomeLabel
-            person="ICH"
-            splitPercent={ichPercent}
-            initialGrossAnnual={ichLatest?.grossAnnual}
-            initialNetMonthly={ichLatest?.netMonthly}
-            counterpartGrossAnnual={partnerLatest?.grossAnnual}
-            activeMonth={targetActiveMonth}
-            taxClass={taxClass}
-            taxYear={taxYear}
-          />
-        }
-        ringSlot={
-          <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
-        }
-        rightSlot={
-          <IncomeLabel
-            person="PARTNER"
-            splitPercent={partnerPercent}
-            initialGrossAnnual={partnerLatest?.grossAnnual}
-            initialNetMonthly={partnerLatest?.netMonthly}
-            counterpartGrossAnnual={ichLatest?.grossAnnual}
-            activeMonth={targetActiveMonth}
-            taxClass={taxClass}
-            taxYear={taxYear}
-          />
-        }
-      />
+      <div className={styles.stage}>
+        <WelleStage
+          data={welleData}
+          activeMonthIndex={activeMonthIndex}
+          realizedMonthIndex={realizedMonthIndex}
+          leftSlot={
+            <IncomeLabel
+              person="ICH"
+              splitPercent={ichPercent}
+              initialGrossAnnual={ichLatest?.grossAnnual}
+              initialNetMonthly={ichLatest?.netMonthly}
+              counterpartGrossAnnual={partnerLatest?.grossAnnual}
+              activeMonth={targetActiveMonth}
+              taxClass={taxClass}
+              taxYear={taxYear}
+            />
+          }
+          ringSlot={
+            <DashboardRingStage realCurrent={realCurrent} realPlanned={realPlanned} />
+          }
+          rightSlot={
+            <IncomeLabel
+              person="PARTNER"
+              splitPercent={partnerPercent}
+              initialGrossAnnual={partnerLatest?.grossAnnual}
+              initialNetMonthly={partnerLatest?.netMonthly}
+              counterpartGrossAnnual={ichLatest?.grossAnnual}
+              activeMonth={targetActiveMonth}
+              taxClass={taxClass}
+              taxYear={taxYear}
+            />
+          }
+        />
+      </div>
 
       <CardHideProvider>
         <InteractionZone

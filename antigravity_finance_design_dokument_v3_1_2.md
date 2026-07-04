@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.1 (V2 · v2-01)
+**Version:** 3.1.2 (V2 · Block 1 komplett)
 **Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
 **Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
@@ -10,6 +10,8 @@
 > **Changelog v3.1 (26.06.2026):** §9 „Sparraten-Treppe" → „Jahres-Welle + Popup (kumulierte Treppe)" — M3 ersetzt das V1-Treppen-Layout; §5 Ring interaktions-transparent; §6 Header-Subzeile mit reservierter Zeilenhöhe; neuer Token `--wave-opacity 0.80`; §12.8-Copy angepasst. Offen → Cluster 3: N4b (Ring-%-Subzeile), B3 (kumulativ-negativ-Rot im Popup).
 >
 > **Changelog v3.1.1 (26.06.2026, Sprint v2-01):** §8 Fragment-Stack Monats-Scope (N1); §7 Kartenname-Overflow (N3); §4.7/§13 Umkehr — Zuordnungs-Monat = Transaktions-Monat, Periodenabgrenzung (allocation≠transaction) nicht mehr verfolgt; manueller Cross-Monat-Drop entfällt.
+>
+> **Changelog v3.1.2 (04.07.2026, Block-1-Cluster-3):** §8 Rohmasse-Grundton vereinheitlicht (N5, Unterscheidung nur via Opacity/Badge); §5 %-Subzeile + Degenerations-Modus `Plan < 100 €` + neutraler Arc (N4b); §9-Popup kumulativ-negativ-Rot ab Null-Linie (B3). **Block 1 vollständig.**
 
 ---
 
@@ -221,6 +223,7 @@ Claude Code soll dieses Feld in V1 ignorieren.
 | `--border-teal` | `rgba(62,207,175,.22)` | Bezahlt-Border |
 | `--border-red` | `rgba(255,69,58,.18)` | Offen-Border |
 | `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
+| `--fragment-hue` | gemeinsamer Grau-Grundton | Rohmasse-Fragmente §8 (N5) — Unterscheidung nur via Opacity/Badge |
 
 ### Typographie
 
@@ -446,6 +449,20 @@ Herzstück des Dashboards. Zeigt die tatsächliche Sparrate im Zentrum. Der Arc 
 | Sparrate > 200% von Plan | Ring vollständig geschlossen. Zahl kommuniziert Rest. |
 | Sparrate < 0 € | Roter Arc wächst CW bis max. 12 Uhr. |
 | Sparrate = NULL (Onboarding offen) | Ring im Leer-Zustand, Zahl wird durch Onboarding-Hinweis ersetzt |
+
+### %-Subzeile + Degenerations-Modus (N4b)
+
+Die Subzeile unter der Ringzahl kommuniziert das Verhältnis zur geplanten Sparrate. Zwei Zustände plus Arc-Kopplung.
+
+**a) Normalfall — Cap an den Arc gekoppelt.** Ab **> 200 %** zeigt die Subzeile „**> 200 % von Plan**" statt einer exakten Zahl — konsistent zum bereits bei 200 % geschlossenen Arc.
+
+**b) Degenerations-Modus — Schwelle `Plan < 100 €` (inkl. jedem negativen Plan).** „% von Plan" wird bei einem Plan nahe/unter Null bedeutungslos bzw. irreführend (bei negativem Plan invertiert das Verhältnis). Die Prozent-Quote wird durch die **absolute EUR-Aussage** ersetzt — **Prozent wird hier nie gezeigt:**
+- **Plan fast 0 € (positiv):** Subzeile „Plan fast 0 € — +X € gespart" (EUR-Betrag als Held in der Ringmitte).
+- **Plan negativ (Sonderausgabe):** Held = IST in EUR (rot, wenn negativ); Subzeile = EUR-Differenz in „über/unter Plan"-Sprache. **Subzeilen-Farbe folgt dem Differenz-Vorzeichen**, nicht dem absoluten IST:
+  - Plan −500 €, IST −400 € → Held „−400 €" (rot) · „+100 € über Plan" (teal — besser als geplanter Deficit).
+  - Plan −500 €, IST −700 € → Held „−700 €" (rot) · „−200 € unter Plan" (rot — schlechter).
+
+**c) Neutraler Arc im Degenerations-Modus.** Da der Arc `IST/Plan` rechnet, wäre er bei winzigem/negativem Plan ebenso invertiert. Er **entkoppelt sich von der Quote → nur die Spur (Track), keine Füllung.** Der Ring wird zum Rahmen für die ehrliche EUR-Aussage, statt eine Quote vorzutäuschen.
 
 ### Datenbasis
 
@@ -750,6 +767,7 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
 - **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment hat **kein** Tap-/Drag-Verhalten (Cursor `default`, `pointer-events: none`). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
+- **Grundton-Vereinheitlichung (N5):** Alle Rohmasse-Fragmente teilen **einen gemeinsamen Grau-Grundton-Token** (zugeordnet *und* `INTERNAL_TRANSFER`). Die Unterscheidung läuft ausschließlich über **Opacity** (zugeordnet `0.22` / Transfer `0.45`) **+ das „TRANSFER"-Badge** (Grau-Soft). Kein separater Hue je Zustand — das behebt zwei leicht abweichende Grau-Töne nebeneinander. Der Yellow-Soft (KI-Vorschlag-Badge) bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag.
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
@@ -796,6 +814,8 @@ Klick auf die Welle öffnet ein **Single-Surface-Overlay**, dismissible per Klic
 
 **B6 — Vorjahres-Linie (nur Popup):** gold-gestrichelte Linie (`[5,4]`) auf dem **kumulierten Vorjahres-Jahresendwert** (Σ Jan–Dez X-1), auf derselben Skala wie die Treppe. Der **Betrag steht im rechten Gutter, außerhalb der Plotfläche**; die Legende „Vorjahr (gold)" in der Unterzeile. **Datenloses Vorjahr → Linie entfällt komplett** (keine 0-€-Linie; „nichts gespart" ≠ „keine Daten"). Ein Teiljahr mit einzelnen `NULL`-Monaten summiert normal (NULL = 0). Die **monatliche Welle führt keine** Vorjahres-Referenz — ein kumulierter Endwert ergibt nur auf kumulierter Fläche Sinn.
 
+**B3 — Kumulativ-negative Sparrate (Cluster 3):** Schwelle ist die **Null-Linie** (einzige Schwelle). Die kumulierte Kurve ist **≥ 0 teal**; ein **Abschnitt unter Null** wird **Ausgaben-Rot `#FF453A`** (Fläche + Linie, gleiche Behandlung wie monatlich auf der Welle); steigt sie wieder über Null, wieder teal — **abschnittsweise, nicht global**. Die **Held-Zahl (Jahressumme)** folgt der §5-Ring-Logik: **rot, wenn der Endwert negativ** ist, sonst teal — sie spiegelt das Jahresergebnis (Endwert), nicht den tiefsten Zwischenstand. Die **Vorjahres-Goldlinie bleibt unberührt** (Gold = Referenz, Rot = Ist-Zustand), auch wenn sie selbst im Negativbereich liegt.
+
 ### Berechnungslogik
 
 Die kumulierte Treppe ist die Summe der monatlichen Sparraten; jede monatliche Sparrate liefert `calculate_sparrate_for_month(user_id, M)` (siehe Section 4), das sich automatisch nach Zeitraum unterscheidet:
@@ -813,9 +833,9 @@ Die kumulierte Treppe ist die Summe der monatlichen Sparraten; jede monatliche S
 - Kein permanentes Abweichungs-Label; kein Hover-Punkt; kein Ereignis-Kreis auf der Welle
 - Kein Tooling im Produkt (das Dev-Panel des Prototyps `welle_v1.html` ist Werkzeug, kein Produkt — analog Slider-Ausschluss §5). Das aktive Jahr ergibt sich aus dem `month`-URL-Param
 
-### Offen — Cluster 3 (nicht in M3)
-- **N4b** — Degeneration der Ring-%-Subzeile bei winzigem Plan-Nenner: auf der EUR-Welle **moot**, betrifft nur §5. *(Slot — wird mit Cluster 3 gefüllt.)*
-- **B3** — Rot bei **kumulativ** negativer Sparrate im Popup. *(Slot — wird mit Cluster 3 gefüllt; M10-monatlich ist bereits entschieden: negativer Monat = Ausgaben-Rot.)*
+### Cluster 3 — aufgelöst (04.07.2026)
+- **N4b** → in §5 „%-Subzeile + Degenerations-Modus" spezifiziert (Cap > 200 %, EUR-Aussage bei `Plan < 100 €`, neutraler Arc).
+- **B3** → oben im Popup-Abschnitt spezifiziert (abschnittsweise Rot ab Null-Linie, Held folgt Endwert-Vorzeichen, Goldlinie unberührt).
 
 ---
 
