@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type {
   RingCenterColor,
   RingState,
+  RingSubtextColor,
   SingularityRingProps,
 } from "./singularity-ring.types";
 import styles from "./singularity-ring.module.css";
@@ -51,37 +52,64 @@ function formatEur(n: number): string {
   return `${sign}${abs}${NBSP}€`;
 }
 
+// N4b (§5 v3.1.2): Unterhalb dieser Plan-Schwelle (inkl. jedem negativen Plan)
+// ist „% von Plan" bedeutungslos/invertiert → Degenerations-Modus mit
+// EUR-Aussage; Prozent wird dort nie gezeigt.
+const DEGENERATE_PLAN_THRESHOLD = 100;
+// N4b-a (§5): Der Arc schließt bei 200 % — die Subzeile capt konsistent dazu.
+const SUBTEXT_CAP_PCT = 2;
+
 function computeRingState(current: number, plan: number): RingState {
-  if (plan === 0) {
+  const centerColor: RingCenterColor =
+    current < 0 ? "red" : current <= plan ? "white" : "teal";
+
+  // N4b-b/c: Degenerations-Modus bei Plan < 100 € (inkl. negativem Plan).
+  // Subzeilen-Farbe folgt dem DIFFERENZ-Vorzeichen (besser/schlechter als
+  // geplant), nicht dem absoluten IST. Arc entkoppelt: nur Spur, keine
+  // Füllung (N4b-c) — der Ring rahmt die ehrliche EUR-Aussage, statt eine
+  // Quote vorzutäuschen.
+  if (plan < DEGENERATE_PLAN_THRESHOLD) {
+    const diff = current - plan;
+    const subtextColor: RingSubtextColor = diff >= 0 ? "teal" : "red";
+    const subtext =
+      plan < 0
+        ? diff >= 0
+          ? `${formatEur(diff)} über Plan`
+          : `${formatEur(diff)} unter Plan`
+        : `Plan fast 0${NBSP}€ — ${formatEur(current)} gespart`;
     return {
       posOffset: C,
       negOffset: C,
-      centerColor: "white",
-      subtext: null,
-      subtextColor: "muted",
+      centerColor,
+      subtext,
+      subtextColor,
     };
   }
 
   const pct = current / plan;
 
-  const centerColor: RingCenterColor =
-    current < 0 ? "red" : current <= plan ? "white" : "teal";
-
   if (current >= 0) {
     const fill = Math.min(pct * HC, C - 0.5);
     const posOffset = C - fill;
     if (current > plan) {
+      // N4b-a: ab > 200 % keine exakte Zahl mehr — arc-gekoppeltes Cap.
+      if (pct > SUBTEXT_CAP_PCT) {
+        return {
+          posOffset,
+          negOffset: C,
+          centerColor,
+          subtext: `>${NBSP}200${NBSP}% von Plan`,
+          subtextColor: "teal",
+        };
+      }
       return {
         posOffset,
         negOffset: C,
         centerColor,
         // N4a (v2-01): Vorzeichen de-dupliziert. Das Prefix „+" ist die einzige
-        // Vorzeichen-Quelle; der Wert geht per Math.abs vorzeichenlos in formatPct.
-        // Vorher konnte bei negativem Plan-Nenner (plan < 0 ≤ current) der Term
-        // (pct-1)*100 negativ werden → formatPct hängte ein „−" an → „+−X %".
-        // Konsistent mit dem Defizit-Zweig unten (MINUS + Math.abs). Reines
-        // Anzeige-Fix, keine Berechnungs-Änderung. (Cap-Strategie bei winzigem/
-        // negativem Nenner = N4b, Cluster 3 — hier bewusst NICHT entschieden.)
+        // Vorzeichen-Quelle; der Wert geht per Math.abs vorzeichenlos in
+        // formatPct. Negative Plan-Nenner erreichen diesen Zweig seit N4b
+        // (v2-03) nicht mehr — Math.abs bleibt als Defense-in-Depth.
         subtext: `+${formatPct(Math.abs((pct - 1) * 100))}${NBSP}% über Plan`,
         subtextColor: "teal",
       };
