@@ -24,19 +24,25 @@
   --frag-amount-pos: #3ECFAF;
   --frag-amount-neg: #FF453A;
   --frag-bg: #141416;
-  --frag-border: rgba(255, 255, 255, .07);
-  --frag-desc: rgba(255, 255, 255, .28);
-  --frag-date: rgba(255, 255, 255, .15);
+  /* v2-03 N5: alle Grau-Werte der Fragmente basieren auf dem gemeinsamen
+   * Grundton-Token --fragment-hue (tokens.css) — ein Hue, Abstufung nur
+   * über Alpha/Opacity. */
+  --frag-border: rgba(var(--fragment-hue), .07);
+  --frag-desc: rgba(var(--fragment-hue), .28);
+  --frag-date: rgba(var(--fragment-hue), .15);
   /* KI-Vorschlag-Badge — generische Akzent-Farbe (OQ1, Sprint 8). Karten-
-   * spezifische Farben sind V2-Vormerkung. Yellow-Soft wie Prototyp .essen. */
+   * spezifische Farben sind V2-Vormerkung. Yellow-Soft wie Prototyp .essen.
+   * Bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag. */
   --frag-badge-bg: rgba(255, 200, 60, .08);
   --frag-badge-color: rgba(255, 200, 60, .5);
   --frag-badge-border: rgba(255, 200, 60, .15);
-  /* TRANSFER-Badge (Sprint 9 §6.1) — neutrales Grau-Soft, bewusst NICHT das
-   * Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar. */
-  --frag-transfer-badge-bg: rgba(140, 140, 140, .08);
-  --frag-transfer-badge-color: rgba(140, 140, 140, .5);
-  --frag-transfer-badge-border: rgba(140, 140, 140, .15);
+  /* TRANSFER-Badge (Sprint 9 §6.1) — Grau-Soft, bewusst NICHT das Yellow-Soft
+   * des KI-Vorschlag-Badges. v2-03 N5: Grundton auf --fragment-hue vereinheit-
+   * licht (vorher eigener 140,140,140-Hue → zwei leicht abweichende Grau-Töne
+   * nebeneinander); Alphas unverändert, Semantik bleibt (Anti-Drift A4). */
+  --frag-transfer-badge-bg: rgba(var(--fragment-hue), .08);
+  --frag-transfer-badge-color: rgba(var(--fragment-hue), .5);
+  --frag-transfer-badge-border: rgba(var(--fragment-hue), .15);
   /* Backfill-Report-Toast (Sprint 9 §6.2) */
   --toast-bg: #141416;
   --toast-border: rgba(255, 255, 255, .08);

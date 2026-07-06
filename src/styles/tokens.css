@@ -30,6 +30,12 @@
    * und Status-Farben deutlich abgesetzt). */
   --outline-drop: rgba(255, 255, 255, 0.35);
 
+  /* v2-03 N5 (§3/§8): Gemeinsamer Grau-Grundton ALLER Rohmasse-Fragmente
+   * (zugeordnet + INTERNAL_TRANSFER) als RGB-Triplet für rgba(var(...), a)-
+   * Komposition. Zustands-Unterscheidung läuft ausschließlich über Opacity
+   * (0.22/0.45) + TRANSFER-Badge — kein separater Hue je Zustand. */
+  --fragment-hue: 255, 255, 255;
+
   /* ── Typografie (§3 Tabelle „Typographie") ────────────────────── */
   /* System-Font-Stack — bewusste Designentscheidung (PM, Sprint 0) */
   --font-stack-system: system-ui, -apple-system, "Helvetica Neue", sans-serif;
