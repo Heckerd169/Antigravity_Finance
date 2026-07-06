@@ -2,91 +2,100 @@
 
 > **Vom:** PM-Chat V2 (Opus 4.7)
 > **Quelle:** Design-Direktor-Chat
-> **Datum:** 13. Juni 2026
-> **Status:** **Cluster 1 ABGESCHLOSSEN + vom User bestätigt.** Ersetzt die Zwischenfassung vom 04.06. (dort war „Verbergen behalten" — jetzt **gestrichen**). Cluster 2 (M3 → B6/B1 → B2/B3/B4) + Cluster 3 (N4b/M10/N5) ausstehend.
-> **Zweck:** Autoritativer Record, aus dem PM die abhängigen Briefings + Architekten-Aufträge ableitet.
+> **Datum:** 26. Juni 2026
+> **Status:** **BLOCK 1 VOLLSTÄNDIG (Cluster 1–3), user-bestätigt.** Alle Cluster-3-Punkte entschieden; Design-Doku v3.1.2 eingespielt. Nächster Schritt: Block 2 im DD-Chat.
+> **Zweck:** Autoritativer Record, aus dem PM Briefings, Doku-§-Patches + Architekten-Aufträge ableitet.
 
 ---
 
-## 0. Kernmodell — drei Verben, keine vierte Geste
+## Cluster 1 — Karten-Lebenszyklus (final, 13.06.)
 
-| Verb | Konsequenz | Quelle |
+Drei Verben, keine vierte Geste. **„Verbergen" gestrichen.**
+
+| Verb | Konsequenz |
+|---|---|
+| **Löschen** | Karte weg aus *allen* Monaten — nur erlaubt ohne eingefrorenen Vergangenheits-Fußabdruck (Gate via **Link-Month**, aktueller Monat blockiert nicht). Fragmente immer **Soft-Detach**, nie Cascade. 5s-Undo, kein Modal |
+| **Beenden** („Letzte Zahlung in Monat X") | bleibt in der Vergangenheit, stoppt ab Folgemonat. Einzige Geste für Karten mit Historie |
+| **Anpassen** | Vergangenheit eingefroren, neuer Plan vorwärts |
+
+Gesperrtes Löschen → `⋯`-Eintrag sichtbar-aber-deaktiviert + Ein-Zeilen-Grund + aktive Alternative „Letzte Zahlung in Monat X". A2/A3/A4 entfallen. §2.1 bleibt heilig (Gate ersetzt den erwogenen Carve-out).
+
+→ Architekten-Stufe-1 (4 Punkte inkl. Verbergen-Streich-Migration) + Doku-Patch §2.4/§7/CLAUDE.md. Backlog-Hygiene: A2/A3/A4-`CARD_HIDE` obsolet. **(Details siehe vorige Fassung — unverändert.)**
+
+---
+
+## Cluster 2 — Welle / Treppe (M3) — final, 26.06.
+
+**Kernmodell:** monatliche **EUR-Welle hinter dem zentrierten Ring**; Klick → **Popup mit kumulierter Treppe** (IST+Plan+Vorjahr). **Ersetzt das V1-Treppen-Layout (§9).** Referenz: `welle_v1.html`.
+
+| Punkt | Festlegung |
+|---|---|
+| **M3a Position** | Ring bildschirm-zentriert, fix, **interaktions-transparent** (`pointer-events:none`). Volle Jan–Dez-Welle dahinter. **Nur ein Kreis: der aktive Monat.** Kein Hover-Punkt, kein Ereignis-Kreis |
+| **M3b Darstellung** | Eine Welle, Y = **monatliche Sparrate in EUR**. Teal = realisiert, Grau = Forecast (Ghost-Analogie), **Rot `#FF453A`** = negativer Monat. IST-vs-Plan im Hover-Tooltip, nicht als zweite Welle. **Opacity = 0.80 (Token)** |
+| **M3c Klick → Popup** | Single-Surface-Overlay, dismissible (Klick-außen/Escape), kein Tooling/Slider. Kumulierte Treppe IST(teal)+Plan(grau), **Jahressumme als Held**, Monatsklick → drei Treiber. Einzige Heimat der kumulierten Sicht |
+| **M3d Treiber** | Welle-Hover → Tooltip (Monat, IST €, Plan €, **Top-1**). Popup-Monatsklick → **Top-3** |
+| **B6 (nur Popup)** | **Gold-gestrichelte** Vorjahres-Linie auf kumuliertem Jahresendwert; Betrag im **rechten Gutter** außerhalb der Plotfläche; Legende in Popup-Unterzeile. **Datenloses Vorjahr → Linie entfällt** (keine 0-€-Linie). Monatliche Welle führt **keine** Vorjahres-Referenz |
+| **B1 Fenster** | **Kalenderjahr (Jan–Dez)** für Welle + Popup |
+| **Verdeckung** | Ring interaktions-transparent; Monatswahl = **positions-basiertes Scrubbing über volle Breite** (nicht punkt-genau); Guide + Tooltip rendern über dem Ring → Jahresmitte hinter dem Ring voll erreichbar |
+| **Header** | Ausreißer-Subzeile nur im betroffenen Monat; **Zeilenhöhe dauerhaft reserviert** → kein Layout-Sprung |
+| **M10 monatlich** | **mitentschieden:** negativer Monat = Ausgaben-Rot (Fläche + Linie). Nur noch **B3** (kumulativ-negativ) offen → Cluster 3 |
+
+---
+
+## Mockup-Verifikation (PM, 26.06.) — `welle_v1.html`
+
+**Konform** mit M3a–M3d, B6, B1, Verdeckung, Header, Tokens. Eine Präzisierung + zwei Cleanups:
+
+| # | Befund | Handlung |
 |---|---|---|
-| **Löschen** | Karte weg aus *allen* Monaten, als hätte es sie nie gegeben | M1 (neu) |
-| **Beenden** („Letzte Zahlung in Monat X") | Karte bleibt in der Vergangenheit, stoppt ab Folgemonat | §7 / §2.4 (bestehend) |
-| **Anpassen** („Betrag anpassen → dauerhaft ab Monat X") | Vergangenheit eingefroren, neuer Plan vorwärts | §7 / §2.2 (bestehend) |
-
-**„Verbergen" ist gestrichen.** Begründung: Eine verborgene, aber weiter mitzählende Karte macht die Sparrate aus den sichtbaren Karten nicht mehr rekonstruierbar — für einen Controller das Gegenteil von Kontrolle. Jeder Bedarf ist abgedeckt: Fehler → Löschen, Auslauf → Beenden, Änderung → Anpassen.
+| **D1 (Doku-§-relevant)** | Die Teal→Grau-Regime-Grenze folgt im Mockup dem **letzten realisierten Monat** (Konstante `REALIZED`), nicht dem Header-aktiven Monat. M3b-Prosa sagt „bis aktiver Monat". Das Mockup ist semantisch korrekt: realisiert = abgeschlossene Kalendermonate, **unabhängig von Navigation** — bei Navigation in einen Zukunftsmonat darf die Welle nicht umfärben | **DD um Ein-Zeilen-Bestätigung bitten**, dann Doku-§ auf „Grenze = letzter realisierter/abgeschlossener Monat" festschreiben (nicht „aktiver Monat") |
+| C1 | Kommentar (Datenzeile) sagt „danach Gold", Code nutzt Grau (`graS`) | Kommentar korrigieren beim Produktiv-Port |
+| C2 | `.hpt`-Hover-Punkt-Element wird nie eingeblendet (konsistent mit M3a „kein Hover-Punkt") | totes Markup beim Produktiv-Code entfernen |
 
 ---
 
-## 1. Festlegungen pro Frage
+## Sequenzierung Welle+Popup-Sprint (PM-Entscheidung)
 
-### M1 — Löschen
-| Aspekt | Festlegung |
+Die Treiber (M3d) hängen an **B2** (Heuristik = Backend). Das **Display** ist entschieden, die **Heuristik** nicht.
+→ **UI-first:** Welle+Popup-Sprint mit **Platzhalter-Treibern** (Stub, wie im Mockup), danach **B2 als separater Backend-Sprint**, der die echte Heuristik hinter das fertige Display setzt. Display und Heuristik bleiben entkoppelt.
+
+---
+
+## Doku-§-Patches aus Cluster 2 (LL-16 — PM wendet an, nach D1-Bestätigung)
+
+1. **§9 Treppe — retired.** „M3 ersetzt das V1-Treppen-Layout."
+2. **Neuer Abschnitt „Welle" (§5a/§13):** EUR-Monats-Sparrate, Teal→Grau→Rot, Opacity 0.80, ein aktiver-Monat-Kreis, Scrub durch den Ring, Hover-Tooltip (Monat, IST €, Plan €, Top-1). **Regime-Grenze = letzter realisierter Monat (D1).**
+3. **Popup-Spec:** kumulierte Treppe IST+Plan, Jahressumme als Held, B6 (gold-gestrichelt, rechter Gutter, Legende Unterzeile, datenlos → entfällt), B1 Kalenderjahr, Monatsklick → Top-3, dismissible, kein Tooling. *(Slots für N4b/B3 aus Cluster 3 markieren.)*
+4. **§5 Ring:** Ring interaktions-transparent ergänzen.
+5. **§6 Header:** Ausreißer-Subzeile, Zeilenhöhe permanent reserviert.
+6. **Tokens:** `Welle-Opacity 0.80`; Forecast = Ghost-Grau; negativ = `#FF453A`; Gold ausschließlich Vorjahr/Ereignis.
+
+---
+
+## Cluster 3 — Darstellung/Token (final, 04.07.) — Block 1 damit vollständig
+
+Drei reine UI/§-Punkte, kein Schema (Option A production-direct bleibt).
+
+| Punkt | Festlegung |
 |---|---|
-| **Lösch-Gate** | Löschbar ⟺ Karte hat **keine Fragmente aus früheren (abgeschlossenen) Monaten**. Maßgeblich ist das **Link-Month** (Periode), nicht `transaction_date` |
-| **Aktueller-Monats-Fragment** | Blockiert **NICHT** — eine frisch per Drop angelegte Karte bleibt im selben Monat löschbar |
-| **Fragment-Behandlung** | Immer **Soft-Detach**, nie Cascade. Fragment = Realität, wird nie zerstört. Aktuelles-Monats-Fragment wandert beim Löschen zurück in die Rohmasse |
-| **Wirkung** | Karte verschwindet aus allen Monaten; da nur Karten ohne abgeschlossenen Fußabdruck löschbar sind, wird **kein abgeschlossener Monat** berührt |
-| **Sicherheitsnetz** | 5s-Undo + 60s-Retention (§2.4), **kein** Bestätigungs-Modal |
-| **Geltung** | Alle Typen (Fixkosten / Einnahmen / Budget) |
+| **N5** (§8) | **Grundton angleichen, Semantik behalten.** Ein gemeinsamer Grau-Grundton-Token für alle Rohmasse-Fragmente (zugeordnet + Transfer); Unterscheidung nur über Opacity (0.22 / 0.45) + „TRANSFER"-Badge (Grau-Soft). Yellow-Soft bleibt für Transfer ausgeschlossen (AD5) |
+| **N4b** (§5) | **a)** Cap: ab > 200 % Subzeile „> 200 % von Plan" (arc-gekoppelt). **b)** Degenerations-Modus `Plan < 100 €` (inkl. negativ) → absolute EUR-Aussage statt %, Subzeilen-Farbe folgt dem **Differenz-Vorzeichen** (nicht dem absoluten IST). **c)** Neutraler Arc im Degenerations-Modus (nur Spur, keine Füllung). Scope gewachsen: Subzeile **+** Arc-Verhalten |
+| **B3** (§9-Popup) | Abschnittsweise Rot ab **Null-Linie** (< 0 → `#FF453A`, ≥ 0 → teal, nicht global). Held (Jahressumme) folgt **Endwert**-Vorzeichen. Vorjahres-Goldlinie unberührt |
 
-### M2 — Verbergen
-**Gestrichen.** Löschen + Beenden ersetzen es vollständig.
+**M10-monatlich** war bereits in Cluster 2 entschieden (negativer Monat = Rot).
 
-### Beenden (unverändert)
-Setzt `last_active_month`; Karte bleibt in Vergangenheitsmonaten sichtbar, erscheint ab Folgemonat nicht mehr. **Einzige** Geste für Karten mit abgeschlossenem Fußabdruck.
+### Doku-Folge (v3.1.2, angewendet)
+§8 N5-Grundton · §5 %-Subzeile + Degenerations-Modus + neutraler Arc · §9-Popup B3 · Token `--fragment-hue`. Separater LL-16-Patch: `dd_cluster3_doku_patches.md`.
 
-### Hinweis-UX bei gesperrtem Löschen
-Im `⋯`-Menü erscheint „Karte löschen" **sichtbar, aber deaktiviert**, mit Ein-Zeilen-Begründung — *„Hat Fragmente aus früheren Monaten — nur Beenden möglich"* — und daneben die aktive Alternative „Letzte Zahlung in Monat X". Non-modal, kein Dead-End.
-
-### A2 / A3 / A4
-**Alle entfallen** (keine verborgenen Karten mehr; kein `CARD_HIDE`-Enum). Trash-Mechanik (§2.4) gilt nur noch für Löschen + Beenden — exakt das §2.4-Design vor dem Sprint-10-Verbergen.
+### Was Cluster 3 entsperrt — UI-Sprints (kein Schema)
+| Sprint | Inhalt | Reihenfolge |
+|---|---|---|
+| **B3** | in Popup (§9) | fällt in **v2-02** — oder Fast-Follow, je nach v2-02-Stand |
+| **v2-03** | **N5** (§8) + **N4b** (§5) gebündelt | **nach v2-02** (N4b und v2-02 berühren beide §5/Ring → Branch-Konflikt vermeiden) |
 
 ---
 
-## 2. §2.1 Snapshot-Integrität
-Bleibt heilig, **ohne Ausnahme**. Löschen rührt per Gate keinen abgeschlossenen Monat an. Der früher erwogene §2.1-Carve-out **entfällt** durch das Gate.
+## Block 1 — abgeschlossen
+Cluster 1 (Karten-Lebenszyklus) · Cluster 2 (Welle/Popup, M3) · Cluster 3 (Darstellung/Token). Empfehlung DD: Block 2 im DD-Chat eröffnen.
 
----
-
-## 3. Architekten-Auftrag (Pre-Sprint-Stufe-1 des Lösch-/Beenden-Sprints)
-1. **Lösch-Gate-Erkennung (günstig):** existiert `card_fragment_link` / `card_monthly_states`-Row / Aktivität mit **Monat < aktueller Monat** (Link-Month maßgeblich)? Nein → löschbar
-2. **Snapshot-Vollständigkeit:** manueller Tap (`manually_paid`) bzw. Plan-/Modell-α-Wert in abgeschlossenem Monat **sperrt ebenfalls** (wie ein früheres Fragment) — für den User unsichtbar
-3. **Soft-Detach-Pfad:** beim Löschen Link lösen, Fragment zurück in Rohmasse, `suggested_card_id`/`confidence` zurücksetzen (analog Transfer-Invariante Sprint 9)
-4. **Migration Verbergen-Streichung:** Live-DB produktiv seit 25.05. — etwaige `deleted_at`-Karten wieder einblenden (verlustfrei, snapshot-integer), `deleted_at`-UI-Filter entfernen, `toggle_card_hidden` stilllegen
-
----
-
-## 4. Doku-Patches (LL-16 — PM wendet an)
-- **§2.4:** Verbergen/`deleted_at`-UI-Hide raus; Löschen-Gate + Soft-Detach + Hinweis-Redirect rein
-- **§7 (Kontextmenü):** „Verbergen" raus; „Karte löschen" als gegateter Eintrag mit Deaktiviert-Zustand + Ein-Zeilen-Begründung; Eligibilität von „nie genutzt" auf „kein Fragment aus früheren Monaten" erweitern
-- **CLAUDE.md:** §-Verweise + „Was Claude Code NIE macht" / Sprint-Protokoll nachziehen (Sprint-10-V4''-Hide als zurückgebaut markieren)
-
----
-
-## 5. Backlog-/Roadmap-Hygiene (PM-Folge)
-Durch die Verbergen-Streichung werden obsolet — beim nächsten Roadmap-/CLAUDE.md-Sync entfernen:
-- **Roadmap A2, A3** → obsolet
-- **Roadmap A4** (`CARD_HIDE`-Enum-Teil) → obsolet; M2 final aufgelöst
-- **Handover-Backlog A2/A3/A4** + **Sprint-10-V2-Vormerkungen** („Versteckte Karten verwalten", „Bestätigungs-Dialog vor Verbergen") → obsolet
-- Sprint-10-V4''-Soft-Delete-Hide wird im Lösch-Sprint **zurückgebaut** (bewusste Feature-Rücknahme, nicht Drift)
-
----
-
-## 6. Was Cluster 1 entsperrt (künftiger Lösch-/Beenden-Sprint, nach v2-01)
-| Schritt | Inhalt |
-|---|---|
-| Doku-Patch | §2.4 + §7 + CLAUDE.md (siehe §4), als separate Patch-Datei |
-| Architekten-Stufe-1 | die vier Punkte aus §3 (inkl. Verbergen-Streich-Migration) |
-| PM-Briefing | Lösch-/Beenden-Sprint inkl. Hinweis-UX + §7-Menü-Verfeinerung |
-
----
-
-## 7. Cluster 2 + 3 — ausstehend
-Cluster 2: M3 → B6 (nur Popup) / B1 → B2/B3/B4. Cluster 3 (N4b/M10/N5) erst nach M3-Ausgang. Wird hier ergänzt.
-
----
-
-*DD-Block-1 Entscheidungs-Record (final) · Antigravity Finance 2.0 · 13. Juni 2026*
+*DD-Block-1 Entscheidungs-Record · Antigravity Finance 2.0 · 26. Juni 2026*

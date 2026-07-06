@@ -60,6 +60,7 @@ export function HeaderTimeline({
   targetMonth,
   currentMonth,
   unassignedPreviousMonthCount,
+  outlierLabel,
 }: HeaderTimelineProps) {
   const prevYm = addMonths(targetMonth, -1);
   const nextYm = addMonths(targetMonth, 1);
@@ -98,6 +99,18 @@ export function HeaderTimeline({
         <span className={`${styles.pill} ${PILL_CLASS[variant]}`}>
           {PILL_LABEL[variant]}
         </span>
+        {/* v2-02 P4 (§6 M3): Zeilenhöhe permanent reserviert (min-height),
+            beim Monatswechsel schaltet ausschließlich die Sichtbarkeit
+            (opacity) → die Komposition Ring + Welle bleibt sprungfrei.
+            Ohne Datenquelle (Ausreißer-Definition Architekten-TBD, §6)
+            bleibt die Zeile leer/unsichtbar. */}
+        <div
+          className={styles.outlierSub}
+          data-visible={Boolean(outlierLabel)}
+          aria-hidden={!outlierLabel}
+        >
+          {outlierLabel ?? ""}
+        </div>
       </div>
 
       <Flank

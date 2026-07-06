@@ -129,6 +129,8 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
+**V2-Git-Workflow — Claude Code (stehende Regel ab v2-02, 26.06.2026):** Claude Code hält das Repo selbst aktuell: Branch von `main` anlegen, **ein Commit pro Phase** mit klarer Message, Branch **pushen** und aktuell zu `main` halten (pull/rebase bei Bedarf). **Grenze (menschlicher Prod-Gate):** Claude Code merged **nicht** nach `main`, deployt **nicht** auf Prod, macht **kein** Force-Push/History-Rewrite auf geteilten Branches und committet **keine** Secrets. Merge → `main` (= Vercel-Prod-Deploy) erfolgt durch den User **nach** dem Smoke — Zwei-Personen-Prinzip. Override nur auf ausdrückliche User-Anweisung.
+
 **Sprint 6 ist der harte Gate** für Sprints 2–5. Wenn der dort spezifizierte Test-Case
 nicht exakt `2.910,01 €` liefert, gehen die betroffenen Komponenten zurück in Korrektur.
 

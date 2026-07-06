@@ -3,7 +3,7 @@ import {
   calculateSparrateForMonth,
   type AppSupabaseClient,
 } from "@/lib/rpc";
-import type { TreppeData, TreppeMonthPoint } from "./treppe.types";
+import type { WelleData, WelleMonthPoint } from "./welle.types";
 
 /** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9). */
 function dbDate(year: number, monthIndex: number): string {
@@ -12,29 +12,29 @@ function dbDate(year: number, monthIndex: number): string {
 }
 
 /**
- * Lädt die 12 Monats-Sparraten (Ist + Plan) des aktiven Jahres und — sofern das
- * Vorjahr abgeschlossen ist — den kumulierten Jahresendwert des Vorjahres
- * (Σ Jan–Dez X-1) als gold-gestrichelte Referenzlinie (§9, kumulierte Lesart
- * vom PM bestätigt 24.05.2026).
+ * Lädt die Datengrundlage der Jahres-Welle + Popup-Treppe (§9) über den
+ * bestehenden RPC-Loop (Briefing v2-02 §3, Option A — KEIN neuer RPC/B5):
+ * 12× Ist + 12× Plan des aktiven Jahres, plus — sofern das Vorjahr abgeschlossen
+ * ist — den kumulierten Vorjahres-Jahresendwert (Σ Jan–Dez X-1) für die
+ * gold-gestrichelte B6-Linie im Popup.
  *
- * Vorjahres-Referenz-Regel (§9): Linie nur, wenn das Vorjahr vollständig in der
+ * Die kumulierten Treppen-Werte sind reine Aufsummierung der Monats-RPC-Ergebnisse
+ * (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim Summieren).
+ *
+ * Vorjahres-Referenz-Regel (§9 B6): Linie nur, wenn das Vorjahr vollständig in der
  * Vergangenheit liegt — also `activeYear <= currentCalendarYear`. Im Zukunftsjahr
  * (activeYear > currentCalendarYear) ist das Vorjahr (= laufendes Jahr) noch nicht
  * abgeschlossen → keine Linie.
- *
- * Sparrate-RPCs werden bewusst OHNE deleted_at-Filter aufgerufen (snapshot-integer
- * seit Pre-Sprint-10-C.2, CLAUDE.md §2.1 + Briefing A2).
  */
-export async function loadTreppeData(
+export async function loadWelleData(
   client: AppSupabaseClient,
   args: {
     userId: string;
     activeYear: number;
     currentCalendarYear: number;
-    netMonthly: number | null;
   },
-): Promise<TreppeData> {
-  const { userId, activeYear, currentCalendarYear, netMonthly } = args;
+): Promise<WelleData> {
+  const { userId, activeYear, currentCalendarYear } = args;
   const hasPrevYear = activeYear <= currentCalendarYear;
   const prevYear = activeYear - 1;
 
@@ -63,7 +63,7 @@ export async function loadTreppeData(
 
   let istCum = 0;
   let planCum = 0;
-  const points: TreppeMonthPoint[] = istMonthly.map((ist, i) => {
+  const points: WelleMonthPoint[] = istMonthly.map((ist, i) => {
     const plan = planMonthly[i];
     istCum += ist ?? 0;
     planCum += plan ?? 0;
@@ -76,11 +76,10 @@ export async function loadTreppeData(
     };
   });
 
-  // Vorjahres-Endwert nur, wenn das Vorjahr abgeschlossen ist UND überhaupt Daten
-  // hat. Liefern alle 12 RPCs null (kein Income/keine Basis — z. B. Test-User vor
-  // 2026), gibt es keine sinnvolle Referenz → keine Linie. Eine Gold-Linie bei 0 €
-  // wäre irreführend (suggeriert „nichts gespart" statt „keine Daten"). Ein echtes
-  // Teiljahr mit einzelnen null-Monaten summiert dagegen normal (null = 0).
+  // B6 (§9): Vorjahres-Endwert nur, wenn das Vorjahr abgeschlossen ist UND überhaupt
+  // Daten hat. Liefern alle 12 RPCs null → keine Referenz → keine Linie. Eine
+  // Gold-Linie bei 0 € wäre irreführend („nichts gespart" ≠ „keine Daten").
+  // Ein echtes Teiljahr mit einzelnen null-Monaten summiert dagegen normal (null = 0).
   const prevHasData = prevIstMonthly.some((v) => v !== null);
   const prevYearEndCumulative =
     hasPrevYear && prevHasData
@@ -92,6 +91,5 @@ export async function loadTreppeData(
     prevYear,
     points,
     prevYearEndCumulative,
-    netMonthly,
   };
 }

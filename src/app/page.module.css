@@ -1,9 +1,22 @@
 .main {
-  min-height: 100dvh;
+  /* v2-02 K1: Single Surface — die App füllt exakt den Viewport, kein
+   * Scrollen (CLAUDE.md §1 „Ein Screen, ein Monat"). overflow-y:auto ist
+   * reiner Fallback für degenerierte Fenstergrößen (z. B. sehr flache
+   * Fenster oder Dev-Panels im Development-Modus). */
+  height: 100dvh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px 32px;
+  gap: 14px;
+  padding: 14px 32px 18px;
+}
+
+/* v2-02 K1: Die Welle-Stage ist das flexible Element der Spalte — sie
+ * absorbiert die Resthöhe zwischen Header und Interaktionszone. Die Welle
+ * passt sich via ResizeObserver an. Floor 280px (Ring 248px + Luft). */
+.stage {
+  flex: 1 1 280px;
+  min-height: 280px;
 }
 
 .topRow {
@@ -37,14 +50,6 @@
 
 .logout:hover {
   color: var(--text-primary);
-}
-
-.ringRow {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
 }
 
 .devPanel {
