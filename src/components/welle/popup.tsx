@@ -110,9 +110,14 @@ export function WellePopup({ data, onClose }: WellePopupProps) {
           ✕
         </button>
         <div className={styles.popupKicker}>Kumulierte Sparrate {data.activeYear}</div>
-        {/* B3 (Rot bei kumulativ negativer Sparrate) = offener Cluster-3-Slot —
-            der Held bleibt bewusst teal, auch bei negativer Jahressumme. */}
-        <div className={styles.popupHero}>{fmtSignedEuro(yearTotal)}</div>
+        {/* B3 (§9 v3.1.2): Held folgt der §5-Ring-Logik — rot, wenn der
+            ENDWERT negativ ist (Jahresergebnis, nicht der tiefste
+            Zwischenstand), sonst teal. */}
+        <div
+          className={`${styles.popupHero} ${yearTotal < 0 ? styles.popupHeroNegative : ""}`}
+        >
+          {fmtSignedEuro(yearTotal)}
+        </div>
         <div className={styles.popupSub}>
           IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die
           drei Treiber

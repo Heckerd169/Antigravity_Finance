@@ -255,6 +255,11 @@
   color: var(--color-teal);
 }
 
+/* B3 (§9): Held rot, wenn der Jahres-Endwert negativ ist (§5-Ring-Logik). */
+.popupHeroNegative {
+  color: var(--color-red);
+}
+
 .popupSub {
   font-size: 11px;
   font-weight: 300;
