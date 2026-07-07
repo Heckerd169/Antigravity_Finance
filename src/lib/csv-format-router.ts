@@ -8,6 +8,9 @@
  * Reihenfolge (Briefing §5): Cortal-Heuristik VOR DKB-Heuristik prüfen — beide
  * nutzen ";"-Separator, aber Cortal hat keine Anführungszeichen und einen
  * distinkten Header. Erst-Cortal stabilisiert die Erkennung.
+ * Sprint v2-04 ①: DKB-Visa (Kreditkarte) als drittes Format — Header-Anker
+ * "Belegdatum" ist distinkt zum Giro-Anker "Buchungsdatum", die Reihenfolge
+ * Visa-vor-Giro ist daher nur Konvention (spezifischeres Format zuerst).
  *
  * Semantik der Fehler-Klassen: Ein Parser meldet "format", wenn sein Header-
  * Anker nicht gefunden wird (= dieses Format passt nicht -> nächsten probieren).
@@ -17,9 +20,10 @@
 
 import { parseCortalCsv } from "./cortal-csv";
 import { parseDkbCsv } from "./dkb-csv";
+import { parseDkbVisaCsv } from "./dkb-visa-csv";
 
 /** p_format_hint-Werte der RPC `process_csv_import`. */
-export type CsvFormatHint = "DKB" | "CORTAL_CONSORS";
+export type CsvFormatHint = "DKB" | "CORTAL_CONSORS" | "DKB_VISA";
 
 /** Vereinheitlichte Parser-Ausgabe — Shape von DkbCsvRow == CortalCsvRow. */
 export type ParsedCsvRow = {
@@ -36,7 +40,8 @@ export type CsvRouteResult =
   | { ok: false; errorClass: CsvRouteError };
 
 /**
- * Erkennt das Format und parst. Cortal zuerst, dann DKB, sonst "format".
+ * Erkennt das Format und parst. Cortal zuerst, dann DKB-Visa, dann DKB-Giro,
+ * sonst "format".
  */
 export function routeAndParseCsv(text: string): CsvRouteResult {
   // ── 1) Cortal-Heuristik ────────────────────────────────────────────────────
@@ -49,7 +54,16 @@ export function routeAndParseCsv(text: string): CsvRouteResult {
     return { ok: false, errorClass: cortal.errorClass };
   }
 
-  // ── 2) DKB-Heuristik ───────────────────────────────────────────────────────
+  // ── 2) DKB-Visa-Heuristik (Kreditkarte, Sprint v2-04 ①) ────────────────────
+  const visa = parseDkbVisaCsv(text);
+  if (visa.ok) {
+    return { ok: true, formatHint: "DKB_VISA", rows: visa.rows };
+  }
+  if (visa.errorClass !== "format") {
+    return { ok: false, errorClass: visa.errorClass };
+  }
+
+  // ── 3) DKB-Giro-Heuristik ──────────────────────────────────────────────────
   const dkb = parseDkbCsv(text);
   if (dkb.ok) {
     return { ok: true, formatHint: "DKB", rows: dkb.rows };
@@ -58,6 +72,6 @@ export function routeAndParseCsv(text: string): CsvRouteResult {
     return { ok: false, errorClass: dkb.errorClass };
   }
 
-  // ── 3) Keines erkannt ──────────────────────────────────────────────────────
+  // ── 4) Keines erkannt ──────────────────────────────────────────────────────
   return { ok: false, errorClass: "format" };
 }

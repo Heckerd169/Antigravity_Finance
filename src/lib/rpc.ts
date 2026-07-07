@@ -169,8 +169,10 @@ export type CsvImportRow = {
   counterparty_iban: string | null; // Sprint 9; null = unbekannt
 };
 
-/** p_format_hint-Werte der RPC `process_csv_import` (Sprint 9). */
-export type CsvFormatHint = "DKB" | "CORTAL_CONSORS";
+/** p_format_hint-Werte der RPC `process_csv_import` (Sprint 9 + v2-04 ①).
+ *  Bei 'DKB_VISA' klassifiziert die RPC zusätzlich per Beschreibungs-Heuristik
+ *  (Einzahlung/Ausgleich Kreditkarte, Betrag > 0 → INTERNAL_TRANSFER). */
+export type CsvFormatHint = "DKB" | "CORTAL_CONSORS" | "DKB_VISA";
 
 /** Rückgabe von `process_csv_import`. Sprint 9 erweitert um drei Backfill-Counter. */
 export type CsvImportResult = {
