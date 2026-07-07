@@ -23,10 +23,14 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
   const sign = isPos ? "+" : "−";
   const abs = Math.abs(fragment.amount);
 
-  // Sprint 9: INTERNAL_TRANSFER schlägt alle anderen Stati (§6.1). Eigenes
+  // Sprint 9: Transfer-Status schlägt alle anderen Stati (§6.1). Eigenes
   // Dimming (0.45) + TRANSFER-Badge, kein Drag/Tap. Höchste Status-Priorität,
   // daher VOR dem isLocked-Styling und vor dem KI-Vorschlag-Badge geprüft.
-  const isTransfer = fragment.status === "INTERNAL_TRANSFER";
+  // v2-04 ③: ASSET_REALLOCATION verhält sich UI-seitig identisch zu
+  // INTERNAL_TRANSFER (Schema-Doku v3.2 — Interim bis DD-Geste).
+  const isTransfer =
+    fragment.status === "INTERNAL_TRANSFER" ||
+    fragment.status === "ASSET_REALLOCATION";
   const stateClass = isTransfer
     ? styles.fragmentCardTransfer
     : isLocked
