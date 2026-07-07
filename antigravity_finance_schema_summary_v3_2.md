@@ -1,8 +1,8 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.1
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches)
-**Datum:** 24. Mai 2026
+**Version:** 3.2
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1)
+**Datum:** 06. Juli 2026
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**
 
@@ -27,14 +27,29 @@
 - 1 neue RPC: `toggle_card_hidden(card_id, hidden)` für UI-Soft-Delete-Toggle (Sprint 10 V4'')
 - View `fragments_with_status`: +2 Spalten am Ende (`counterparty_iban`, `transfer_type`); zusätzlicher Status-Wert `'INTERNAL_TRANSFER'` (höchste Priorität, schlägt alle anderen Stati)
 - **Snapshot-Integritäts-Patch (Pre-Sprint-10):** `is_card_active_in_month` filtert nicht mehr auf `deleted_at` — die zwei Sparrate-RPCs aggregieren jetzt korrekt über hidden Karten. Hide ist UI-Concern, nicht Berechnungs-Concern. Konsumenten mit echtem Hide-Bedarf (`process_csv_import`-Match-Loop, `toggle_card_manually_paid`-Ownership-Check) filtern explizit
-- **Defense-in-Depth-Patch (Pre-Sprint-10):** `calculate_card_amount_for_month` schließt `INTERNAL_TRANSFER`-Fragmente explizit aus dem Aggregat-Sub-Query aus (OQ-B-Daten-Invariante garantiert das bereits, expliziter Filter schützt vor Drift)
+- **Defense-in-Depth-Patch (Pre-Sprint-10):** `calculate_card_amount_for_month` Fragment-Aggregation filtert hart auf **`transfer_type IS NULL`** — deckt `INTERNAL_TRANSFER`, `ASSET_REALLOCATION` und etwaige künftige Transfer-Typen automatisch ab. `calculate_sparrate_for_month` ist transitiv geschützt (liest Fragmente ausschließlich über diese Funktion)
 - Sprint-9-OQ-A/B/C-Pattern dokumentiert (siehe Section 7 + Section 9)
+
+**Änderungen v3.1 → v3.2 (Sprint v2-04 „Mehrkonten Stufe 1"):**
+
+- v2-04 Mehrkonten Stufe 1: `transfer_type`-Erweiterung, Markier-RPC, OQ-B-Trigger, DKB_VISA-Format, Duplikat-Hash-Fix.
+
+**`transfer_type` — Wertemenge + Semantik (v3.2):**
+
+> `transfer_type text NULL` — CHECK `transfer_type_valid`: `NULL` | `'INTERNAL_TRANSFER'` | `'ASSET_REALLOCATION'`.
+> - `INTERNAL_TRANSFER`: automatisch beim Import gesetzt (IBAN-Erkennung gegen `own_ibans` **oder** DKB_VISA-Heuristik).
+> - `ASSET_REALLOCATION`: **ausschließlich manuell** via `set_fragment_asset_reallocation` — Vermögensumschichtungen (z. B. Broker→Topf), die strukturell nicht von Sparüberweisungen unterscheidbar sind (Beschluss F3). Verhält sich in allen Berechnungs- und Link-Pfaden identisch zu `INTERNAL_TRANSFER`.
+> - Semantik-Invariante (OQ-B, erweitert): Fragmente mit `transfer_type IS NOT NULL` sind nie an Karten verlinkbar und zählen nie in Karten-Beträge oder Sparrate.
+
+**View `fragments_with_status` — Status (v3.2):**
+
+> `status`-Spalte liefert bei gesetztem `transfer_type` jetzt den **konkreten Typ** (`'INTERNAL_TRANSFER'` oder `'ASSET_REALLOCATION'`) statt pauschal `'INTERNAL_TRANSFER'`. Frontend-Interim (bis DD-Geste): beide Werte wie den bisherigen Transfer-Status behandeln (ausgegraut + Badge).
 
 ---
 
 ## 1. Was gebaut wurde
 
-10 Tabellen, 1 View, **21 App-RPCs** (+ 5 Trigger-Funktionen), **5 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
+10 Tabellen, 1 View, **22 App-RPCs** (+ 6 Trigger-Funktionen), **6 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
 
 ```
    IDENTITÄT          EINKOMMEN              KARTEN                   FRAGMENTE
@@ -166,11 +181,17 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` ist Future-Proof-Slot, in Stufe 1 nicht aktiv im Body. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
+| `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` jetzt **aktiv**: `'DKB'` (Default) | `'CORTAL_CONSORS'` | `'DKB_VISA'`. Bei `'DKB_VISA'` greift zusätzlich zur IBAN-Erkennung die KK-Klassifikation: Zeilen mit `amount > 0` **und** Beschreibung `ILIKE 'Einzahlung%'` **oder** `ILIKE 'Ausgleich Kreditkarte%'` → `INTERNAL_TRANSFER` (inkl. OQ-B-Link-Auflösung), da der DKB-Visa-Export keine Gegen-IBAN führt. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
 | `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score, gewichtete Summe aus den drei Sub-Scores | `numeric` (0..1) |
 | `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) | `numeric` |
 | `amount_match(fragment_amount, planned)` | Bracket-Score (`<1%→1.00`, `<5%→0.85`, `<15%→0.60`, `<30%→0.30`, sonst `0.00`) | `numeric` |
 | `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month` | `numeric` |
+
+### Beim Transfer-Markieren (Sprint v2-04)
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `set_fragment_asset_reallocation(p_fragment_id uuid, p_set boolean DEFAULT true)` | Schreib-RPC. Auth-Pflicht (28000), expliziter Ownership-Check zusätzlich zu RLS (42501). Setzen (`p_set=true`): erlaubt aus `NULL` und `INTERNAL_TRANSFER`→`ASSET_REALLOCATION`; verweigert mit 23514, wenn das Fragment einer Karte zugeordnet ist (Zuordnung zuerst lösen — kein stilles Entkoppeln); räumt `suggested_card_id`/`confidence`. Rücknahme (`p_set=false`): nur aus `ASSET_REALLOCATION`, setzt `NULL`; war das Fragment IBAN-erkennbar, stellt der nächste Re-Import `INTERNAL_TRANSFER` automatisch wieder her | `jsonb` (`{fragment_id, transfer_type}`) |
 
 ### Beim Onboarding und Income-Editing
 
@@ -185,7 +206,7 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | `schedule_deletion(entity_type, entity_id, payload)` | Aktion in Trash legen mit auto-berechnetem `expires_at` | `uuid` (Trash-ID) |
 | `restore_deletion(trash_id)` | "Rückgängig"-Klick | `boolean` |
 
-**RPC-Inventur-Summe:** 21 App-RPCs, alle `SECURITY INVOKER` außer den beiden Service-Hooks `handle_new_user` und `rls_auto_enable`, die DEFINER sind. Alle Read-Path-RPCs sind `STABLE` (Cache-fähig pro Transaktion), Schreib-RPCs sind `VOLATILE`.
+**RPC-Inventur-Summe:** 22 App-RPCs, alle `SECURITY INVOKER` außer den beiden Service-Hooks `handle_new_user` und `rls_auto_enable`, die DEFINER sind. Alle Read-Path-RPCs sind `STABLE` (Cache-fähig pro Transaktion), Schreib-RPCs sind `VOLATILE`.
 
 ---
 
@@ -248,7 +269,7 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 | **Cross-Account-Transfers** | `fragments.transfer_type = 'INTERNAL_TRANSFER'` markiert Bewegungen zwischen eigenen Konten (`counterparty_iban = ANY(profiles.own_ibans)`). Solche Fragmente werden in `calculate_card_amount_for_month` explizit aus dem Aggregat ausgeschlossen — Sparrate spiegelt nur echte Einnahmen/Ausgaben. OQ-B-Daten-Invariante: bei Transfer-Markierung wird ein eventuell bestehender `card_fragment_link` gelöst (Counter `links_removed_for_transfers_count` im RPC-Return) und Suggestion-State (`confidence`/`suggested_card_id`) zurückgesetzt |
 | **UI-Hide ändert keine Aggregation** | `cards.deleted_at IS NOT NULL` schließt eine Karte aus allen UI-Monatsansichten aus, hat aber **keinen Effekt** auf `calculate_sparrate_for_month` / `calculate_planned_sparrate_for_month`. Historische Sparraten bleiben unverändert, auch wenn der User eine Karte verbirgt, die in Vergangenheit Beträge beigesteuert hat |
 | **Fragmente** | Sind Geldflüsse — können in der Zeit nicht "verschoben" werden. Eject ist DELETE des Links, nicht des Fragments. `imported_at` dokumentiert Import-Zeitpunkt |
-| **CSV-Re-Imports** | `fragments.hash` = SHA-256 über `transaction_date || '|' || amount_fixed || '|' || description_raw`. `counterparty_iban` ist **bewusst nicht** Hash-Bestandteil (siehe OQ-A) — Re-Imports treffen den existierenden Hash und backfillen die IBAN-Spalte via `ON CONFLICT (user_id, hash) DO UPDATE SET counterparty_iban = EXCLUDED.counterparty_iban WHERE fragments.counterparty_iban IS NULL`. UNIQUE-Constraint auf `(user_id, hash)` macht Re-Imports deterministisch idempotent |
+| **CSV-Re-Imports** | `fragments.hash` = SHA-256 über `transaction_date || '|' || amount_fixed || '|' || description_raw`; **byte-identische Zeilen innerhalb eines Import-Batches erhalten ab dem 2. Vorkommen das deterministische Suffix `|#N`** (N = Vorkommens-Index in Dateireihenfolge; erstes Vorkommen = alte Formel, abwärtskompatibel; Re-Import → gleiche Indizes → gleiche Hashes, idempotent). Bekannte Grenze: identische Buchungen über zwei Teil-Exporte desselben Monats deduplizieren weiterhin — Monats-Exporte vollständig importieren. `counterparty_iban` ist **bewusst nicht** Hash-Bestandteil (siehe OQ-A) — Re-Imports treffen den existierenden Hash und backfillen die IBAN-Spalte via `ON CONFLICT (user_id, hash) DO UPDATE SET counterparty_iban = EXCLUDED.counterparty_iban WHERE fragments.counterparty_iban IS NULL`. UNIQUE-Constraint auf `(user_id, hash)` macht Re-Imports deterministisch idempotent |
 | **Sparrate** | Niemals als Spalte gespeichert. Funktion liest deterministisch aus den eingefrorenen Quellen |
 
 → **Eine Plan-Anpassung im April 2026 ändert niemals die Sparrate vom Februar 2026.** Garantiert durch das Schema selbst, nicht durch Anwendungslogik.
@@ -395,6 +416,7 @@ Sechs funktionale / partielle Indexes über die v2-PK/UK-Indexes hinaus:
 | `cards_set_updated_at` | `cards` | BEFORE UPDATE | `set_updated_at()` | Auto-`updated_at = now()` |
 | `card_monthly_states_set_updated_at` | `card_monthly_states` | BEFORE UPDATE | `set_updated_at()` | Auto-`updated_at = now()` |
 | `profiles_set_updated_at` | `profiles` | BEFORE UPDATE | `set_updated_at()` | Auto-`updated_at = now()` |
+| `trg_oqb_no_transfer_links` | `card_fragment_links` | BEFORE INSERT OR UPDATE OF `fragment_id` | `enforce_no_transfer_fragment_links()` | Weist Links auf Fragmente mit `transfer_type IS NOT NULL` mit 23514 ab. Schließt „direktes Client-INSERT unter RLS" und `create_card_from_fragment`. OQ-B damit dreischichtig |
 | `rls_auto_enable` (Event-Trigger) | (DB-global) | DDL `CREATE TABLE` | `rls_auto_enable()` (DEFINER) | Aktiviert RLS automatisch auf jede neue Tabelle |
 
 ---
@@ -429,3 +451,9 @@ Eine vollständig instrumentierte Datenbank für Antigravity Finance 1.0 — ink
 ---
 
 *Architekt-Persona | Antigravity Finance 1.0 | 24. Mai 2026*
+
+---
+
+## 13. Betriebsnotiz — v2-04 (einmalig, kein Dauerzustand)
+
+> Im Zuge von v2-04 wurden am 06.07.2026 alle importierten Daten sowie drei `manually_paid`-Testzustände gelöscht (Ausnahme 1, pre-go-live Wegwerf-Zustand). Karten (31) und Plan-Zeitreihen blieben unberührt. Option-A-/Zwei-Personen-Ausnahmen dieses Sprints sind **nicht** fortgeltend; ab vorhandenen Echtdaten gelten Test-Projekt-Gate und Zwei-Personen-Prinzip wieder uneingeschränkt (Briefing §0a).
