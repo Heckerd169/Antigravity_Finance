@@ -527,6 +527,35 @@
   color: var(--frag-date);
 }
 
+/* v2-04 ② — Interim-Auslösung Umschichtungs-Markierung (finale Geste = DD).
+   pointer-events:auto reaktiviert den Button innerhalb von
+   .fragmentCardTransfer (Eltern hat pointer-events:none). */
+.arToggle {
+  display: block;
+  margin-top: 6px;
+  padding: 2px 6px;
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background: var(--frag-transfer-badge-bg);
+  color: var(--frag-transfer-badge-color);
+  border: .5px solid var(--frag-transfer-badge-border);
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: .6;
+}
+
+.arToggle:hover {
+  opacity: 1;
+}
+
+.arToggle:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
 /* ============================================================
    OVERLAYS — Sprint 5
    Visuell harmonisiert auf das Sprint-4-Adjust-Amount-Pattern (K1.5).

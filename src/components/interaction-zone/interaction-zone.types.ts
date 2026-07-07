@@ -13,7 +13,15 @@ export type FragmentRow = {
   amount: number;
   description: string;
   transaction_date: string; // ISO "YYYY-MM-DD"
-  status: "UNASSIGNED" | "ASSIGNED" | "AUTO_ABSORBED" | "INTERNAL_TRANSFER";
+  /** v2-04: Die View liefert bei gesetztem transfer_type den konkreten Typ —
+   *  'INTERNAL_TRANSFER' oder 'ASSET_REALLOCATION' (beide UI-seitig wie
+   *  Transfer behandelt: ausgegraut + Badge, nicht drop-fähig). */
+  status:
+    | "UNASSIGNED"
+    | "ASSIGNED"
+    | "AUTO_ABSORBED"
+    | "INTERNAL_TRANSFER"
+    | "ASSET_REALLOCATION";
   assigned_card_id: string | null;
   assigned_month: string | null; // "YYYY-MM-01"
   /** Sprint 8 P5: Import-Zeitpunkt (ISO-Timestamp) — deterministischer

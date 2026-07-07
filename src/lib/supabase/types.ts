@@ -534,6 +534,10 @@ export type Database = {
         }
         Returns: string
       }
+      set_fragment_asset_reallocation: {
+        Args: { p_fragment_id: string; p_set?: boolean }
+        Returns: Json
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       toggle_card_hidden: {

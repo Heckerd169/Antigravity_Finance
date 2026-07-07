@@ -205,6 +205,30 @@ export async function processCsvImport(
   return data as unknown as CsvImportResult;
 }
 
+// ── Sprint v2-04: ASSET_REALLOCATION-Markierung ──────────────────────────────
+
+/** Return-Shape von `set_fragment_asset_reallocation`. */
+export type AssetReallocationResult = {
+  fragment_id: string;
+  transfer_type: "ASSET_REALLOCATION" | "INTERNAL_TRANSFER" | null;
+};
+
+/** v2-04 ②: Manuelle Umschichtungs-Markierung (Beschluss F3). Setzen erlaubt
+ *  aus NULL und INTERNAL_TRANSFER (Scalable-Fall); Rücknahme nur aus
+ *  ASSET_REALLOCATION → NULL. RPC verweigert bei Karten-Link (23514, OQ-B:
+ *  Zuordnung zuerst lösen) und bei Fremd-Owner (42501). Throw-on-Error (LL-2). */
+export async function setFragmentAssetReallocation(
+  client: AppSupabaseClient,
+  args: { fragmentId: string; set: boolean },
+): Promise<AssetReallocationResult> {
+  const { data, error } = await client.rpc("set_fragment_asset_reallocation", {
+    p_fragment_id: args.fragmentId,
+    p_set: args.set,
+  });
+  if (error) throw error;
+  return data as unknown as AssetReallocationResult;
+}
+
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────
 
 export type CreateCardDirectArgs = {

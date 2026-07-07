@@ -6,6 +6,8 @@ import {
   createCardDirect,
   createCardFromFragment,
   processCsvImport,
+  setFragmentAssetReallocation,
+  type AssetReallocationResult,
   type CreateCardDirectArgs,
   type CreateCardFromFragmentArgs,
   type CsvFormatHint,
@@ -67,6 +69,31 @@ export async function processCsvImportAction(
   if (!user) throw new Error("Nicht authentifiziert");
 
   const result = await processCsvImport(supabase, rows, formatHint);
+
+  revalidatePath("/", "page");
+  return result;
+}
+
+// ── ASSET_REALLOCATION-Markierung (Sprint v2-04 ②, Interim-Verdrahtung) ─────
+
+/** Setzt/entfernt die manuelle Umschichtungs-Markierung eines Fragments.
+ *  Ownership-Check + Transitions-Validierung liegen in der RPC (42501/23514/
+ *  22023). Die finale Markier-Geste ist DD-Territorium — dies ist nur die
+ *  minimale Verdrahtung (Briefing §7). */
+export async function setFragmentAssetReallocationAction(
+  fragmentId: string,
+  set: boolean,
+): Promise<AssetReallocationResult> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht authentifiziert");
+
+  const result = await setFragmentAssetReallocation(supabase, {
+    fragmentId,
+    set,
+  });
 
   revalidatePath("/", "page");
   return result;

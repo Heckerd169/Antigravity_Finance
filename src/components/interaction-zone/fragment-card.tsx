@@ -1,5 +1,6 @@
 import type { FragmentRow } from "./interaction-zone.types";
 import { formatAmount } from "@/lib/format";
+import { AssetReallocationToggle } from "./asset-reallocation-toggle";
 import styles from "./interaction-zone.module.css";
 
 /* Server-Component: ein Fragment-Item ohne Event-Handler. Drag-Start wird
@@ -70,6 +71,17 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
         {fragment.description}
       </div>
       <div className={styles.fragmentDate}>{formatDateShort(fragment.transaction_date)}</div>
+      {/* v2-04 ② Interim: Markier-Auslösung. Setzen aus UNASSIGNED (Broker-
+          Eingang, F3) oder INTERNAL_TRANSFER (Scalable-Fall, E2); Rücknahme
+          aus ASSET_REALLOCATION. Verlinkte Fragmente (ASSIGNED/AUTO_ABSORBED)
+          bekommen keinen Trigger — die RPC würde per OQ-B mit 23514 verweigern
+          (Zuordnung zuerst lösen). Finale Geste = DD (Briefing §7). */}
+      {fragment.status === "UNASSIGNED" ||
+      fragment.status === "INTERNAL_TRANSFER" ? (
+        <AssetReallocationToggle fragmentId={fragment.id} set />
+      ) : fragment.status === "ASSET_REALLOCATION" ? (
+        <AssetReallocationToggle fragmentId={fragment.id} set={false} />
+      ) : null}
     </div>
   );
 }
