@@ -37,12 +37,20 @@ export type DkbVisaCsvRow = {
 export type DkbVisaParseError = "format" | "empty" | "corrupt";
 
 export type DkbVisaParseResult =
-  | { ok: true; rows: DkbVisaCsvRow[] }
+  | {
+      ok: true;
+      rows: DkbVisaCsvRow[];
+      /** v2-04 P7: Zeilen mit Status ≠ "Gebucht" (z. B. "Vorgemerkt"), die
+       *  übersprungen wurden — vorgemerkte Umsätze können ihren Hash nach
+       *  Buchung ändern (Duplikat-Risiko, Architekten-Freigabe 07/2026). */
+      skippedPendingCount: number;
+    }
   | { ok: false; errorClass: DkbVisaParseError };
 
 const HEADER_FIRST_FIELD = "Belegdatum";
 const COL_DESCRIPTION = "Beschreibung";
 const COL_AMOUNT = "Betrag (€)";
+const COL_STATUS = "Status";
 /** Format-Heuristik prüft nur die ersten N Zeilen auf den Header-Anker. */
 const HEADER_SCAN_LINES = 8;
 
@@ -70,6 +78,8 @@ export function parseDkbVisaCsv(text: string): DkbVisaParseResult {
   const idxDate = header.indexOf(HEADER_FIRST_FIELD);
   const idxDescription = header.indexOf(COL_DESCRIPTION);
   const idxAmount = header.indexOf(COL_AMOUNT);
+  // Status ist additiv (P7): fehlt die Spalte, wird nicht gefiltert.
+  const idxStatus = header.indexOf(COL_STATUS);
   if (idxDate === -1 || idxDescription === -1 || idxAmount === -1) {
     return { ok: false, errorClass: "format" };
   }
@@ -83,8 +93,18 @@ export function parseDkbVisaCsv(text: string): DkbVisaParseResult {
   // ── Feld-Mapping (atomar: erste fehlerhafte Zeile → komplett verwerfen) ───
   // Dateireihenfolge bleibt erhalten (Parser-Vertrag ④).
   const rows: DkbVisaCsvRow[] = [];
+  let skippedPendingCount = 0;
   for (const raw of dataLines) {
     const fields = tokenizeLine(raw);
+
+    // P7: Status ≠ "Gebucht" (z. B. "Vorgemerkt") → Zeile überspringen,
+    // BEVOR Felder validiert werden — eine unfertige vorgemerkte Zeile darf
+    // den Import nicht als corrupt kippen.
+    if (idxStatus !== -1 && fields[idxStatus] !== undefined && fields[idxStatus] !== "Gebucht") {
+      skippedPendingCount += 1;
+      continue;
+    }
+
     const dateField = fields[idxDate];
     const amountField = fields[idxAmount];
     if (dateField === undefined || amountField === undefined) {
@@ -107,7 +127,11 @@ export function parseDkbVisaCsv(text: string): DkbVisaParseResult {
     });
   }
 
-  return { ok: true, rows };
+  // P7: Datei bestand ausschließlich aus vorgemerkten Zeilen → wie "keine
+  // Transaktionen" behandeln (nichts Importierbares).
+  if (rows.length === 0) return { ok: false, errorClass: "empty" };
+
+  return { ok: true, rows, skippedPendingCount };
 }
 
 // ── Tokenizer ─────────────────────────────────────────────────────────────

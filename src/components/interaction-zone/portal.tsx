@@ -140,9 +140,12 @@ export function Portal({ targetMonth }: PortalProps) {
           `${result.auto_absorbed_count} auto-absorbiert, ` +
           `${result.iban_backfilled_count} IBAN-Backfill, ` +
           `${result.internal_transfers_count} Transfers, ` +
-          `${result.links_removed_for_transfers_count} Links gelöst`,
+          `${result.links_removed_for_transfers_count} Links gelöst, ` +
+          `${parsed.skippedPendingCount} vorgemerkt übersprungen`,
       );
-      showBackfillToast(buildBackfillLines(result));
+      showBackfillToast(
+        buildBackfillLines(result, parsed.skippedPendingCount),
+      );
     } catch (err) {
       console.error("CSV-Import-RPC fehlgeschlagen", err);
       runErrorSequence("corrupt");
@@ -442,8 +445,12 @@ function PortalDevButtons({
 
 // ── Helper ──────────────────────────────────────────────────────────────────
 
-/** §6.2: Backfill-Toast-Zeilen — nur Counter > 0, in fester Reihenfolge. */
-function buildBackfillLines(r: CsvImportResult): string[] {
+/** §6.2: Backfill-Toast-Zeilen — nur Counter > 0, in fester Reihenfolge.
+ *  v2-04 P7: weist zusätzlich übersprungene vorgemerkte Zeilen aus. */
+function buildBackfillLines(
+  r: CsvImportResult,
+  skippedPendingCount: number,
+): string[] {
   const lines: string[] = [];
   if (r.iban_backfilled_count > 0) {
     lines.push(`${r.iban_backfilled_count} Fragmente mit IBAN ergänzt`);
@@ -453,6 +460,9 @@ function buildBackfillLines(r: CsvImportResult): string[] {
   }
   if (r.links_removed_for_transfers_count > 0) {
     lines.push(`${r.links_removed_for_transfers_count} Karten-Zuordnungen gelöst`);
+  }
+  if (skippedPendingCount > 0) {
+    lines.push(`${skippedPendingCount} vorgemerkte Umsätze übersprungen`);
   }
   return lines;
 }

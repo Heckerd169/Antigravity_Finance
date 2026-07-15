@@ -89,6 +89,28 @@
   (Header-Flanke), Stack-Sortierung (AR fällt wie IT in die locked-Gruppe), Link-Pfade
   (`ASSIGNED`-only) und Portal unverändert korrekt; DB-Trigger als Backstop gegen Drops.
 
+### P7 — Nachtrag: „Vorgemerkt"-Filter in beiden DKB-Parsern (15.07.2026)
+
+> Auslöser: §8 Quirk 5, vom Architekten als Duplikat-Risiko bestätigt, Fix freigegeben.
+
+- **Zeilen-Filter** in `dkb-visa-csv.ts` **und** `dkb-csv.ts` (Giro): Zeilen mit
+  vorhandener Status-Spalte und Wert ≠ „Gebucht" (z. B. „Vorgemerkt") werden
+  übersprungen — **vor** der Feld-Validierung, damit eine unfertige vorgemerkte Zeile
+  den Import nicht als `corrupt` kippt. Fehlt die Status-Spalte (ältere Exporte), wird
+  nicht gefiltert (additiv, Sprint-9-IBAN-Pattern). **Cortal unverändert** (keine
+  Status-Spalte).
+- **Zähler:** Parser-Ergebnis + Router (`skippedPendingCount`, Cortal = 0) → Portal-Toast
+  weist `„N vorgemerkte Umsätze übersprungen"` aus (nur bei N > 0, bestehendes
+  Toast-Pattern §6.2).
+- **Kanten-Entscheidung:** Besteht eine Datei ausschließlich aus vorgemerkten Zeilen,
+  liefert der Parser `error-empty` („Keine Transaktionen") statt eines leeren
+  Erfolgs-Imports.
+- **Verifikation:** Echte Exporte unverändert zu P1 — KK `DKB_VISA` 89 Zeilen /
+  25 Transfer-Kandidaten / 0 übersprungen · Giro `DKB` 145 / 0 übersprungen · Cortal
+  25 / 0 übersprungen. Synthetisch: KK- und Giro-Fixture mit je 1 „Vorgemerkt"- +
+  1 „Gebucht"-Zeile → jeweils 1 übersprungen, 1 geparst; Nur-Vorgemerkt-Fixture →
+  `error-empty`. `tsc` 0, Lint 0/0, Build 0 Errors.
+
 ## 5. E2E-Verifikation gegen frische Test-Importe (P5, Briefing §2a)
 
 Methode: echte Parser-/Router-Ausgabe (App-Code via `tsx`) → RPC-Aufruf mit simuliertem
@@ -151,11 +173,14 @@ gemäß LL-16 **keine** Doku selbst editiert. Ein separater Patch-File entfällt
    („Umschichtung zurücknehmen") erkennbar. Unterscheidendes Badge = DD-Frage.
 4. **Interim-Toggle auf jeder UNASSIGNED-Karte** erzeugt visuelles Rauschen im Stack —
    bewusste Schlichtheit (Briefing: „nichts Aufwendiges"), DD-Geste ersetzt ihn.
-5. **Visa-Status-Spalte ungefiltert:** Der Parser übernimmt alle Zeilen unabhängig von
+5. ~~**Visa-Status-Spalte ungefiltert:** Der Parser übernimmt alle Zeilen unabhängig von
    `Status` („Gebucht"/„Vorgemerkt") — konsistent zum Giro-Parser. Der echte Export
    enthielt ausschließlich „Gebucht". Falls DKB vorgemerkte KK-Umsätze exportiert, können
    Fragmente entstehen, deren Hash sich nach Buchung ändert (Duplikat-Risiko beim
-   Folge-Import). Vor dem Go-Live-Import ggf. als PM-Regel klären.
+   Folge-Import). Vor dem Go-Live-Import ggf. als PM-Regel klären.~~
+   → **Erledigt durch P7 (15.07.2026):** Architekt hat das Duplikat-Risiko bestätigt und
+   den Fix freigegeben. Beide DKB-Parser überspringen jetzt Zeilen mit Status ≠ „Gebucht";
+   der Import-Toast weist übersprungene Zeilen aus (§4 P7).
 6. **Browser-Smoke offen (User):** Portal-Drop des echten KK-Files, Toggle-Klick am
    Scalable-Fragment, AR-Badge-Rendering, Toast-Counter. Die E2E-Kette lief über den
    echten Parser/Router-Code + RPC mit simuliertem Auth-Kontext — der DOM-Pfad ist

@@ -36,7 +36,15 @@ export type ParsedCsvRow = {
 export type CsvRouteError = "format" | "empty" | "corrupt";
 
 export type CsvRouteResult =
-  | { ok: true; formatHint: CsvFormatHint; rows: ParsedCsvRow[] }
+  | {
+      ok: true;
+      formatHint: CsvFormatHint;
+      rows: ParsedCsvRow[];
+      /** v2-04 P7: übersprungene Zeilen mit Status ≠ "Gebucht" (nur DKB-
+       *  Formate; Cortal hat keine Status-Spalte → immer 0). Der Import-
+       *  Toast weist den Wert aus. */
+      skippedPendingCount: number;
+    }
   | { ok: false; errorClass: CsvRouteError };
 
 /**
@@ -47,7 +55,12 @@ export function routeAndParseCsv(text: string): CsvRouteResult {
   // ── 1) Cortal-Heuristik ────────────────────────────────────────────────────
   const cortal = parseCortalCsv(text);
   if (cortal.ok) {
-    return { ok: true, formatHint: "CORTAL_CONSORS", rows: cortal.rows };
+    return {
+      ok: true,
+      formatHint: "CORTAL_CONSORS",
+      rows: cortal.rows,
+      skippedPendingCount: 0,
+    };
   }
   // Format passte (Header gefunden), aber Daten fehlerhaft -> durchreichen.
   if (cortal.errorClass !== "format") {
@@ -57,7 +70,12 @@ export function routeAndParseCsv(text: string): CsvRouteResult {
   // ── 2) DKB-Visa-Heuristik (Kreditkarte, Sprint v2-04 ①) ────────────────────
   const visa = parseDkbVisaCsv(text);
   if (visa.ok) {
-    return { ok: true, formatHint: "DKB_VISA", rows: visa.rows };
+    return {
+      ok: true,
+      formatHint: "DKB_VISA",
+      rows: visa.rows,
+      skippedPendingCount: visa.skippedPendingCount,
+    };
   }
   if (visa.errorClass !== "format") {
     return { ok: false, errorClass: visa.errorClass };
@@ -66,7 +84,12 @@ export function routeAndParseCsv(text: string): CsvRouteResult {
   // ── 3) DKB-Giro-Heuristik ──────────────────────────────────────────────────
   const dkb = parseDkbCsv(text);
   if (dkb.ok) {
-    return { ok: true, formatHint: "DKB", rows: dkb.rows };
+    return {
+      ok: true,
+      formatHint: "DKB",
+      rows: dkb.rows,
+      skippedPendingCount: dkb.skippedPendingCount,
+    };
   }
   if (dkb.errorClass !== "format") {
     return { ok: false, errorClass: dkb.errorClass };

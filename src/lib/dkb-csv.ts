@@ -28,7 +28,14 @@ export type DkbCsvRow = {
 export type DkbParseError = "format" | "empty" | "corrupt";
 
 export type DkbParseResult =
-  | { ok: true; rows: DkbCsvRow[] }
+  | {
+      ok: true;
+      rows: DkbCsvRow[];
+      /** v2-04 P7: Zeilen mit Status ≠ "Gebucht" (z. B. "Vorgemerkt"), die
+       *  übersprungen wurden — vorgemerkte Umsätze können ihren Hash nach
+       *  Buchung ändern (Duplikat-Risiko, Architekten-Freigabe 07/2026). */
+      skippedPendingCount: number;
+    }
   | { ok: false; errorClass: DkbParseError };
 
 const HEADER_FIRST_FIELD = "Buchungsdatum";
@@ -36,6 +43,7 @@ const COL_PAYEE = "Zahlungsempfänger*in";
 const COL_PURPOSE = "Verwendungszweck";
 const COL_AMOUNT = "Betrag (€)";
 const COL_IBAN = "IBAN";
+const COL_STATUS = "Status";
 /** Format-Heuristik prüft nur die ersten N Zeilen auf den Header-Anker. */
 const HEADER_SCAN_LINES = 8;
 
@@ -66,6 +74,8 @@ export function parseDkbCsv(text: string): DkbParseResult {
   // IBAN ist additiv (Sprint 9): fehlt die Spalte (älterer Export), bleibt
   // counterparty_iban null — kein Format-Fehler, damit Sprint-8-CSVs weiter laufen.
   const idxIban = header.indexOf(COL_IBAN);
+  // Status ist additiv (v2-04 P7): fehlt die Spalte, wird nicht gefiltert.
+  const idxStatus = header.indexOf(COL_STATUS);
   if (idxDate === -1 || idxPayee === -1 || idxPurpose === -1 || idxAmount === -1) {
     return { ok: false, errorClass: "format" };
   }
@@ -78,8 +88,19 @@ export function parseDkbCsv(text: string): DkbParseResult {
 
   // ── Feld-Mapping (atomar: erste fehlerhafte Zeile → komplett verwerfen) ───
   const rows: DkbCsvRow[] = [];
+  let skippedPendingCount = 0;
   for (const raw of dataLines) {
     const fields = tokenizeLine(raw);
+
+    // v2-04 P7: Status ≠ "Gebucht" (z. B. "Vorgemerkt") → Zeile überspringen,
+    // BEVOR Felder validiert werden — eine unfertige vorgemerkte Zeile darf
+    // den Import nicht als corrupt kippen. Vorgemerkte Umsätze können ihren
+    // Hash nach Buchung ändern → Duplikat-Risiko beim Folge-Import.
+    if (idxStatus !== -1 && fields[idxStatus] !== undefined && fields[idxStatus] !== "Gebucht") {
+      skippedPendingCount += 1;
+      continue;
+    }
+
     const dateField = fields[idxDate];
     const amountField = fields[idxAmount];
     if (dateField === undefined || amountField === undefined) {
@@ -105,7 +126,11 @@ export function parseDkbCsv(text: string): DkbParseResult {
     });
   }
 
-  return { ok: true, rows };
+  // v2-04 P7: Datei bestand ausschließlich aus vorgemerkten Zeilen → wie
+  // "keine Transaktionen" behandeln (nichts Importierbares).
+  if (rows.length === 0) return { ok: false, errorClass: "empty" };
+
+  return { ok: true, rows, skippedPendingCount };
 }
 
 // ── Tokenizer ─────────────────────────────────────────────────────────────
