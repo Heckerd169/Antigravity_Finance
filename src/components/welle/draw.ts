@@ -165,7 +165,11 @@ export function drawWave(
   if (mn < 0) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(WAVE_PAD_L, y0, cW, WAVE_PAD_T + cH - y0);
+    // Clip bis zur Canvas-Unterkante (h), NICHT bis zur Plot-Unterkante: die
+    // Catmull-Rom-Glättung überschießt am Minimums-Monat unter WAVE_PAD_T+cH —
+    // ein kürzerer Clip ließe diese Strich-Pixel teal (unter-Null muss
+    // durchgehend rot sein, §9 M10).
+    ctx.rect(WAVE_PAD_L, y0, cW, h - y0);
     ctx.clip();
     areaPath();
     ctx.fillStyle = redS(opacity * 0.4);
@@ -183,7 +187,8 @@ export function drawWave(
   if (mn < 0) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(WAVE_PAD_L, y0, cW, WAVE_PAD_T + cH - y0);
+    // Clip bis Canvas-Unterkante — Overshoot-Begründung siehe Flächen-Block oben.
+    ctx.rect(WAVE_PAD_L, y0, cW, h - y0);
     ctx.clip();
     ctx.beginPath();
     smoothPath(ctx, pts);
