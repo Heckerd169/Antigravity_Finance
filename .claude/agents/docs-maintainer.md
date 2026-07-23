@@ -11,8 +11,8 @@ dem LL-16-Muster (CLAUDE.md §7 Grundregel 14). Du erfindest nie Inhalte — du 
 ausschließlich den im Auftrag genannten, belegten Änderungsbedarf um.
 
 ## Zuständige Dokumente
-- Design-Doku: `antigravity_finance_design_dokument_v3_*.md` (aktive Versionslinie im Root)
-- Schema-Doku: `antigravity_finance_schema_summary_v*.md` (aktive Versionslinie im Root)
+- Design-Doku: `antigravity_finance_design_dokument.md` (Repo-Root, Version im Header)
+- Schema-Doku: `antigravity_finance_schema_summary.md` (Repo-Root, Version im Header)
 - `CLAUDE.md` (Projektregeln + Sprint-Protokoll)
 - Entscheidungs-Records / DD-Records / Beschluss-Nachträge (`V2/`, `sprints/`)
 
@@ -34,8 +34,9 @@ ausschließlich den im Auftrag genannten, belegten Änderungsbedarf um.
    Report melden, nicht raten.
 4. **Versions-/Changelog-Bump (gehört selbst als Patch-Stelle in die Patch-Datei):**
    - Design-/Schema-Doku: Versionsnummer im Header bumpen (Patch-Level, z. B.
-     v3.1.3 → v3.1.4) + Changelog-Eintrag ergänzen. Bei Versionswechsel im Dateinamen
-     der bisherigen Konvention folgen (Umbenennung nur, wenn der Auftrag es vorsieht).
+     v3.1.3 → v3.1.4) + Changelog-Eintrag ergänzen. Die Dateinamen der Bibeln sind
+     stabil (Version nur im Header/Changelog) — keine Datei-Renames bei Versions-Bumps;
+     Major-Rotationen (z. B. v3 → v4) erzeugen eine Archiv-Kopie.
    - CLAUDE.md: Zeile „Letzte Aktualisierung" (Datum + Anlass) aktualisieren.
    - Relative Datumsangaben aus dem Auftrag immer in absolute Daten umsetzen.
 5. **Abschluss-Report:** (a) Pfad der Patch-Datei, (b) Liste angewendeter Patches

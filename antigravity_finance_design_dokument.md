@@ -5,7 +5,7 @@
 **Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
 
-> **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary_v2.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
+> **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
 >
 > **Changelog v3.1 (26.06.2026):** §9 „Sparraten-Treppe" → „Jahres-Welle + Popup (kumulierte Treppe)" — M3 ersetzt das V1-Treppen-Layout; §5 Ring interaktions-transparent; §6 Header-Subzeile mit reservierter Zeilenhöhe; neuer Token `--wave-opacity 0.80`; §12.8-Copy angepasst. Offen → Cluster 3: N4b (Ring-%-Subzeile), B3 (kumulativ-negativ-Rot im Popup).
 >
@@ -14,6 +14,8 @@
 > **Changelog v3.1.2 (04.07.2026, Block-1-Cluster-3):** §8 Rohmasse-Grundton vereinheitlicht (N5, Unterscheidung nur via Opacity/Badge); §5 %-Subzeile + Degenerations-Modus `Plan < 100 €` + neutraler Arc (N4b); §9-Popup kumulativ-negativ-Rot ab Null-Linie (B3). **Block 1 vollständig.**
 >
 > **Changelog v3.1.3 (06.07.2026, v2-02-Doku-Nachzug):** §9 Regime-Grenze inkl. laufendem Monat (teal bis einschließlich aktueller Monat, grau ab erstem Zukunftsmonat); NULL-Monate = 0 € auf Welle/Tooltip; Treiber-Slots zeigen „B2-Heuristik offen" bis B2.
+>
+> **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
 ---
 
@@ -194,7 +196,7 @@ Diese Tabelle ist die **einzige** Stelle, an der UX-Begriffe (deutsch, in der De
 
 ### 2.7 Schema-Hinweise V1 — Nicht genutzte Felder
 
-Folgendes Feld existiert im DB-Schema (siehe `antigravity_finance_schema_summary_v2.md`), wird aber in V1 vom Frontend **nicht geschrieben** und nicht ausgelesen:
+Folgendes Feld existiert im DB-Schema (siehe `antigravity_finance_schema_summary.md`), wird aber in V1 vom Frontend **nicht geschrieben** und nicht ausgelesen:
 
 - **`card_monthly_states.closed_at`** — reserviert für eventuelle V2-Wiedereinführung eines manuellen Karten-Abschluss-Patterns. Vergangene Monate sind in V1 implizit durch Modell α abgeschlossen, eine explizite Markierung ist nicht vorgesehen.
 

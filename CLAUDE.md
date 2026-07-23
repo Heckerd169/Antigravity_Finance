@@ -48,8 +48,8 @@ keine ORM · keine Tests (manuelles Smoke-Testing in V1).
 ```
 Antigravity_Finance/
 ├── CLAUDE.md                                          ← diese Datei
-├── antigravity_finance_design_dokument_v3_1_3.md          ← Design-Bibel (read-only)
-├── antigravity_finance_schema_summary_v3_2.md           ← Schema-Bibel (read-only)
+├── antigravity_finance_design_dokument.md          ← Design-Bibel (read-only)
+├── antigravity_finance_schema_summary.md           ← Schema-Bibel (read-only)
 ├── sprints/
 │   ├── sprint_00_briefing.md
 │   ├── sprint_00_review.md
@@ -127,7 +127,7 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | v2-03 | Display: N5 Rohmasse-Grundton + N4b Ring-Degeneration + B3 Popup-Rot | 🟢 Done | sprints/sprint_v2-03_briefing.md | 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen) |
 | v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
 
-**Doku-Stand nach v2-04:** Design-Doku v3.1.3 (`antigravity_finance_design_dokument_v3_1_3.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary_v3_2.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
+**Doku-Stand nach v2-04:** Design-Doku v3.1.3 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
@@ -140,7 +140,7 @@ nicht exakt `2.910,01 €` liefert, gehen die betroffenen Komponenten zurück in
 
 ## 5. Designreferenzen
 
-Das **Design-Dokument v3** (`antigravity_finance_design_dokument_v3_1_3.md`) ist die einzige
+Das **Design-Dokument v3** (`antigravity_finance_design_dokument.md`) ist die einzige
 Wahrheits-Quelle. Bei Konflikt zwischen HTML-Prototyp und Design-Doku gewinnt **immer**
 die Design-Doku.
 
@@ -256,7 +256,7 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
 - Return-Schema erweitert um drei Counter: `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count`.
 - View `fragments_with_status`: zwei neue Spalten am Ende (`counterparty_iban`, `transfer_type`). Neuer `status`-Wert `'INTERNAL_TRANSFER'` mit höchster Priorität (schlägt `UNASSIGNED` / `ASSIGNED` / `AUTO_ABSORBED`).
 - `calculate_sparrate_for_month` ist **nicht** angepasst worden — sie liest keine Fragmente direkt, sondern aggregiert nur Karten-Amounts via `calculate_card_amount_for_month`. Daten-Invariante (Links werden bei Transfer-Markierung gelöst) garantiert per Konstruktion, dass `INTERNAL_TRANSFER`-Fragmente nie über `card_fragment_links` in die Sparrate fließen. Defense-in-Depth-Patch `AND f.transfer_type IS DISTINCT FROM 'INTERNAL_TRANSFER'` in `calculate_card_amount_for_month` ist als Architekten-Folge-Sprint vorgemerkt (V7'').
-- **Schema-Doku ist seit v2-04 als v3.2 aktiv** (`antigravity_finance_schema_summary_v3_2.md`) — deckt sowohl die Sprint-9-Stufe-1-Änderungen als auch die v2-04-Mehrkonten-Erweiterungen ab (Details siehe Schema-Befunde-Block „Sprint v2-04" unten).
+- **Schema-Doku ist seit v2-04 als v3.2 aktiv** (`antigravity_finance_schema_summary.md`) — deckt sowohl die Sprint-9-Stufe-1-Änderungen als auch die v2-04-Mehrkonten-Erweiterungen ab (Details siehe Schema-Befunde-Block „Sprint v2-04" unten).
 
 **Wichtige Schema-Befunde aus Sprint v2-04 (Mehrkonten Stufe 1):**
 - `fragments.transfer_type`-CHECK erweitert: `NULL` | `'INTERNAL_TRANSFER'` | `'ASSET_REALLOCATION'`. `INTERNAL_TRANSFER` weiterhin automatisch beim Import (IBAN-Erkennung gegen `own_ibans` oder DKB_VISA-Heuristik); `ASSET_REALLOCATION` ausschließlich manuell via `set_fragment_asset_reallocation` (Vermögensumschichtungen wie Broker→Topf, strukturell nicht von Sparüberweisungen unterscheidbar). Beide Typen verhalten sich in allen Berechnungs- und Link-Pfaden identisch — Semantik-Invariante: `transfer_type IS NOT NULL` ⇒ nie an Karten verlinkbar, zählt nie in Karten-Beträge oder Sparrate.
@@ -462,8 +462,8 @@ Pro Sprint ein neuer Claude Code Chat (Token-Schonung).
 
 **Sprint-Start:** Claude Code lädt
 1. CLAUDE.md (diese Datei)
-2. antigravity_finance_design_dokument_v3_1_3.md
-3. antigravity_finance_schema_summary_v3_2.md
+2. antigravity_finance_design_dokument.md
+3. antigravity_finance_schema_summary.md
 4. sprints/sprint_NN_briefing.md
 
 **Sprint-Ende:** Claude Code committet auf `sprint/NN-<komponente>`, schreibt
