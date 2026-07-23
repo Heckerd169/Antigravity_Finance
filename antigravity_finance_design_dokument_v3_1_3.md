@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.2 (V2 · Block 1 komplett)
+**Version:** 3.1.3 (V2 · v2-02 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
 **Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
@@ -12,6 +12,8 @@
 > **Changelog v3.1.1 (26.06.2026, Sprint v2-01):** §8 Fragment-Stack Monats-Scope (N1); §7 Kartenname-Overflow (N3); §4.7/§13 Umkehr — Zuordnungs-Monat = Transaktions-Monat, Periodenabgrenzung (allocation≠transaction) nicht mehr verfolgt; manueller Cross-Monat-Drop entfällt.
 >
 > **Changelog v3.1.2 (04.07.2026, Block-1-Cluster-3):** §8 Rohmasse-Grundton vereinheitlicht (N5, Unterscheidung nur via Opacity/Badge); §5 %-Subzeile + Degenerations-Modus `Plan < 100 €` + neutraler Arc (N4b); §9-Popup kumulativ-negativ-Rot ab Null-Linie (B3). **Block 1 vollständig.**
+>
+> **Changelog v3.1.3 (06.07.2026, v2-02-Doku-Nachzug):** §9 Regime-Grenze inkl. laufendem Monat (teal bis einschließlich aktueller Monat, grau ab erstem Zukunftsmonat); NULL-Monate = 0 € auf Welle/Tooltip; Treiber-Slots zeigen „B2-Heuristik offen" bis B2.
 
 ---
 
@@ -797,11 +799,15 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 | Negativer Monat | **Ausgaben-Rot** `#FF453A` (Fläche + Linie unter Null) |
 | Aktiver-Monat-Marker | **genau ein Kreis** — der im Header gewählte aktive Monat. Kein Hover-Punkt, kein Ereignis-Kreis |
 
-**Regime-Grenze Teal→Grau (DD-bestätigt):** Teal reicht **bis einschließlich dem letzten realisierten (abgeschlossenen) Monat** („jetzt"), fix und **unabhängig vom Header-aktiven Monat**. Der aktive Monat steuert nur die Ring-Zahl (§5) und den einen Kreis — **nicht** die Einfärbung. Navigation in einen Zukunftsmonat färbt nichts um (Teal = Fakt, Grau = Prognose).
+**Regime-Grenze Teal→Grau (DD-bestätigt, v2-02-Präzisierung):** Teal reicht **bis einschließlich dem laufenden (aktuellen) Monat** — abgeschlossene Monate (Fakt) **und** der laufende Monat (Hybridsicht, §4.4). **Grau ab dem ersten Zukunftsmonat** (reine Prognose). Die Grenze liegt fix am Kalender-„jetzt" und ist **unabhängig vom Header-aktiven Monat**: der aktive Monat steuert nur die Ring-Zahl (§5) und den einen Kreis, **nicht** die Einfärbung. Navigation in einen Zukunftsmonat färbt nichts um (Teal = Fakt + laufender Monat, Grau = Zukunft).
 
 **Verdeckung (Kernpunkt):** Der Ring liegt grafisch vor der Welle, ist aber **interaktions-transparent** (§5, `pointer-events:none`). Die Monatswahl ist **positions-basiertes Scrubbing über die volle Breite** (nicht punkt-genau); Führungslinie + Tooltip rendern **über** dem Ring. Damit ist auch die Jahresmitte hinter dem Ring voll erreichbar — der V1-„Umweg" entfällt.
 
 **Welle-Hover → Tooltip:** Monatsname, IST €, Plan €, **Top-1-Treiber**. Der IST-vs-Plan-Vergleich lebt hier, nicht als zweite Welle.
+
+**NULL-Monate (v2-02):** Ein Monat ohne berechenbare Sparrate (`calculate_sparrate_for_month = NULL`, z. B. Onboarding offen) wird auf der Welle und im Tooltip als **0 €** dargestellt — kein Lücken-/Gap-Rendering, die Welle bleibt durchgehend.
+
+**Treiber-Platzhalter (v2-02, bis B2):** Solange die Treiber-Heuristik (B2, Backend-Sprint) fehlt, zeigen die Treiber-Slots (Hover-Top-1, Popup-Top-3) das Label „B2-Heuristik offen" statt fiktiver Beträge; die Anzeige-Struktur ist final, nur die Datenquelle ist ein Stub.
 
 ### Popup (kumulierte Treppe) — Spezifikation
 
