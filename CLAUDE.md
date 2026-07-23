@@ -1,8 +1,8 @@
 # CLAUDE.md — Antigravity Finance 1.0
 
 > **Single source of truth** für Claude Code zwischen Sprints.
-> Diese Datei wird vom PM (Opus 4.7) nach jedem abgeschlossenen Sprint aktualisiert.
-> **Letzte Aktualisierung:** 24. Mai 2026 · **Nach Sprint:** 9 (Approved)
+> Diese Datei wird vom zentralen Arbeits-Agenten (Claude Code, PM-Rolle) nach jedem abgeschlossenen Sprint patch-basiert aktualisiert (LL-16).
+> **Letzte Aktualisierung:** 23. Juli 2026 · **Nach Sprint:** v2-04 (Approved) + v2-03 (gemerged 23.07.2026)
 
 ---
 
@@ -48,8 +48,8 @@ keine ORM · keine Tests (manuelles Smoke-Testing in V1).
 ```
 Antigravity_Finance/
 ├── CLAUDE.md                                          ← diese Datei
-├── antigravity_finance_design_dokument_v3.md          ← Design-Bibel (read-only)
-├── antigravity_finance_schema_summary_v2.md           ← Schema-Bibel (read-only)
+├── antigravity_finance_design_dokument_v3_1_3.md          ← Design-Bibel (read-only)
+├── antigravity_finance_schema_summary_v3_2.md           ← Schema-Bibel (read-only)
 ├── sprints/
 │   ├── sprint_00_briefing.md
 │   ├── sprint_00_review.md
@@ -74,7 +74,7 @@ Antigravity_Finance/
 │   │   ├── header-timeline/                           ← Sprint 3
 │   │   ├── cards/                                     ← Sprint 4
 │   │   ├── interaction-zone/                          ← Sprint 5
-│   │   └── treppe/                                    ← Sprint 9
+│   │   └── treppe/                                    ← Sprint 9 (ersetzt durch components/welle/ seit v2-02)
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   ├── client.ts
@@ -123,9 +123,11 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | Sprint | Thema | Status | Briefing | Approval |
 |---|---|---|---|---|
 | v2-01 | Bug-Sprint N1–N4a (direkt auf Prod, Option A) | 🟢 Done | sprints/sprint_v2-01_briefing.md | 26.06.2026 |
+| v2-02 | Jahres-Welle + Popup §9 (M3, ersetzt V1-Treppe) | 🟢 Done | sprints/sprint_v2-02_briefing.md | Juli 2026 (Merge vor v2-04) |
+| v2-03 | Display: N5 Rohmasse-Grundton + N4b Ring-Degeneration + B3 Popup-Rot | 🟢 Done | sprints/sprint_v2-03_briefing.md | 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen) |
+| v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
 
-**Doku-Stand nach v2-01:** Design-Doku **v3.1.1** (M3 Welle/Popup + v2-01-Patches), Schema-Doku v3.1.
-**N4b / N5:** bewusst offen → Design-Direktor Cluster 3 (nicht in v2-01 entschieden).
+**Doku-Stand nach v2-04:** Design-Doku v3.1.3 (`antigravity_finance_design_dokument_v3_1_3.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary_v3_2.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
@@ -138,7 +140,7 @@ nicht exakt `2.910,01 €` liefert, gehen die betroffenen Komponenten zurück in
 
 ## 5. Designreferenzen
 
-Das **Design-Dokument v3** (`antigravity_finance_design_dokument_v3.md`) ist die einzige
+Das **Design-Dokument v3** (`antigravity_finance_design_dokument_v3_1_3.md`) ist die einzige
 Wahrheits-Quelle. Bei Konflikt zwischen HTML-Prototyp und Design-Doku gewinnt **immer**
 die Design-Doku.
 
@@ -254,7 +256,15 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
 - Return-Schema erweitert um drei Counter: `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count`.
 - View `fragments_with_status`: zwei neue Spalten am Ende (`counterparty_iban`, `transfer_type`). Neuer `status`-Wert `'INTERNAL_TRANSFER'` mit höchster Priorität (schlägt `UNASSIGNED` / `ASSIGNED` / `AUTO_ABSORBED`).
 - `calculate_sparrate_for_month` ist **nicht** angepasst worden — sie liest keine Fragmente direkt, sondern aggregiert nur Karten-Amounts via `calculate_card_amount_for_month`. Daten-Invariante (Links werden bei Transfer-Markierung gelöst) garantiert per Konstruktion, dass `INTERNAL_TRANSFER`-Fragmente nie über `card_fragment_links` in die Sparrate fließen. Defense-in-Depth-Patch `AND f.transfer_type IS DISTINCT FROM 'INTERNAL_TRANSFER'` in `calculate_card_amount_for_month` ist als Architekten-Folge-Sprint vorgemerkt (V7'').
-- **Schema-Doku v3 ist gegenüber diesen Änderungen noch nicht aktualisiert** — Schema-Doku v3 → v3.1 Pflege ist als V6'' vorgemerkt (Architekten-Lieferung).
+- **Schema-Doku ist seit v2-04 als v3.2 aktiv** (`antigravity_finance_schema_summary_v3_2.md`) — deckt sowohl die Sprint-9-Stufe-1-Änderungen als auch die v2-04-Mehrkonten-Erweiterungen ab (Details siehe Schema-Befunde-Block „Sprint v2-04" unten).
+
+**Wichtige Schema-Befunde aus Sprint v2-04 (Mehrkonten Stufe 1):**
+- `fragments.transfer_type`-CHECK erweitert: `NULL` | `'INTERNAL_TRANSFER'` | `'ASSET_REALLOCATION'`. `INTERNAL_TRANSFER` weiterhin automatisch beim Import (IBAN-Erkennung gegen `own_ibans` oder DKB_VISA-Heuristik); `ASSET_REALLOCATION` ausschließlich manuell via `set_fragment_asset_reallocation` (Vermögensumschichtungen wie Broker→Topf, strukturell nicht von Sparüberweisungen unterscheidbar). Beide Typen verhalten sich in allen Berechnungs- und Link-Pfaden identisch — Semantik-Invariante: `transfer_type IS NOT NULL` ⇒ nie an Karten verlinkbar, zählt nie in Karten-Beträge oder Sparrate.
+- `process_csv_import`s `p_format_hint` ist jetzt **aktiv** (vorher Future-Proof-Slot ohne Body-Logik): `'DKB'` (Default) | `'CORTAL_CONSORS'` | `'DKB_VISA'`. Bei `'DKB_VISA'` greift zusätzlich zur IBAN-Erkennung die KK-Klassifikationsregel — Zeilen mit `amount > 0` und Beschreibung `ILIKE 'Einzahlung%'` oder `ILIKE 'Ausgleich Kreditkarte%'` → `INTERNAL_TRANSFER` (inkl. OQ-B-Link-Auflösung), da der DKB-Visa-Export keine Gegen-IBAN führt.
+- Neue RPC `set_fragment_asset_reallocation(p_fragment_id uuid, p_set boolean DEFAULT true)`: Auth-Pflicht (28000), expliziter Ownership-Check zusätzlich zu RLS (42501). Setzen (`p_set=true`) erlaubt aus `NULL` und `INTERNAL_TRANSFER`→`ASSET_REALLOCATION`, verweigert mit 23514 bei bestehender Karten-Zuordnung (erst lösen, kein stilles Entkoppeln), räumt `suggested_card_id`/`confidence`. Rücknahme (`p_set=false`) nur aus `ASSET_REALLOCATION` → `NULL`; ein IBAN-erkennbares Fragment bekommt beim nächsten Re-Import automatisch wieder `INTERNAL_TRANSFER`. Returns `jsonb` (`{fragment_id, transfer_type}`).
+- Neuer Trigger `trg_oqb_no_transfer_links` auf `card_fragment_links` (BEFORE INSERT OR UPDATE OF `fragment_id`, Funktion `enforce_no_transfer_fragment_links()`): weist Links auf Fragmente mit `transfer_type IS NOT NULL` mit 23514 ab — schließt sowohl direktes Client-INSERT unter RLS als auch `create_card_from_fragment`. OQ-B ist damit dreischichtig abgesichert.
+- Duplikat-Hash-Fix: `fragments.hash` bekommt bei byte-identischen Zeilen innerhalb eines Import-Batches ab dem 2. Vorkommen das deterministische Suffix `|#N` (N = Vorkommens-Index in Dateireihenfolge; erstes Vorkommen = alte Formel, abwärtskompatibel; Re-Import → gleiche Indizes → gleiche Hashes, idempotent). Bekannte Grenze bleibt: identische Buchungen über zwei separate Teil-Exporte desselben Monats deduplizieren weiterhin — Monats-Exporte vollständig importieren.
+- Defense-in-Depth-Filter in `calculate_card_amount_for_month` (bereits Pre-Sprint-10 als `transfer_type IS NULL`-Filter eingeführt) ist type-agnostisch und deckt `ASSET_REALLOCATION` automatisch mit ab, ohne dass die RPC für v2-04 erneut angefasst werden musste — `calculate_sparrate_for_month` ist transitiv geschützt (liest Fragmente ausschließlich über diese Funktion).
 
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
@@ -452,8 +462,8 @@ Pro Sprint ein neuer Claude Code Chat (Token-Schonung).
 
 **Sprint-Start:** Claude Code lädt
 1. CLAUDE.md (diese Datei)
-2. antigravity_finance_design_dokument_v3.md
-3. antigravity_finance_schema_summary_v2.md
+2. antigravity_finance_design_dokument_v3_1_3.md
+3. antigravity_finance_schema_summary_v3_2.md
 4. sprints/sprint_NN_briefing.md
 
 **Sprint-Ende:** Claude Code committet auf `sprint/NN-<komponente>`, schreibt
@@ -1516,3 +1526,37 @@ erfüllt (Onboarding, Auth/RLS, CSV-Import DKB+Cortal, Sparrate cent-exakt,
 Sparraten-Treppe, Soft-Delete). V3'' Badge-Farben in V2-Backlog verschoben
 (User-Entscheidung 25.05.2026 — Option A: kein Sprint 11, direkt Go-Live).
 Pre-Live-Phase startet.
+
+### Sprint v2-02 · APPROVED Juli 2026 (Merge vor v2-04)
+
+**Komponente:** Jahres-Welle + Popup (Design-Doku §9, M3) — ersetzt die V1-Sparraten-Treppe (`src/components/treppe/` entfernt, −699 LOC).
+
+**Kern-Implementierung:** 12-Monats-EUR-Welle hinter dem interaktions-transparenten, bildschirm-zentrierten Ring (Teal = realisiert, Grau = Forecast, Rot `#FF453A` = negativer Monat, Opacity 0.80, genau ein aktiver-Monat-Kreis) · Scrub-Führungslinie + Tooltip über volle Breite inkl. Jahresmitte hinter dem Ring · Klick-Popup mit kumulierter Treppe IST(teal)+Plan(grau), Jahressumme als Held, B6-Goldlinie (Vorjahres-Endwert, datenlos → entfällt) · Header-Ausreißer-Subzeile mit permanent reservierter Zeilenhöhe.
+
+**Korrektur K1** (4. Juli 2026, nach User-Smoke): `<canvas>` als Replaced Element ohne explizite `width/height` — `inset:0` stretcht bei Canvas (anders als bei Divs) nicht auf die Containergröße, die Bitmap lief bei Retina-DPR über die ganze Seite. Fix: `.canvas { width:100%; height:100% }` + Single-Viewport-Layout (`main { height:100dvh; overflow-y:auto }` statt `min-height:100dvh`). Verifiziert per Headless-Chrome-Repro (Bug- und Fix-Variante).
+
+**Offen:** B3-Slot (Popup-Held-Farbe bei kumulativ-negativer Jahressumme) blieb offen für Cluster 3 — gefüllt in v2-03. Treiber-Anzeige zeigt Platzhalter „B2-Heuristik offen" (echte Heuristik = separater Backend-Sprint). Beobachtung: 36 Sparrate-RPC-Calls pro Dashboard-Render (12 IST + 12 Plan + 12 Vorjahr) — nur bei spürbarer Latenz eskalieren, nicht eigenmächtig optimieren.
+
+### Sprint v2-03 · APPROVED 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen)
+
+**Komponente:** Display-Feinschliff N5 (§8) + N4b (§5) + B3-Fertigstellung (§9-Popup) aus Design-Direktor Cluster 3.
+
+**Kern-Implementierung:** N5 — gemeinsamer Grau-Grundton-Token `--fragment-hue` für alle Rohmasse-Fragmente, Unterscheidung nur über Opacity (0.22 zugeordnet / 0.45 Transfer) + TRANSFER-Badge. N4b — Ring-Subzeile: Cap „> 200 % von Plan" ab `pct > 2`, Degenerations-Modus bei Plan < 100 € (inkl. negativ) mit EUR-Aussage statt %, Subzeilen-Farbe folgt dem Differenz-Vorzeichen, neutraler Arc (nur Spur, keine Füllung). B3 — Popup-Treppe abschnittsweise rot unter der Null-Linie (`#FF453A`), Held folgt dem Endwert-Vorzeichen (füllt den in v2-02 offen gelassenen B3-Slot).
+
+**Korrekturen:** keine.
+
+**Verifikation:** B3-Negativpfad und N4b-Degenerations-Pfad sind im Live-Bestand nicht auslösbar (alle Kumulationen ≥ 0, Live-Plan > 100 €) — per Headless-Chrome-Repro mit real kompiliertem `draw.ts` + synthetischen Kurven nachgewiesen statt per Browser-Smoke.
+
+**Merge-Modus (PM-Entscheid/User-Anweisung 22./23.07.2026, nicht im Review dokumentiert):** Fast-Forward-Merge nach `main` durch Claude Code (PM-Rolle) auf ausdrückliche User-Anweisung; Browser-Smoke bewusst erlassen. Verifikation stattdessen: Headless-Chrome-Repro der Negativpfade (siehe oben), `tsc`/Lint/Build grün, Vercel-Preview grün.
+
+### Sprint v2-04 · APPROVED 15.07.2026
+
+**Komponente:** Mehrkonten Stufe 1 — DKB-Visa-KK-Parser + Format-Router-Erweiterung, Interim-Verdrahtung `set_fragment_asset_reallocation`, Frontend-Status-Pfade für `ASSET_REALLOCATION` (§11). DB-Seite (Migration + RPCs) am 06.07.2026 vom Architekten selbst angewendet (bestätigte, einmalige Sprint-Ausnahme, Briefing §0a — keine Dauerregel).
+
+**Kern-Implementierung:** `src/lib/dkb-visa-csv.ts` (Header-Anker „Belegdatum", `p_format_hint='DKB_VISA'`, KK-Klassifikation Einzahlung/Ausgleich-Kreditkarte-Prefix → `INTERNAL_TRANSFER`) · Router-Reihenfolge Cortal → DKB-Visa → DKB-Giro · `setFragmentAssetReallocation`-Wrapper + schlichter Interim-Text-Button auf der Fragment-Karte (Setzen aus UNASSIGNED/INTERNAL_TRANSFER, Rücknahme aus ASSET_REALLOCATION) · `fragment-card.tsx`: `isTransfer` deckt jetzt beide `transfer_type`-Werte (gedimmt 0.45, graues Badge, `draggable=false`).
+
+**Nachtrag P7** (15.07.2026): „Vorgemerkt"-Zeilen-Filter in beiden DKB-Parsern (Giro + Visa) — Zeilen mit Status ≠ „Gebucht" werden vor der Feld-Validierung übersprungen (vom Architekten bestätigtes Duplikat-Hash-Risiko), Import-Toast weist übersprungene Zeilen aus, eine reine Vorgemerkt-Datei liefert `error-empty`.
+
+**Verifikation (P5, ohne Browser):** echte Parser-/Router-Ausgabe → RPC-Aufruf mit simuliertem Auth-Kontext (LL-18-Pattern) — KK-Transfer-Klassifikation, Fremd-Owner-Negativtest (`42501`), Duplikat-Hash-Idempotenz, AR-Markieren/Rücknahme alle grün.
+
+**Offen:** Finale DD-Geste für `ASSET_REALLOCATION` steht aus — Interim-Button + undifferenziertes Transfer-Badge sind bewusst „nichts Aufwendiges" (Briefing-Vorgabe). Merge-Reihenfolge mit v2-03 (beide berühren Fragment-Card) lag bei Dominik. Realer KK-Import (89 Zeilen/25 Transfer-Kandidaten) noch nicht im Browser gefahren — Browser-Smoke offen beim User.
