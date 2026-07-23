@@ -38,3 +38,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright (M0 render-smoke)
+/test-results/
+/playwright-report/
+/playwright/.auth/
+
+# claude code — lokale Session-Settings (agents/ ist bewusst versioniert)
+.claude/settings.local.json
