@@ -46,3 +46,6 @@ next-env.d.ts
 
 # claude code — lokale Session-Settings (agents/ ist bewusst versioniert)
 .claude/settings.local.json
+
+# lokale Konto-Abzüge für den Initial-Import — NIE committen
+/import_data/
