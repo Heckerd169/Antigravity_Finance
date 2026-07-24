@@ -241,11 +241,12 @@ export type PopupStairParams = {
 };
 
 // Rechter Gutter (58px) reserviert den Platz für den B6-Betrag AUSSERHALB der
-// Plotfläche (§9: „Betrag steht im rechten Gutter").
-const POP_PAD_L = 8;
-const POP_PAD_R = 58;
-const POP_PAD_T = 14;
-const POP_PAD_B = 22;
+// Plotfläche (§9: „Betrag steht im rechten Gutter"). Exportiert wie die
+// WAVE_PAD_*-Konstanten, damit die Pixel-Checks die Geometrie nachrechnen können.
+export const POP_PAD_L = 8;
+export const POP_PAD_R = 58;
+export const POP_PAD_T = 14;
+export const POP_PAD_B = 22;
 
 /**
  * Zeichnet die kumulierte IST/Plan-Treppe des Popups und liefert die
@@ -326,7 +327,11 @@ export function drawPopupStair(
     const y0 = yOf(0);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(POP_PAD_L, y0, cW, POP_PAD_T + cH - y0);
+    // Clip bis zur Canvas-Unterkante (h), NICHT bis zur Plot-Unterkante:
+    // liegt das kumulative Minimum exakt auf der Plot-Unterkante, ragt die
+    // untere Strichhälfte (lineWidth 1.5) darüber hinaus und bliebe teal —
+    // gleiche Fehlerklasse wie der Welle-Overshoot (Fix 23.07.2026).
+    ctx.rect(POP_PAD_L, y0, cW, h - y0);
     ctx.clip();
     stairFillPath(istCum);
     ctx.fillStyle = redS(0.26);
