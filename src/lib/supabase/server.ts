@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { fetchWithRetry } from "./fetch-retry";
 import type { Database } from "./types";
 
 export function createClient() {
@@ -9,6 +10,9 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // ECONNRESET-Robustheit: Einmal-Retry für netzwerk-tote LESE-Requests
+      // (Details + Idempotenz-Grenzen in fetch-retry.ts).
+      global: { fetch: fetchWithRetry },
       cookies: {
         getAll() {
           return cookieStore.getAll();
