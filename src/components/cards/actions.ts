@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { toggleCardManuallyPaid, toggleCardHidden } from "@/lib/rpc";
+import {
+  cleanupExpiredCardTrash,
+  deleteCard,
+  endCard,
+  restoreCard,
+  toggleCardManuallyPaid,
+} from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
@@ -12,19 +18,58 @@ export async function toggleCardTap(formData: FormData) {
   revalidatePath("/", "page");
 }
 
-/** Sprint 10 Phase 2: Karte verbergen (Soft-Delete via deleted_at). Past-Month
- *  erlaubt (keine Sperre, L2.7). revalidatePath lässt die Karte aus allen
- *  UI-Surfaces verschwinden; Sparrate bleibt unberührt (snapshot-integer). */
-export async function hideCard(cardId: string): Promise<void> {
+/* ── v2-05: Karten-Lebenszyklus (ersetzt das Sprint-10-Verbergen) ──────────── */
+
+/** Opportunistischer Papierkorb-Vollzug (Beschluss E3b): abgelaufene eigene
+ *  Trash-Karten werden bei jeder Lebenszyklus-Aktion endgültig entfernt.
+ *  Darf die eigentliche Aktion nie blockieren. */
+async function opportunisticTrashCleanup(
+  supabase: ReturnType<typeof createClient>,
+): Promise<void> {
+  try {
+    await cleanupExpiredCardTrash(supabase);
+  } catch (e) {
+    console.error("Papierkorb-Cleanup fehlgeschlagen (nicht blockierend)", e);
+  }
+}
+
+/** Karte beenden (last_active_month) bzw. Ende aufheben (lastMonth=null). */
+export async function endCardAction(
+  cardId: string,
+  lastMonth: string | null,
+): Promise<void> {
   const supabase = createClient();
-  await toggleCardHidden(supabase, { cardId, hidden: true });
+  await opportunisticTrashCleanup(supabase);
+  await endCard(supabase, { cardId, lastMonth });
   revalidatePath("/", "page");
 }
 
-/** Sprint 10 Phase 2: Verbergen rückgängig (deleted_at = NULL). Vom 5s-Toast. */
-export async function unhideCard(cardId: string): Promise<void> {
+/** Karte in den Papierkorb (nur bei grünem Lösch-Gate, sonst RPC-23514). */
+export async function deleteCardAction(cardId: string): Promise<void> {
   const supabase = createClient();
-  await toggleCardHidden(supabase, { cardId, hidden: false });
+  await opportunisticTrashCleanup(supabase);
+  await deleteCard(supabase, { cardId });
+  revalidatePath("/", "page");
+}
+
+/** Rückgängig aus dem Papierkorb (vom Undo-Toast, innerhalb der Retention). */
+export async function restoreCardAction(cardId: string): Promise<void> {
+  const supabase = createClient();
+  await restoreCard(supabase, { cardId });
+  revalidatePath("/", "page");
+}
+
+/** Alle Fragment-Verknüpfungen einer Karte lösen (ALLE Monate) — bewusste
+ *  Vergangenheits-Korrektur vor einem gewollten Löschen (Soft-Detach,
+ *  Stufe-1-Papier §2). Fragmente fallen verlustfrei in die Rohmasse zurück. */
+export async function detachAllCardLinks(cardId: string): Promise<void> {
+  const supabase = createClient();
+  await opportunisticTrashCleanup(supabase);
+  const { error } = await supabase
+    .from("card_fragment_links")
+    .delete()
+    .eq("card_id", cardId);
+  if (error) throw error;
   revalidatePath("/", "page");
 }
 

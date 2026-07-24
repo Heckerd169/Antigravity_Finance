@@ -8,6 +8,13 @@ export type FixedCostState = "open" | "paid" | "ghost";
 export type IncomeState = "expected" | "received" | "ghost";
 export type BudgetState = "running" | "over" | "done" | "ghost";
 
+/** v2-05: Lösch-Tor fürs Kontextmenü — „Karte löschen" nur bei deletable=true,
+ *  sonst ausgegraut mit Grund. Autoritativ prüft die RPC delete_card erneut. */
+export type DeleteGate = {
+  deletable: boolean;
+  reasons: ("HAS_LINKS" | "HAS_STATES" | "HAS_PAST_PLAN")[];
+};
+
 /** Sprint 5: im targetMonth verknüpftes Fragment (für „Verknüpfte Fragmente"-Menüoption). */
 export type LinkedFragmentRef = {
   fragmentId: string;
@@ -36,4 +43,7 @@ export type EnrichedCard = {
   /** Sprint 5: im aktuellen Monat zugeordnete Fragmente (für „Verknüpfte
    *  Fragmente"-Menü + Budget-Verbrauch). */
   linkedFragments?: LinkedFragmentRef[];
+  /** v2-05: vorberechnetes Lösch-Tor (Links/States über ALLE Monate +
+   *  Vergangenheits-Plan). */
+  deleteGate: DeleteGate;
 };

@@ -455,6 +455,8 @@ export type Database = {
         Args: { p_month: string; p_user_id: string }
         Returns: number
       }
+      card_delete_gate: { Args: { p_card_id: string }; Returns: Json }
+      cleanup_expired_card_trash: { Args: never; Returns: number }
       create_card_direct: {
         Args: {
           p_attribution: Database["public"]["Enums"]["card_attribution"]
@@ -480,6 +482,11 @@ export type Database = {
           p_type: Database["public"]["Enums"]["card_type"]
         }
         Returns: string
+      }
+      delete_card: { Args: { p_card_id: string }; Returns: Json }
+      end_card: {
+        Args: { p_card_id: string; p_last_month: string }
+        Returns: Json
       }
       estimate_net_monthly: {
         Args: {
@@ -525,6 +532,7 @@ export type Database = {
         Args: { p_format_hint?: string; p_rows: Json }
         Returns: Json
       }
+      restore_card: { Args: { p_card_id: string }; Returns: boolean }
       restore_deletion: { Args: { p_id: string }; Returns: boolean }
       schedule_deletion: {
         Args: {
@@ -540,10 +548,6 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
-      toggle_card_hidden: {
-        Args: { p_card_id: string; p_hidden: boolean }
-        Returns: boolean
-      }
       toggle_card_manually_paid: {
         Args: { p_card_id: string; p_month: string }
         Returns: boolean

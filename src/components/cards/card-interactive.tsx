@@ -2,12 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { toggleCardTap } from "./actions";
-import { useCardHide } from "./card-hide-provider";
+import {
+  deleteCardAction,
+  endCardAction,
+  restoreCardAction,
+  toggleCardTap,
+} from "./actions";
+import { useCardActionToast } from "./card-action-toast-provider";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
+import { EndCardOverlay } from "./end-card-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
-import type { LinkedFragmentRef } from "./cards.types";
+import type { DeleteGate, LinkedFragmentRef } from "./cards.types";
 import styles from "./cards.module.css";
+
+/** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt). */
+const GATE_REASON_TEXT: Record<DeleteGate["reasons"][number], string> = {
+  HAS_LINKS: "hat verknüpfte Fragmente",
+  HAS_STATES: "hat Monats-Änderungen",
+  HAS_PAST_PLAN: "war in vergangenen Monaten eingeplant",
+};
 
 type CardInteractiveProps = {
   cardId: string;
@@ -19,10 +32,16 @@ type CardInteractiveProps = {
   /** Sprint 5: im aktuellen Monat verknüpfte Fragmente. Wenn länger 0,
    *  erscheint die Menüoption „Verknüpfte Fragmente". */
   linkedFragments?: LinkedFragmentRef[];
-  /** Sprint 10: Ghost/Forecast-Karten — Menü zeigt NUR „Verbergen", kein
-   *  Tap-Catcher, kein „Betrag anpassen". Hält das Hide-Affordance auf jeder
-   *  Karte (L2.1) ohne Ghost-Karten sonst interaktiv zu machen. */
-  hideOnly?: boolean;
+  /** v2-05 (vormals hideOnly): Ghost/Forecast-Karten — Menü zeigt nur die
+   *  Lebenszyklus-Verben (Beenden/Löschen), kein Tap-Catcher, kein
+   *  „Betrag anpassen". Hält die Affordance auf jeder Karte (L2.1). */
+  endDeleteOnly?: boolean;
+  /** v2-05: false bei ONCE-Karten (haben per Constraint ein festes Ende). */
+  canEnd: boolean;
+  /** v2-05: aktuelles Karten-Ende (für Undo + „Ende aufheben"). */
+  currentLastMonth: string | null;
+  /** v2-05: vorberechnetes Lösch-Tor; die RPC prüft autoritativ erneut. */
+  deleteGate: DeleteGate;
 };
 
 export function CardInteractive({
@@ -33,17 +52,21 @@ export function CardInteractive({
   tappable,
   ariaLabel,
   linkedFragments,
-  hideOnly = false,
+  endDeleteOnly = false,
+  canEnd,
+  currentLastMonth,
+  deleteGate,
 }: CardInteractiveProps) {
-  const effectiveTappable = tappable && !hideOnly;
+  const effectiveTappable = tappable && !endDeleteOnly;
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [endOverlayOpen, setEndOverlayOpen] = useState(false);
   const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const hasLinkedFragments = (linkedFragments?.length ?? 0) > 0;
-  const requestHide = useCardHide();
+  const showToast = useCardActionToast();
 
   // LL-5: Wenn der Monat wechselt (month-Prop ändert sich) oder die letzte
   // Verknüpfung weg ist, das Linked-Overlay schließen — sonst zeigt es Daten
@@ -101,10 +124,43 @@ export function CardInteractive({
     setLinkedOverlayOpen(true);
   }
 
-  function handleHideClick(e: React.MouseEvent) {
+  function handleEndClick(e: React.MouseEvent) {
     e.stopPropagation();
     setMenuOpen(false);
-    requestHide(cardId, cardName);
+    setEndOverlayOpen(true);
+  }
+
+  /** Beenden bestätigt: Aktion sofort + 5s-Undo (setzt das vorherige Ende zurück). */
+  function handleEndConfirm(lastMonth: string) {
+    setEndOverlayOpen(false);
+    const prev = currentLastMonth;
+    showToast({
+      text: `Karte »${cardName}« endet im ${lastMonth.slice(5, 7)}/${lastMonth.slice(0, 4)}`,
+      run: () => endCardAction(cardId, lastMonth),
+      undo: () => endCardAction(cardId, prev),
+    });
+  }
+
+  function handleUnendClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    const prev = currentLastMonth;
+    showToast({
+      text: `Ende von »${cardName}« aufgehoben`,
+      run: () => endCardAction(cardId, null),
+      undo: () => endCardAction(cardId, prev),
+    });
+  }
+
+  function handleDeleteClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!deleteGate.deletable) return;
+    setMenuOpen(false);
+    showToast({
+      text: `Karte »${cardName}« gelöscht`,
+      run: () => deleteCardAction(cardId),
+      undo: () => restoreCardAction(cardId),
+    });
   }
 
   return (
@@ -140,7 +196,7 @@ export function CardInteractive({
           style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
           role="menu"
         >
-          {!hideOnly && hasLinkedFragments && (
+          {!endDeleteOnly && hasLinkedFragments && (
             <button
               type="button"
               className={styles.contextMenuItem}
@@ -150,7 +206,7 @@ export function CardInteractive({
               Verknüpfte Fragmente
             </button>
           )}
-          {!hideOnly && (
+          {!endDeleteOnly && (
             <button
               type="button"
               className={styles.contextMenuItem}
@@ -160,16 +216,54 @@ export function CardInteractive({
               Betrag anpassen
             </button>
           )}
+          {canEnd && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleEndClick}
+              role="menuitem"
+            >
+              Karte beenden…
+            </button>
+          )}
+          {canEnd && currentLastMonth !== null && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleUnendClick}
+              role="menuitem"
+            >
+              Ende aufheben
+            </button>
+          )}
           <button
             type="button"
-            className={styles.contextMenuItem}
-            onClick={handleHideClick}
+            className={`${styles.contextMenuItem}${deleteGate.deletable ? "" : ` ${styles.contextMenuItemDisabled}`}`}
+            onClick={handleDeleteClick}
             role="menuitem"
+            aria-disabled={!deleteGate.deletable}
+            disabled={!deleteGate.deletable}
           >
-            Verbergen
+            Karte löschen
           </button>
+          {!deleteGate.deletable && (
+            <div className={styles.contextMenuReason}>
+              Nicht löschbar: {deleteGate.reasons.map((r) => GATE_REASON_TEXT[r]).join(", ")}.
+              Stattdessen »Karte beenden…«.
+            </div>
+          )}
         </div>,
         document.body
+      )}
+
+      {/* Beenden-Overlay (v2-05) */}
+      {endOverlayOpen && (
+        <EndCardOverlay
+          cardName={cardName}
+          month={month}
+          onConfirm={handleEndConfirm}
+          onClose={() => setEndOverlayOpen(false)}
+        />
       )}
 
       {/* Betrag-anpassen-Overlay */}
@@ -186,6 +280,7 @@ export function CardInteractive({
       {linkedOverlayOpen && hasLinkedFragments && (
         <LinkedFragmentsOverlay
           cardName={cardName}
+          cardId={cardId}
           linkedFragments={linkedFragments!}
           onClose={() => setLinkedOverlayOpen(false)}
         />

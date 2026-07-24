@@ -9,34 +9,41 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { hideCard, unhideCard } from "./actions";
-import styles from "./card-hide.module.css";
+import styles from "./card-action-toast.module.css";
 
-/** Aufruf aus dem Karten-Kontextmenü: Karte verbergen + Rückgängig-Toast zeigen. */
-type RequestHide = (cardId: string, cardName: string) => void;
+/** v2-05: generalisierter Aktions-Toast (vorher Verbergen-only, Sprint 10).
+ *  Eine Lebenszyklus-Aktion (Löschen/Beenden) wird sofort ausgeführt und
+ *  bekommt 5 s lang einen Rückgängig-Knopf. */
+export type CardActionToastRequest = {
+  /** Toast-Text, fertig formuliert (inkl. Kartenname). */
+  text: string;
+  /** Die eigentliche Server-Action — wird sofort gestartet. */
+  run: () => Promise<void>;
+  /** Rückgängig-Server-Action für den Undo-Knopf. */
+  undo: () => Promise<void>;
+};
 
-const CardHideContext = createContext<RequestHide>(() => {});
+type ShowToast = (req: CardActionToastRequest) => void;
 
-export function useCardHide(): RequestHide {
-  return useContext(CardHideContext);
+const CardActionToastContext = createContext<ShowToast>(() => {});
+
+export function useCardActionToast(): ShowToast {
+  return useContext(CardActionToastContext);
 }
 
 type ToastState = {
-  cardId: string;
-  cardName: string;
+  text: string;
+  undo: () => Promise<void>;
   key: number;
   exiting: boolean;
 };
 
 /**
  * Client-Provider rund um die Karten-Surfaces. Hält den 5s-Rückgängig-Toast
- * (unten Mitte, A9) außerhalb der Karten-DOM — die verborgene Karte verschwindet
- * via revalidatePath, der Toast überlebt das, weil er hier oben gerendert wird.
- *
- * Der Provider umschließt server-gerenderte children (InteractionZone); der
- * Client-Context fließt durch sie hindurch zu den CardInteractive-Leaves.
+ * (unten Mitte, Sprint-10-Pattern) außerhalb der Karten-DOM — die betroffene
+ * Karte verschwindet via revalidatePath, der Toast überlebt das hier oben.
  */
-export function CardHideProvider({ children }: { children: React.ReactNode }) {
+export function CardActionToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<ToastState | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,13 +60,13 @@ export function CardHideProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const requestHide = useCallback<RequestHide>(
-    (cardId, cardName) => {
+  const showToast = useCallback<ShowToast>(
+    ({ text, run, undo }) => {
       clearTimer();
       keyRef.current += 1;
-      setToast({ cardId, cardName, key: keyRef.current, exiting: false });
-      hideCard(cardId).catch((e) => console.error("hideCard fehlgeschlagen", e));
-      // Nach 5 s Fade-out einleiten (§5), dann nach 200 ms Exit-Animation entfernen.
+      setToast({ text, undo, key: keyRef.current, exiting: false });
+      run().catch((e) => console.error("Karten-Aktion fehlgeschlagen", e));
+      // Nach 5 s Fade-out einleiten, dann nach 200 ms Exit-Animation entfernen.
       timerRef.current = setTimeout(() => {
         setToast((cur) => (cur ? { ...cur, exiting: true } : null));
         exitTimerRef.current = setTimeout(() => setToast(null), 200);
@@ -72,11 +79,9 @@ export function CardHideProvider({ children }: { children: React.ReactNode }) {
   const handleUndo = useCallback(() => {
     setToast((cur) => {
       if (cur) {
-        unhideCard(cur.cardId).catch((e) =>
-          console.error("unhideCard fehlgeschlagen", e),
-        );
+        cur.undo().catch((e) => console.error("Rückgängig fehlgeschlagen", e));
       }
-      return null; // §5: Toast schließt sofort
+      return null; // Toast schließt sofort
     });
     clearTimer();
   }, [clearTimer]);
@@ -84,7 +89,7 @@ export function CardHideProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => clearTimer, [clearTimer]);
 
   return (
-    <CardHideContext.Provider value={requestHide}>
+    <CardActionToastContext.Provider value={showToast}>
       {children}
       {toast &&
         typeof document !== "undefined" &&
@@ -94,9 +99,7 @@ export function CardHideProvider({ children }: { children: React.ReactNode }) {
             className={`${styles.toast} ${toast.exiting ? styles.toastExiting : ""}`}
             role="status"
           >
-            <span className={styles.toastText}>
-              Karte&nbsp;»{toast.cardName}«&nbsp;ausgeblendet
-            </span>
+            <span className={styles.toastText}>{toast.text}</span>
             <button
               type="button"
               className={styles.undoButton}
@@ -108,6 +111,6 @@ export function CardHideProvider({ children }: { children: React.ReactNode }) {
           </div>,
           document.body,
         )}
-    </CardHideContext.Provider>
+    </CardActionToastContext.Provider>
   );
 }

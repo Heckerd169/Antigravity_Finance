@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { formatAmount } from "@/lib/format";
 import type { LinkedFragmentRow } from "./interaction-zone.types";
 import { ejectFragment } from "./actions";
+import { detachAllCardLinks } from "@/components/cards/actions";
 import styles from "./interaction-zone.module.css";
 
 const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
@@ -15,12 +16,16 @@ const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
 
 type LinkedFragmentsOverlayProps = {
   cardName: string;
+  /** v2-05: nötig für den Bulk-Detach („alle Verknüpfungen dieser Karte,
+   *  ALLE Monate lösen" — Soft-Detach vor gewolltem Löschen). */
+  cardId: string;
   linkedFragments: LinkedFragmentRow[];
   onClose: () => void;
 };
 
 export function LinkedFragmentsOverlay({
   cardName,
+  cardId,
   linkedFragments,
   onClose,
 }: LinkedFragmentsOverlayProps) {
@@ -30,6 +35,8 @@ export function LinkedFragmentsOverlay({
   const [rows, setRows] = useState(linkedFragments);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // v2-05: 2-Schritt-Bestätigung für den Bulk-Detach (kein window.confirm).
+  const [confirmDetachAll, setConfirmDetachAll] = useState(false);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -123,6 +130,33 @@ export function LinkedFragmentsOverlay({
         </div>
 
         <div className={styles.overlayActions}>
+          <button
+            type="button"
+            className={styles.cancelButton}
+            onClick={() => {
+              // v2-05 Bulk-Detach, 2-Schritt: erster Klick fragt nach, zweiter
+              // löst ALLE Verknüpfungen der Karte (alle Monate) — Fragmente
+              // fallen verlustfrei in die Rohmasse zurück.
+              if (!confirmDetachAll) {
+                setConfirmDetachAll(true);
+                return;
+              }
+              startTransition(async () => {
+                try {
+                  await detachAllCardLinks(cardId);
+                  onClose();
+                } catch (e) {
+                  console.error("Bulk-Detach fehlgeschlagen", e);
+                  setConfirmDetachAll(false);
+                }
+              });
+            }}
+            disabled={isPending}
+          >
+            {confirmDetachAll
+              ? "Wirklich ALLE lösen (alle Monate)?"
+              : "Alle Verknüpfungen lösen…"}
+          </button>
           <button
             type="button"
             className={styles.cancelButton}

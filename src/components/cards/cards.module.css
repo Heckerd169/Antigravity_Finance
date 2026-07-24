@@ -545,3 +545,17 @@
 .overlayCancelButton:hover {
   color: rgba(255, 255, 255, .55);
 }
+
+/* v2-05: ausgegrauter Lösch-Menüpunkt + Begründungszeile (Lösch-Tor rot) */
+.contextMenuItemDisabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.contextMenuReason {
+  max-width: 220px;
+  padding: 4px 12px 8px;
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-tertiary, rgba(255, 255, 255, 0.4));
+}

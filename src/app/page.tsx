@@ -21,7 +21,7 @@ import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
 import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
-import { CardHideProvider } from "@/components/cards/card-hide-provider";
+import { CardActionToastProvider } from "@/components/cards/card-action-toast-provider";
 import type { FragmentRow } from "@/components/interaction-zone/interaction-zone.types";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
@@ -130,6 +130,16 @@ export default async function Home({ searchParams }: HomeProps) {
     .order("type", { ascending: true })
     .order("name", { ascending: true });
 
+  // v2-05 Lösch-Tor-Vorberechnung: Links/States über ALLE Monate (zwei kleine
+  // Selects statt 31 RPC-Calls). Autoritativ prüft delete_card server-seitig.
+  const [{ data: linkCardRows }, { data: stateCardRows }] = await Promise.all([
+    supabase.from("card_fragment_links").select("card_id"),
+    supabase.from("card_monthly_states").select("card_id"),
+  ]);
+  const cardsWithLinks = new Set((linkCardRows ?? []).map((r) => r.card_id));
+  const cardsWithStates = new Set((stateCardRows ?? []).map((r) => r.card_id));
+  const nowMonthDb = ymToDbDate(currentMonth);
+
   // Name-Lookup über ALLE nicht-gelöschten Karten (auch monats-inaktive) —
   // ein suggested_card_id kann auf eine Karte zeigen, die im targetMonth nicht
   // aktiv ist. Für die Badge-Auflösung (§6) brauchen wir den Namen trotzdem.
@@ -179,6 +189,19 @@ export default async function Home({ searchParams }: HomeProps) {
           effectivePlan,
           manuallyPaid: stateRow?.manually_paid ?? false,
           adjustedAmount: stateRow?.adjusted_amount ?? null,
+          deleteGate: {
+            deletable:
+              !cardsWithLinks.has(c.id) &&
+              !cardsWithStates.has(c.id) &&
+              c.first_active_month >= nowMonthDb,
+            reasons: [
+              ...(cardsWithLinks.has(c.id) ? (["HAS_LINKS"] as const) : []),
+              ...(cardsWithStates.has(c.id) ? (["HAS_STATES"] as const) : []),
+              ...(c.first_active_month < nowMonthDb
+                ? (["HAS_PAST_PLAN"] as const)
+                : []),
+            ],
+          },
         } satisfies EnrichedCard;
       }),
     );
@@ -382,7 +405,7 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       </div>
 
-      <CardHideProvider>
+      <CardActionToastProvider>
         <InteractionZone
           fragments={monthFragments}
           cards={enrichedCards}
@@ -390,7 +413,7 @@ export default async function Home({ searchParams }: HomeProps) {
           targetDbMonth={targetDbDate}
           currentMonth={currentMonth}
         />
-      </CardHideProvider>
+      </CardActionToastProvider>
 
       {showDevTriggers && (
         <DashboardDevPanel

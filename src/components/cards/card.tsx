@@ -185,7 +185,10 @@ function FixedCostCard({
         month={month}
         currentAmount={card.amount}
         tappable
-        hideOnly={isGhost}
+        endDeleteOnly={isGhost}
+        canEnd={card.frequency !== "ONCE"}
+        currentLastMonth={card.last_active_month}
+        deleteGate={card.deleteGate}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
       />
@@ -250,7 +253,10 @@ function IncomeCard({
         month={month}
         currentAmount={card.amount}
         tappable={tappable}
-        hideOnly={isGhost}
+        endDeleteOnly={isGhost}
+        canEnd={card.frequency !== "ONCE"}
+        currentLastMonth={card.last_active_month}
+        deleteGate={card.deleteGate}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
       />
@@ -377,7 +383,10 @@ function BudgetCard({
         month={month}
         currentAmount={card.amount}
         tappable
-        hideOnly={isGhost}
+        endDeleteOnly={isGhost}
+        canEnd={card.frequency !== "ONCE"}
+        currentLastMonth={card.last_active_month}
+        deleteGate={card.deleteGate}
         linkedFragments={card.linkedFragments}
         ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
       />

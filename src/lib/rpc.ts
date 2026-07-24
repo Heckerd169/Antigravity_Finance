@@ -142,20 +142,52 @@ export async function toggleCardManuallyPaid(
   return data as boolean;
 }
 
-/** Sprint 10: Soft-Delete-Toggle (UI-Hide via cards.deleted_at). Idempotent.
- *  p_hidden=true → deleted_at=now(); false → deleted_at=NULL. Fremduser → RAISES.
- *  Returns den neuen hidden-Zustand (deleted_at IS NOT NULL). Throw-on-Error (LL-2).
- *  Sparrate bleibt snapshot-integer — Hide ist reiner UI-Concern (§2.1). */
-export async function toggleCardHidden(
+/* ── v2-05: Karten-Lebenszyklus (Beenden / Löschen / Papierkorb) ─────────────
+ * Ersetzt das Sprint-10-Verbergen (toggle_card_hidden, ersatzlos gestrichen).
+ * deleted_at ist seit v2-05 der Papierkorb-Marker des §2.4-Trash-Flows. */
+
+/** Karten-Ende setzen (last_active_month) bzw. mit lastMonth=null aufheben.
+ *  ONCE-Karten werden server-seitig abgelehnt (22023). Throw-on-Error (LL-2). */
+export async function endCard(
   client: AppSupabaseClient,
-  args: { cardId: string; hidden: boolean },
-): Promise<boolean> {
-  const { data, error } = await client.rpc("toggle_card_hidden", {
+  args: { cardId: string; lastMonth: string | null },
+): Promise<void> {
+  const { error } = await client.rpc("end_card", {
     p_card_id: args.cardId,
-    p_hidden: args.hidden,
+    // Generierter Typ ist non-nullable string; NULL (= Ende aufheben) ist
+    // RPC-seitig explizit erlaubt — daher der Cast.
+    p_last_month: args.lastMonth as unknown as string,
   });
   if (error) throw error;
-  return data as boolean;
+}
+
+/** Karte in den Papierkorb (deleted_at + deleted_entities). Nur bei grünem
+ *  Lösch-Gate — sonst wirft die RPC 23514 mit Grund-Codes. */
+export async function deleteCard(
+  client: AppSupabaseClient,
+  args: { cardId: string },
+): Promise<void> {
+  const { error } = await client.rpc("delete_card", { p_card_id: args.cardId });
+  if (error) throw error;
+}
+
+/** Rückgängig aus dem Papierkorb (innerhalb der Retention). */
+export async function restoreCard(
+  client: AppSupabaseClient,
+  args: { cardId: string },
+): Promise<void> {
+  const { error } = await client.rpc("restore_card", { p_card_id: args.cardId });
+  if (error) throw error;
+}
+
+/** Opportunistischer Hard-Delete-Vollzug abgelaufener eigener Papierkorb-
+ *  Karten (Beschluss E3, Option b). Returns Anzahl entfernter Karten. */
+export async function cleanupExpiredCardTrash(
+  client: AppSupabaseClient,
+): Promise<number> {
+  const { data, error } = await client.rpc("cleanup_expired_card_trash");
+  if (error) throw error;
+  return (data as number) ?? 0;
 }
 
 // ── Sprint 8: CSV-Import / Distiller ─────────────────────────────────────────
