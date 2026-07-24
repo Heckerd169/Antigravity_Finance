@@ -1,8 +1,8 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.2
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1)
-**Datum:** 06. Juli 2026
+**Version:** 3.3
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus)
+**Datum:** 24. Juli 2026
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**
@@ -35,6 +35,10 @@
 
 - v2-04 Mehrkonten Stufe 1: `transfer_type`-Erweiterung, Markier-RPC, OQ-B-Trigger, DKB_VISA-Format, Duplikat-Hash-Fix.
 
+**Änderungen v3.2 → v3.3 (Sprint v2-05 „Karten-Lebenszyklus"):**
+
+- v2-05 Karten-Lebenszyklus: 5 neue RPCs (`end_card`, `card_delete_gate`, `delete_card`, `restore_card`, `cleanup_expired_card_trash`), `toggle_card_hidden` per DROP entfernt (Beschluss E2), `cards.deleted_at` semantisch von Verbergen- zu Papierkorb-Marker gewechselt, Trash-Flow (`schedule_deletion`/`restore_deletion`) für Karten erstmals verdrahtet.
+
 **`transfer_type` — Wertemenge + Semantik (v3.2):**
 
 > `transfer_type text NULL` — CHECK `transfer_type_valid`: `NULL` | `'INTERNAL_TRANSFER'` | `'ASSET_REALLOCATION'`.
@@ -50,7 +54,7 @@
 
 ## 1. Was gebaut wurde
 
-10 Tabellen, 1 View, **22 App-RPCs** (+ 6 Trigger-Funktionen), **6 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
+10 Tabellen, 1 View, **26 App-RPCs** (+ 6 Trigger-Funktionen; v2-05: +5 Lebenszyklus-RPCs, −`toggle_card_hidden`), **6 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
 
 ```
    IDENTITÄT          EINKOMMEN              KARTEN                   FRAGMENTE
@@ -157,11 +161,17 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 | `get_net_monthly_for_month(user_id, person, month)` | Netto-Anzeige | `numeric` |
 | `get_split_factor(user_id, month)` | "ICH 60%" / "PARTNER 40%"-Anzeige | `numeric` (0..1) |
 
-### Beim UI-Hide (Sprint 10)
+### Beim Karten-Lebenszyklus (Sprint v2-05)
+
+**`toggle_card_hidden(card_id, hidden boolean)` — ENTFERNT (Sprint v2-05, Beschluss E2):** per DROP entfernt, ersatzlos gestrichen (0 versteckte Karten im Bestand zum Migrationszeitpunkt). Ersetzt durch die fünf RPCs unten — alle `SECURITY INVOKER`, `SET search_path TO 'public'`, Auth-Pflicht (28000).
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `toggle_card_hidden(card_id, hidden boolean)` | Karte aus allen UI-Monatsansichten verbergen (`hidden=true`) oder Hide rückgängig machen (`hidden=false`). Deterministischer Server-Vertrag, kein implicit Toggle. Wirkt **nicht** auf Sparraten-Aggregation — §2.1 Snapshot-Integrität bleibt unberührt | `boolean` (der gesetzte `hidden`-Zustand) |
+| `end_card(p_card_id uuid, p_last_month date)` | Setzt `cards.last_active_month`. `p_last_month = NULL` hebt das Ende auf. Validierung: Monatserster (22023), `≥ first_active_month` (22023); ONCE-Karten werden abgelehnt (22023, first=last-Constraint). Ownership-Verstoß 42704 | `jsonb` |
+| `card_delete_gate(p_card_id uuid)` | STABLE. Lösch-Gate-Prüfung fürs UI (ausgegrauter Lösch-Menüpunkt mit Klartext-Grund). Grund-Codes `HAS_LINKS` (Fragment-Links in irgendeinem Monat), `HAS_STATES` (`card_monthly_states` existiert), `HAS_PAST_PLAN` (`first_active_month` in der Vergangenheit) | `jsonb` (`{deletable boolean, reasons text[]}`) |
+| `delete_card(p_card_id uuid)` | Prüft `card_delete_gate` (Verstoß → 23514 mit Gründen), setzt `deleted_at = now()`, legt via bestehendem `schedule_deletion('CARD', id, row-snapshot)` den `deleted_entities`-Eintrag an (`expires_at = now() + trash.retention_seconds`) | `jsonb` (`{card_id, trash_id, expires_at}`) |
+| `restore_card(p_card_id uuid)` | Findet den jüngsten offenen Trash-Eintrag der Karte, validiert über bestehendes `restore_deletion` (Ablauf/Row-Lock), setzt `deleted_at = NULL` | `boolean` |
+| `cleanup_expired_card_trash()` | Opportunistischer Hard-Delete-Vollzug (Beschluss E3 Option b), vom Frontend vor jeder Lebenszyklus-Aktion aufgerufen: löscht abgelaufene, nicht wiederhergestellte eigene Trash-Karten hart (DB-Kaskade entfernt `card_planned_timeline`/`card_monthly_states`/`card_fragment_links`; Fragmente bleiben, `suggested_card_id` → `NULL`) und entfernt die vollzogenen Trash-Zeilen; wiederhergestellte Trash-Zeilen bleiben dauerhaft (§2.4) | `integer` (Anzahl hart gelöschter Karten) |
 
 ### Beim Karten-CRUD (Sprint 5)
 
@@ -231,7 +241,8 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 | **Rückgängig-Klick** | RPC `restore_deletion(trash_id)` |
 | **CSV-Import (DKB)** | RPC `process_csv_import(p_rows, 'DKB')` — atomar, eine Transaktion |
 | **CSV-Import (Cortal Consors)** | RPC `process_csv_import(p_rows, 'CORTAL_CONSORS')` — selbe RPC, andere Format-Hint, identische Pipeline |
-| **Karte aus UI verbergen / Hide rückgängig** | RPC `toggle_card_hidden(card_id, true/false)` — wirkt nicht auf Sparrate |
+| **Karte beenden / Ende aufheben** (v2-05) | RPC `end_card(card_id, last_month)` — `NULL` hebt das Ende auf; wirkt nicht auf vergangene Monate |
+| **Karte löschen / Rückgängig** (v2-05, ersetzt Verbergen) | RPC `delete_card(card_id)` (nur bei grünem `card_delete_gate`) → Papierkorb; `restore_card(card_id)`; Vollzug via `cleanup_expired_card_trash()` |
 | **Sparrate für Ring (Ist)** | RPC `calculate_sparrate_for_month(user_id, month)` |
 | **Sparrate Plan-Linie** | RPC `calculate_planned_sparrate_for_month(user_id, month)` |
 | **„Soll-Wert" für Status-Label / „Noch X frei"** | RPC `get_effective_plan_for_month(card_id, month)` |
@@ -246,7 +257,7 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 |---|---|
 | **profiles** | Cascade über `auth.users`-Löschung — DSGVO-Vollbereinigung |
 | **income_timeline** | Append-only in V1. Kein Lösch-Pfad im Frontend |
-| **cards** | Drei Pfade: (a) **Hard-Delete** wenn nie genutzt — Cascade auf alle Children. (b) **Soft-End** über `last_active_month` — bleibt historisch sichtbar. (c) **Soft-Delete (UI-Hide)** via `deleted_at`-Spalte über RPC `toggle_card_hidden`. **Wichtig:** `deleted_at`-Filterung ist UI-Concern, nicht Berechnungs-Concern — Sparraten-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`) ignorieren `deleted_at` (§2.1 Snapshot-Integrität). Nur Surfaces, die UI-Sicht produzieren, filtern explizit über `WHERE deleted_at IS NULL` (Karten-Karussell, Detail-Overlay, Stack-Suggestion, KI-Vorschlag-Badge sowie der Match-Loop in `process_csv_import` und der Ownership-Check in `toggle_card_manually_paid`). Funktionaler Index `idx_cards_user_active (user_id) WHERE deleted_at IS NULL` beschleunigt diese UI-Queries. |
+| **cards** | Drei Pfade (seit v2-05): (a) **Beenden** über `last_active_month` (RPC `end_card`, inkl. Aufheben) — bleibt historisch sichtbar. (b) **Löschen mit Lösch-Gate** (RPC `delete_card`: nur ohne Links/States/Vergangenheits-Plan) über den §2.4-Papierkorb (`deleted_at` + `deleted_entities`, Vollzug `cleanup_expired_card_trash` mit Cascade auf alle Children). (c) **Soft-Detach** der Links (Eject/Bulk) als bewusste User-Korrektur. Das Sprint-10-Verbergen ist ersatzlos entfallen. **Wichtig:** `deleted_at`-Filterung ist UI-Concern, nicht Berechnungs-Concern — Sparraten-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`) ignorieren `deleted_at` (§2.1 Snapshot-Integrität). Nur Surfaces, die UI-Sicht produzieren, filtern explizit über `WHERE deleted_at IS NULL` (Karten-Karussell, Detail-Overlay, Stack-Suggestion, KI-Vorschlag-Badge sowie der Match-Loop in `process_csv_import` und der Ownership-Check in `toggle_card_manually_paid`). Funktionaler Index `idx_cards_user_active (user_id) WHERE deleted_at IS NULL` beschleunigt diese UI-Queries. |
 | **card_planned_timeline** | Cascade-Delete bei Karten-Hard-Delete. Sonst append-only |
 | **card_monthly_states** | Cascade-Delete bei Karten-Hard-Delete. State-Reset (= DELETE) nach UI-Logik möglich |
 | **card_fragment_links** | DELETE bei Eject. Cascade bei Karten- oder Fragment-Hard-Delete |
@@ -317,7 +328,7 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 | Paired-Fragment-Verlinkung (`paired_fragment_id`) | Stufe-1-Cross-Account-Erkennung kommt mit Single-Side-Markierung aus — kein Spiegel-Paar nötig | Mögliche V2-Erweiterung wenn Multi-Account-Reconciliation gefragt |
 | IBAN-Format-Validierung in der DB | Stufe-1 vertraut Frontend-Validierung (Sprint 9 Cortal-Parser) | Optionale CHECK-Constraint über regex_match in V2 |
 | UI für Verwaltung von `own_ibans` | Aktuell nur via Service-Role oder Migration setzbar | Settings-Bereich in V2 oder Sprint-9-Folge-Sprint |
-| Hide-Rückgängig-UI ("Verborgene Karten anzeigen") | V1-Use-Case ist „einmal verborgen, bleibt verborgen" + 5s-Toast-Rückgängig | Mögliche V2-Erweiterung; `toggle_card_hidden(card_id, false)` ist Server-seitig bereits verfügbar |
+| ~~Hide-Rückgängig-UI ("Verborgene Karten anzeigen")~~ | **Obsolet seit v2-05** — Verbergen ist ersatzlos entfallen; Rückgängig läuft über den Papierkorb (`restore_card` innerhalb der Retention) | — |
 
 **Schema-Hinweis V3 — `card_monthly_states.closed_at`:** In v2 war das Feld reserviert und ungenutzt. In v3 wird es erstmals konsumiert: `toggle_card_manually_paid` verweigert die Mutation, wenn die Row für diesen Monat `closed_at IS NOT NULL` hat. Damit hat das Feld eine erste echte Semantik („dieser Monat ist abgeschlossen, kein weiterer Toggle erlaubt"). Geschrieben wird `closed_at` aktuell von keiner Frontend-Operation — das bleibt für eine zukünftige Edge-Function oder Settings-UI offen.
 
@@ -372,6 +383,8 @@ for (const row of expired.data) {
 **Hinweis V1:** Aktuell genutzte ENUM-Werte sind `CARD_END` und `CARD`. `CARD_FRAGMENT_LINK` und `FRAGMENT` bleiben für V2 reserviert (Eject und Fragment-Delete laufen direkt ohne Trash-Umweg).
 
 **Hinweis V3.1:** Soft-Delete von Karten (`cards.deleted_at`) läuft **nicht** über die Cleanup-Edge-Function. Hide ist explizit reversibel (5s-Toast-„Rückgängig" via `toggle_card_hidden(card_id, false)`) und ohne Retention-Limit — der User soll die Karte selbst entscheiden, ob sie verborgen bleibt. Ein User-Pfad zum Wieder-Einblenden ist V2-Vormerkung.
+
+**Hinweis v2-05 (löst Hinweis V3.1 ab):** Der Trash-Flow für Karten ist seit Sprint v2-05 tatsächlich verdrahtet — `delete_card` nutzt das bestehende `schedule_deletion('CARD', id, row-snapshot)`, `restore_card` nutzt das bestehende `restore_deletion(trash_id)`, und `cleanup_expired_card_trash()` vollzieht den Hard-Delete opportunistisch beim nächsten App-Zugriff (Option b aus dem Architekt-Stufe-1-Papier) statt über eine Cleanup-Edge-Function. `cards.deleted_at` ist damit **kein** Verbergen-Marker mehr, sondern ausschließlich Papierkorb-Marker: gesetzt nur von `delete_card`, nur bei grünem `card_delete_gate` (also nie für Karten mit Vergangenheits-Links/-States/-Plan). Die RPC `toggle_card_hidden` ist per DROP entfernt (Beschluss E2) — Hinweis V3.1 oben beschreibt damit einen abgelösten Zustand.
 
 ### 10.2 Migration als versionierte Datei ablegen
 

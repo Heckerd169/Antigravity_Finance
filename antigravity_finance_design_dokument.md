@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.4 (V2 · v2-02 Doku-Nachzug)
+**Version:** 3.1.5 (V2 · v2-02 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
 **Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
@@ -16,6 +16,8 @@
 > **Changelog v3.1.3 (06.07.2026, v2-02-Doku-Nachzug):** §9 Regime-Grenze inkl. laufendem Monat (teal bis einschließlich aktueller Monat, grau ab erstem Zukunftsmonat); NULL-Monate = 0 € auf Welle/Tooltip; Treiber-Slots zeigen „B2-Heuristik offen" bis B2.
 >
 > **Changelog v3.1.4 (24.07.2026):** §11 um Kurations-Leitfaden „Behandlung von Erstattungen" ergänzt (Beschluss Optionspapier Erstattungen, 24.07.2026).
+>
+> **Changelog v3.1.5 (24.07.2026):** §7 Karten-Lebenszyklus (Beenden/Löschen/Papierkorb ersetzt Verbergen, Sprint v2-05).
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -157,7 +159,7 @@ Zwei destruktive Aktionen werden über einen Trash-Mechanismus gepuffert:
 - Stacken vertikal — neuester Toast erscheint unten, ältere schieben sich nach oben
 - Maximum 2 gleichzeitig sichtbar — bei drittem Toast wird der älteste verdrängt
 
-**„Verbergen" (UI-Hide, V1 implementiert, Sprint 10):** Neben den beiden destruktiven Aktionen (`CARD_END`, `CARD`) gibt es eine nicht-destruktive Verberg-Geste. Sie setzt `cards.deleted_at` per RPC `toggle_card_hidden(p_card_id, p_hidden)` (idempotent; `true` → `deleted_at = now()`, `false` → `NULL`) und blendet die Karte sofort aus allen UI-Surfaces aus (`WHERE deleted_at IS NULL`). Ein 5-Sekunden-Toast unten Mitte bietet „Rückgängig"; nach Ablauf bleibt die Karte verborgen (V1: kein „Versteckte Karten verwalten"-Pfad — V2). Past-Month-Verbergen ist erlaubt (keine Sperre). **Snapshot-Integrität (§2.1):** `deleted_at` ist ein reiner UI-Concern — die Sparrate-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`, `is_card_active_in_month`) ignorieren `deleted_at`, sodass eine spätere Verberg-Aktion keine historische Sparrate ändert. Verifiziert (Sprint 10): Karte „Netflix" verbergen lässt März 2026 = 2.910,01 € unverändert.
+**~~„Verbergen" (UI-Hide, V1 implementiert, Sprint 10)~~ — aufgehoben durch Sprint v2-05 (24.07.2026):** Das Verbergen ist ersatzlos entfallen; `deleted_at` ist seither ausschließlich der Papierkorb-Marker des Lösch-Flows (§7 Karten-Lebenszyklus). Historischer Stand: Neben den beiden destruktiven Aktionen (`CARD_END`, `CARD`) gab es eine nicht-destruktive Verberg-Geste. Sie setzt `cards.deleted_at` per RPC `toggle_card_hidden(p_card_id, p_hidden)` (idempotent; `true` → `deleted_at = now()`, `false` → `NULL`) und blendet die Karte sofort aus allen UI-Surfaces aus (`WHERE deleted_at IS NULL`). Ein 5-Sekunden-Toast unten Mitte bietet „Rückgängig"; nach Ablauf bleibt die Karte verborgen (V1: kein „Versteckte Karten verwalten"-Pfad — V2). Past-Month-Verbergen ist erlaubt (keine Sperre). **Snapshot-Integrität (§2.1):** `deleted_at` ist ein reiner UI-Concern — die Sparrate-RPCs (`calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`, `is_card_active_in_month`) ignorieren `deleted_at`, sodass eine spätere Verberg-Aktion keine historische Sparrate ändert. Verifiziert (Sprint 10): Karte „Netflix" verbergen lässt März 2026 = 2.910,01 € unverändert.
 
 
 ### 2.5 Modell 1 — Karten als Templates + Pro-Monat-State
@@ -685,11 +687,23 @@ Erscheint bei Hover oben links — Default: unsichtbar.
 - Triggert 5-Sekunden-Toast mit „Rückgängig" — siehe 2.4
 - Wirkung im Beispiel: Karte „Auto-Versicherung 650 €", Frequenz `Jährlich`, Letzte Zahlung Oktober 2026 → erscheint Oktober 2026, danach nicht mehr
 
-**„Karte löschen" (Hard-Delete):** Nur möglich wenn die Karte nie genutzt wurde (kein State, keine Fragmente). Triggert ebenfalls 5-Sekunden-Toast mit „Rückgängig".
+**„Karte löschen" (Hard-Delete):** Präzisiert durch v2-05: nur bei grünem Lösch-Gate (keine Links, keine Monats-States, kein Vergangenheits-Plan — Grund-Codes `HAS_LINKS`/`HAS_STATES`/`HAS_PAST_PLAN`), über den §2.4-Papierkorb mit 5-Sekunden-Toast „Rückgängig"; Details im Absatz „Karten-Lebenszyklus" unten.
 
-**„Verbergen" (Sprint 10, UI-Hide via `deleted_at`):** Konsolidierter Eintrag im bestehenden `⋯`-Kontextmenü (oben links, sichtbar bei Karten-Hover). Auslöser für das UI-Hide aus §2.4. **PM-Entscheidung Sprint 10:** „Verbergen" wird in das bestehende Kontextmenü konsolidiert (statt eines separaten Dreipunkt-Menüs oben rechts) — folgt dem Single-Menu-Modell aus §12.4. Der Eintrag steht nach „Betrag anpassen".
+**~~„Verbergen" (Sprint 10, UI-Hide via `deleted_at`)~~ — aufgehoben durch v2-05:** Der Menüpunkt ist entfallen (siehe „Karten-Lebenszyklus" unten). Die Sprint-10-Konsolidierungs-Entscheidung (ein Single-Menu oben links statt separater Menüs, §12.4) gilt weiter für die Lebenszyklus-Verben.
 
-**Ghost-/Forecast-Karten sind verbergbar (Sprint 10):** Karten im Ghost-/Forecast-Zustand (alle Zukunfts-Karten; vergangene BUDGET-Karten ohne Tap und ohne Fragmente) zeigen ein reduziertes Kontextmenü mit **nur** „Verbergen" (kein Tap-Catcher, kein „Betrag anpassen"). So ist das Hide-Affordance auf jeder Karte verfügbar, ohne Ghost-Karten sonst interaktiv zu machen.
+**Ghost-/Forecast-Karten (Sprint 10, angepasst v2-05):** Karten im Ghost-/Forecast-Zustand (alle Zukunfts-Karten; vergangene BUDGET-Karten ohne Tap und ohne Fragmente) zeigen ein reduziertes Kontextmenü mit **nur** den Lebenszyklus-Verben („Karte beenden…"/„Ende aufheben"/„Karte löschen"; kein Tap-Catcher, kein „Betrag anpassen"). So bleibt die Affordance auf jeder Karte verfügbar, ohne Ghost-Karten sonst interaktiv zu machen.
+
+**Karten-Lebenszyklus im Kontextmenü (v2-05, Beschluss 24.07.2026 — Interim-UI bis DD-Feinschliff M2):**
+Der Menüpunkt „Verbergen" ist ersatzlos entfallen. Stattdessen: „Karte beenden…"
+(Monatswahl, Default = angezeigter Monat; setzt last_active_month, Vergangenheit
+bleibt unberührt; ONCE-Karten haben den Eintrag nicht), „Ende aufheben" (nur bei
+gesetztem Ende) und „Karte löschen" (nur bei grünem Lösch-Gate: keine Links,
+keine Monats-States, kein Vergangenheits-Plan — sonst ausgegraut mit
+Klartext-Grund und Verweis auf »Karte beenden…«). Löschen läuft über den
+§2.4-Papierkorb (5-s-Undo-Toast, 60-s-Server-Retention, danach endgültig).
+Im Verknüpfte-Fragmente-Overlay zusätzlich „Alle Verknüpfungen lösen…"
+(2-Schritt-Bestätigung, wirkt über ALLE Monate; Fragmente fallen verlustfrei
+in die Rohmasse zurück).
 
 
 ### Karten-Frequenzen

@@ -4,6 +4,7 @@
 > **An:** Dominik (Entscheidungs-Gate) · Design-Direktor (Gesten/Sprache, §6)
 > **Datum:** 24. Juli 2026
 > **Status:** ENTSCHIEDEN 24.07.2026 — E1 (Drei-Verben-Modell + Gate) ja · E2 (Verbergen streichen) ja · E3 (Hard-Delete opportunistisch) ja · E4 (Test-Projekt) freigegeben, Anlage aktuell durch Free-Projekt-Limit blockiert (2/2 Slots belegt, siehe Runbook `supabase/test_projekt/README.md`). Umsetzung im Folge-Sprint (neue Session).
+> **Umsetzung:** 24.07.2026 abends als Sprint v2-05 — Übungs-DB-Probe (T1–T6 grün) → Live-Migration (Kurve unverändert) → UI deployed (Commit cd36ff0). Details: sprints/sprint_v2-05_review.md.
 > **Quellen:** Roadmap M1/M2/A2–A4 (`v2_roadmap_konsolidiert.md`) · Schema-Doku v3.2 §2.4/§6/§7 ·
 > Sprint-10-Implementierung (Verbergen) · Live-DB-Inventur 24.07.2026 (read-only)
 

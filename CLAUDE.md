@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom zentralen Arbeits-Agenten (Claude Code, PM-Rolle) nach jedem abgeschlossenen Sprint patch-basiert aktualisiert (LL-16).
-> **Letzte Aktualisierung:** 24. Juli 2026 (abends) · **Nach:** Beschlüsse Lösch/B2/Erstattungen + Steuererstattungs-Karte + Test-Projekt-Vorbereitung
+> **Letzte Aktualisierung:** 24. Juli 2026 (spät) · **Nach Sprint:** v2-05 (Karten-Lebenszyklus, Done)
 
 ---
 
@@ -98,6 +98,7 @@ Antigravity_Finance/
 ├── playwright.config.ts                               ← Projekte: visual (creds-frei) · unauth · setup · render-smoke
 ├── .claude/
 │   └── agents/                                        ← docs-maintainer.md · smoke-agent.md (versioniert)
+├── supabase/test_projekt/                             ← Übungs-DB-Runbook + Generator-Queries + Init-2-Seed (24.07.2026)
 ├── package.json
 ├── pnpm-workspace.yaml                                ← allowBuilds.unrs-resolver: false
 ├── tsconfig.json
@@ -133,8 +134,9 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | v2-02 | Jahres-Welle + Popup §9 (M3, ersetzt V1-Treppe) | 🟢 Done | sprints/sprint_v2-02_briefing.md | Juli 2026 (Merge vor v2-04) |
 | v2-03 | Display: N5 Rohmasse-Grundton + N4b Ring-Degeneration + B3 Popup-Rot | 🟢 Done | sprints/sprint_v2-03_briefing.md | 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen) |
 | v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
+| v2-05 | Karten-Lebenszyklus: Beenden/Löschen/Papierkorb ersetzt Verbergen (M1/M2) + Übungs-DB-Aufbau | 🟢 Done | V2/architekt_stufe1_karten_loeschen_m1_m2.md (Stufe-1-Papier = Briefing) | 24.07.2026 |
 
-**Doku-Stand nach v2-04:** Design-Doku v3.1.4 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
+**Doku-Stand nach v2-04:** Design-Doku v3.1.5 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.3 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
@@ -272,6 +274,13 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
 - Neuer Trigger `trg_oqb_no_transfer_links` auf `card_fragment_links` (BEFORE INSERT OR UPDATE OF `fragment_id`, Funktion `enforce_no_transfer_fragment_links()`): weist Links auf Fragmente mit `transfer_type IS NOT NULL` mit 23514 ab — schließt sowohl direktes Client-INSERT unter RLS als auch `create_card_from_fragment`. OQ-B ist damit dreischichtig abgesichert.
 - Duplikat-Hash-Fix: `fragments.hash` bekommt bei byte-identischen Zeilen innerhalb eines Import-Batches ab dem 2. Vorkommen das deterministische Suffix `|#N` (N = Vorkommens-Index in Dateireihenfolge; erstes Vorkommen = alte Formel, abwärtskompatibel; Re-Import → gleiche Indizes → gleiche Hashes, idempotent). Bekannte Grenze bleibt: identische Buchungen über zwei separate Teil-Exporte desselben Monats deduplizieren weiterhin — Monats-Exporte vollständig importieren.
 - Defense-in-Depth-Filter in `calculate_card_amount_for_month` (bereits Pre-Sprint-10 als `transfer_type IS NULL`-Filter eingeführt) ist type-agnostisch und deckt `ASSET_REALLOCATION` automatisch mit ab, ohne dass die RPC für v2-04 erneut angefasst werden musste — `calculate_sparrate_for_month` ist transitiv geschützt (liest Fragmente ausschließlich über diese Funktion).
+
+**Wichtige Schema-Befunde aus Sprint v2-05 (Karten-Lebenszyklus):**
+- 5 neue RPCs (alle `SECURITY INVOKER`, `SET search_path TO 'public'`, Auth-Pflicht 28000): `end_card(p_card_id uuid, p_last_month date)` setzt `cards.last_active_month` (`p_last_month = NULL` hebt das Ende auf; Validierung Monatserster/`≥ first_active_month` je 22023, ONCE-Karten abgelehnt 22023, Ownership 42704) · `card_delete_gate(p_card_id uuid)` STABLE, returns `{deletable boolean, reasons text[]}` mit Grund-Codes `HAS_LINKS` / `HAS_STATES` / `HAS_PAST_PLAN` fürs UI · `delete_card(p_card_id uuid)` prüft das Gate (Verstoß → 23514 mit Gründen), setzt `deleted_at = now()`, legt via bestehendem `schedule_deletion('CARD', id, row-snapshot)` den `deleted_entities`-Eintrag an (`expires_at = now() + trash.retention_seconds`) · `restore_card(p_card_id uuid)` findet den jüngsten offenen Trash-Eintrag, validiert über bestehendes `restore_deletion`, setzt `deleted_at = NULL` · `cleanup_expired_card_trash()` opportunistischer Hard-Delete-Vollzug (Beschluss E3 Option b, vom Frontend vor jeder Lebenszyklus-Aktion aufgerufen): löscht abgelaufene, nicht wiederhergestellte eigene Trash-Karten hart (DB-Kaskade entfernt planned_timeline/states/links, Fragmente bleiben, `suggested_card_id` → NULL) und entfernt die vollzogenen Trash-Zeilen.
+- `toggle_card_hidden(uuid, boolean)` per DROP entfernt — das Sprint-10-Verbergen ist ersatzlos gestrichen (Beschluss E2; 0 versteckte Karten im Bestand zum Migrationszeitpunkt).
+- **Semantik-Wechsel `cards.deleted_at`:** vormals Verbergen-Marker (UI-Hide), seit v2-05 ausschließlich Papierkorb-Marker des §2.4-Trash-Flows (gesetzt nur von `delete_card`, nur bei grünem Gate — also nie für Karten mit Vergangenheit). Sparrate-RPCs ignorieren `deleted_at` weiterhin unverändert (§2.1) — da das Gate Vergangenheits-Karten ausschließt und die Retention 60 s beträgt, ist das harmlos.
+- Migration `v2_05_loesch_umbau` zuerst auf der Übungs-DB `qyjuzzgqxowqiiwqcahd` geprobt (Testlauf T1–T6 grün, Anker 2.200,00 stabil), dann identisch auf Prod `nflkobdfdhncrtjncpmq`. Prod-12-Monats-Kurve nach Migration exakt unverändert (Jan–Apr 1.886,97 · Mai −130,98 · Juni 4.545,32 · Jul–Dez 1.886,97).
+- Übungs-DB-Projekt `antigravity-finance-test` (`qyjuzzgqxowqiiwqcahd`, eu-west-1, Free) nach Runbook `supabase/test_projekt/` aufgebaut, Struktur-Parität zu Prod (10/82/10/6/54/14/6; einzige bewusste Abweichung: `rls_auto_enable`-Eventtrigger-Helfer übersprungen; `net_estimation_brackets`-Seed noch leer), Init-2-Anker 2.200,00. Wird zwischen Sprints pausiert (Slot-Tausch mit „Rennrad-Trainer").
 
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
@@ -1637,3 +1646,32 @@ deterministischer Init-2-Seed (Anker 2.200,00 €) liegen in
 `supabase/test_projekt/`. Offene User-Entscheidung: Slot freimachen
 („Rennrad-Trainer" pausieren) oder Upgrade — danach ist der Aufbau in wenigen
 Minuten ausführbar (erster Schritt der Folge-Session).
+
+### Sprint v2-05 · DONE 24. Juli 2026 (abends)
+
+**Komponente:** Karten-Lebenszyklus (M1/M2-Beschluss): „Beenden" (last_active_month,
+inkl. Aufheben), „Löschen" nur bei grünem Lösch-Gate (keine Links/States/
+Vergangenheits-Plan) über den §2.4-Papierkorb (deleted_entities, 60-s-Retention,
+opportunistischer Hard-Delete-Vollzug), Bulk-Soft-Detach. Verbergen
+(toggle_card_hidden) ersatzlos gestrichen; deleted_at ist jetzt Papierkorb-Marker.
+
+**Vorgehen:** Erstmals komplette Übungs-DB-Probe vor Prod — Test-Projekt
+`antigravity-finance-test` (qyjuzzgqxowqiiwqcahd) nach Runbook
+`supabase/test_projekt/` aufgebaut (Struktur-Parität, Init-2-Anker 2.200,00);
+Migration dort geprobt (Testlauf T1–T6: Beenden-Semantik, ONCE-Ablehnung,
+Gate-23514-Fälle, Papierkorb-Restore, Hard-Delete-Kaskade, Verbergen-Wegfall,
+Anker stabil — dabei 1 Bug im Entwurf gefunden/gefixt: text[]-Append-Operator),
+erst dann identisch live. Prod-12-Monats-Kurve nach Migration exakt unverändert.
+Slot-Tausch: „Rennrad-Trainer" für die Dauer der Arbeit pausiert, danach
+reaktiviert; Übungs-DB pausiert (Reaktivierung für B2-Sprint per gleichem Tausch).
+
+**Frontend (Commit cd36ff0):** Kontextmenü-Verben mit Gate-abhängigem
+Lösch-Eintrag (ausgegraut + Klartext-Grund), Beenden-Overlay (Monatswahl),
+generalisierter 5s-Undo-Toast (card-action-toast-provider, vormals
+card-hide-provider), Bulk-Detach im Verknüpfte-Fragmente-Overlay,
+Lösch-Tor-Vorberechnung in page.tsx über zwei Selects. tsc/lint/build grün,
+§9-Pixel-Checks 3/3. Interim-UI bis DD-Feinschliff (M2-Geste offen).
+
+**Offen:** DD-Rücksprache Verben-Sprache/Gesten (M2) · B2-Backend-Sprint auf
+derselben Übungs-DB (Tausch wiederholen) · net_estimation_brackets-Seed der
+Übungs-DB bei Bedarf.
