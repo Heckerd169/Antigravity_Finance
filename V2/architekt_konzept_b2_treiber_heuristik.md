@@ -3,7 +3,7 @@
 > **Von:** Zentraler Arbeits-Agent V2 (PM+Architekt)
 > **An:** Dominik (Entscheidungs-Gate) · Design-Direktor (nur §5-Feinschliff)
 > **Datum:** 24. Juli 2026
-> **Status:** ENTWURF — Konzept, kein Code, kein Schema-Eingriff
+> **Status:** ENTSCHIEDEN 24.07.2026 — E1 (Δ-Definition) ja · E2 (Jahres-RPC) ja · E3 (Sequenz nach Lösch-Sprint) ja · E4 (Rohmasse-Pseudo-Treiber) als offene DD-Frage mitgenommen.
 > **Quellen:** Roadmap B2/B5 · DD-Cluster-2-Beschluss („UI-first, Stub, Heuristik als
 > separater Backend-Sprint") · `src/components/welle/drivers-stub.ts` (fixer UI-Kontrakt)
 

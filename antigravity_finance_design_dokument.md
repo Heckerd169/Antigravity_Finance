@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.3 (V2 · v2-02 Doku-Nachzug)
+**Version:** 3.1.4 (V2 · v2-02 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
 **Datum:** 26. Juni 2026
 **Primäres Referenzdokument für Claude Code**
@@ -14,6 +14,8 @@
 > **Changelog v3.1.2 (04.07.2026, Block-1-Cluster-3):** §8 Rohmasse-Grundton vereinheitlicht (N5, Unterscheidung nur via Opacity/Badge); §5 %-Subzeile + Degenerations-Modus `Plan < 100 €` + neutraler Arc (N4b); §9-Popup kumulativ-negativ-Rot ab Null-Linie (B3). **Block 1 vollständig.**
 >
 > **Changelog v3.1.3 (06.07.2026, v2-02-Doku-Nachzug):** §9 Regime-Grenze inkl. laufendem Monat (teal bis einschließlich aktueller Monat, grau ab erstem Zukunftsmonat); NULL-Monate = 0 € auf Welle/Tooltip; Treiber-Slots zeigen „B2-Heuristik offen" bis B2.
+>
+> **Changelog v3.1.4 (24.07.2026):** §11 um Kurations-Leitfaden „Behandlung von Erstattungen" ergänzt (Beschluss Optionspapier Erstattungen, 24.07.2026).
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -1085,6 +1087,22 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 - Kein automatisches Clustering
 - Keine interaktiven Kategorie-Badges (nur informativ)
 - Keine Kategorie-Vorhersage in V1 (Karten-Zuordnung reicht)
+
+### Behandlung von Erstattungen — Kurations-Leitfaden (Beschluss 24.07.2026)
+
+Positive Fragmente ohne Transfer-Charakter werden nach vier Regeln kuratiert:
+1. **Retouren/Erstattungen mit Kosten-Bezug** → per Drag auf die verursachende
+   Karte (Verrechnung; `calculate_card_amount_for_month` summiert verlinkte
+   Fragmente vorzeichen-agnostisch — bei BUDGET senkt die Gutschrift den
+   Verbrauch, bei FIXED_COST die Realität).
+2. **Wiederkehrende Erstattungs-Quellen** → eigene MONTHLY-INCOME-Karte.
+3. **Einmal-Zuwendungen ab 100 €** (Erheblichkeits-Schwelle) → ONCE-INCOME-Karte
+   im betreffenden Monat.
+4. **Unter der Schwelle** → bewusst unzugeordnet in der Rohmasse (die Sparrate
+   bleibt insoweit konservativ).
+
+Ein Schema-/RPC-Eingriff ist dafür nicht nötig und wurde bewusst verworfen
+(Kern-Invariante §4.2: Karten sind die einzige Realitäts-Quelle der Sparrate).
 
 ---
 

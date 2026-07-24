@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom zentralen Arbeits-Agenten (Claude Code, PM-Rolle) nach jedem abgeschlossenen Sprint patch-basiert aktualisiert (LL-16).
-> **Letzte Aktualisierung:** 24. Juli 2026 · **Nach:** v2-04 + Go-Live-Initial-Import 2026 + Smoke-Infrastruktur (M0, Pixel-Checks, smoke-agent)
+> **Letzte Aktualisierung:** 24. Juli 2026 (abends) · **Nach:** Beschlüsse Lösch/B2/Erstattungen + Steuererstattungs-Karte + Test-Projekt-Vorbereitung
 
 ---
 
@@ -134,7 +134,7 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | v2-03 | Display: N5 Rohmasse-Grundton + N4b Ring-Degeneration + B3 Popup-Rot | 🟢 Done | sprints/sprint_v2-03_briefing.md | 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen) |
 | v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
 
-**Doku-Stand nach v2-04:** Design-Doku v3.1.3 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
+**Doku-Stand nach v2-04:** Design-Doku v3.1.4 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.2 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
@@ -1610,3 +1610,30 @@ Arbeits-Agenten (V2-Rolle PM+Architekt); alle Prod-Writes und Merges einzeln Use
   Server-Client-Fetch) umgesetzt 24.07. im selben Merge wie dieser Doku-Nachzug.
   Bulk-RPC `get_cards_with_effective_plan_for_month` (V3-Vormerkung Sprint 5) bleibt
   vorgemerkt, falls Latenz spürbar bleibt.
+
+### Beschlüsse Lösch/B2/Erstattungen + Test-Projekt-Vorbereitung · 24. Juli 2026 (abends)
+
+**User-Entscheidungen** („① alles ja · ② ja · ③ ja, Karte legst du an") auf die drei
+V2-Papiere vom selben Tag:
+- **Lösch-Sprint (M1/M2):** Drei-Verben-Modell (Beenden/Löschen mit Gate/Detach)
+  angenommen; Verbergen wird ersatzlos gestrichen; Hard-Delete-Vollzug
+  opportunistisch; Test-Projekt freigegeben.
+- **B2:** Δ-Heuristik (displayed − effective_plan, Ranking |Δ|) + Jahres-RPC
+  angenommen; Sequenz nach dem Lösch-Sprint; Rohmasse-Pseudo-Treiber = offene DD-Frage.
+- **Erstattungen:** Kurations-Leitfaden O1+O2 mit 100-€-Schwelle angenommen
+  (Design-Doku §11-Patch → v3.1.4); Schema-Weg (O4) verworfen.
+
+**Ausgeführt am 24.07.:** ONCE-INCOME-Karte „Steuererstattung 2025" (Juni 2026,
++2.658,35 €) per `create_card_from_fragment` angelegt und mit dem
+Steuererstattungs-Fragment verlinkt — Juni-Ist-Sparrate seither 4.545,32 €
+(vorher 1.886,97 €, cent-exakt verifiziert).
+
+**Test-Projekt (Übungs-Datenbank):** Anlage blockiert — das Free-Projekt-Limit
+des Accounts ist mit „Antigravity-Finance" (Prod) + „Rennrad-Trainer" erschöpft
+(2/2). Vollständige Schema-Extraktion aus Prod ist erfolgt (10 Tabellen, 6 Enums,
+~20 eigene Funktionen, View, 6 Trigger inkl. auth-Trigger, RLS-Policies,
+14 Zusatz-Indizes, app_config-Seeds); Wiederaufbau-Anleitung + Generator-Queries +
+deterministischer Init-2-Seed (Anker 2.200,00 €) liegen in
+`supabase/test_projekt/`. Offene User-Entscheidung: Slot freimachen
+(„Rennrad-Trainer" pausieren) oder Upgrade — danach ist der Aufbau in wenigen
+Minuten ausführbar (erster Schritt der Folge-Session).

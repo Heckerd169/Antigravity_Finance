@@ -3,7 +3,7 @@
 > **Von:** Zentraler Arbeits-Agent V2 (PM+Architekt)
 > **An:** Dominik (Grundsatz-Entscheidung) · Design-Direktor (nur falls O-Misch §4 gewählt)
 > **Datum:** 24. Juli 2026
-> **Status:** ENTWURF — Optionen + Empfehlung, kein Schema-Eingriff nötig
+> **Status:** ENTSCHIEDEN 24.07.2026 — E1 (Leitfaden O1+O2, Schwelle 100 €) ja · E2: ONCE-INCOME-Karte „Steuererstattung 2025" (Juni, +2.658,35 €) am 24.07.2026 durch den Arbeits-Agenten per `create_card_from_fragment` angelegt und mit dem Erstattungs-Fragment verlinkt (Juni-Sparrate verifiziert: 4.545,32 €) · E3 (kein Schema-Weg) ja. Design-Doku-Leitfaden-Patch: siehe P4 dieser Patch-Datei.
 > **Quellen:** Beschluss-Nachtrag Mehrkonten (PM-Randnotiz „642 € im Juni") ·
 > Live-Datenanalyse der importierten 2026-Fragmente (24.07.2026)
 
