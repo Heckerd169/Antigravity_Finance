@@ -51,6 +51,10 @@ export default defineConfig({
     timeout: 90_000,
   },
   projects: [
+    // Schicht-1-Pixel-Checks: rendern draw.ts in einer leeren Seite —
+    // brauchen weder Creds noch den dev-Server (der startet config-global mit,
+    // bleibt hier aber ungenutzt).
+    { name: "visual", testMatch: /visual-pixel\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
