@@ -520,6 +520,10 @@ export type Database = {
         Args: { p_month: string; p_user_id: string }
         Returns: number
       }
+      get_year_deviation_drivers: {
+        Args: { p_limit?: number; p_year: number }
+        Returns: Json
+      }
       is_card_active_in_month: {
         Args: { p_card_id: string; p_month: string }
         Returns: boolean
