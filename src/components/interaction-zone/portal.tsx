@@ -445,15 +445,34 @@ function PortalDevButtons({
 
 // ── Helper ──────────────────────────────────────────────────────────────────
 
+/** v2-07 C2 (Sprint 9 V9''): Ab dieser Höhe verliert die IBAN-Backfill-Zeile
+ *  ihre Zahl. Ein Re-Import über den Gesamtbestand meldet sonst Zeilen wie
+ *  „544 Fragmente mit IBAN ergänzt" — fachlich korrekt, in der Wirkung aber
+ *  ein Großereignis, während nur ein berechnungs-irrelevantes Feld
+ *  nachgetragen wurde.
+ *  Bewusst NICHT in `app_config`: CLAUDE.md §7 Regel 5 schützt Schwellen, die
+ *  auch die DB-Logik kennt (Konfidenz, Auto-Absorb). Hier gibt es kein
+ *  DB-Gegenstück — reine Anzeige-Sprache ohne Rechenwirkung. Eine
+ *  app_config-Zeile würde eine Kopplung vortäuschen, die nicht existiert. */
+const IBAN_BACKFILL_SUMMARY_THRESHOLD = 50;
+
 /** §6.2: Backfill-Toast-Zeilen — nur Counter > 0, in fester Reihenfolge.
- *  v2-04 P7: weist zusätzlich übersprungene vorgemerkte Zeilen aus. */
+ *  v2-04 P7: weist zusätzlich übersprungene vorgemerkte Zeilen aus.
+ *  v2-07 C2: nur die IBAN-Zeile wird ab der Schwelle entschärft. Die drei
+ *  übrigen behalten Wortlaut und Zahl — dort ist die Zahl inhaltlich
+ *  relevant (User-Entscheid E3, 25.07.2026). Die exakte Zahl bleibt in der
+ *  Konsolen-Ausgabe des Aufrufers erhalten. */
 function buildBackfillLines(
   r: CsvImportResult,
   skippedPendingCount: number,
 ): string[] {
   const lines: string[] = [];
   if (r.iban_backfilled_count > 0) {
-    lines.push(`${r.iban_backfilled_count} Fragmente mit IBAN ergänzt`);
+    lines.push(
+      r.iban_backfilled_count >= IBAN_BACKFILL_SUMMARY_THRESHOLD
+        ? "Bestehende Fragmente nachgepflegt"
+        : `${r.iban_backfilled_count} Fragmente mit IBAN ergänzt`,
+    );
   }
   if (r.internal_transfers_count > 0) {
     lines.push(`${r.internal_transfers_count} Bewegungen als Transfer erkannt`);
