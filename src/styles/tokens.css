@@ -37,6 +37,24 @@
    * TRANSFER-Badge — kein separater Hue je Zustand. */
   --fragment-hue: 255, 255, 255;
 
+  /* v2-07 A1 (§11, schließt Sprint-8-OQ1): sechs Farbtöne für das
+   * KI-Vorschlag-Badge. Welchen Ton ein Badge bekommt, bestimmt der
+   * Kartenname deterministisch — siehe
+   * `src/components/interaction-zone/badge-hue.ts`. Als RGB-Triplett für
+   * rgba(var(...), a)-Komposition: die Deckkraft-Stufen des Badges
+   * (.08 Fläche / .5 Text / .15 Rahmen) bleiben unverändert, es ändert sich
+   * ausschließlich der Farbton.
+   * Türkis (--color-teal) und Rot (--color-red) sind bewusst ausgespart —
+   * beide tragen in der App Statusbedeutung („bezahlt" / „überschritten").
+   * Hue-1 ist der bisherige generische Gold-Ton aus Sprint 8; ein Sechstel
+   * der Karten behält damit exakt das heutige Erscheinungsbild. */
+  --badge-hue-1: 255, 200, 60;   /* Gold    — Bestand seit Sprint 8 */
+  --badge-hue-2: 255, 150, 90;   /* Orange  */
+  --badge-hue-3: 170, 200, 110;  /* Oliv    */
+  --badge-hue-4: 100, 168, 240;  /* Blau    */
+  --badge-hue-5: 170, 130, 255;  /* Violett */
+  --badge-hue-6: 240, 120, 190;  /* Magenta */
+
   /* ── Typografie (§3 Tabelle „Typographie") ────────────────────── */
   /* System-Font-Stack — bewusste Designentscheidung (PM, Sprint 0) */
   --font-stack-system: system-ui, -apple-system, "Helvetica Neue", sans-serif;

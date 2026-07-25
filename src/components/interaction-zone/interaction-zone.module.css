@@ -30,12 +30,15 @@
   --frag-border: rgba(var(--fragment-hue), .07);
   --frag-desc: rgba(var(--fragment-hue), .28);
   --frag-date: rgba(var(--fragment-hue), .15);
-  /* KI-Vorschlag-Badge — generische Akzent-Farbe (OQ1, Sprint 8). Karten-
-   * spezifische Farben sind V2-Vormerkung. Yellow-Soft wie Prototyp .essen.
-   * Bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag. */
-  --frag-badge-bg: rgba(255, 200, 60, .08);
-  --frag-badge-color: rgba(255, 200, 60, .5);
-  --frag-badge-border: rgba(255, 200, 60, .15);
+  /* KI-Vorschlag-Badge — bis v2-06 ein generischer Gold-Ton für alle Karten
+   * (OQ1, Sprint 8). Seit v2-07 A1 bestimmt der Kartenname den Farbton
+   * deterministisch: die Fragment-Karte setzt dazu eine der sechs
+   * .fragmentBadgeHueN-Klassen, die nur diese eine Variable überschreiben.
+   * Der Wert hier ist der Rückfall, falls keine Hue-Klasse gesetzt ist —
+   * bewusst Hue-1, also der Ton aus Sprint 8.
+   * Für Transfer bleibt das Mapping ausgeschlossen (AD5, Sprint 9):
+   * Transfer ist Fakt, kein Vorschlag. */
+  --frag-badge-hue: var(--badge-hue-1);
   /* TRANSFER-Badge (Sprint 9 §6.1) — Grau-Soft, bewusst NICHT das Yellow-Soft
    * des KI-Vorschlag-Badges. v2-03 N5: Grundton auf --fragment-hue vereinheit-
    * licht (vorher eigener 140,140,140-Hue → zwei leicht abweichende Grau-Töne
@@ -585,12 +588,28 @@
   flex-shrink: 0;
   margin-top: 2px;
   white-space: nowrap;
-  background: var(--frag-badge-bg);
-  color: var(--frag-badge-color);
-  border: .5px solid var(--frag-badge-border);
+  /* v2-07 A1: Deckkraft-Stufen unverändert (.08 Fläche / .5 Text / .15
+     Rahmen) — variabel ist ausschließlich der Farbton. */
+  background: rgba(var(--frag-badge-hue), .08);
+  color: rgba(var(--frag-badge-hue), .5);
+  border: .5px solid rgba(var(--frag-badge-hue), .15);
 }
 
-/* TRANSFER-Badge — gleiche Typo wie KI-Vorschlag-Badge, nur Grau-Soft (§6.1). */
+/* v2-07 A1: die sechs Farbtöne. Jede Klasse setzt nur die Ton-Variable —
+   Typo, Geometrie und Deckkraft kommen unverändert aus .fragmentBadge.
+   Reihenfolge = Index 0..5 aus badge-hue.ts. */
+.fragmentBadgeHue1 { --frag-badge-hue: var(--badge-hue-1); }
+.fragmentBadgeHue2 { --frag-badge-hue: var(--badge-hue-2); }
+.fragmentBadgeHue3 { --frag-badge-hue: var(--badge-hue-3); }
+.fragmentBadgeHue4 { --frag-badge-hue: var(--badge-hue-4); }
+.fragmentBadgeHue5 { --frag-badge-hue: var(--badge-hue-5); }
+.fragmentBadgeHue6 { --frag-badge-hue: var(--badge-hue-6); }
+
+/* TRANSFER-Badge — gleiche Typo wie KI-Vorschlag-Badge, nur Grau-Soft (§6.1).
+   Bewusst weiterhin über die eigenen Transfer-Tokens statt über die
+   Ton-Variable: das Grau ist keine der sechs Vorschlags-Farben, sondern eine
+   eigene Aussage (AD5). Steht nach .fragmentBadge und gewinnt damit bei
+   gleicher Spezifität. */
 .fragmentBadgeTransfer {
   background: var(--frag-transfer-badge-bg);
   color: var(--frag-transfer-badge-color);

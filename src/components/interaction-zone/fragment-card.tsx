@@ -1,7 +1,20 @@
 import { isTransferFragment, type FragmentRow } from "./interaction-zone.types";
 import { formatAmount } from "@/lib/format";
+import { badgeHueIndex } from "./badge-hue";
 import { AssetReallocationToggle } from "./asset-reallocation-toggle";
 import styles from "./interaction-zone.module.css";
+
+/* v2-07 A1: Reihenfolge entspricht --badge-hue-1..6 in tokens.css. CSS-Module
+   erzeugen gehashte Klassennamen, deshalb die Auflösung über eine Tabelle
+   statt über einen zusammengesetzten String. Länge = BADGE_HUE_COUNT. */
+const BADGE_HUE_CLASSES = [
+  styles.fragmentBadgeHue1,
+  styles.fragmentBadgeHue2,
+  styles.fragmentBadgeHue3,
+  styles.fragmentBadgeHue4,
+  styles.fragmentBadgeHue5,
+  styles.fragmentBadgeHue6,
+];
 
 /* Server-Component: ein Fragment-Item ohne Event-Handler. Drag-Start wird
    per Event-Delegation in der FragmentStack-Client-Component gefangen
@@ -65,7 +78,15 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           </div>
         ) : (
           fragment.suggestedCardName && (
-            <div className={styles.fragmentBadge}>
+            /* v2-07 A1: Farbton deterministisch aus dem Kartennamen — gleiche
+               Karte, gleiche Farbe. Fallback auf Hue-1 (den Gold-Ton aus
+               Sprint 8), falls die Klassen-Tabelle je aus dem Tritt gerät. */
+            <div
+              className={`${styles.fragmentBadge} ${
+                BADGE_HUE_CLASSES[badgeHueIndex(fragment.suggestedCardName)] ??
+                BADGE_HUE_CLASSES[0]
+              }`}
+            >
               KI-Vorschlag: {fragment.suggestedCardName}
             </div>
           )
