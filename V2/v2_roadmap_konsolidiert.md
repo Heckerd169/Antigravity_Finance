@@ -42,8 +42,15 @@ Davon erfordern **acht Punkte eine Rücksprache mit dem Design-Direktor** vor Sp
 die Welle inklusive Popup (M3, B3, B6, M10) · die Abweichungs-Treiber (B2) ·
 der Karten-Lebenszyklus (M1, A4; M2 backend-seitig) · Mehrkonten Stufe 1 (Teil von M9).
 
-**Zahlen:** von 54 Themen + 4 Initial-Aufgaben sind **23 erledigt**, **4 teilweise**,
-**3 hinfällig**, **28 offen** (davon 1 dauerhaft out of scope).
+**Zahlen:** die Themen-Tabellen dieser Datei führen zusammen **54 Zeilen**
+(die 4 Initial-Aufgaben, M0 und den Out-of-Scope-Punkt L1 eingeschlossen).
+Davon **19 erledigt ✅**, **4 teilweise 🟡**, **4 hinfällig ⊘**, **27 offen ⬜**.
+
+> *Zähl-Hinweis:* Der Kopftext von Abschnitt 0 spricht von „54 Themen **sowie**
+> 4 Initial-Aufgaben", die Statistik in Abschnitt 19 summiert die Initial-Aufgaben
+> aber **in** die 54 hinein. Diese Unschärfe stammt aus der Urfassung vom
+> 01.06.2026 und wurde nicht rückwirkend geglättet, um die Themen-IDs stabil zu
+> halten. Maßgeblich ist die Zeilen-Zählung oben.
 
 Der Abgleich erfolgte gegen die Sprint-Tabelle in CLAUDE.md §4 sowie die
 Sprint-Reviews v2-01 bis v2-06.
@@ -294,9 +301,9 @@ Damit Doppelarbeit im V2-Sprint-Backlog vermieden wird, sind die folgenden Bezie
 | J — Doku und Migrations | 2 | 2 Features | 1 ✅ · 1 🟡 |
 | K — Aus Zwischenphase | 2 | 2 Features | 1 ✅ · 1 ⊘ |
 | L — Out of Scope | 1 | — | 1 ⊘ dauerhaft |
-| M — Aus App-Nutzung | 11 | 7 Features, 4 Diskussionen | 4 ✅ · 2 🟡 · 5 ⬜ |
+| M — Aus App-Nutzung | 11 | 7 Features, 4 Diskussionen | 3 ✅ · 2 🟡 · 6 ⬜ |
 | N — V1-Bugs | 5 | 5 Bugs | 5 ✅ |
-| **Summe Themen** | **54** | zuzüglich 4 Initial-Aufgaben und 1 Out-of-Scope-Punkt | **23 ✅ · 4 🟡 · 3 ⊘ · 28 ⬜** |
+| **Summe Zeilen** | **54** | Initial-Aufgaben, M0 und L1 in dieser Summe enthalten (siehe Zähl-Hinweis in 0.1) | **19 ✅ · 4 🟡 · 4 ⊘ · 27 ⬜** |
 
 ---
 
