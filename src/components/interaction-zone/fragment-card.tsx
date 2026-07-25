@@ -1,4 +1,4 @@
-import type { FragmentRow } from "./interaction-zone.types";
+import { isTransferFragment, type FragmentRow } from "./interaction-zone.types";
 import { formatAmount } from "@/lib/format";
 import { AssetReallocationToggle } from "./asset-reallocation-toggle";
 import styles from "./interaction-zone.module.css";
@@ -28,9 +28,9 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
   // daher VOR dem isLocked-Styling und vor dem KI-Vorschlag-Badge geprüft.
   // v2-04 ③: ASSET_REALLOCATION verhält sich UI-seitig identisch zu
   // INTERNAL_TRANSFER (Schema-Doku v3.2 — Interim bis DD-Geste).
-  const isTransfer =
-    fragment.status === "INTERNAL_TRANSFER" ||
-    fragment.status === "ASSET_REALLOCATION";
+  // v2-07 C1: dasselbe Prädikat filtert den Stack — eine Quelle, damit
+  // Filter und Darstellung nicht auseinanderlaufen können.
+  const isTransfer = isTransferFragment(fragment);
   const stateClass = isTransfer
     ? styles.fragmentCardTransfer
     : isLocked

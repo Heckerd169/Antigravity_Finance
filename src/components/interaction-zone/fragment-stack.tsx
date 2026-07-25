@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { FragmentCard } from "./fragment-card";
-import { DRAG_MIME, type FragmentRow } from "./interaction-zone.types";
+import {
+  DRAG_MIME,
+  isTransferFragment,
+  type FragmentRow,
+} from "./interaction-zone.types";
 import styles from "./interaction-zone.module.css";
 
 type FragmentStackProps = {
@@ -13,11 +17,29 @@ type FragmentStackProps = {
 
 export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  /* v2-07 C1: Übertrags-Fragmente (INTERNAL_TRANSFER + ASSET_REALLOCATION)
+     sind aus der Arbeitsfläche ausgeblendet und nur über diesen Schalter
+     sichtbar. Standard „aus" (Briefing §3.2).
+     Bewusst KEIN LL-5-Reset auf targetMonth: LL-5 verlangt den Reset für
+     Client-State, der monatsspezifisch ist. Eine Ansichts-Vorliebe ist das
+     nicht — wer Überträge sehen will, will sie auch im Nachbarmonat sehen.
+     Ein Neuladen der Seite setzt auf „aus" zurück. Keine localStorage-
+     Persistierung (CLAUDE.md §7 „Was Claude Code NIE macht"). */
+  const [showTransfers, setShowTransfers] = useState(false);
 
   // LL-5: bei Soft-Navigation State zurücksetzen.
   useEffect(() => {
     setDraggingId(null);
   }, [targetMonth]);
+
+  /* Zähler beschreibt den Übertrags-Bestand des angezeigten Monats und ist
+     deshalb von der Schalterstellung unabhängig (AC-C1.3). Der Filter ändert
+     keine Reihenfolge — bei eingeschaltetem Schalter steht die Liste exakt so
+     da wie vor v2-07 (AC-C1.4). */
+  const transferCount = fragments.filter(isTransferFragment).length;
+  const visibleFragments = showTransfers
+    ? fragments
+    : fragments.filter((f) => !isTransferFragment(f));
 
   function handleDragStart(e: React.DragEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
@@ -43,13 +65,33 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
 
   return (
     <div className={styles.fragmentColumn}>
-      <div className={styles.zoneLabel}>Rohmasse</div>
+      {/* v2-07 C1: Schalter sitzt in derselben Zeile wie die Zonen-Überschrift,
+          damit die Oberkanten der drei Zonen auf gleicher Höhe bleiben. Er wird
+          nur gerendert, wenn der Monat überhaupt Überträge enthält (AC-C1.2) —
+          sonst wäre er reines Rauschen. */}
+      <div className={styles.fragmentZoneHeader}>
+        <div className={`${styles.zoneLabel} ${styles.zoneLabelInline}`}>
+          Rohmasse
+        </div>
+        {transferCount > 0 && (
+          <label className={styles.transferToggle}>
+            <input
+              type="checkbox"
+              className={styles.transferToggleInput}
+              checked={showTransfers}
+              onChange={(e) => setShowTransfers(e.target.checked)}
+            />
+            <span className={styles.transferToggleBox} aria-hidden="true" />
+            <span>Überträge anzeigen ({transferCount})</span>
+          </label>
+        )}
+      </div>
       <div
         className={styles.fragmentStack}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {fragments.map((f) => (
+        {visibleFragments.map((f) => (
           <div
             key={f.id}
             className={

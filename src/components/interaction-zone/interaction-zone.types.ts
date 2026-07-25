@@ -34,6 +34,17 @@ export type FragmentRow = {
   suggestedCardName: string | null;
 };
 
+/** v2-07 C1: Beide Übertrags-Typen verhalten sich UI-seitig identisch — sie
+ *  können per Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) nie an
+ *  eine Karte gelinkt werden und gehören deshalb nicht auf die Arbeitsfläche
+ *  der Rohmasse. Ein Prädikat für beide Konsumenten: den Stack-Filter
+ *  (fragment-stack) und die Darstellungs-Hierarchie (fragment-card). */
+export function isTransferFragment(f: Pick<FragmentRow, "status">): boolean {
+  return (
+    f.status === "INTERNAL_TRANSFER" || f.status === "ASSET_REALLOCATION"
+  );
+}
+
 /** Karten-Erstellungs-Input (Direct + Drop teilen Felder). */
 export type CardCreateInput = {
   name: string;

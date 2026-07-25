@@ -54,6 +54,14 @@
   --slot-icon: rgba(255, 255, 255, .15);
   --slot-label: rgba(255, 255, 255, .25);
   --zone-label: rgba(255, 255, 255, .18);
+  /* v2-07 C1: Übertrags-Schalter der Rohmasse. Bewusst auf dem gemeinsamen
+   * Grundton --fragment-hue (N5) — der Schalter gehört zur Rohmasse und darf
+   * keine eigene Farbfamilie aufmachen. Abstufung nur über Alpha. */
+  --transfer-toggle-color: rgba(var(--fragment-hue), .28);
+  --transfer-toggle-color-hover: rgba(var(--fragment-hue), .5);
+  --transfer-toggle-border: rgba(var(--fragment-hue), .22);
+  --transfer-toggle-fill: rgba(var(--fragment-hue), .42);
+  --transfer-toggle-check: var(--bg-primary);
   /* K2.1: Overlay-Werte NICHT via Custom-Properties — Overlays werden via
    * createPortal nach document.body gemountet, dort wirken die hier auf
    * .interactionZone definierten Custom-Properties nicht mehr (DOM-Inheritance
@@ -406,6 +414,86 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+/* v2-07 C1: Zonen-Kopfzeile der Rohmasse — Überschrift links, Übertrags-
+   Schalter rechts. Bewusst EINE Zeile: ein eigener Schalter-Absatz würde den
+   Stack gegenüber Portal und Karussell nach unten versetzen. */
+.fragmentZoneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-width: 0;
+}
+
+/* Übernimmt den Außenabstand von .zoneLabel an die Kopfzeile. */
+.zoneLabelInline {
+  margin-bottom: 0;
+}
+
+.transferToggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .2px;
+  color: var(--transfer-toggle-color);
+  transition: color .15s;
+  font-variant-numeric: tabular-nums;
+}
+
+.transferToggle:hover {
+  color: var(--transfer-toggle-color-hover);
+}
+
+/* Native Checkbox bleibt im DOM (Tastatur + Screenreader), ist aber visuell
+   durch .transferToggleBox ersetzt. */
+.transferToggleInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  margin: 0;
+}
+
+.transferToggleBox {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 1px solid var(--transfer-toggle-border);
+  transition: background .15s, border-color .15s;
+}
+
+.transferToggleInput:checked + .transferToggleBox {
+  background: var(--transfer-toggle-fill);
+  border-color: var(--transfer-toggle-fill);
+}
+
+/* Häkchen: zwei Rahmenkanten, um 45° gedreht — kein SVG nötig. */
+.transferToggleInput:checked + .transferToggleBox::after {
+  content: "";
+  position: absolute;
+  left: 2.5px;
+  top: .5px;
+  width: 2px;
+  height: 4.5px;
+  border: solid var(--transfer-toggle-check);
+  border-width: 0 1.2px 1.2px 0;
+  transform: rotate(45deg);
+}
+
+.transferToggleInput:focus-visible + .transferToggleBox {
+  outline: 1px solid var(--transfer-toggle-color-hover);
+  outline-offset: 1px;
 }
 
 .fragmentStack {
