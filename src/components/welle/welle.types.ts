@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { DriversByMonth } from "./drivers";
 
 /** Ein Monatspunkt der Jahres-Welle + kumulierten Popup-Treppe (Design-Doku §9). */
 export type WelleMonthPoint = {
@@ -25,6 +26,9 @@ export type WelleData = {
   /** B6: kumulierter Jahresendwert des Vorjahres (Σ Jan–Dez X-1).
    *  null = Vorjahr nicht abgeschlossen ODER komplett datenlos → Linie entfällt. */
   prevYearEndCumulative: number | null;
+  /** B2 (v2-06): Abweichungs-Treiber je Monat aus `get_year_deviation_drivers`.
+   *  null = Treiber-Load fehlgeschlagen (die Welle rendert trotzdem). */
+  drivers: DriversByMonth | null;
 };
 
 export type WelleStageProps = {

@@ -36,6 +36,25 @@ export async function calculateSparrateForMonth(
   return data;
 }
 
+/** B2 (v2-06): Abweichungs-Treiber je Monat eines Kalenderjahres — EIN Call für
+ *  Welle-Tooltip (Top-1) und Popup (Top-3). Signatur ohne p_user_id: die RPC ist
+ *  auth.uid()-basiert (Hot-Path-Konvention). Rohes jsonb; das Parsen macht
+ *  `components/welle/drivers.ts`. Throws bei DB-Errors (LL-2) — der Welle-Loader
+ *  fängt sie ab, damit ein Treiber-Fehler die Kurve nicht mitreißt. */
+export async function getYearDeviationDrivers(
+  client: AppSupabaseClient,
+  args: { year: number; limit?: number },
+): Promise<Json> {
+  const { data, error } = await client.rpc("get_year_deviation_drivers", {
+    p_year: args.year,
+    p_limit: args.limit ?? 3,
+  });
+
+  if (error) throw error;
+
+  return data ?? null;
+}
+
 export async function calculatePlannedSparrateForMonth(
   client: AppSupabaseClient,
   args: { userId: string; month: string },

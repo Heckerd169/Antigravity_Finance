@@ -1,9 +1,14 @@
 import {
   calculatePlannedSparrateForMonth,
   calculateSparrateForMonth,
+  getYearDeviationDrivers,
   type AppSupabaseClient,
 } from "@/lib/rpc";
+import { parseYearDrivers, type DriversByMonth } from "./drivers";
 import type { WelleData, WelleMonthPoint } from "./welle.types";
+
+/** Top-N je Monat — Tooltip zeigt 1, Popup 3 (§9). */
+const DRIVER_LIMIT = 3;
 
 /** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9). */
 function dbDate(year: number, monthIndex: number): string {
@@ -43,7 +48,21 @@ export async function loadWelleData(
     ? Array.from({ length: 12 }, (_, i) => dbDate(prevYear, i))
     : [];
 
-  const [istMonthly, planMonthly, prevIstMonthly] = await Promise.all([
+  // B2 (v2-06): EIN Jahres-Call für alle 12 Monate — läuft parallel zu den
+  // Sparrate-Loops (Konzept-Papier Option c, bewusst KEIN Call pro Monat).
+  // Ein Treiber-Fehler darf die Kurve nicht mitreißen: er landet als null in
+  // `drivers`, die Welle rendert vollständig, der Tooltip sagt es ehrlich.
+  const driversPromise: Promise<DriversByMonth | null> = getYearDeviationDrivers(
+    client,
+    { year: activeYear, limit: DRIVER_LIMIT },
+  )
+    .then(parseYearDrivers)
+    .catch((err: unknown) => {
+      console.error("B2-Treiber-Load fehlgeschlagen", err);
+      return null;
+    });
+
+  const [istMonthly, planMonthly, prevIstMonthly, drivers] = await Promise.all([
     Promise.all(
       activeDates.map((month) =>
         calculateSparrateForMonth(client, { userId, month }),
@@ -59,6 +78,7 @@ export async function loadWelleData(
         calculateSparrateForMonth(client, { userId, month }),
       ),
     ),
+    driversPromise,
   ]);
 
   let istCum = 0;
@@ -91,5 +111,6 @@ export async function loadWelleData(
     prevYear,
     points,
     prevYearEndCumulative,
+    drivers,
   };
 }

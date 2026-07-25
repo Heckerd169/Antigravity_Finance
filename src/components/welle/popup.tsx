@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MONTHS_FULL, drawPopupStair, fmtSignedEuro, type WavePoint } from "./draw";
-import { getTop3Drivers } from "./drivers-stub";
+import { getTop3Drivers } from "./drivers";
 import type { WelleData } from "./welle.types";
 import styles from "./welle.module.css";
 
@@ -88,7 +88,7 @@ export function WellePopup({ data, onClose }: WellePopupProps) {
   }
 
   const yearTotal = data.points[11]?.istCumulative ?? 0;
-  const drivers = selIdx >= 0 ? getTop3Drivers(selIdx) : [];
+  const drivers = selIdx >= 0 ? getTop3Drivers(data.drivers, selIdx) : [];
 
   return (
     <div

@@ -10,7 +10,7 @@ import {
   tealS,
   type WavePoint,
 } from "./draw";
-import { getTop1Driver } from "./drivers-stub";
+import { getTop1Driver } from "./drivers";
 import { WellePopup } from "./popup";
 import type { WelleData, WelleStageProps } from "./welle.types";
 import styles from "./welle.module.css";
@@ -193,7 +193,7 @@ function WelleTooltip({ data, idx, point, fieldWidth, realizedMonthIndex }: Tool
   const ist = monthPoint.istMonthly ?? 0;
   const plan = monthPoint.planMonthly ?? 0;
   const realized = realizedMonthIndex >= 0 && idx <= realizedMonthIndex;
-  const driver = getTop1Driver(idx);
+  const driver = getTop1Driver(data.drivers, idx);
 
   const valueColor = ist < 0 ? redS(1) : realized ? tealS(1) : graS(0.65);
 
