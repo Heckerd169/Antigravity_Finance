@@ -8,7 +8,7 @@
 > 163 INTERNAL_TRANSFER auto-erkannt, 17 ASSET_REALLOCATION manuell markiert, 3 Auto-Absorbs
 > (Spotify). Nachträge auf User-Anweisung 23./24.07.: Income-Slots (beide Personen) und
 > 19 MONTHLY-Karten auf 2026-01-01 rückdatiert (12 ONCE/ANNUAL bewusst im Mai belassen).
-> **Offen:** 2025-Import (Dateien liegen parse-geprüft in `import_data/`, §0.1).
+> **2025-Import: AUSGEFÜHRT am 25.07.2026** — 964 Fragmente, Counter deckungsgleich mit §0.1-Prognose (642/58/264, Transfers 100/44/56), 14 AR-Markierungen, Einkommens-Historie 2025 + Partner-Brutto-Korrektur 2026 laut User-Tabelle. Neue Anker siehe CLAUDE.md-Eintrag 25.07.2026.
 > **Referenzen:** Beschluss-Nachtrag Mehrkonten F1/F2/F3/F7 · Design-Doku v3.1.3 §11 · Schema-Doku v3.2 §4/§7
 
 ---

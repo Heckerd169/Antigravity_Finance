@@ -2,7 +2,7 @@
 
 > **Single source of truth** für Claude Code zwischen Sprints.
 > Diese Datei wird vom zentralen Arbeits-Agenten (Claude Code, PM-Rolle) nach jedem abgeschlossenen Sprint patch-basiert aktualisiert (LL-16).
-> **Letzte Aktualisierung:** 24. Juli 2026 (spät) · **Nach Sprint:** v2-05 (Karten-Lebenszyklus, Done)
+> **Letzte Aktualisierung:** 25. Juli 2026 · **Nach:** 2025er-Import + Einkommens-Historie (neue Sparrate-Anker)
 
 ---
 
@@ -1675,3 +1675,34 @@ Lösch-Tor-Vorberechnung in page.tsx über zwei Selects. tsc/lint/build grün,
 **Offen:** DD-Rücksprache Verben-Sprache/Gesten (M2) · B2-Backend-Sprint auf
 derselben Übungs-DB (Tausch wiederholen) · net_estimation_brackets-Seed der
 Übungs-DB bei Bedarf.
+
+### 2025er-Import + Einkommens-Historie · 25. Juli 2026
+
+**User-Auftrag:** 2025er-Konto-Daten importieren; Anteils-Steuerung über die
+gelieferte Brutto-Tabelle (Domi/Aline, 01/2024–12/2026).
+
+- **Import** (produktive `process_csv_import`, authentifiziert): 964 Fragmente —
+  Giro 642 / Cortal 58 / Visa 264; 200 INTERNAL_TRANSFER auto, 0 Duplikate,
+  0 Auto-Absorbs (Karten 2025 inaktiv → neutral). Counter deckungsgleich mit der
+  Pre-Flight-Prognose aus `V2/golive_import_ablaufplan.md` §0.1.
+- **14 ASSET_REALLOCATION** regelbasiert (Beschluss-Regeln vom 24.07.): 7 Coinbase
+  (inkl. +4.000-Rückläufer über eine ZWEITE Coinbase-IBAN EE47… und 1-€-
+  Verifikations-Cent über DE57… — per Description-Regel gefangen, reine
+  IBAN-Regel hätte sie verpasst), 6 Visa↔Giro-Rückflüsse (Alt-Kontonummer).
+- **Einkommens-Historie** aus der User-Tabelle: ICH 2025-01 (90.000 brutto /
+  netto 4.037,11 = Durchschnitt der 12 echten Gehaltseingänge, Summe 48.445,31);
+  PARTNER 2025-01 (63.097 / 2.981,08 pro-rata) + 2025-04 (69.113 / 3.265,33).
+  **Korrektur:** PARTNER-2026-Slot 63.200 → 69.113 (Alt-Onboarding-Wert
+  widersprach der User-Tabelle). 2024-Zeilen bewusst NICHT als Slots angelegt
+  (für Splits ab 2025 unnötig; hätte eine irreführende 2024-Goldlinie erzeugt).
+- **Neue Sparrate-Anker:** 2026-Monate 1.931,18 · Mai −86,77 · Juni 4.589,53
+  (Split 57,21 % statt 59,38 %); 2025 konstant 4.037,11 →
+  Vorjahres-Goldlinie der 2026-Ansicht = 48.445,32. Splits treffen die
+  User-Tabelle exakt (58,8 % Q1/25 · 56,6 % ab 04/25 · 57,2 % 2026).
+- **Offen (User-Entscheidung):** Karten-Rückdatierung auf 2025 — ohne sie ist die
+  2025-Sparrate das volle Netto (keine Kosten modelliert) und die
+  2025-Kuratierung unmöglich (Karten dort inaktiv, keine Drop-Ziele).
+- **Werkzeug-Lesson:** Mutations-Statements NIE im selben execute-Call wie eine
+  RAISE-Rollback-Verifikation — der RAISE rollt den gesamten Call zurück
+  (Partner-Korrektur wurde so initial zurückgerollt; die Nachher-Messung hat es
+  gefangen, Korrektur separat erneut ausgeführt).
