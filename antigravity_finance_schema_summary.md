@@ -1,8 +1,8 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.3
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus)
-**Datum:** 24. Juli 2026
+**Version:** 3.4
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber)
+**Datum:** 25. Juli 2026
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**
@@ -38,6 +38,11 @@
 **Änderungen v3.2 → v3.3 (Sprint v2-05 „Karten-Lebenszyklus"):**
 
 - v2-05 Karten-Lebenszyklus: 5 neue RPCs (`end_card`, `card_delete_gate`, `delete_card`, `restore_card`, `cleanup_expired_card_trash`), `toggle_card_hidden` per DROP entfernt (Beschluss E2), `cards.deleted_at` semantisch von Verbergen- zu Papierkorb-Marker gewechselt, Trash-Flow (`schedule_deletion`/`restore_deletion`) für Karten erstmals verdrahtet.
+
+**Änderungen v3.3 → v3.4 (Sprint v2-06 „B2 Abweichungs-Treiber"):**
+
+- 1 neue Lese-RPC: `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` — Top-N Abweichungs-Treiber je Monat eines Kalenderjahres, EIN Call für Welle-Tooltip (Top-1) und Popup (Top-3). Additiv, read-only, keine Schema- oder Daten-Änderung.
+- Keine Tabellen-, Spalten-, Index-, Trigger- oder Enum-Änderung.
 
 **`transfer_type` — Wertemenge + Semantik (v3.2):**
 
@@ -160,6 +165,37 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 | `get_planned_amount_for_month(card_id, month)` | Roher Plan ohne Adjustment | `numeric` |
 | `get_net_monthly_for_month(user_id, person, month)` | Netto-Anzeige | `numeric` |
 | `get_split_factor(user_id, month)` | "ICH 60%" / "PARTNER 40%"-Anzeige | `numeric` (0..1) |
+
+### Bei der Jahres-Welle (Sprint v2-06)
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023 | `jsonb` |
+
+**Return-Form** — immer genau 12 Einträge (auch ohne Treiber), aufsteigend nach Monat:
+
+```jsonc
+[{ "month_index": 0, "month": "2026-01-01",
+   "drivers": [{ "card_id": "…", "card_name": "Tanken", "card_type": "BUDGET",
+                 "attribution": "ICH", "ist": 187.20, "plan": 150.00,
+                 "share": 1.000000, "delta": -37.20 }] }, …]
+```
+
+**Heuristik (Konzept-Papier E1 + User-Entscheid 25.07.2026):**
+
+```
+delta := round( vorzeichen × anteil × ( calculate_card_amount_for_month(karte, M)
+                                      − get_effective_plan_for_month(karte, M) ), 2)
+         vorzeichen = +1 für INCOME, −1 für FIXED_COST/BUDGET
+         anteil     = get_split_factor(M) bei GEMEINSAM, sonst 1
+```
+
+- `delta` ist damit die **Wirkung auf die Sparrate**: negativ = der Monat ist um diesen Betrag schlechter als geplant. `ist`/`plan` bleiben die **rohen** Kartenwerte (wie auf der Karte sichtbar), `share` weist den angewandten Anteil aus.
+- **Invariante:** `Σ delta(alle aktiven Karten, M) = calculate_sparrate_for_month(M) − calculate_planned_sparrate_for_month(M)`. Beide Sparrate-RPCs aggregieren über exakt dieselbe Kartenmenge, denselben Split-Faktor und dieselben Vorzeichen — die Treiber erklären also genau die IST/Plan-Differenz, die der Tooltip darüber ausweist. Auf der Übungs-DB und auf Prod (alle 12 Monate 2026) verifiziert.
+- Ranking `|delta|` absteigend, Tiebreaker Kartenname aufsteigend (deterministisch, analog §11-Mehrfach-Match). `delta = 0` fällt raus; Monat ohne Abweichung → `"drivers": []`.
+- **Keine eigene Betragslogik** (§7 Regel 1): ausschließlich Aufrufe der bestehenden §4.3-kompletten Basis-RPCs. Transfer-Fragmente sind dadurch transitiv ausgeschlossen.
+- **Snapshot-Integrität §2.1:** KEIN `cards.deleted_at`-Filter — identisch zu den Sparrate-RPCs, deren Kurve die Treiber erklären. Papierkorb-Karten haben per Lösch-Gate weder Links noch States noch Vergangenheits-Plan → `delta = 0` → fallen ohnehin aus dem Ranking.
+- **Sichtbarkeits-Grenze (bewusst, Konzept §2):** B2 sieht nur Karten-Realität. Unzugeordnete Rohmasse ist unsichtbar; die Qualität wächst mit der Kuratierung. E4 (Rohmasse-Pseudo-Treiber) bleibt offene DD-Frage und ist **nicht** umgesetzt.
 
 ### Beim Karten-Lebenszyklus (Sprint v2-05)
 

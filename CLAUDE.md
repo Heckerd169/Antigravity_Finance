@@ -74,6 +74,7 @@ Antigravity_Finance/
 │   │   ├── header-timeline/                           ← Sprint 3
 │   │   ├── cards/                                     ← Sprint 4
 │   │   ├── interaction-zone/                          ← Sprint 5
+│   │   ├── welle/                                     ← Jahres-Welle §9 (v2-02); drivers.ts = B2-Heuristik-Anbindung (v2-06, ersetzt drivers-stub.ts)
 │   │   └── treppe/                                    ← Sprint 9 (ersetzt durch components/welle/ seit v2-02)
 │   ├── lib/
 │   │   ├── supabase/
@@ -98,6 +99,7 @@ Antigravity_Finance/
 ├── playwright.config.ts                               ← Projekte: visual (creds-frei) · unauth · setup · render-smoke
 ├── .claude/
 │   └── agents/                                        ← docs-maintainer.md · smoke-agent.md (versioniert)
+├── supabase/migrations/                               ← 20260706_v2_04_mehrkonten_stufe1.sql · 20260725_v2_06_b2_treiber.sql
 ├── supabase/test_projekt/                             ← Übungs-DB-Runbook + Generator-Queries + Init-2-Seed (24.07.2026)
 ├── package.json
 ├── pnpm-workspace.yaml                                ← allowBuilds.unrs-resolver: false
@@ -135,6 +137,7 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | v2-03 | Display: N5 Rohmasse-Grundton + N4b Ring-Degeneration + B3 Popup-Rot | 🟢 Done | sprints/sprint_v2-03_briefing.md | 23.07.2026 (Merge durch Claude Code auf User-Anweisung, Smoke erlassen) |
 | v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
 | v2-05 | Karten-Lebenszyklus: Beenden/Löschen/Papierkorb ersetzt Verbergen (M1/M2) + Übungs-DB-Aufbau | 🟢 Done | V2/architekt_stufe1_karten_loeschen_m1_m2.md (Stufe-1-Papier = Briefing) | 24.07.2026 |
+| v2-06 | B2 Abweichungs-Treiber (Jahres-RPC + Modul-Tausch) | 🟢 Done | V2/architekt_konzept_b2_treiber_heuristik.md (Konzept-Papier = Briefing) | 25.07.2026 |
 
 **Doku-Stand nach v2-04:** Design-Doku v3.1.5 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.3 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
@@ -281,6 +284,12 @@ fragments · card_fragment_links · deleted_entities · app_config · net_estima
 - **Semantik-Wechsel `cards.deleted_at`:** vormals Verbergen-Marker (UI-Hide), seit v2-05 ausschließlich Papierkorb-Marker des §2.4-Trash-Flows (gesetzt nur von `delete_card`, nur bei grünem Gate — also nie für Karten mit Vergangenheit). Sparrate-RPCs ignorieren `deleted_at` weiterhin unverändert (§2.1) — da das Gate Vergangenheits-Karten ausschließt und die Retention 60 s beträgt, ist das harmlos.
 - Migration `v2_05_loesch_umbau` zuerst auf der Übungs-DB `qyjuzzgqxowqiiwqcahd` geprobt (Testlauf T1–T6 grün, Anker 2.200,00 stabil), dann identisch auf Prod `nflkobdfdhncrtjncpmq`. Prod-12-Monats-Kurve nach Migration exakt unverändert (Jan–Apr 1.886,97 · Mai −130,98 · Juni 4.545,32 · Jul–Dez 1.886,97).
 - Übungs-DB-Projekt `antigravity-finance-test` (`qyjuzzgqxowqiiwqcahd`, eu-west-1, Free) nach Runbook `supabase/test_projekt/` aufgebaut, Struktur-Parität zu Prod (10/82/10/6/54/14/6; einzige bewusste Abweichung: `rls_auto_enable`-Eventtrigger-Helfer übersprungen; `net_estimation_brackets`-Seed noch leer), Init-2-Anker 2.200,00. Wird zwischen Sprints pausiert (Slot-Tausch mit „Rennrad-Trainer").
+
+**Wichtige Schema-Befunde aus Sprint v2-06 (B2 Abweichungs-Treiber):**
+- Neue Lese-RPC `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3) RETURNS jsonb` (`STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`): Top-N Abweichungs-Treiber je Monat eines Kalenderjahres, **ein** Call für Tooltip (Top-1) und Popup (Top-3). Signatur **ohne** `p_user_id` (auth.uid()-basiert) — erste Nicht-Lebenszyklus-RPC dieser Konvention; zusätzlich expliziter `cards.user_id`-Filter (Defense-in-Depth). Auth-Pflicht 28000, Range-Validierung 22023 (`p_year` 1900–2999, `p_limit` 1–50).
+- `delta` = **Wirkung auf die Sparrate** (User-Entscheid 25.07.2026): `round(vorzeichen × anteil × (calculate_card_amount_for_month − get_effective_plan_for_month), 2)`, `vorzeichen` = +1 INCOME / −1 FIXED_COST+BUDGET, `anteil` = `get_split_factor` bei GEMEINSAM sonst 1. `ist`/`plan` im Return bleiben roh (Karten-Sicht), `share` weist den Anteil aus.
+- **Invariante (verifiziert Übungs-DB + Prod):** `Σ delta = Ist-Sparrate − Plan-Sparrate` pro Monat — beide Sparrate-RPCs nutzen dieselbe Kartenmenge, denselben Split und dieselben Vorzeichen. Ein Auseinanderlaufen dieser Invariante ist der erste Verdacht bei künftigen Treiber-Bugs.
+- Kein Schema-Eingriff: keine Tabelle/Spalte/Index/Trigger/Enum berührt. Migration `v2_06_b2_treiber` zuerst auf der Übungs-DB `qyjuzzgqxowqiiwqcahd` geprobt (T1–T10 grün, Anker 2.200,00 unverändert), dann identisch auf Prod `nflkobdfdhncrtjncpmq` (12-Monats-Kurve 2025+2026 exakt unverändert).
 
 **TypeScript-Typen-Generierung** (nur bei Schema-Änderung):
 ```bash
@@ -1706,3 +1715,57 @@ gelieferte Brutto-Tabelle (Domi/Aline, 01/2024–12/2026).
   RAISE-Rollback-Verifikation — der RAISE rollt den gesamten Call zurück
   (Partner-Korrektur wurde so initial zurückgerollt; die Nachher-Messung hat es
   gefangen, Korrektur separat erneut ausgeführt).
+
+### Sprint v2-06 · DONE 25. Juli 2026
+
+**Komponente:** B2 Abweichungs-Treiber — die Welle sagt jetzt nicht nur *dass*
+ein Monat abweicht, sondern *welche Karten* das treiben (Top-1 im Hover-Tooltip,
+Top-3 im Popup-Monatsklick, §9-Display seit v2-02 unverändert).
+
+**DB (additiv, read-only):** neue RPC `get_year_deviation_drivers(p_year, p_limit
+DEFAULT 3)` — EIN Jahres-Call statt 12–62 Einzel-Calls (Konzept Option c;
+bewusst gegen den RPC-Burst gebaut, der den ECONNRESET-Befund vom 24.07.
+ausgelöst hat). Details im §6-Schema-Befunde-Block oben, Migration
+`supabase/migrations/20260725_v2_06_b2_treiber.sql`.
+
+**User-Entscheid 25.07.2026 (zwei Spec-Lücken des Konzept-Papiers geschlossen):**
+Das Papier definiert `Δ = displayed − effective_plan` (roh), beschreibt die
+Vorzeichen-Semantik aber als „Δ < 0 = teurer als geplant" — bei Kosten-Karten
+widersprechen sich beide. Entschieden: `delta` ist die **Wirkung auf die
+Sparrate** (Minus = Monat schlechter als geplant), und **GEMEINSAM-Karten zählen
+nur mit dem eigenen Anteil**. Damit gilt die Invariante `Σ delta = IST − Plan` —
+die Treiber erklären exakt die Differenz, die im selben Tooltip darüber steht.
+Ohne Anteils-Gewichtung wären gemeinsame Karten im Ranking systematisch
+überbewertet. (Muster LL-20: narrative Spec vs. Formel — geklärt statt geraten.)
+
+**Frontend:** `drivers-stub.ts` → `drivers.ts` (UI-Vertrag `DriverEntry
+{label, isPlaceholder}` unverändert, Signaturen um den Daten-Parameter
+erweitert), `WelleData.drivers`, Loader-Call parallel zu den Sparrate-Loops mit
+eigenem `catch` — ein Treiber-Fehler darf die Kurve nicht mitreißen (Tooltip
+sagt dann „Treiber nicht verfügbar"). Leerer Monat → „Keine Abweichungen"
+(gedimmt, wie der alte Platzhalter). Nur `welle/`-Modul + `rpc.ts` + `types.ts`
+berührt; keine UI-/CSS-Änderung.
+
+**Verifikation:** Übungs-DB-Probe vor Prod (Slot-Tausch mit „Rennrad-Trainer",
+danach zurückgetauscht + ACTIVE_HEALTHY verifiziert): T1 Auth-Guard 28000 · T2/T3
+Range-Validierung 22023 · T4 Leerfall 12 Monate · T5–T9 Heuristik gegen
+synthetische Abweichungen in einer zurückgerollten Transaktion (Kosten −100,
+Einnahme +50, GEMEINSAM mit Split 0,5 → −50, abgeschlossenes Budget +150;
+Ranking + Tiebreaker + `p_limit` 1/3/50 korrekt; **Invariante Σ delta = IST −
+Plan exakt getroffen**) · T10 Rückrollung sauber, Anker 2.200,00 unverändert,
+Fremd-Nutzer sieht nichts. Prod: 12-Monats-Kurve 2025 + 2026 vor/nach identisch,
+Invariante in allen 12 Monaten 2026 erfüllt, Funktions-Scope 19–31 aktive Karten
+pro Monat (kein Leerlauf). Modul-Check gegen die echte RPC-Antwort grün.
+`tsc` 0 · Lint 0/0 (58 Dateien) · Build 0 Fehler (Route `/` 29,2 kB · First Load
+181 kB) · `pnpm test:visual` 3/3.
+
+**Ehrlicher Daten-Hinweis:** Live sind derzeit **alle** Δ = 0 (nur 4 Links, davon
+3 delta-neutrale Auto-Absorbs) — der Tooltip zeigt also überall „Keine
+Abweichungen". Das ist korrektes Verhalten und deckt sich mit Konzept §5; die
+Anzeige wird mit der Kuratierung von selbst lebendig. Ein User-Browser-Smoke
+zeigt heute entsprechend wenig — aussagekräftig wird er nach dem ersten
+kuratierten Monat.
+
+**Offen:** DD-Feinschliff (Label-Format, Leer-Wording, E4-Rohmasse-Pseudo-Treiber
+— E4 bewusst NICHT umgesetzt) · Karten-Rückdatierung 2025 weiterhin offen ·
+`net_estimation_brackets`-Seed der Übungs-DB weiterhin leer.
