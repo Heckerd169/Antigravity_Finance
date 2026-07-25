@@ -2,7 +2,7 @@
 
 > **Vom:** PM-Chat Zwischenphase (Opus 4.7)
 > **An:** V2-PM-Chat
-> **Datum:** 01. Juni 2026 · **Status-Stand nachgetragen:** 25. Juli 2026
+> **Datum:** 01. Juni 2026 · **Status-Stand nachgetragen:** 25. Juli 2026 (nach v2-07)
 > **Anlass:** Master-Roadmap für V2, vollständig konsolidiert aus V1→V2-Handover, Schema-Doku v3.1, Sprint-10-Artefakten, Repo-Cleanup-Befunden und App-Nutzungs-Erkenntnissen des Users.
 > **Status:** Festgeschrieben. Diese Datei ist die Quelle für die Sprint-Priorisierung im V2-PM-Chat.
 > **Pflege (ab 25.07.2026):** Die Spalte **Stand** wird am Ende jedes Sprints mitgezogen — zusammen mit Schema-Doku und CLAUDE.md (CLAUDE.md §7 „Sprint-Output-Reihenfolge"). Ohne diese Routine veraltet die Datei innerhalb von zwei Sprints wieder.
@@ -28,7 +28,7 @@ Klassifikations-Verteilung:
 | Klasse | Anzahl | Bedeutung |
 |---|---|---|
 | Feature | 41 | Neue Funktionalität oder Erweiterung |
-| Bug | 5 | V1-Defekt, in V2 zu beheben |
+| Bug | 6 | V1-Defekt bzw. in V2 entstandener Defekt (C3 kam am 25.07.2026 hinzu) |
 | Strategie | 1 | Entwicklungs-Vorgehen |
 | Diskussion | 7 | Spec offen, Rücksprache erforderlich |
 
@@ -36,15 +36,23 @@ Davon erfordern **acht Punkte eine Rücksprache mit dem Design-Direktor** vor Sp
 
 ---
 
-## 0.1 Stand nach Sprint v2-06 (25. Juli 2026)
+## 0.1 Stand nach Sprint v2-07 (25. Juli 2026)
 
 **Abgeschlossen sind:** alle 4 Initial-Aufgaben · M0 (Playwright) · alle 5 V1-Bugs (N1–N5) ·
 die Welle inklusive Popup (M3, B3, B6, M10) · die Abweichungs-Treiber (B2) ·
-der Karten-Lebenszyklus (M1, A4; M2 backend-seitig) · Mehrkonten Stufe 1 (Teil von M9).
+der Karten-Lebenszyklus (M1, A4; M2 backend-seitig) · Mehrkonten Stufe 1 (Teil von M9) ·
+das Transfer-System (C1, C2, C3) und die Badge-Farben (A1).
 
-**Zahlen:** die Themen-Tabellen dieser Datei führen zusammen **54 Zeilen**
+**Zahlen:** die Themen-Tabellen dieser Datei führen zusammen **55 Zeilen**
 (die 4 Initial-Aufgaben, M0 und den Out-of-Scope-Punkt L1 eingeschlossen).
-Davon **19 erledigt ✅**, **4 teilweise 🟡**, **4 hinfällig ⊘**, **27 offen ⬜**.
+Davon **23 erledigt ✅**, **4 teilweise 🟡**, **4 hinfällig ⊘**, **24 offen ⬜**.
+
+> *Neu in v2-07:* C3 — die Rohmasse war ab dem 12.01.2026 leer, weil der
+> Fragment-Voll-Scan seit dem 2025er-Import in die PostgREST-Zeilenobergrenze
+> von 1000 lief. Am Tag der Entstehung gefunden und behoben. Als eigene
+> Roadmap-Zeile geführt, weil es der zweite Befund dieser Art ist (nach dem
+> ECONNRESET-Burst): Symptome, die erst bei wachsendem Datenbestand auftreten,
+> verdienen einen eigenen Eintrag statt nur eine Review-Fußnote.
 
 > *Zähl-Hinweis:* Der Kopftext von Abschnitt 0 spricht von „54 Themen **sowie**
 > 4 Initial-Aufgaben", die Statistik in Abschnitt 19 summiert die Initial-Aufgaben
@@ -64,7 +72,7 @@ mit dem, was beim Benutzen auffällt. Stand heute lautet die Empfehlung:
 |---|---|---|---|
 | 1 | **DD-Feinschliff** | M2 (Rest), B2-Feinschliff | Klein, blockiert aber die Endabnahme zweier fertiger Sprints. Wartet auf den Design-Direktor. |
 | 2 | **M6 — bessere Auto-Zuordnung** | M6 (= F1+F2+F3) | Der aktuelle Engpass ist die Kuratierung von Hand. Jede Verbesserung hier senkt den Aufwand für **alle** nachgelagerten Themen (Treiber-Qualität, Sparraten-Genauigkeit, 2025). |
-| 3 | **Kleinkram-Sammelsprint** | M5, A1, C1, C2, M4 | Viele kleine Ärgernisse, zusammen ein spürbarer Unterschied. Kein Schema-Eingriff. |
+| 3 | ~~**Kleinkram-Sammelsprint**~~ | ~~M5, A1, C1, C2, M4~~ | **Teilweise erledigt (v2-07):** A1, C1, C2 sind durch. Rest: M5 (wartet auf den Design-Direktor) und M4 (Dev-Opacity-Schieber). Beides zu klein für einen eigenen Sprint — an den nächsten passenden anhängen. |
 | 4 | **Einstellungen** | D1, D2, D3 | Erster echter Settings-Bereich; D1 (eigene IBANs) ist heute nur per SQL pflegbar. |
 | 5 | **M9 Stufe 2** | M9 (Rest), F5 | Erst sinnvoll, wenn ein Monat sauber kuratiert ist — sonst fehlt die Vergleichsbasis für die Verkettung. Schema-Eingriff. |
 | 6 | **M7 — Kartenverlauf** | M7 | Eigenständiges UI-Feature, gut isolierbar. |
@@ -99,7 +107,7 @@ mit dem, was beim Benutzen auffällt. Stand heute lautet die Empfehlung:
 
 | # | Punkt | Klassifikation | Schema-Eingriff | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| A1 | Karten-spezifische Badge-Farben (`cards.color`-Spalte oder deterministischer Hash-zu-Farb-Mapping) | Feature | Ja, bei Color-Spalte | ⬜ | Sprint 8 OQ1, seither als V2-C/V3'' verschoben. Kandidat für den Kleinkram-Sprint. |
+| A1 | Karten-spezifische Badge-Farben (`cards.color`-Spalte oder deterministischer Hash-zu-Farb-Mapping) | Feature | Nein (Hash-Variante gewählt) | ✅ (v2-07) | Sechs `--badge-hue-*`-Tokens, Zuordnung deterministisch aus dem Kartennamen (`badge-hue.ts`) — ohne Color-Spalte. Schließt Sprint-8-OQ1 / V2-C / V3''. Offen: Badge-Überlauf bei sehr langen Kartennamen (Altbestand, Review §5.1). |
 | A2 | UI-Pfad „Versteckte Karten verwalten und wieder einblenden" in Settings oder Overlay | Feature | Nein | ⊘ | Hinfällig: Verbergen wurde in v2-05 ersatzlos gestrichen (Beschluss E2). |
 | A3 | Bestätigungs-Dialog vor Verbergen-Klick | Feature | Nein | ⊘ | Hinfällig, gleiche Begründung wie A2. Beim Löschen übernehmen Lösch-Gate + 5-s-Undo diese Rolle. |
 | A4 | Soft-Delete-Pattern Trash-Variante mit `CARD_HIDE`-Enum und 60s-Cleanup | Feature | Ja, ENUM-Erweiterung | ✅ (v2-05) | Umgesetzt in der erweiterten M1-Form (Papierkorb über `deleted_entities`, 60-s-Retention, opportunistischer Vollzug). `CARD_HIDE` wurde nicht gebraucht. |
@@ -123,8 +131,9 @@ mit dem, was beim Benutzen auffällt. Stand heute lautet die Empfehlung:
 
 | # | Punkt | Klassifikation | Stand | Bemerkung |
 |---|---|---|---|---|
-| C1 | `INTERNAL_TRANSFER`-Fragmente aus Karten-Stack ausblenden (Reiter oder Toggle) | Feature | ⬜ | Sprint 9 V8''. Heute Variante (b): gedimmt + Badge. Mit 363 Transfer-Fragmenten im Bestand zunehmend relevant. |
-| C2 | Backfill-Toast-UX-Verbesserung bei hohem Migrations-Counter | Feature | ⬜ | Sprint 9 V9''. |
+| C1 | `INTERNAL_TRANSFER`-Fragmente aus Karten-Stack ausblenden (Reiter oder Toggle) | Feature | ✅ (v2-07) | Als Schalter „Überträge anzeigen" umgesetzt (Standard aus, Zähler am Schalter, kein eigener Reiter). Erfasst beide Übertrags-Typen. Schließt Sprint 9 V8''. |
+| C2 | Backfill-Toast-UX-Verbesserung bei hohem Migrations-Counter | Feature | ✅ (v2-07) | Ab 50 nachgepflegten IBANs „Bestehende Fragmente nachgepflegt" ohne Zahl; übrige Zeilen unverändert. Schließt Sprint 9 V9''. |
+| C3 | **Rohmasse ab Februar 2026 leer** — Voll-Scan lief in die PostgREST-Grenze von 1000 Zeilen | Bug | ✅ (v2-07, P0) | Beim 2025er-Import (25.07.) entstanden, am selben Tag gefunden und behoben: zwei monats-enge Abfragen statt Voll-Scan. Sparrate war nie betroffen. Review §3. |
 
 ---
 
@@ -289,9 +298,9 @@ Damit Doppelarbeit im V2-Sprint-Backlog vermieden wird, sind die folgenden Bezie
 |---|---|---|---|
 | Initial | 4 | 4 Setup-Aufgaben | 4 ✅ |
 | M0 (Strategie) | 1 | 1 Strategie | 1 ✅ |
-| A — Karten-System | 4 | 4 Features | 1 ✅ · 2 ⊘ · 1 ⬜ |
+| A — Karten-System | 4 | 4 Features | 2 ✅ · 2 ⊘ |
 | B — Sparraten-Treppe | 6 | 5 Features, 1 Diskussion | 3 ✅ · 3 ⬜ |
-| C — Transfer-System | 2 | 2 Features | 2 ⬜ |
+| C — Transfer-System | 3 | 2 Features, 1 Bug | 3 ✅ |
 | D — Settings und Onboarding | 3 | 3 Features | 3 ⬜ |
 | E — Income und Fairness | 2 | 2 Features | 2 ⬜ |
 | F — Distiller und Import | 7 | 7 Features | 7 ⬜ (F1–F3 unter M6, F5 unter M9) |
@@ -303,7 +312,7 @@ Damit Doppelarbeit im V2-Sprint-Backlog vermieden wird, sind die folgenden Bezie
 | L — Out of Scope | 1 | — | 1 ⊘ dauerhaft |
 | M — Aus App-Nutzung | 11 | 7 Features, 4 Diskussionen | 3 ✅ · 2 🟡 · 6 ⬜ |
 | N — V1-Bugs | 5 | 5 Bugs | 5 ✅ |
-| **Summe Zeilen** | **54** | Initial-Aufgaben, M0 und L1 in dieser Summe enthalten (siehe Zähl-Hinweis in 0.1) | **19 ✅ · 4 🟡 · 4 ⊘ · 27 ⬜** |
+| **Summe Zeilen** | **55** | Initial-Aufgaben, M0 und L1 in dieser Summe enthalten (siehe Zähl-Hinweis in 0.1) | **23 ✅ · 4 🟡 · 4 ⊘ · 24 ⬜** |
 
 ---
 
@@ -322,4 +331,4 @@ Empfohlene erste Schritte im V2-PM-Chat:
 
 ---
 
-*V2-Roadmap konsolidiert · Antigravity Finance · Zwischenphase V1 → V2 · 01. Juni 2026 · Status-Stand 25. Juli 2026 (nach Sprint v2-06)*
+*V2-Roadmap konsolidiert · Antigravity Finance · Zwischenphase V1 → V2 · 01. Juni 2026 · Status-Stand 25. Juli 2026 (nach Sprint v2-07)*

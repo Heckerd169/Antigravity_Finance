@@ -346,4 +346,40 @@ Schema-Doku: **kein Patch nötig** — der Sprint fasst das Schema nicht an.
 
 ---
 
-*Sprint v2-07 Briefing · Antigravity Finance · 25. Juli 2026*
+## 11. Nachtrag — Phase P0 (Scope-Erweiterung, User-Freigabe 25.07.2026)
+
+Während der C1-Verifikation im Browser fiel auf, dass die Rohmasse ab dem
+**12.01.2026 leer** ist. Ursache ist kein Fehler dieses Sprints, sondern der
+bestehende Voll-Scan über `fragments_with_status` in `page.tsx`: er lief seit
+dem 2025er-Import vom Vormittag des 25.07.2026 (Bestand 544 → 1508) in die
+PostgREST-Zeilenobergrenze von 1000. Damit war die Prämisse von C1 („363
+Überträge stören die Kuratierung") für Februar bis Juli 2026 unzutreffend —
+dort war überhaupt nichts sichtbar, und C1 nicht überprüfbar.
+
+Der Befund wurde dem User vorgelegt; die Reparatur ist als **Phase P0**
+freigegeben worden (Entscheid 25.07.2026). Sie wurde nach P1–P3 implementiert,
+trägt aber die Nummer P0, weil sie logisch vor allem anderen liegt.
+
+**Folge für Abschnitt 7:** Die Aussage „`src/app/page.tsx` wird nicht angefasst"
+gilt nicht mehr. Die davon abgeleiteten Zusicherungen bleiben jedoch gültig und
+sind jetzt gemessen statt konstruktiv begründet:
+- **AC-C1.6** (Header-Flanke): Die Flanken-Abfrage ist eine eigene
+  `count`-Abfrage und wurde nicht angefasst. Im Browser belegt.
+- **AC-G3** (Rechenpfade): unverändert eingehalten — `rpc.ts`, `welle/` und
+  `singularity-ring/` sind nicht berührt; die Sparrate-Aufrufe in `page.tsx`
+  sind unverändert. Anker vor und nach dem Eingriff gemessen.
+
+**Zusätzliche Akzeptanzkriterien P0** *(regelbasiert)*:
+- **AC-P0.1** Der Fragment-Stack zeigt für **jeden** Monat die Fragmente dieses
+  Monats, unabhängig vom Gesamtbestand der Datenbank.
+- **AC-P0.2** Ein Fragment, dessen `transaction_date` außerhalb des angezeigten
+  Monats liegt, das aber auf eine Karte dieses Monats zeigt, erscheint
+  weiterhin im Karten-Overlay „Verknüpfte Fragmente" und **nicht** im Stack.
+- **AC-P0.3** Die Anzahl der pro Aufbau geladenen Fragment-Zeilen wächst nicht
+  mit dem Gesamtbestand, sondern nur mit dem Monatsvolumen.
+- **AC-P0.4** Die Header-Flanke und alle Sparrate-Anzeigen liefern vor und nach
+  dem Eingriff identische Werte.
+
+---
+
+*Sprint v2-07 Briefing · Antigravity Finance · 25. Juli 2026 · Nachtrag P0 am selben Tag*
