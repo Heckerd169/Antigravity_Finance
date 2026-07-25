@@ -232,59 +232,99 @@ export default async function Home({ searchParams }: HomeProps) {
   const autoAbsorbThreshold =
     thresholdByKey.get("confidence.auto_absorption_threshold") ?? 0.95;
 
-  // ── Fragmente (alle Monate) ──────────────────────────────────────────────
-  // Roh-Order aufsteigend (transaction_date, imported_at) für deterministische
-  // Tiebreaks; finale Gruppen-Sortierung (unzugeordnet zuerst) erfolgt unten in JS.
+  // ── Fragmente ────────────────────────────────────────────────────────────
+  // v2-07 P0 (Bugfix): zwei monats-enge Abfragen statt eines Voll-Scans.
+  //
+  // Der frühere Voll-Scan über `fragments_with_status` lief seit dem
+  // 2025er-Import vom 25.07.2026 (Bestand 544 → 1508 Fragmente) in die
+  // PostgREST-Zeilenobergrenze von 1000: sortiert nach transaction_date ASC
+  // füllten das Jahr 2025 plus die erste Januarwoche 2026 das Kontingent,
+  // alles ab dem 12.01.2026 fiel stillschweigend heraus (kein Fehler, nur
+  // eine kürzere Antwort). Sichtbare Folge: Rohmasse ab Februar 2026 leer,
+  // und alle vier bestehenden card_fragment_links im Overlay „Verknüpfte
+  // Fragmente" unsichtbar.
+  // Die Sparrate war nie betroffen — sie wird RPC-seitig aus
+  // card_fragment_links berechnet und liest diese Liste nicht (§2.1).
+  //
+  //   (a) stackRows  — Fragmente mit transaction_date im angezeigten Monat.
+  //                    Exakt der §8-Monats-Scope (N1, v2-01), jetzt server-
+  //                    seitig statt nachgelagert in JS.
+  //   (b) linkedRows — Fragmente, die auf eine Karte DIESES Monats zeigen
+  //                    (assigned_month = targetMonth), auch wenn ihr
+  //                    transaction_date in einem anderen Monat liegt. Ohne
+  //                    diese zweite Abfrage verschwänden Cross-Monat-Links
+  //                    aus dem Karten-Overlay.
+  //
+  // Beide Mengen sind pro Monat zweistellig — die Zeilenobergrenze ist damit
+  // strukturell unerreichbar, unabhängig vom Gesamtbestand.
 
-  const { data: rawFragments } = await supabase
-    .from("fragments_with_status")
-    .select(
-      "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at",
-    )
-    .order("transaction_date", { ascending: true })
-    .order("imported_at", { ascending: true })
-    .order("description", { ascending: true });
+  const nextMonthDbDate = ymToDbDate(addMonths(targetMonth, 1));
+  const FRAGMENT_COLS =
+    "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at";
 
-  const fragments: FragmentRow[] = (rawFragments ?? [])
-    .filter(
-      (f): f is typeof f & {
-        id: string;
-        amount: number;
-        description: string;
-        transaction_date: string;
-        status: string;
-      } =>
-        f.id !== null &&
-        f.amount !== null &&
-        f.description !== null &&
-        f.transaction_date !== null &&
-        f.status !== null,
-    )
-    .map((f) => {
-      // Badge nur im Bereich [badge_threshold, auto_absorption_threshold) UND
-      // mit gesetztem suggested_card_id (§6). Karten-Name via Lookup; zeigt die
-      // Karte ins Leere (gelöscht), kein Badge.
-      const conf = f.confidence != null ? Number(f.confidence) : null;
-      const suggestedCardName =
-        f.suggested_card_id != null &&
-        conf != null &&
-        conf >= badgeThreshold &&
-        conf < autoAbsorbThreshold
-          ? cardNameById.get(f.suggested_card_id) ?? null
-          : null;
+  const [{ data: stackRows }, { data: linkedRows }] = await Promise.all([
+    supabase
+      .from("fragments_with_status")
+      .select(FRAGMENT_COLS)
+      .gte("transaction_date", targetDbDate)
+      .lt("transaction_date", nextMonthDbDate)
+      .order("transaction_date", { ascending: true })
+      .order("imported_at", { ascending: true })
+      .order("description", { ascending: true }),
+    supabase
+      .from("fragments_with_status")
+      .select(FRAGMENT_COLS)
+      .eq("assigned_month", targetDbDate)
+      .order("transaction_date", { ascending: true }),
+  ]);
 
-      return {
-        id: f.id,
-        amount: Number(f.amount),
-        description: f.description,
-        transaction_date: f.transaction_date,
-        status: f.status as FragmentRow["status"],
-        assigned_card_id: f.assigned_card_id,
-        assigned_month: f.assigned_month,
-        suggestedCardName,
-        importedAt: f.imported_at,
-      };
-    });
+  type RawFragment = NonNullable<typeof stackRows>[number];
+
+  /** View-Spalten sind nullable (LEFT JOIN) — Kern-Felder defensiv prüfen,
+   *  dann auf den UI-Typ mappen. Identisch für beide Abfragen. */
+  const toFragmentRows = (rows: RawFragment[] | null): FragmentRow[] =>
+    (rows ?? [])
+      .filter(
+        (f): f is RawFragment & {
+          id: string;
+          amount: number;
+          description: string;
+          transaction_date: string;
+          status: string;
+        } =>
+          f.id !== null &&
+          f.amount !== null &&
+          f.description !== null &&
+          f.transaction_date !== null &&
+          f.status !== null,
+      )
+      .map((f) => {
+        // Badge nur im Bereich [badge_threshold, auto_absorption_threshold) UND
+        // mit gesetztem suggested_card_id (§6). Karten-Name via Lookup; zeigt die
+        // Karte ins Leere (gelöscht), kein Badge.
+        const conf = f.confidence != null ? Number(f.confidence) : null;
+        const suggestedCardName =
+          f.suggested_card_id != null &&
+          conf != null &&
+          conf >= badgeThreshold &&
+          conf < autoAbsorbThreshold
+            ? cardNameById.get(f.suggested_card_id) ?? null
+            : null;
+
+        return {
+          id: f.id,
+          amount: Number(f.amount),
+          description: f.description,
+          transaction_date: f.transaction_date,
+          status: f.status as FragmentRow["status"],
+          assigned_card_id: f.assigned_card_id,
+          assigned_month: f.assigned_month,
+          suggestedCardName,
+          importedAt: f.imported_at,
+        };
+      });
+
+  const monthFragments = toFragmentRows(stackRows);
 
   // P5: Stack-Sortierung (§10/§11) — unzugeordnete Fragmente zuerst (Arbeits-
   // fläche oben), zugeordnete/gedimmte unten. Innerhalb beider Gruppen:
@@ -293,7 +333,7 @@ export default async function Home({ searchParams }: HomeProps) {
   // derselben Import-Charge identisches imported_at haben (PM-Entscheidung
   // 22.05.2026; sichert AC-Sort-3 Reproduzierbarkeit). ISO-Strings → lexikografisch.
   const cmpStr = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
-  fragments.sort((a, b) => {
+  monthFragments.sort((a, b) => {
     const ga = a.status === "UNASSIGNED" ? 0 : 1;
     const gb = b.status === "UNASSIGNED" ? 0 : 1;
     if (ga !== gb) return ga - gb;
@@ -306,8 +346,12 @@ export default async function Home({ searchParams }: HomeProps) {
 
   // ── Linked-Fragments pro Karte für den targetMonth berechnen ─────────────
 
+  // v2-07 P0: speist sich aus der zweiten, link-orientierten Abfrage — sie
+  // umfasst auch Fragmente, deren transaction_date außerhalb des angezeigten
+  // Monats liegt. Die assigned_month-Bedingung ist bereits server-seitig
+  // gesetzt; der Check bleibt als Defense-in-Depth stehen.
   const linkedByCardId = new Map<string, LinkedFragmentRef[]>();
-  for (const f of fragments) {
+  for (const f of toFragmentRows(linkedRows)) {
     if (
       f.status === "ASSIGNED" &&
       f.assigned_card_id &&
@@ -327,20 +371,14 @@ export default async function Home({ searchParams }: HomeProps) {
     card.linkedFragments = linkedByCardId.get(card.id) ?? [];
   }
 
-  // ── N1 (v2-01): Rohmasse zeigt nur den angezeigten Monat ─────────────────
-  // Single-Surface „ein Monat" (CLAUDE.md §1, Design §8): der Fragment-Stack
-  // zeigt ausschließlich Fragmente, deren transaction_date im targetMonth liegt
-  // (String-Vergleich „YYYY-MM", timezone-stabil — keine new Date()-Konstruktion,
-  // Regel 9). Die volle `fragments`-Liste bleibt oben für `linkedByCardId`
-  // erhalten: ein Cross-Monat-Link (assigned_month = targetMonth, transaction_date
-  // in anderem Monat) erscheint weiterhin als verknüpftes Fragment auf der Karte,
-  // ohne im Stack des targetMonth aufzutauchen. Sparrate-RPCs lesen nicht aus
-  // dieser Liste — die Berechnung bleibt unberührt (Regel 7.1 / Briefing A2/A5).
-  const monthFragments = fragments.filter(
-    (f) => f.transaction_date.slice(0, 7) === targetMonth,
-  );
+  // N1 (v2-01) — Rohmasse zeigt nur den angezeigten Monat: seit v2-07 P0 durch
+  // die Monatsgrenzen der Abfrage (a) erledigt, nicht mehr durch einen
+  // JS-Nachfilter. Der Cross-Monat-Link erscheint weiterhin ausschließlich als
+  // verknüpftes Fragment auf der Karte (Abfrage b), nicht im Stack.
 
   // ── Linke-Flanke-Count: UNASSIGNED-Fragmente im Vormonat ─────────────────
+  // v2-07: unverändert. Zählt server-seitig per count-Abfrage und ist von der
+  // Zeilenobergrenze nie betroffen gewesen (head:true liefert nur die Zahl).
 
   const { count: unassignedPreviousCountRaw } = await supabase
     .from("fragments_with_status")
