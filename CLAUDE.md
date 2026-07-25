@@ -464,9 +464,16 @@ Am Sprint-Ende:
 2. Sanity-Checks: `pnpm build`, `tsc --noEmit`, `next lint` — alle clean
 3. **`feat:`-Commit** für Code auf `sprint/NN-<komponente>`
 4. `sprints/sprint_NN_review.md` schreiben (referenziert `git status` *nach* Commit = clean + Datei-Liste aus dem Commit)
-5. **`docs:`-Commit** für die Review-Datei
-6. Push auf Remote
-7. Am Sessions-Ende: `git status` clean, keine `??` oder `M` übrig
+5. **Roadmap-Stand nachziehen** — in `V2/v2_roadmap_konsolidiert.md` die Spalte
+   „Stand" der berührten Themen aktualisieren (✅ / 🟡 / ⬜ / ⊘ / 🔎), plus
+   Abschnitt 0.1 (Zahlen + Reihenfolge-Vorschlag), falls sich das Gesamtbild
+   verschiebt. Gleicher Lauf wie Schema-Doku und CLAUDE.md. Grund: die Roadmap
+   ist die einzige Stelle, an der offene und erledigte Themen zusammen sichtbar
+   sind — ohne diese Routine muss der Stand in jeder neuen Session aus der
+   Sprint-Tabelle rekonstruiert werden (Befund 25.07.2026).
+6. **`docs:`-Commit** für Review-Datei + Doku-Patches + Roadmap
+7. Push auf Remote
+8. Am Sessions-Ende: `git status` clean, keine `??` oder `M` übrig
 
 Bei Korrekturen: jeweils `fix:`-Commit (Code) + `docs:`-Commit (Review-Append).
 
