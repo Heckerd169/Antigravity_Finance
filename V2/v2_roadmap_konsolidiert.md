@@ -6,9 +6,11 @@
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
-> **Letzte Änderung:** Paket 2 „Rohmasse lesbar machen" neu eingefügt (Kennung `RM-n`);
-> die Pakete 2–11 sind dadurch um eins nach hinten gerückt. Beschluss aus der
-> Ideen-Runde vom 04.08.2026.
+> **Letzte Änderung (Ideen-Runde 04.08.2026):** zwei neue Pakete eingefügt —
+> **Paket 2** „Rohmasse lesbar machen" (`RM-n`) und **Paket 3** „Kategorien im
+> Karussell" (`KAT-n`). Paket 9 heißt jetzt „Verlauf" statt „Kartenverlauf".
+> **Achtung:** Paket-Nummern aus Fassungen vor diesem Tag liegen heute **zwei Stellen
+> weiter hinten** (alt 2–11 → neu 4–13); Paket 1 ist unverändert.
 >
 > **Pflege:** Am Ende jedes Sprints wird der Stand der berührten Pakete mitgezogen —
 > zusammen mit CLAUDE.md und den Bibeln. Die Fähigkeit `sprint-abschluss` führt das
@@ -24,25 +26,34 @@
 
 | | Anzahl |
 |---|---|
-| Offene Pakete | **12** |
-| Themen darin | **33** |
+| Offene Pakete | **13** |
+| Themen darin | **37** |
 | Hausaufgaben ohne eigenen Sprint | **7** |
-| **Offen gesamt** | **40** |
+| **Offen gesamt** | **44** |
 | Erledigt | 25 |
 | Hinfällig geworden | 4 |
 
-> Die 40 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
+> Die 44 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
 > (F1, F2, F3 sind unter M6 zu einer Zeile zusammengefasst) **plus 11 neue**:
 > die fünf Befunde vom 04.08., zwei Datenbasis-Themen und zwei Übungs-DB-Hausaufgaben,
 > die bisher nur im Projekt-Gedächtnis standen, sowie zwei Feinschliff-Punkte
-> (B2-F, A1-F), die zuvor nur im Fließtext erwähnt waren — **plus 4** aus der
-> Ideen-Runde vom 04.08.2026 (RM-1 bis RM-4).
+> (B2-F, A1-F), die zuvor nur im Fließtext erwähnt waren — **plus 8** aus der
+> Ideen-Runde vom 04.08.2026 (RM-1 bis RM-4, KAT-1 bis KAT-4).
+
+**Die ersten vier Pakete sind eine Kette, keine Liste.** Jedes baut das Werkzeug für
+das nächste:
+
+| | | |
+|---|---|---|
+| Paket 1 | Fehler beheben | → verlässliche Zahlen |
+| Paket 2 | Rohmasse lesbar | → du erkennst, **was** du zuordnest |
+| Paket 3 | Kategorien | → du findest, **wohin** |
+| Paket 4 | Kuratierung | → der Marathon, einmal, im fertigen Cockpit |
 
 **Was als Nächstes dran ist:** Paket 1. Ein Rechenfehler, der 900 € in der
 Juli-Sparrate bewegt, wiegt schwerer als jedes offene Feature — und drei der fünf
-Befunde sind bereits entschieden und sofort umsetzbar. **Danach Paket 2** — es ist
-klein, ohne Datenbank-Eingriff und liefert das Werkzeug für die Kuratierung in
-Paket 3.
+Befunde sind bereits entschieden und sofort umsetzbar. **Paket 3 ist noch nicht
+schneidbar** und braucht vorher eine Design-Direktor-Runde.
 
 **Drei Entscheidungen blockieren Arbeit** (alle in
 `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7, jeweils mit Empfehlung):
@@ -80,7 +91,7 @@ Prüfanker je Fehler benannt)
 **Entsperrt:** Kuratieren von Hand ohne Reibung. Die Beschreibung auf einem
 Rohmasse-Fragment wird heute vom Empfänger gefüllt, der Verwendungszweck fällt dem
 „…" zum Opfer — genau die Information, die man beim Zuordnen braucht. Damit ist
-dieses Paket das **Werkzeug für Paket 3** (Kuratierung 2026).
+dieses Paket das **Werkzeug für Paket 4** (Kuratierung 2026).
 **Kein Datenbank-Eingriff, reine Anzeige.** Quelle: Ideen-Runde 04.08.2026.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
@@ -89,13 +100,41 @@ dieses Paket das **Werkzeug für Paket 3** (Kuratierung 2026).
 | RM-2 | Schaufenster-Popup für ein Fragment | Feature | nein | ⬜ | **Entschieden: reines Anzeigen, keine Knöpfe** — die Gegenleistung dafür, dass RM-1 Information von der Karte nimmt. Zeigt den vollständigen Text sowie Betrag, Datum, Status und bei Überträgen das **Gegenkonto mit „eigenes Konto"-Hinweis** (`counterparty_iban`, heute schon vorhanden). **Klickbar werden alle Fragmente**, auch zugeordnete und Überträge — beide sind heute per `pointer-events: none` tot gestellt, das ändert Design-Doku §8. Natürlicher Ort für den KI-Vorschlag, den BF-1 von der Karte nimmt. **Gestaltungsfrage offen:** Rangfolge der Angaben und Hauptzeile → `design-direktor` vor dem Bauen. |
 
 > Bewusst **nicht** enthalten: Handlungen im Popup (Zuordnen, Lösen, Umschichten
-> markieren). Das ist `M2` in Paket 5 und wird als Ganzes entschieden, nicht in
+> markieren). Das ist `M2` in Paket 6 und wird als Ganzes entschieden, nicht in
 > Scheiben. Die beiden grenzen aneinander — der Umschichten-Knopf sitzt heute auf
 > jeder Rohmasse-Karte und wäre im Popup besser aufgehoben.
 
 ---
 
-### Paket 3 · Datenbasis vervollständigen
+### Paket 3 · Kategorien im Karussell
+**Entsperrt:** eine Fläche, auf der man kuratieren kann. Gemessen am 04.08.2026 stehen
+**19–32 Karten** in einem Monat im Karussell (Grundrauschen ~20, Spitzen 31 im Mai und
+32 im Juli). Beim Zuordnen sucht man das Ziel unter genau diesen Karten — deshalb steht
+dieses Paket **vor** der Kuratierung, nicht danach.
+**Quelle und Belege:** `V2/befunde_2026-08-04_kategorien.md` (30 Befunde aus zwei
+parallelen Analysen plus eigene Messungen)
+**⚠️ Noch nicht schneidbar** — es hängen sechs Gestaltungsfragen daran (Befunde §6).
+**Erst `design-direktor`, dann schneiden.**
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| KAT-1 | Kategorien und Unterkategorien als eigene Struktur | Feature | **ja** | ⬜ | Eigene Tabelle, eigener Anlageweg, Anlegen/Ändern/Beenden/Löschen. **Ausdrücklich keine `cards`-Zeile** — beide Sparrate-RPCs laufen ohne Typ-Filter über alle Karten, eine Kategorie-Karte würde doppelt gezählt und der Prüfanker bräche (Befund D1). Der Papierkorb kann eine Kategorie heute nicht tragen: sein Typ-Verzeichnis kennt nur vier Werte, das Aufräumen filtert hart auf `CARD`, und 60 s Aufbewahrung reichen für eine Kaskade nicht (D7). **„Ohne Kategorie" muss ein vollwertiger Eimer sein**, kein Fehlerzustand — beide Anlage-RPCs kennen keine Kategorie und liefern laufend welche nach (D12). |
+| KAT-2 | Karussell gruppiert nach Kategorien | Feature | nein | ⬜ | Klapp-Verhalten, Drop-Ziele, Gesten. **Muss das Zuordnen für die Hierarchie lösen** — ein Drop braucht heute eine Karten-ID, eine zugeklappte Kategorie hat keine (Befund U1, BLOCKER). Eine beendete Kategorie muss in vergangenen Monaten sichtbar bleiben, sonst verliert die Vergangenheit ihre Struktur (U13). |
+| KAT-3 | Kategorie-Zahl = Beitrag zur Sparrate | Feature | **ja** | ⬜ | **Entschieden:** die Zahl ist der **vorzeichenrichtige Beitrag der enthaltenen Karten zur Sparrate des Monats** — dieselbe Summierung wie im Ring, nur gefiltert. Nicht ein eigener Plan. Erbt Vorzeichen, Partner-Anteil und die Typ-Sonderregeln, statt sie nachzubauen; schließt damit die Befunde D2 und D5 strukturell aus. **Server-seitig** — im Browser wäre es eine eigene Sparrate-Rechnung (Arbeitsregel 1). Räumt zugleich den heutigen N+1-Ladeweg auf (46 Karten × 3 Einzelabfragen, im Code für „<20 Karten" begründet — D14). Fähigkeit `db-eingriff`, Anker vorher/nachher. |
+
+> **Reihenfolge:** KAT-1 zuerst, dann KAT-2 und KAT-3 — drei Phasen, ein Commit je
+> Phase (Arbeitsregel 11).
+> **Zieht mit:** `M5` aus Paket 6 wird **Voraussetzung statt hinfällig** — eine Kategorie
+> mischt erstmals verschiedene Kartentypen, deren Zustands-Farben nie nebeneinanderstanden
+> (U11). Die Klick-Geste kollidiert mit `M2`: über jeder Karte liegt eine unsichtbare
+> Klickfläche für „bezahlt", ein Fehlklick bewegt die Sparrate (U3).
+> **Nicht enthalten:** der Ausgabenverlauf — der ist `KAT-4` in Paket 9 und wäre vor der
+> Kuratierung wertlos (D4: 0 % Abdeckung in vier von sieben Monaten 2026, ganz 2025 ohne
+> Karten).
+
+---
+
+### Paket 4 · Datenbasis vervollständigen
 **Entsperrt:** ehrliche Vorjahreswerte, aussagekräftige Treiber, überhaupt eine
 Vergleichsbasis. Ohne dieses Paket bleibt die 2025-Goldlinie irreführend hoch.
 
@@ -106,17 +145,17 @@ Vergleichsbasis. Ohne dieses Paket bleibt die 2025-Goldlinie irreführend hoch.
 
 ---
 
-### Paket 4 · Bessere automatische Zuordnung
+### Paket 5 · Bessere automatische Zuordnung
 **Entsperrt:** senkt den Aufwand für **alle** nachgelagerten Themen. Der heutige
 Engpass ist Handarbeit beim Kuratieren.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | evtl. | ⬜ | **Fasst F1, F2, F3 zusammen.** F1 Konfidenz-Verbesserung (Embeddings, Levenshtein, Klassifikator; evtl. Score-Spalten) · F2 Kategorie-Vorhersage pro Nutzer (Schema-Eingriff) · F3 Fragment-Clustering. Empfehlung: erster echter Feature-Sprint nach den Paketen 1 und 3 (Fehler und Datenbasis). |
+| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | evtl. | ⬜ | **Fasst F1, F2, F3 zusammen.** F1 Konfidenz-Verbesserung (Embeddings, Levenshtein, Klassifikator; evtl. Score-Spalten) · F2 Kategorie-Vorhersage pro Nutzer (Schema-Eingriff) · F3 Fragment-Clustering. Empfehlung: erster echter Feature-Sprint nach den Paketen 1 und 4 (Fehler und Datenbasis). **Namenskollision beachten:** „F2 Kategorie-Vorhersage" meint das KI-Vorschlags-Badge auf Fragmenten, nicht die Karten-Kategorien aus Paket 3 (Befund U6). |
 
 ---
 
-### Paket 5 · Gestaltungs-Feinschliff
+### Paket 6 · Gestaltungs-Feinschliff
 **Entsperrt:** die Endabnahme zweier fertiger Sprints (v2-05, v2-06).
 **Werkzeug:** Fähigkeit `design-direktor`.
 
@@ -129,7 +168,7 @@ Engpass ist Handarbeit beim Kuratieren.
 
 ---
 
-### Paket 6 · Einstellungen
+### Paket 7 · Einstellungen
 **Entsperrt:** eigene IBANs ohne SQL pflegbar — heute ist bei jedem neuen Konto ein
 manueller Datenbank-Eingriff nötig.
 
@@ -141,7 +180,7 @@ manueller Datenbank-Eingriff nötig.
 
 ---
 
-### Paket 7 · Mehrkonten Stufe 2
+### Paket 8 · Mehrkonten Stufe 2
 **Entsperrt:** Überweisungsketten (Cortal → Giro → Kreditkarte) werden als **eine**
 Ausgabe erkannt statt als drei Bewegungen.
 **Voraussetzung:** mindestens ein sauber kuratierter Monat — sonst fehlt die
@@ -155,15 +194,19 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 8 · Kartenverlauf
+### Paket 9 · Verlauf
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| M7 | „Verlauf" im Karten-Kontextmenü: Jan–Dez, Ist gegen Plan je Karte | Feature | nein | ⬜ | Datenseitig bereits abgedeckt — `get_year_deviation_drivers` liefert je Karte `ist` und `plan` pro Monat. Reines Oberflächen-Feature, gut isolierbar. |
+| M7 | „Verlauf" im Karten-Kontextmenü: Jan–Dez, Ist gegen Plan je Karte | Feature | nein | ⬜ | Datenseitig bereits abgedeckt — `get_year_deviation_drivers` liefert je Karte `ist` und `plan` pro Monat. Reines Oberflächen-Feature. **Nicht mehr allein isolierbar**, seit `KAT-4` dieselbe Fläche braucht (Befund U5). |
+| KAT-4 | Ausgabenverlauf je Kategorie und Unterkategorie | Feature | **ja** | ⬜ | **Die zweite Hälfte der Kategorien-Idee** (Ideen-Runde 04.08.2026) — bewusst hierher gehängt statt in Paket 3. Setzt `KAT-1` **und** eine kuratierte Datenbasis voraus: heute hängen in Jan–Apr **0,0 %** der Ausgaben an einer Karte, im Juli 74,3 %; die Kurve zeigte den Kurationsfortschritt statt des Ausgabeverhaltens, und für ganz 2025 wäre sie null (Befund D4). Zusammen mit `M7` zu schneiden — Karten- und Kategorie-Verlauf sind dieselbe Fläche mit zwei Ebenen, und Design-Doku §9 erklärt das Welle-Popup zur einzigen Heimat der kumulierten Sicht. |
+
+> Deshalb heißt dieses Paket seit dem 04.08.2026 **„Verlauf"** statt „Kartenverlauf".
+> Voraussetzungen: Paket 3 (`KAT-1`) und Paket 4 (`DA-1`/`DA-2`).
 
 ---
 
-### Paket 9 · Welle-Rest
+### Paket 10 · Welle-Rest
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -173,7 +216,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 10 · Import-Erweiterungen
+### Paket 11 · Import-Erweiterungen
 **Bedarfsgetrieben** — erst wenn eine Quelle real gebraucht wird.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
@@ -184,7 +227,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 11 · Lebenszyklus-Rest
+### Paket 12 · Lebenszyklus-Rest
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -193,7 +236,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 12 · Große Brocken
+### Paket 13 · Große Brocken
 **Bewusst nach hinten** — alle vier werden besser, wenn die Datenbasis sauber ist.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
@@ -212,7 +255,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | # | Punkt | Stand | Bemerkung |
 |---|---|---|---|
 | RM-4 | Positionsregel für Overlays in die Design-Doku schreiben | ⬜ | **An BF-3 anhängen** (Paket 1) — dieselbe Sache: BF-3 ist die einzige Verletzung, die Reparatur ist die Durchsetzung. Wortlaut entschieden: *„Overlays und Popups erscheinen immer mittig im Bild, an derselben Stelle; sie unterscheiden sich in der Größe, nie im Ort. **Kontextmenüs** sind davon ausgenommen — sie erscheinen am auslösenden Element, weil sie sonst ihren Bezug verlieren."* Bestandsaufnahme 04.08.2026: 7 von 8 Overlays bereits zentriert, einzige bewusste Ausnahme ist das Karten-Kontextmenü (`card-interactive.tsx`, verankert am Icon). Reine Doku, kein Code. Berührt Design-Doku §7/§8. |
-| J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. |
+| J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. **Dringlicher geworden:** `supabase/migrations/` enthält nur zwei Patch-Dateien, der Übungs-DB-Seed ist reine Daten ohne Schema. Es gibt damit **keine versionierte Basis**, gegen die ein Eingriff in eine Rechenfunktion diffen könnte, und die Übungs-Datenbank ist aus dem Repo nicht rekonstruierbar. Spätestens vor `KAT-3` mitnehmen (Befund D15). |
 | TP-1 | Prüfwert im Übungs-DB-Runbook korrigieren | ⬜ | `supabase/test_projekt/README.md:66` nennt Juni 2026 = 4.545,32 €; gültig ist **4.589,53 €**. In der Fähigkeit `db-eingriff` vermerkt, führt also niemanden in die Irre. Beim nächsten Datenbank-Eingriff mitnehmen. |
 | TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
@@ -272,30 +315,32 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|
 | A1, A4 · B2, B3, B6 · C1, C2, C3 · H2 · J2 · K1 · M0, M1, M3, M10 · N1–N5 · Init-1–4 | §4 Erledigt |
 | A2, A3 · K2 · L1 | §3 Dauerhaft nicht |
-| B1, B4, B5 | Paket 9 |
-| D1, D2, D3 | Paket 6 |
-| E1, E2 | Paket 12 |
-| F1, F2, F3 | Paket 4 (unter M6 zusammengefasst) |
-| F4, F6, F7 | Paket 10 |
-| F5 | Paket 7 (mit M9) |
-| G1, G2 | Paket 11 |
+| B1, B4, B5 | Paket 10 |
+| D1, D2, D3 | Paket 7 |
+| E1, E2 | Paket 13 |
+| F1, F2, F3 | Paket 5 (unter M6 zusammengefasst) |
+| F4, F6, F7 | Paket 11 |
+| F5 | Paket 8 (mit M9) |
+| G1, G2 | Paket 12 |
 | H1, I1, J1, M4 | §2 Hausaufgaben |
-| M2, M5 | Paket 5 |
-| M6 | Paket 4 |
-| M7 | Paket 8 |
-| M8, M11 | Paket 12 |
-| M9 | Paket 7 |
+| M2, M5 | Paket 6 |
+| M6 | Paket 5 |
+| M7 | Paket 9 |
+| M8, M11 | Paket 13 |
+| M9 | Paket 8 |
 | RM-1, RM-2 | Paket 2 |
-| RM-3 | Paket 7 (Folgepunkt zu F5) |
+| RM-3 | Paket 8 (Folgepunkt zu F5) |
 | RM-4 | §2 Hausaufgaben (an BF-3 anhängen) |
+| KAT-1, KAT-2, KAT-3 | Paket 3 |
+| KAT-4 | Paket 9 (mit M7) |
 
 > **Achtung bei älteren Papieren:** Die Paket-Nummern 2–11 aus Fassungen vor dem
-> 04.08.2026 (Ideen-Runde) meinen heute 3–12. Die Buchstaben-Kennungen sind davon
-> unberührt — sie bleiben die verlässliche Referenz.
+> 04.08.2026 (Ideen-Runde) meinen heute **4–13**; Paket 1 ist unverändert. Die
+> Buchstaben-Kennungen sind davon unberührt — sie bleiben die verlässliche Referenz.
 
 **Neue Kennungen seit dem 04.08.2026:** `BF-n` Befunde aus der Nutzung ·
 `DA-n` Datenbasis · `TP-n` Übungs-Datenbank · `RM-n` Rohmasse-Lesbarkeit ·
-`B2-F` / `A1-F` Feinschliff zu einem erledigten Thema.
+`KAT-n` Kategorien · `B2-F` / `A1-F` Feinschliff zu einem erledigten Thema.
 
 ---
 
@@ -319,4 +364,4 @@ beantworten, was offen ist — nicht warum.
 
 *Roadmap · Antigravity Finance · umgebaut am 04. August 2026 aus der
 kategorien-orientierten Fassung vom 01. Juni 2026 · zuletzt fortgeschrieben am
-04. August 2026 (Ideen-Runde, Idee 1 → Paket 2)*
+04. August 2026 (Ideen-Runde: Idee 1 → Paket 2, Idee 2 → Paket 3 und KAT-4)*
