@@ -35,6 +35,15 @@ yarn-error.log*
 # supabase CLI local cache
 /supabase/.temp/
 
+# Fehler-Screenshots: zeigen echte Kontobewegungen (Empfaenger, Betraege).
+# Ordnerstruktur + README bleiben versioniert, die Bilder nicht.
+# Gleiche Ueberlegung wie bei import_data/.
+/screenshots/**/*.png
+/screenshots/**/*.jpg
+/screenshots/**/*.jpeg
+/screenshots/**/*.webp
+/screenshots/**/*.gif
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
