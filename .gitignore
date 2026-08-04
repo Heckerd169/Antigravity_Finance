@@ -53,8 +53,14 @@ next-env.d.ts
 /playwright-report/
 /playwright/.auth/
 
-# claude code — lokale Session-Settings (agents/ ist bewusst versioniert)
+# claude code — lokale Session-Settings.
+# Bewusst VERSIONIERT bleiben: settings.json (geteilte Freigaben), agents/, skills/.
 .claude/settings.local.json
+
+# claude code — temporaere Arbeitskopien (git worktrees).
+# Entstehen pro isolierter Sitzung, gehoeren nie ins Repository und wuchsen
+# am 04.08.2026 unbemerkt auf 531 MB an, weil sie nach dem Sprint stehenblieben.
+.claude/worktrees/
 
 # lokale Konto-Abzüge für den Initial-Import — NIE committen
 /import_data/

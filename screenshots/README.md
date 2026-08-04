@@ -37,8 +37,20 @@ Falls ein Bild dauerhaft dokumentiert werden soll, gehört es in ein
 Befund-Dokument unter `V2/` — dort aber als **beschriebener Sachverhalt mit
 Zahlen**, nicht als Bild.
 
-## Bestand
+## Kein Bestandsverzeichnis an dieser Stelle
 
-| Ordner | Inhalt |
-|---|---|
-| `2026-08-04_fehlerliste/` | Fünf Fehler aus dem Test nach der Juli-Kuratierung. Ausgewertet in `V2/befunde_2026-08-04_fehler_und_entscheidungen.md`. |
+Hier stand bis zum 04.08.2026 eine Tabelle der abgelegten Melde-Runden. Sie ist
+ersatzlos entfallen, weil sie nicht stimmen kann: die Bilder sind über
+`.gitignore` ausgeschlossen und liegen nur auf einem Rechner, diese README ist
+dagegen versioniert. Die Tabelle nannte zuletzt einen Ordner, den es lokal gar
+nicht (mehr) gab.
+
+**Stattdessen gilt die umgekehrte Richtung:** Jedes Befund-Dokument unter `V2/`
+nennt in seinem Kopf den zugehörigen Bildordner. Wer die Bilder sucht, geht vom
+Befund aus — nicht von hier. Beispiel:
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` verweist auf
+`screenshots/2026-08-04_fehlerliste/`.
+
+Ist ein solcher Ordner lokal nicht vorhanden, sind die Bilder auf diesem Rechner
+schlicht nicht abgelegt worden. Das ist kein Fehler — die maßgebliche Auswertung
+steht ohnehin im Befund-Dokument, mit Zahlen statt Bildern.
