@@ -8,8 +8,10 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 04. August 2026 · **nach:** Struktur-Sprint v2-08
-> (1.857 → 330 Zeilen; der Sprint-Log liegt seither in `sprints/projekt_historie.md`)
+> **Letzte Aktualisierung:** 04. August 2026 · **nach:** v2-09 (Workflow-Vereinfachung
+> — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
+> Roadmap nach Sprint-Paketen). Davor v2-08: 1.857 → 434 Zeilen, der Sprint-Log liegt
+> seither in `sprints/projekt_historie.md`.
 
 ---
 
@@ -109,6 +111,12 @@ Beleg: `sprints/doku_patch_2026-07-23_doku-struktur-stabilisierung.md`):
 | Seite, die die Formensprache **zeigt** | `design-system/` | Vorlage für `claude.ai/design`, Ablauf in `design-system/SYNC.md` |
 | Was vor über einem Jahr passiert ist | bleibt, wo es ist | `Archiv_V1/` wird **nicht** nachgepflegt |
 
+**Das Projekt-Gedächtnis ist eine Abkürzung, kein Lager.** Es liegt außerhalb des
+Repos (`~/.claude/projects/…/memory/`), ist also **nicht in git, nicht gesichert und
+bei einem frischen Klon nicht dabei**. Es darf sagen, wo wir gerade stehen — aber
+**nichts Dauerhaftes darf ausschließlich dort liegen.** Was gelten soll, gehört in
+eine Datei im Repo; das Gedächtnis verweist dann höchstens darauf.
+
 **Zwei Faustregeln.** Ein Papier, das eine Frage *beantwortet*, gehört nach `V2/`.
 Ein Papier, das eine Umsetzung *begleitet*, gehört nach `sprints/`. — Und: die
 Dateinamen der beiden Bibeln sind **stabil**; ihre Version steht nur im Header
@@ -125,12 +133,38 @@ Architekten-Rolle. Vorher waren das getrennte Chats; Formulierungen wie
 „PM eskaliert an Architekten" bedeuten heute: *dieselbe Sitzung wechselt bewusst die
 Perspektive und prüft gegen die Datenbank, bevor sie patcht.*
 
-**Der Design-Direktor bleibt ein separater Chat.** Design-Entscheidungen werden dort
-eingeholt, nicht selbst getroffen. Sein Werkzeug ist das Design-System-Projekt auf
-`claude.ai/design` (Projekt „Antigravity Finance") — er beurteilt Bilder, nicht
-Beschreibungen. Die Vorlagen dazu liegen versioniert unter `design-system/`;
-**ändert sich etwas an Tokens oder Komponenten, gehören sie mit nachgezogen** —
-sonst beurteilt er wieder einen veralteten Stand. Ablauf: `design-system/SYNC.md`.
+**Der Design-Direktor ist seit 04.08.2026 eine Rolle, kein eigener Chat mehr** —
+Fähigkeit `design-direktor`. Der Dialog läuft direkt mit dem User; ein Subagent wäre
+hier falsch, weil jede Rückmeldung über eine Übersetzung liefe und Gestaltung genau
+in der Nuance lebt. Drei Vorkehrungen ersetzen den weggefallenen frischen Blick:
+Der Rollenwechsel wird ausgesprochen (**Aufwand ist dort kein Argument**), die
+Entscheidung fällt **vor** dem Bauen, und sie wird als Record unter `V2/`
+festgeschrieben statt nur besprochen.
+
+Sein Anschauungsmaterial sind die Seiten unter `design-system/` und das gleichnamige
+Projekt auf `claude.ai/design` — er beurteilt Bilder, nicht Beschreibungen.
+**Ändert sich etwas an Tokens oder Komponenten, gehören die Seiten mit nachgezogen**,
+sonst zeigen sie beim nächsten Mal einen überholten Stand. Ablauf:
+`design-system/SYNC.md`.
+
+### Wie ein Sprint läuft
+
+Drei Phasen. Die Berührungspunkte des Users sind fett.
+
+| Phase | Was passiert | Werkzeug |
+|---|---|---|
+| **① Klären** | Nachbohren bis Ziel, Nicht-Ziel und Prüfanker stehen · Umfang aus der Roadmap schneiden · Gestaltungsfragen klären · **Plan zur Freigabe** | `sprint-start`, bei Bedarf `design-direktor` |
+| **② Bauen** | Phasen mit je einem Commit, Prüfstrecke läuft mit | `db-eingriff`, sobald die Datenbank berührt wird |
+| **③ Abnehmen** | Optische Prüfung → **Browser-Test des Users** → Review, Roadmap, Doku, Push → **Merge-Freigabe** | `smoke-agent`, dann `sprint-abschluss` |
+
+### Wie im Chat erklärt wird
+
+Empfehlungen, Entscheidungsfragen und Statusberichte in **einfacher, nicht-technischer
+Sprache**. App-Begriffe sind in Ordnung — Karte, Fragment, Rohmasse, Sparrate, Welle
+kennt der User. Begriffe aus Datenbank- und Infrastruktur-Welt nicht: entweder
+vermeiden oder in einem Halbsatz übersetzen („eine Übungs-Kopie der Datenbank" statt
+„Free-Tier-Test-Projekt"). Die Papiere unter `V2/` und `sprints/` dürfen technisch
+bleiben — die Zusammenfassung im Chat nicht.
 
 ### Was ausschließlich der Mensch macht
 
@@ -150,9 +184,23 @@ ist damit technisch, nicht nur schriftlich.
 
 | Werkzeug | Wofür | Einsatzregel |
 |---|---|---|
-| **Fähigkeit** (`.claude/skills/`) | ein Ablauf, den es schon gibt und der sich wiederholt | Lädt nur bei Bedarf. Bei jedem Sprint-Start, Sprint-Ende und DB-Eingriff **zuerst** die passende Fähigkeit ziehen, nicht aus dem Gedächtnis arbeiten. |
-| **Subagent** (`.claude/agents/`) | abgegrenzte Arbeit mit **eigenem Kontext** und engeren Rechten | Sinnvoll bei (a) Fleißarbeit, die viele Dateien liest, deren Ergebnis aber kurz ist, (b) Aufgaben, die read-only bleiben müssen. |
+| **Fähigkeit** (`.claude/skills/`) | ein Ablauf, den es schon gibt und der sich wiederholt — **oder eine Rolle, mit der der User sprechen können muss** | Lädt nur bei Bedarf. Bei Sprint-Start, Sprint-Ende, DB-Eingriff und Gestaltungsfragen **zuerst** die passende Fähigkeit ziehen, nicht aus dem Gedächtnis arbeiten. |
+| **Subagent** (`.claude/agents/`) | abgegrenzte Arbeit mit **eigenem Kontext** und engeren Rechten | Sinnvoll bei (a) Fleißarbeit, die viele Dateien liest, deren Ergebnis aber kurz ist, (b) Aufgaben, die nachweislich read-only bleiben müssen. |
 | **Selbst, in einem Stück** | alles, was ein zusammenhängendes Urteil braucht | Entwürfe, Struktur-Entscheidungen, Diagnosen. Aufgeteilt kommen drei halbe Konzepte heraus. |
+
+> **Der schnellste Test: Muss ich mit dem Ding reden können?**
+> Wenn ja, ist es **nie** ein Subagent — der liefert einen Bericht, jede Rückfrage
+> liefe über eine Übersetzung. Genau daran ist der erste Entwurf des
+> Design-Direktors gescheitert.
+
+**Verfügbare Fähigkeiten** (`.claude/skills/`):
+
+| Fähigkeit | Wann |
+|---|---|
+| `sprint-start` | Beginn jedes Sprints — nachbohren, schneiden, Plan vorlegen |
+| `design-direktor` | Gestaltungsfragen, **bevor** gebaut wird |
+| `db-eingriff` | jede Berührung der Datenbank |
+| `sprint-abschluss` | sobald der Code steht |
 
 **Verfügbare Subagenten** (`.claude/agents/`):
 
@@ -444,7 +492,9 @@ tagesaktuelle Werte und die Juli-Abweichungen stehen in
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
-**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — Abschnitt 0.1 trägt den Stand
-und den Reihenfolge-Vorschlag. **Nächster Arbeitsvorrat:** die fünf diagnostizierten
-Fehler in `V2/befunde_2026-08-04_fehler_und_entscheidungen.md`; drei davon sind
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — seit 04.08.2026 nach **elf
+Sprint-Paketen** geordnet statt nach Kategorien; §0 trägt die Zahlen, §5 löst die
+alten Buchstaben-Kennungen auf. **Nächster Arbeitsvorrat:** Paket 1 — die fünf
+diagnostizierten Fehler in
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md`; drei davon sind
 freigegeben, zwei hängen an den Entscheidungen E1/E2.
