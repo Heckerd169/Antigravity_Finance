@@ -149,8 +149,19 @@ ist damit technisch, nicht nur schriftlich.
 | **Subagent** (`.claude/agents/`) | abgegrenzte Arbeit mit **eigenem Kontext** und engeren Rechten | Sinnvoll bei (a) Fleißarbeit, die viele Dateien liest, deren Ergebnis aber kurz ist, (b) Aufgaben, die read-only bleiben müssen. |
 | **Selbst, in einem Stück** | alles, was ein zusammenhängendes Urteil braucht | Entwürfe, Struktur-Entscheidungen, Diagnosen. Aufgeteilt kommen drei halbe Konzepte heraus. |
 
-**Verfügbare Subagenten:** `docs-maintainer` (Doku-Pflege patch-basiert, §7 Regel 14) ·
-`smoke-agent` (visueller Render-Smoke, strikt read-only, vor dem User-Smoke).
+**Verfügbare Subagenten** (`.claude/agents/`):
+
+| Agent | Wofür | Grenze |
+|---|---|---|
+| `docs-maintainer` | Doku-Pflege patch-basiert (§7 Regel 14) | ändert nie Code |
+| `smoke-agent` | visueller Render-Smoke vor dem User-Smoke | strikt read-only |
+| `import-preflight` | Bank-CSV-Exporte in `import_data/` prüfen, **bevor** importiert wird — mit den echten Parsern aus `src/lib`, nicht mit einem Nachbau | rein lokal, kein DB-Zugriff |
+| `import-db-verifier` | Datenbank-Abgleich **nach** einem Import: Bestand, Übertrags-Erkennung, Duplikat-Hashes, Sparraten-Tabelle | ausschließlich SELECT, nie mutierende RPCs |
+
+Die beiden Import-Agenten sind das Gegenstück zum CSV-Import-Verfahren, für das
+bewusst **keine** Fähigkeit angelegt wurde (erst zwei Läufe): sie decken es als
+Werkzeug ab, statt es als Ablauf zu beschreiben. Reihenfolge bei einem neuen
+Konto-Abzug: `import-preflight` → Import durch den User → `import-db-verifier`.
 
 **Wann KEIN Subagent:** wenn die Aufgabe klein ist (der Kontext-Aufbau kostet mehr,
 als er spart) · wenn das Ergebnis ein Urteil ist, das du selbst verantworten musst ·

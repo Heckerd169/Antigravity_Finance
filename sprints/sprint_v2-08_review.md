@@ -204,14 +204,28 @@ die unangenehmste Sorte Fehler, weil nichts bricht.
 
 ## 6. Offene Punkte und Fragen
 
-**F1 — Zwei nicht gemergte Branches.** `chore/import-agents` trägt **zwei fertige
-Subagenten**, die nie gelandet sind: `import-preflight` (86 Zeilen, prüft
-Bank-CSV-Exporte mit den echten Parsern vor dem Import) und `import-db-verifier`
-(73 Zeilen, 8-Punkte-Katalog read-only nach dem Import). Beide passen genau zu dem
-Verfahren, das ich als Fähigkeit **verworfen** habe, weil es erst zweimal lief —
-mit den Agenten wäre es abgedeckt, ohne dass ich etwas Neues erfinde.
-**Frage:** übernehmen? `sprint/00-setup` ist Sprint-0-Historie und kann bleiben
-oder weg — praktisch belanglos.
+**F1 — Zwei nicht gemergte Branches.** ✅ **entschieden am 04.08.2026 — übernommen.**
+`chore/import-agents` trug **zwei fertige Subagenten**, die nie gelandet waren:
+`import-preflight` (86 Zeilen, prüft Bank-CSV-Exporte mit den echten Parsern vor dem
+Import) und `import-db-verifier` (73 Zeilen, 8-Punkte-Katalog read-only nach dem
+Import). Beide decken genau das Verfahren ab, das ich als Fähigkeit **verworfen**
+habe, weil es erst zweimal lief — als Werkzeug statt als Ablaufbeschreibung.
+
+Vor der Übernahme vollständig gelesen und gegen den heutigen Stand geprüft:
+alle vier Parser-Pfade (`dkb-csv`, `dkb-visa-csv`, `cortal-csv`,
+`csv-format-router`) existieren · alle genannten RPCs existieren · die
+LL-Verweise (LL-13, LL-18) lösen im neuen Register auf · kein Verweis auf
+`toggle_card_hidden`, das v2-05 entfernt hat. **Keine Anpassung nötig.**
+Per `git cherry-pick 85ac95d` übernommen, Urheberschaft erhalten.
+`CLAUDE.md §4` führt jetzt alle vier Agenten mit Zweck und Grenze.
+
+Bemerkenswert an `import-db-verifier`: er bekommt `execute_sql` als Werkzeug,
+zieht die Read-only-Grenze aber im Prompt selbst — mit namentlicher Aufzählung
+der verbotenen mutierenden RPCs und dem ausdrücklichen Satz, das LL-18-Muster
+stehe der Hauptsitzung zu, nicht ihm. Genau die richtige Bauart für einen Agenten
+mit einem Werkzeug, das mehr könnte als er darf.
+
+`sprint/00-setup` bleibt unangetastet — Sprint-0-Historie, praktisch belanglos.
 
 **F2 — 26 Remote-Branches.** Lokal sind 28 erledigte Branches weg, auf dem Server
 liegen sie noch. Aufräumen bräuchte `git push --delete`, also deine Freigabe.
