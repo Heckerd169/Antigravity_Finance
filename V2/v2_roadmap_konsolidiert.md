@@ -2,9 +2,13 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 04. August 2026 (nach v2-08) · **Vorgänger-Struktur:** bis zum 04.08.2026
-> waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen leben
-> weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
+> **Stand:** 04. August 2026 (nach v2-09, Ideen-Runde) · **Vorgänger-Struktur:** bis zum
+> 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
+> leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
+>
+> **Letzte Änderung:** Paket 2 „Rohmasse lesbar machen" neu eingefügt (Kennung `RM-n`);
+> die Pakete 2–11 sind dadurch um eins nach hinten gerückt. Beschluss aus der
+> Ideen-Runde vom 04.08.2026.
 >
 > **Pflege:** Am Ende jedes Sprints wird der Stand der berührten Pakete mitgezogen —
 > zusammen mit CLAUDE.md und den Bibeln. Die Fähigkeit `sprint-abschluss` führt das
@@ -20,22 +24,25 @@
 
 | | Anzahl |
 |---|---|
-| Offene Pakete | **11** |
-| Themen darin | **30** |
-| Hausaufgaben ohne eigenen Sprint | **6** |
-| **Offen gesamt** | **36** |
+| Offene Pakete | **12** |
+| Themen darin | **33** |
+| Hausaufgaben ohne eigenen Sprint | **7** |
+| **Offen gesamt** | **40** |
 | Erledigt | 25 |
 | Hinfällig geworden | 4 |
 
-> Die 36 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
+> Die 40 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
 > (F1, F2, F3 sind unter M6 zu einer Zeile zusammengefasst) **plus 11 neue**:
 > die fünf Befunde vom 04.08., zwei Datenbasis-Themen und zwei Übungs-DB-Hausaufgaben,
 > die bisher nur im Projekt-Gedächtnis standen, sowie zwei Feinschliff-Punkte
-> (B2-F, A1-F), die zuvor nur im Fließtext erwähnt waren.
+> (B2-F, A1-F), die zuvor nur im Fließtext erwähnt waren — **plus 4** aus der
+> Ideen-Runde vom 04.08.2026 (RM-1 bis RM-4).
 
 **Was als Nächstes dran ist:** Paket 1. Ein Rechenfehler, der 900 € in der
 Juli-Sparrate bewegt, wiegt schwerer als jedes offene Feature — und drei der fünf
-Befunde sind bereits entschieden und sofort umsetzbar.
+Befunde sind bereits entschieden und sofort umsetzbar. **Danach Paket 2** — es ist
+klein, ohne Datenbank-Eingriff und liefert das Werkzeug für die Kuratierung in
+Paket 3.
 
 **Drei Entscheidungen blockieren Arbeit** (alle in
 `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7, jeweils mit Empfehlung):
@@ -58,7 +65,7 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-3 | Einkommens-Popup öffnet ~80 px schmal, unbenutzbar | Bug | nein | ⬜ | **Entschieden, sofort umsetzbar.** Popup wird ohne Portal innerhalb eines Elements mit `transform` gezeichnet; ein Vorfahre mit `transform` wird zum Bezugsrahmen für `position: fixed`. Alle acht anderen Overlays nutzen bereits Portale. **Blockiert aktiv das Eintragen von Gehältern — höchste Dringlichkeit.** |
+| BF-3 | Einkommens-Popup öffnet ~80 px schmal, unbenutzbar | Bug | nein | ⬜ | **Entschieden, sofort umsetzbar.** Popup wird ohne Portal innerhalb eines Elements mit `transform` gezeichnet; ein Vorfahre mit `transform` wird zum Bezugsrahmen für `position: fixed`. Alle acht anderen Overlays nutzen bereits Portale. **Blockiert aktiv das Eintragen von Gehältern — höchste Dringlichkeit.** Die Zentrierung ist im Code bereits hinterlegt (`place-items: center`) und greift nur wegen des fehlenden Portals nicht — die Reparatur stellt damit zugleich die Positionsregel her. **`RM-4` hier anhängen.** |
 | BF-1 | Euro-Zeichen bricht auf die nächste Zeile | Bug | nein | ⬜ | **Entschieden.** Alle KI-Vorschlags-Kästchen entfallen aus der Anzeige; Datenbank rechnet weiter, später mit einer Zeile wieder einschaltbar. Die sechs Badge-Farbtöne bleiben ungenutzt im Code. Zusätzlich Umbruch-Verbot für den Betrag. Schließt zugleich den Badge-Überlauf aus v2-07-Review §5.1. |
 | BF-5 | Fragmente werden ohne Vorzeichen addiert | Bug | **ja** | ⬜ | `SUM(ABS(...))` wirft Vorzeichen weg. Betrifft heute **eine** Karte („Aline Geburtstag", Juli) mit **900,00 €** Wirkung. Sollverhalten steht bereits in Design-Doku §11 — der Leitfaden beschreibt ein Verhalten, das es nie gab. **Hängt an E2.** Prüfanker: Juli-Ist −1.222,75 → −322,75, alle anderen Monate unverändert. |
 | BF-2 | Sinnloser Hinweis unter dem Ring bei negativer Sparrate | Bug | nein | ⬜ | „Plan fast 0 € — −1.223 € gespart". Aus zwei Textzweigen wird einer, vorzeichensicher. **Hängt an E3.** Sinnvoll **nach** BF-5, weil die Juli-Zahl dann stimmt und der neue Text am echten Fall zu sehen ist. |
@@ -69,7 +76,26 @@ Prüfanker je Fehler benannt)
 
 ---
 
-### Paket 2 · Datenbasis vervollständigen
+### Paket 2 · Rohmasse lesbar machen
+**Entsperrt:** Kuratieren von Hand ohne Reibung. Die Beschreibung auf einem
+Rohmasse-Fragment wird heute vom Empfänger gefüllt, der Verwendungszweck fällt dem
+„…" zum Opfer — genau die Information, die man beim Zuordnen braucht. Damit ist
+dieses Paket das **Werkzeug für Paket 3** (Kuratierung 2026).
+**Kein Datenbank-Eingriff, reine Anzeige.** Quelle: Ideen-Runde 04.08.2026.
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| RM-1 | Beschreibung auf den Verwendungszweck kürzen | Feature | nein | ⬜ | **Entschieden.** Regel: **immer der letzte durch `\|` getrennte Teil**; ist er leer, Rückfall auf den Anfang. Deckt alle drei Quellen ab, ohne deren Herkunft zu kennen (Giro 2 Teile · Cortal 3 · Visa 0). Greift auf 1.547 von 1.548 Fragmenten. **Ausschließlich beim Anzeigen** — der gespeicherte Text ist Bestandteil des Duplikat-Hashes, des Trigram-Index der KI-Zuordnung und des Sortier-Tiebreakers und bleibt unangetastet. Abschneiden mit „…" ist bereits gebaut (`text-overflow: ellipsis`), kein Aufwand. Berührt Design-Doku §8. |
+| RM-2 | Schaufenster-Popup für ein Fragment | Feature | nein | ⬜ | **Entschieden: reines Anzeigen, keine Knöpfe** — die Gegenleistung dafür, dass RM-1 Information von der Karte nimmt. Zeigt den vollständigen Text sowie Betrag, Datum, Status und bei Überträgen das **Gegenkonto mit „eigenes Konto"-Hinweis** (`counterparty_iban`, heute schon vorhanden). **Klickbar werden alle Fragmente**, auch zugeordnete und Überträge — beide sind heute per `pointer-events: none` tot gestellt, das ändert Design-Doku §8. Natürlicher Ort für den KI-Vorschlag, den BF-1 von der Karte nimmt. **Gestaltungsfrage offen:** Rangfolge der Angaben und Hauptzeile → `design-direktor` vor dem Bauen. |
+
+> Bewusst **nicht** enthalten: Handlungen im Popup (Zuordnen, Lösen, Umschichten
+> markieren). Das ist `M2` in Paket 5 und wird als Ganzes entschieden, nicht in
+> Scheiben. Die beiden grenzen aneinander — der Umschichten-Knopf sitzt heute auf
+> jeder Rohmasse-Karte und wäre im Popup besser aufgehoben.
+
+---
+
+### Paket 3 · Datenbasis vervollständigen
 **Entsperrt:** ehrliche Vorjahreswerte, aussagekräftige Treiber, überhaupt eine
 Vergleichsbasis. Ohne dieses Paket bleibt die 2025-Goldlinie irreführend hoch.
 
@@ -80,17 +106,17 @@ Vergleichsbasis. Ohne dieses Paket bleibt die 2025-Goldlinie irreführend hoch.
 
 ---
 
-### Paket 3 · Bessere automatische Zuordnung
+### Paket 4 · Bessere automatische Zuordnung
 **Entsperrt:** senkt den Aufwand für **alle** nachgelagerten Themen. Der heutige
 Engpass ist Handarbeit beim Kuratieren.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | evtl. | ⬜ | **Fasst F1, F2, F3 zusammen.** F1 Konfidenz-Verbesserung (Embeddings, Levenshtein, Klassifikator; evtl. Score-Spalten) · F2 Kategorie-Vorhersage pro Nutzer (Schema-Eingriff) · F3 Fragment-Clustering. Empfehlung: erster echter Feature-Sprint nach Paket 1 und 2. |
+| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | evtl. | ⬜ | **Fasst F1, F2, F3 zusammen.** F1 Konfidenz-Verbesserung (Embeddings, Levenshtein, Klassifikator; evtl. Score-Spalten) · F2 Kategorie-Vorhersage pro Nutzer (Schema-Eingriff) · F3 Fragment-Clustering. Empfehlung: erster echter Feature-Sprint nach den Paketen 1 und 3 (Fehler und Datenbasis). |
 
 ---
 
-### Paket 4 · Gestaltungs-Feinschliff
+### Paket 5 · Gestaltungs-Feinschliff
 **Entsperrt:** die Endabnahme zweier fertiger Sprints (v2-05, v2-06).
 **Werkzeug:** Fähigkeit `design-direktor`.
 
@@ -103,7 +129,7 @@ Engpass ist Handarbeit beim Kuratieren.
 
 ---
 
-### Paket 5 · Einstellungen
+### Paket 6 · Einstellungen
 **Entsperrt:** eigene IBANs ohne SQL pflegbar — heute ist bei jedem neuen Konto ein
 manueller Datenbank-Eingriff nötig.
 
@@ -115,7 +141,7 @@ manueller Datenbank-Eingriff nötig.
 
 ---
 
-### Paket 6 · Mehrkonten Stufe 2
+### Paket 7 · Mehrkonten Stufe 2
 **Entsperrt:** Überweisungsketten (Cortal → Giro → Kreditkarte) werden als **eine**
 Ausgabe erkannt statt als drei Bewegungen.
 **Voraussetzung:** mindestens ein sauber kuratierter Monat — sonst fehlt die
@@ -124,11 +150,12 @@ Vergleichsbasis für die Verkettung.
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
 | M9 | Multi-Account-Reconciliation, Stufe 2 | Feature | **ja** | 🟡 | Stufe 1 erledigt (v2-04): DKB-Visa-Parser, `ASSET_REALLOCATION`, Transfer-Erkennung. |
-| F5 | Paired-Fragment-Verlinkung (`paired_fragment_id`) | Feature | **ja** | ⬜ | Technische Voraussetzung für M9 Stufe 2. |
+| F5 | Paired-Fragment-Verlinkung (`paired_fragment_id`) | Feature | **ja** | ⬜ | Technische Voraussetzung für M9 Stufe 2. Muss **beim Import** gesetzt werden, wo Konto und Herkunftsdatei noch bekannt sind. Nachträgliches Paaren scheidet aus: bei 378 internen Überträgen sind **97 (26 %) mehrdeutig** — gleicher Betrag, umgekehrtes Vorzeichen, wenige Tage Abstand, mehrere Kandidaten (Messung 04.08.2026). |
+| RM-3 | Gegenbuchung im Fragment-Popup anzeigen | Feature | nein | ⬜ | **Folgepunkt zu RM-2 (Paket 2).** Eine Zeile mehr im fertigen Schaufenster, sobald `F5` die Paare gesetzt hat. Bis dahin zeigt das Popup nur das Gegenkonto, nicht die Gegenbuchung — bewusst, weil Raten in jedem vierten Fall falsch läge. |
 
 ---
 
-### Paket 7 · Kartenverlauf
+### Paket 8 · Kartenverlauf
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -136,7 +163,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 8 · Welle-Rest
+### Paket 9 · Welle-Rest
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -146,7 +173,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 9 · Import-Erweiterungen
+### Paket 10 · Import-Erweiterungen
 **Bedarfsgetrieben** — erst wenn eine Quelle real gebraucht wird.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
@@ -157,7 +184,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 10 · Lebenszyklus-Rest
+### Paket 11 · Lebenszyklus-Rest
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -166,7 +193,7 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 11 · Große Brocken
+### Paket 12 · Große Brocken
 **Bewusst nach hinten** — alle vier werden besser, wenn die Datenbasis sauber ist.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
@@ -184,6 +211,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Stand | Bemerkung |
 |---|---|---|---|
+| RM-4 | Positionsregel für Overlays in die Design-Doku schreiben | ⬜ | **An BF-3 anhängen** (Paket 1) — dieselbe Sache: BF-3 ist die einzige Verletzung, die Reparatur ist die Durchsetzung. Wortlaut entschieden: *„Overlays und Popups erscheinen immer mittig im Bild, an derselben Stelle; sie unterscheiden sich in der Größe, nie im Ort. **Kontextmenüs** sind davon ausgenommen — sie erscheinen am auslösenden Element, weil sie sonst ihren Bezug verlieren."* Bestandsaufnahme 04.08.2026: 7 von 8 Overlays bereits zentriert, einzige bewusste Ausnahme ist das Karten-Kontextmenü (`card-interactive.tsx`, verankert am Icon). Reine Doku, kein Code. Berührt Design-Doku §7/§8. |
 | J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. |
 | TP-1 | Prüfwert im Übungs-DB-Runbook korrigieren | ⬜ | `supabase/test_projekt/README.md:66` nennt Juni 2026 = 4.545,32 €; gültig ist **4.589,53 €**. In der Fähigkeit `db-eingriff` vermerkt, führt also niemanden in die Irre. Beim nächsten Datenbank-Eingriff mitnehmen. |
 | TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
@@ -244,23 +272,30 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|
 | A1, A4 · B2, B3, B6 · C1, C2, C3 · H2 · J2 · K1 · M0, M1, M3, M10 · N1–N5 · Init-1–4 | §4 Erledigt |
 | A2, A3 · K2 · L1 | §3 Dauerhaft nicht |
-| B1, B4, B5 | Paket 8 |
-| D1, D2, D3 | Paket 5 |
-| E1, E2 | Paket 11 |
-| F1, F2, F3 | Paket 3 (unter M6 zusammengefasst) |
-| F4, F6, F7 | Paket 9 |
-| F5 | Paket 6 (mit M9) |
-| G1, G2 | Paket 10 |
+| B1, B4, B5 | Paket 9 |
+| D1, D2, D3 | Paket 6 |
+| E1, E2 | Paket 12 |
+| F1, F2, F3 | Paket 4 (unter M6 zusammengefasst) |
+| F4, F6, F7 | Paket 10 |
+| F5 | Paket 7 (mit M9) |
+| G1, G2 | Paket 11 |
 | H1, I1, J1, M4 | §2 Hausaufgaben |
-| M2, M5 | Paket 4 |
-| M6 | Paket 3 |
-| M7 | Paket 7 |
-| M8, M11 | Paket 11 |
-| M9 | Paket 6 |
+| M2, M5 | Paket 5 |
+| M6 | Paket 4 |
+| M7 | Paket 8 |
+| M8, M11 | Paket 12 |
+| M9 | Paket 7 |
+| RM-1, RM-2 | Paket 2 |
+| RM-3 | Paket 7 (Folgepunkt zu F5) |
+| RM-4 | §2 Hausaufgaben (an BF-3 anhängen) |
+
+> **Achtung bei älteren Papieren:** Die Paket-Nummern 2–11 aus Fassungen vor dem
+> 04.08.2026 (Ideen-Runde) meinen heute 3–12. Die Buchstaben-Kennungen sind davon
+> unberührt — sie bleiben die verlässliche Referenz.
 
 **Neue Kennungen seit dem 04.08.2026:** `BF-n` Befunde aus der Nutzung ·
-`DA-n` Datenbasis · `TP-n` Übungs-Datenbank · `B2-F` / `A1-F` Feinschliff zu einem
-erledigten Thema.
+`DA-n` Datenbasis · `TP-n` Übungs-Datenbank · `RM-n` Rohmasse-Lesbarkeit ·
+`B2-F` / `A1-F` Feinschliff zu einem erledigten Thema.
 
 ---
 
@@ -283,4 +318,5 @@ beantworten, was offen ist — nicht warum.
 ---
 
 *Roadmap · Antigravity Finance · umgebaut am 04. August 2026 aus der
-kategorien-orientierten Fassung vom 01. Juni 2026*
+kategorien-orientierten Fassung vom 01. Juni 2026 · zuletzt fortgeschrieben am
+04. August 2026 (Ideen-Runde, Idee 1 → Paket 2)*
