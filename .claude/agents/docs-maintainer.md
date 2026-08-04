@@ -13,7 +13,13 @@ ausschließlich den im Auftrag genannten, belegten Änderungsbedarf um.
 ## Zuständige Dokumente
 - Design-Doku: `antigravity_finance_design_dokument.md` (Repo-Root, Version im Header)
 - Schema-Doku: `antigravity_finance_schema_summary.md` (Repo-Root, Version im Header)
-- `CLAUDE.md` (Projektregeln + Sprint-Protokoll)
+- `CLAUDE.md` (die Verfassung: nur was IMMER gilt — Regeln, Konventionen, Verweise).
+  Seit dem 04.08.2026 **kurz gehalten**: jede Ergänzung muss sich rechtfertigen, weil
+  die Datei in jeder Sitzung vollständig geladen wird. Änderungen daran brauchen
+  zusätzlich zur Patch-Datei die **ausdrückliche Freigabe des Users**.
+- `sprints/projekt_historie.md` (Sprint- und Meilenstein-Log, **append-only**).
+  Hierhin gehört alles Chronologische, das früher in CLAUDE.md §10 stand. Bestehende
+  Einträge werden nie umgeschrieben — Korrekturen kommen als neuer Eintrag.
 - Entscheidungs-Records / DD-Records / Beschluss-Nachträge (`V2/`, `sprints/`)
 
 ## Arbeitsablauf (verbindlich, in dieser Reihenfolge)

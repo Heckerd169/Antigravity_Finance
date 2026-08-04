@@ -36,16 +36,32 @@ Davon erfordern **acht Punkte eine Rücksprache mit dem Design-Direktor** vor Sp
 
 ---
 
-## 0.1 Stand nach Sprint v2-07 (25. Juli 2026)
+## 0.1 Stand nach Sprint v2-08 (04. August 2026)
+
+> **Neu in v2-08 (Struktur-Sprint, keine App-Änderung):** H2 — das Arbeitssetup ist
+> aufgeräumt. `CLAUDE.md` ist von 1.857 auf 434 Zeilen geschrumpft (der Sprint-Log
+> liegt jetzt in `sprints/projekt_historie.md`), drei wiederkehrende Verfahren sind
+> als Fähigkeiten unter `.claude/skills/` abrufbar, und `.claude/settings.json` gibt
+> die Alltagsbefehle frei — `git push` und `git merge` bewusst nicht.
+>
+> **Der eigentliche Arbeitsvorrat liegt daneben:** die fünf am 04.08.2026
+> diagnostizierten Fehler in `V2/befunde_2026-08-04_fehler_und_entscheidungen.md`.
+> Drei sind entschieden und umsetzbar, zwei (Fehler 4 und 5) fassen die
+> Rechenfunktionen an und hängen an den Entscheidungen E1 und E2. Sie stehen **vor**
+> allen Punkten der Reihenfolge-Tabelle unten — ein Fehler, der 900 € in der
+> Juli-Sparrate bewegt, wiegt schwerer als jedes offene Feature.
+
+## 0.1.1 Stand nach Sprint v2-07 (25. Juli 2026)
 
 **Abgeschlossen sind:** alle 4 Initial-Aufgaben · M0 (Playwright) · alle 5 V1-Bugs (N1–N5) ·
 die Welle inklusive Popup (M3, B3, B6, M10) · die Abweichungs-Treiber (B2) ·
 der Karten-Lebenszyklus (M1, A4; M2 backend-seitig) · Mehrkonten Stufe 1 (Teil von M9) ·
 das Transfer-System (C1, C2, C3) und die Badge-Farben (A1).
 
-**Zahlen:** die Themen-Tabellen dieser Datei führen zusammen **55 Zeilen**
-(die 4 Initial-Aufgaben, M0 und den Out-of-Scope-Punkt L1 eingeschlossen).
-Davon **23 erledigt ✅**, **4 teilweise 🟡**, **4 hinfällig ⊘**, **24 offen ⬜**.
+**Zahlen (Stand nach v2-08):** die Themen-Tabellen dieser Datei führen zusammen
+**56 Zeilen** (die 4 Initial-Aufgaben, M0 und den Out-of-Scope-Punkt L1
+eingeschlossen). Davon **24 erledigt ✅**, **4 teilweise 🟡**, **4 hinfällig ⊘**,
+**24 offen ⬜**. Die 56. Zeile ist H2 (Arbeitssetup, v2-08).
 
 > *Neu in v2-07:* C3 — die Rohmasse war ab dem 12.01.2026 leer, weil der
 > Fragment-Voll-Scan seit dem 2025er-Import in die PostgREST-Zeilenobergrenze
@@ -181,9 +197,10 @@ mit dem, was beim Benutzen auffällt. Stand heute lautet die Empfehlung:
 
 ## 10. Kategorie H — Tooling
 
-| # | Punkt | Klassifikation | Quelle | Stand |
-|---|---|---|---|---|
-| H1 | Vercel Coding Agent Plugin evaluieren | Feature | Go-Live-Phase 3 | ⬜ |
+| # | Punkt | Klassifikation | Quelle | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| H1 | Vercel Coding Agent Plugin evaluieren | Feature | Go-Live-Phase 3 | ⬜ | |
+| H2 | Arbeitssetup professionalisieren: CLAUDE.md auf die Verfassung eindampfen, wiederkehrende Verfahren als Fähigkeiten, geteilte Freigaben | Strategie | User-Auftrag 04.08.2026 | ✅ (v2-08) | CLAUDE.md 1.857 → 434 Zeilen (Log nach `sprints/projekt_historie.md`); drei Fähigkeiten unter `.claude/skills/` (`db-eingriff`, `sprint-abschluss`, `sprint-briefing`); `.claude/settings.json` mit 103 Freigaben, `git push`/`git merge` bewusst ausgenommen. Nebenbefund: fünf Lessons Learned waren nur im Anhang-Log definiert und wären beim Auslagern verschwunden. |
 
 ---
 
@@ -305,14 +322,14 @@ Damit Doppelarbeit im V2-Sprint-Backlog vermieden wird, sind die folgenden Bezie
 | E — Income und Fairness | 2 | 2 Features | 2 ⬜ |
 | F — Distiller und Import | 7 | 7 Features | 7 ⬜ (F1–F3 unter M6, F5 unter M9) |
 | G — Lifecycle und Backend | 2 | 2 Features | 1 🟡 · 1 ⬜ |
-| H — Tooling | 1 | 1 Feature | 1 ⬜ |
+| H — Tooling | 2 | 1 Feature, 1 Strategie | 1 ✅ · 1 ⬜ |
 | I — Domain und Hosting | 1 | 1 Feature | 1 ⬜ |
 | J — Doku und Migrations | 2 | 2 Features | 1 ✅ · 1 🟡 |
 | K — Aus Zwischenphase | 2 | 2 Features | 1 ✅ · 1 ⊘ |
 | L — Out of Scope | 1 | — | 1 ⊘ dauerhaft |
 | M — Aus App-Nutzung | 11 | 7 Features, 4 Diskussionen | 3 ✅ · 2 🟡 · 6 ⬜ |
 | N — V1-Bugs | 5 | 5 Bugs | 5 ✅ |
-| **Summe Zeilen** | **55** | Initial-Aufgaben, M0 und L1 in dieser Summe enthalten (siehe Zähl-Hinweis in 0.1) | **23 ✅ · 4 🟡 · 4 ⊘ · 24 ⬜** |
+| **Summe Zeilen** | **56** | Initial-Aufgaben, M0 und L1 in dieser Summe enthalten (siehe Zähl-Hinweis in 0.1) | **24 ✅ · 4 🟡 · 4 ⊘ · 24 ⬜** |
 
 ---
 

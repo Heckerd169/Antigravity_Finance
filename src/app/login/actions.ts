@@ -22,7 +22,7 @@ export async function login(formData: FormData) {
   // automatisch eine profiles-Zeile an, aber Alt-User aus der Zeit vor dem
   // Trigger haben noch keinen Eintrag. Dieser Upsert ist Belt-and-Suspenders
   // und garantiert, dass nach jedem Login eine profiles-Zeile existiert.
-  // PM-Entscheidung Sprint 1 (siehe sprints/sprint_01_briefing.md §3.2).
+  // PM-Entscheidung Sprint 1 (siehe Archiv_V1/sprints/sprint_01_briefing.md §3.2).
   if (data.user) {
     await supabase
       .from("profiles")
