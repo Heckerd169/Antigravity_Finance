@@ -24,7 +24,7 @@
 | Themen darin | **30** |
 | Hausaufgaben ohne eigenen Sprint | **6** |
 | **Offen gesamt** | **36** |
-| Erledigt | 24 |
+| Erledigt | 25 |
 | Hinfällig geworden | 4 |
 
 > Die 36 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
@@ -222,6 +222,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | C2 | Backfill-Meldung ab 50 Einträgen ohne Zahl | v2-07 |
 | C3 | Rohmasse ab Februar leer — 1000-Zeilen-Grenze (→ LL-21) | v2-07 |
 | H2 | Arbeitssetup professionalisiert: CLAUDE.md 1.857 → 434 Zeilen, drei Fähigkeiten, geteilte Freigaben | v2-08 |
+| WF-1 | Ablauf vereinfacht: drei Sprint-Phasen statt sieben · Design-Direktor als Fähigkeit statt eigenem Chat · diese Roadmap nach Paketen umgebaut · `sprint-start` mit Nachbohren ersetzt `sprint-briefing` | v2-09 |
 | J2 | Typen-Regenerierung als feste Routine | — |
 | K1 | Dev-Panel im Produktions-Bundle nicht enthalten (mehrfach geprüft) | — |
 | M1 | Drei-Verben-Modell Beenden / Löschen / Lösen | v2-05 |
