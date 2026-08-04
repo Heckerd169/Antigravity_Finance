@@ -20,12 +20,40 @@ Nachfragen — oder eben im Review.
 
 ## Phase ① · Nachbohren
 
-**Bevor irgendetwas geplant wird.** Kein Vorschlag, keine Lösung, keine Einschätzung
-zum Aufwand. Nur Fragen — und zwar so lange, bis die Antworten zusammenpassen.
+**Bevor irgendetwas geplant wird.** Keine Lösung, keine Aufwands-Einschätzung. Nur
+klären — so lange, bis die Antworten zusammenpassen.
 
-### Die Pflichtfragen
+### Wie gefragt wird — drei Regeln, die über allem stehen
 
-Diese sechs kommen **immer**, auch wenn der Auftrag eindeutig scheint:
+Diese drei entscheiden, ob das Nachbohren hilft oder nur anstrengt. Sie stammen aus
+`grilling` (Matt Pocock, 749.000 Installationen), abgeglichen am 04.08.2026 gegen die
+erste Fassung dieser Fähigkeit — die alle drei verletzt hat.
+
+**① Eine Frage nach der anderen. Antwort abwarten.**
+Mehrere Fragen auf einmal sind verwirrend und liefern oberflächliche Antworten auf
+alle statt einer guten auf eine. Die sechs Punkte unten sind **kein Fragebogen**,
+den man am Stück vorlegt — sie sind eine Liste dessen, was am Ende geklärt sein muss.
+
+**② Zu jeder Frage die eigene empfohlene Antwort mitliefern.**
+Nicht „Welchen Prüfanker nehmen wir?", sondern „Ich schlage als Prüfanker vor: Juli-Ist
+von −1.222,75 auf −322,75, alle anderen Monate unverändert. Passt das?" Aus einem
+Verhör wird ein Vorschlag, den der User bestätigen oder korrigieren kann — das ist
+schneller und erheblich weniger ermüdend.
+
+**③ Fakten selbst nachschlagen. Nur Entscheidungen vorlegen.**
+Was im Code, in der Datenbank oder in der Doku steht, wird **nachgesehen**, nicht
+gefragt. Welcher Kartentyp betroffen ist, wie der heutige Wert lautet, wo eine Funktion
+liegt — das ist Recherche, keine Entscheidung. Gefragt wird nur, was der User
+entscheiden **muss**. Wer Nachschlagbares abfragt, macht das Nachbohren zur Last und
+bekommt dafür zu Recht kurze Antworten.
+
+**Reihenfolge:** den Entscheidungsbaum Ast für Ast abgehen. Hängt Frage B an der
+Antwort auf A, kommt A zuerst — sonst wird B zweimal gestellt.
+
+### Was am Ende geklärt sein muss
+
+Sechs Punkte. **Nicht als Block abfragen** — siehe Regel ① — und jeden weglassen,
+den du dir selbst beantworten kannst (Regel ③).
 
 **1 · Was genau soll danach anders sein?**
 In einem Satz, aus Sicht des Benutzers. Passt es nicht in einen Satz, ist der Sprint
@@ -180,7 +208,10 @@ Danach beginnt Phase 2 des Sprints. Am Ende: Fähigkeit **`sprint-abschluss`**.
 
 ## Abhakliste
 
-- [ ] Alle sechs Pflichtfragen gestellt, auch die scheinbar überflüssigen
+- [ ] **Eine Frage nach der anderen** gestellt, nicht als Block
+- [ ] **Zu jeder Frage die eigene Empfehlung** mitgeliefert
+- [ ] **Nachschlagbares nachgeschlagen**, nicht abgefragt
+- [ ] Alle sechs Punkte geklärt — durch Nachsehen oder durch Fragen
 - [ ] Wo es weich wurde, nachgehakt — nicht die erste Antwort genommen
 - [ ] Ziel, Nicht-Ziel und Anker in drei Sätzen, vom User bestätigt
 - [ ] Gestaltungsfrage geklärt (`design-direktor`) oder ausgeschlossen

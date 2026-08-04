@@ -202,6 +202,22 @@ ist damit technisch, nicht nur schriftlich.
 | `db-eingriff` | jede Berührung der Datenbank |
 | `sprint-abschluss` | sobald der Code steht |
 
+**Zusätzlich global installiert** (fremd, liegt in `~/.agents/skills/`, **nicht im
+Repo** — auf einem frischen Klon also nicht vorhanden): `diagnosing-bugs` ·
+`prototype` · `vercel-react-best-practices` · `find-skills`. Hilfsmittel, keine
+Voraussetzung; ausgewählt am 04.08.2026 aus 51 gesichteten Fähigkeiten.
+
+> **`diagnosing-bugs` und §7 Regel 18 (LL-21) zusammen lesen.** Die Fähigkeit
+> verlangt, **zuerst** eine enge Prüfschleife zu bauen und **vorher keine These** zu
+> bilden. LL-21 nennt dagegen einen 30-Sekunden-Vorabtest für eine bekannte
+> Symptomklasse („Daten fehlen in der UI" → klebt die Zeilenzahl an einer runden
+> Grenze? Wird der Wert per RPC gerechnet?). Das ist kein Widerspruch: LL-21 ist eine
+> **Beobachtung**, keine These. Reihenfolge: erst LL-21 abhaken, und wenn es nicht
+> greift, in die volle Schleifen-Disziplin fallen.
+>
+> Der Trockenlauf aus `db-eingriff` **ist** bereits eine solche Prüfschleife —
+> deterministisch, schnell, unbeaufsichtigt lauffähig.
+
 **Verfügbare Subagenten** (`.claude/agents/`):
 
 | Agent | Wofür | Grenze |
