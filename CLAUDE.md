@@ -82,6 +82,8 @@ Antigravity_Finance/
 │   ├── v2_roadmap_konsolidiert.md             ← Master-Backlog, LEBEND
 │   └── befunde_JJJJ-MM-TT_<slug>.md           ← Diagnosen aus der Nutzung
 ├── Archiv_V1/                                 ← abgeschlossene V1-Historie, read-only
+├── design-system/                             ← Formensprache als ansehbare Seiten
+│   └── SYNC.md                                ← wie sie zu claude.ai/design kommen
 ├── screenshots/                               ← Bilder lokal, nur README versioniert
 ├── src/                                       ← App (Komponente pro Ordner, §7)
 ├── tests/e2e/                                 ← unauth · auth.setup · render-smoke · visual-pixel
@@ -104,6 +106,7 @@ Beleg: `sprints/doku_patch_2026-07-23_doku-struktur-stabilisierung.md`):
 | Befund / Diagnose aus der App-Nutzung | `V2/befunde_JJJJ-MM-TT_<slug>.md` | beschreibt einen **Ist-Zustand**, keine Umsetzung |
 | Fehler-Screenshot | `screenshots/JJJJ-MM-TT_<anlass>/` | Bilder bleiben **lokal** (gitignored) |
 | Wiederholbares Verfahren | `.claude/skills/<name>/SKILL.md` | wird **mehrfach** gebraucht (§4) |
+| Seite, die die Formensprache **zeigt** | `design-system/` | Vorlage für `claude.ai/design`, Ablauf in `design-system/SYNC.md` |
 | Was vor über einem Jahr passiert ist | bleibt, wo es ist | `Archiv_V1/` wird **nicht** nachgepflegt |
 
 **Zwei Faustregeln.** Ein Papier, das eine Frage *beantwortet*, gehört nach `V2/`.
@@ -125,7 +128,9 @@ Perspektive und prüft gegen die Datenbank, bevor sie patcht.*
 **Der Design-Direktor bleibt ein separater Chat.** Design-Entscheidungen werden dort
 eingeholt, nicht selbst getroffen. Sein Werkzeug ist das Design-System-Projekt auf
 `claude.ai/design` (Projekt „Antigravity Finance") — er beurteilt Bilder, nicht
-Beschreibungen.
+Beschreibungen. Die Vorlagen dazu liegen versioniert unter `design-system/`;
+**ändert sich etwas an Tokens oder Komponenten, gehören sie mit nachgezogen** —
+sonst beurteilt er wieder einen veralteten Stand. Ablauf: `design-system/SYNC.md`.
 
 ### Was ausschließlich der Mensch macht
 
@@ -424,7 +429,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 **Letzter Sprint:** v2-08 (Repo-Struktur, 04.08.2026) · **davor:** v2-07 (Rohmasse
 aufräumen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.1.6** · Schema-Doku **v3.4**.
+**Doku-Versionen:** Design-Doku **v3.1.6** · Schema-Doku **v3.4.1**.
 
 **Prüfanker Produktion** (gemessen 25.07.2026, gültig bis zur nächsten Kuratierung —
 tagesaktuelle Werte und die Juli-Abweichungen stehen in

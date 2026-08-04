@@ -1,6 +1,6 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.4
+**Version:** 3.4.1
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber)
 **Datum:** 25. Juli 2026
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
@@ -43,6 +43,14 @@
 
 - 1 neue Lese-RPC: `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` — Top-N Abweichungs-Treiber je Monat eines Kalenderjahres, EIN Call für Welle-Tooltip (Top-1) und Popup (Top-3). Additiv, read-only, keine Schema- oder Daten-Änderung.
 - Keine Tabellen-, Spalten-, Index-, Trigger- oder Enum-Änderung.
+
+**Änderungen v3.4 → v3.4.1 (Doku-Patch, 04.08.2026):**
+
+- Abschnittsnummerierung korrigiert: zweites Vorkommen „## 13." (vormals
+  „Betriebsnotiz — v2-04") zu „## 15." umnummeriert — Abschnitt 13 war bereits
+  durch „Globale Konstanten — `app_config`" belegt. Keine schema- oder
+  datenseitige Änderung, reine Nummerierungskorrektur (Sprint-v2-08-Review
+  §6 F4).
 
 **`transfer_type` — Wertemenge + Semantik (v3.2):**
 
@@ -504,6 +512,6 @@ Eine vollständig instrumentierte Datenbank für Antigravity Finance 1.0 — ink
 
 ---
 
-## 13. Betriebsnotiz — v2-04 (einmalig, kein Dauerzustand)
+## 15. Betriebsnotiz — v2-04 (einmalig, kein Dauerzustand)
 
 > Im Zuge von v2-04 wurden am 06.07.2026 alle importierten Daten sowie drei `manually_paid`-Testzustände gelöscht (Ausnahme 1, pre-go-live Wegwerf-Zustand). Karten (31) und Plan-Zeitreihen blieben unberührt. Option-A-/Zwei-Personen-Ausnahmen dieses Sprints sind **nicht** fortgeltend; ab vorhandenen Echtdaten gelten Test-Projekt-Gate und Zwei-Personen-Prinzip wieder uneingeschränkt (Briefing §0a).

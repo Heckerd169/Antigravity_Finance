@@ -1,0 +1,103 @@
+<!-- @dsCard group="Grundlagen" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Typografie — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --color-teal:#3ECFAF;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:66ch; line-height:1.6; margin:0 0 12px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
+  .row { display:grid; grid-template-columns:1fr 210px; gap:28px; align-items:center;
+         padding:26px 0; border-bottom:1px solid var(--border-subtle); }
+  .row:last-of-type { border-bottom:none; }
+  .spec { font-size:10.5px; color:var(--text-ghost); line-height:1.75;
+          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .spec b { color:var(--text-muted); font-weight:400; }
+  .role { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase;
+          color:var(--text-ghost); margin-bottom:10px; }
+
+  .s-ring   { font-size:34px; font-weight:200; letter-spacing:-1.8px; }
+  .s-month  { font-size:17px; font-weight:600; letter-spacing:-.5px; }
+  .s-cname  { font-size:13px; font-weight:500; letter-spacing:-.2px; }
+  .s-camt   { font-size:22px; font-weight:200; letter-spacing:-1.2px; }
+  .s-flank  { font-size:13px; font-weight:500; letter-spacing:-.2px; color:var(--text-muted); }
+  .s-lsmall { font-size:9px;  font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
+              color:var(--text-ghost); }
+  .s-lmeta  { font-size:10px; font-weight:500; letter-spacing:.6px; color:var(--text-muted); }
+
+  .note { margin-top:34px; padding:14px 16px; border-left:2px solid rgba(62,207,175,.22);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:78ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .demo { display:flex; gap:34px; margin-top:14px; }
+  .demo div { font-size:22px; font-weight:200; letter-spacing:-1.2px; }
+  .demo small { display:block; font-size:9px; letter-spacing:1px; text-transform:uppercase;
+                color:var(--text-ghost); margin-top:6px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<h1>Typografie</h1>
+<p class="lede">
+  Ein System-Font-Stack, kein Web-Font — bewusste Entscheidung aus Sprint 0.
+  Die Hierarchie entsteht ausschließlich über Größe, Strichstärke und Laufweite.
+  Große Zahlen sind dünn (Gewicht 200) und eng gesetzt, kleine Labels sind fett
+  (600) und weit gesperrt. Das hält die Sparrate als größte Zahl ruhig, statt sie
+  zu brüllen.
+</p>
+<p class="src">Quelle: <code>src/styles/tokens.css</code> · Design-Doku §3 — hier in Originalgröße gesetzt</p>
+
+<div class="row">
+  <div><div class="role">Primärzahl · Ring</div><div class="s-ring">2.910 €</div></div>
+  <div class="spec"><b>34px</b> / Gewicht <b>200</b><br>Laufweite <b>−1,8px</b><br>tabular-nums</div>
+</div>
+<div class="row">
+  <div><div class="role">Aktiver Monat · Header</div><div class="s-month">März 2026</div></div>
+  <div class="spec"><b>17px</b> / Gewicht <b>600</b><br>Laufweite <b>−0,5px</b></div>
+</div>
+<div class="row">
+  <div><div class="role">Flanken-Monat · Header</div><div class="s-flank">Februar</div></div>
+  <div class="spec"><b>13px</b> / Gewicht <b>500</b><br>Laufweite <b>−0,2px</b></div>
+</div>
+<div class="row">
+  <div><div class="role">Kartenname</div><div class="s-cname">Miete</div></div>
+  <div class="spec"><b>13px</b> / Gewicht <b>500</b><br>Laufweite <b>−0,2px</b><br>eine Zeile, Ellipsis</div>
+</div>
+<div class="row">
+  <div><div class="role">Kartenbetrag</div><div class="s-camt">1.904,00 €</div></div>
+  <div class="spec"><b>22px</b> / Gewicht <b>200</b><br>Laufweite <b>−1,2px</b><br>tabular-nums</div>
+</div>
+<div class="row">
+  <div><div class="role">Label klein · Typ und Sublabel</div><div class="s-lsmall">Fixkosten · Sparrate</div></div>
+  <div class="spec"><b>9px</b> / Gewicht <b>600</b><br>Laufweite <b>1,1px</b><br>Versalien</div>
+</div>
+<div class="row">
+  <div><div class="role">Label Meta · Attribution und Status</div><div class="s-lmeta">Gemeinsam · Bezahlt</div></div>
+  <div class="spec"><b>10px</b> / Gewicht <b>500</b><br>Laufweite <b>0,6px</b></div>
+</div>
+
+<div class="note">
+  <b>Alle Zahlen laufen mit <code>font-variant-numeric: tabular-nums</code></b> — global
+  auf <code>body</code> gesetzt, nicht pro Komponente. Damit steht jede Ziffer gleich breit,
+  und untereinander stehende Beträge bilden eine saubere Spalte. Bei einer App, deren
+  ganzer Zweck der Vergleich von Zahlen über Monate hinweg ist, ist das kein Detail.
+  <div class="demo">
+    <div>1.904,00 €<small>tabular — Ziffern fluchten</small></div>
+    <div style="font-variant-numeric:normal">1.904,00 €<small style="color:rgba(255,69,58,.55)">proportional — springt</small></div>
+  </div>
+</div>
+
+</body>
+</html>

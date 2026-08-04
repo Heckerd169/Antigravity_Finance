@@ -1,0 +1,220 @@
+<!-- @dsCard group="Komponenten" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Jahres-Welle und Popup — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --color-teal:#3ECFAF; --color-red:#FF453A;
+    --color-gold:rgba(255,200,60,.6);
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:70ch; line-height:1.6; margin:0 0 12px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:46px 0 8px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 22px; max-width:72ch; line-height:1.6; }
+  .panel { position:relative; background:#0B0B0D; border:1px solid var(--border-subtle);
+           border-radius:14px; padding:16px 0 6px; max-width:780px; }
+  .mlabels { display:flex; padding:0 30px; margin-top:2px; }
+  .mlabels span { flex:1; text-align:center; font-size:9px; font-weight:500;
+                  letter-spacing:.6px; color:rgba(255,255,255,.22); text-transform:uppercase; }
+  .mlabels span.now { color:rgba(255,255,255,.5); font-weight:600; }
+  .legend { display:flex; gap:22px; margin-top:16px; font-size:10.5px; color:var(--text-ghost);
+            align-items:center; flex-wrap:wrap; }
+  .legend i { display:inline-block; width:16px; height:3px; border-radius:2px;
+              margin-right:6px; vertical-align:middle; }
+  .tip { position:absolute; background:rgba(28,28,30,.94); border:.5px solid rgba(255,255,255,.1);
+         border-radius:10px; padding:9px 12px; font-size:11px; line-height:1.6;
+         box-shadow:0 4px 20px rgba(0,0,0,.5); pointer-events:none; }
+  .tip .m { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+            color:var(--text-ghost); margin-bottom:5px; }
+  .tip .r { display:flex; justify-content:space-between; gap:20px; color:var(--text-muted); }
+  .tip .r b { font-weight:500; color:var(--text-primary); }
+  .tip .drv { margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.08);
+              color:rgba(255,255,255,.35); font-size:10px; }
+  .hero { font-size:34px; font-weight:200; letter-spacing:-1.8px; }
+  .cap { margin-top:12px; font-size:10.5px; color:var(--text-ghost); line-height:1.6; max-width:74ch; }
+  .cap b { color:var(--text-muted); font-weight:600; }
+  .note { margin-top:26px; padding:14px 16px; border-left:2px solid rgba(62,207,175,.22);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:80ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .info { border-left-color:rgba(255,255,255,.14); background:rgba(255,255,255,.02); }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+</style>
+</head>
+<body>
+
+<h1>Jahres-Welle und Popup</h1>
+<p class="lede">
+  Die Welle liegt <b>hinter</b> dem Ring, auf derselben Fläche. Sie zeigt zwölf
+  Monatswerte in Euro — türkis, was realisiert ist, grau, was noch Prognose ist, rot,
+  was unter null geht. Ein Klick öffnet das Popup mit der kumulierten Sicht. Die
+  kumulierte Treppe lebt <b>ausschließlich</b> dort.
+</p>
+<p class="src">Quelle: <code>src/components/welle/</code> · Design-Doku §9 — Farben, Deckkraft und Regeln 1:1</p>
+
+<h2>Monats-Welle</h2>
+<p class="sub">
+  Deckkraft 0,80. Türkis reicht bis <b>einschließlich</b> des laufenden Monats, grau
+  beginnt beim ersten Zukunftsmonat. Diese Grenze hängt am Kalender, nicht am
+  gewählten Monat — Navigation in die Zukunft färbt nichts um.
+</p>
+
+<div class="panel">
+  <svg viewBox="0 0 720 250" style="width:100%;height:auto;display:block">
+    <defs>
+      <clipPath id="cRealisiert"><rect x="0" y="0" width="480" height="250"/></clipPath>
+      <clipPath id="cPrognose"><rect x="480" y="0" width="240" height="250"/></clipPath>
+      <clipPath id="cUnterNull"><rect x="0" y="202.4" width="720" height="47.6"/></clipPath>
+      <linearGradient id="gTeal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3ECFAF" stop-opacity=".28"/>
+        <stop offset="100%" stop-color="#3ECFAF" stop-opacity=".02"/>
+      </linearGradient>
+      <linearGradient id="gGrau" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#8A8A90" stop-opacity=".20"/>
+        <stop offset="100%" stop-color="#8A8A90" stop-opacity=".02"/>
+      </linearGradient>
+      <linearGradient id="gRot" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FF453A" stop-opacity=".30"/>
+        <stop offset="100%" stop-color="#FF453A" stop-opacity=".05"/>
+      </linearGradient>
+    </defs>
+
+    <g opacity="0.80">
+      <!-- Flächen -->
+      <path clip-path="url(#cRealisiert)" fill="url(#gTeal)"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8 L690,250 L30,250 Z"/>
+      <path clip-path="url(#cPrognose)" fill="url(#gGrau)"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8 L690,250 L30,250 Z"/>
+      <path clip-path="url(#cUnterNull)" fill="url(#gRot)"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8 L690,250 L30,250 Z"/>
+
+      <!-- Linien -->
+      <path clip-path="url(#cRealisiert)" fill="none" stroke="#3ECFAF" stroke-width="2"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8"/>
+      <path clip-path="url(#cPrognose)" fill="none" stroke="#8A8A90" stroke-width="2"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8"/>
+      <path clip-path="url(#cUnterNull)" fill="none" stroke="#FF453A" stroke-width="2"
+        d="M30,135.8 C50,135.8 70,135.8 90,135.8 C110,135.8 130,135.8 150,135.8 C170,135.8 190,135.8 210,135.8 C230,135.8 250,205.4 270,205.4 C290,205.4 310,44.2 330,44.2 C350,44.2 370,135.8 390,135.8 C410,135.8 430,135.8 450,135.8 C470,135.8 490,135.8 510,135.8 C530,135.8 550,135.8 570,135.8 C590,135.8 610,135.8 630,135.8 C650,135.8 670,135.8 690,135.8"/>
+    </g>
+
+    <!-- Null-Linie -->
+    <line x1="30" y1="202.4" x2="690" y2="202.4" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+    <text x="24" y="206" text-anchor="end" font-size="9" fill="rgba(255,255,255,.22)">0 €</text>
+
+    <!-- Führungslinie beim Abtasten (Juni) -->
+    <line x1="330" y1="18" x2="330" y2="234" stroke="rgba(255,255,255,.22)" stroke-width="1"/>
+    <!-- genau EIN aktiver-Monat-Kreis -->
+    <circle cx="330" cy="44.2" r="4.5" fill="#0D0D0F" stroke="#3ECFAF" stroke-width="2"/>
+  </svg>
+
+  <div class="mlabels">
+    <span>Jan</span><span>Feb</span><span>Mär</span><span>Apr</span>
+    <span>Mai</span><span class="now">Jun</span><span>Jul</span><span class="now">Aug</span>
+    <span>Sep</span><span>Okt</span><span>Nov</span><span>Dez</span>
+  </div>
+
+  <div class="tip" style="left:352px;top:34px">
+    <div class="m">Juni 2026</div>
+    <div class="r"><span>Ist</span><b>4.589,53 €</b></div>
+    <div class="r"><span>Plan</span><b>1.931,18 €</b></div>
+    <div class="drv">Steuererstattung 2025 &nbsp;+2.658 €</div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#3ECFAF"></i>realisiert</span>
+  <span><i style="background:#8A8A90"></i>Prognose</span>
+  <span><i style="background:#FF453A"></i>negativer Monat</span>
+  <span><i style="background:none;border-top:1px solid rgba(255,255,255,.22);height:0"></i>Führungslinie beim Abtasten</span>
+</div>
+
+<div class="cap">
+  <b>Zum Abtasten:</b> Die Monatswahl läuft über die volle Breite, nicht punktgenau —
+  Führungslinie und Fensterchen zeichnen sich <em>über</em> den Ring. Damit ist auch
+  die Jahresmitte hinter dem Ring erreichbar. Der Vergleich Ist gegen Plan lebt im
+  Fensterchen, nicht als zweite Welle.
+</div>
+
+<h2>Popup · kumulierte Treppe</h2>
+<p class="sub">
+  Klick auf die Welle öffnet ein Overlay. Kein Werkzeug, keine Regler — schließen per
+  Klick daneben oder Escape.
+</p>
+
+<div class="panel" style="max-width:640px;padding:22px 24px 16px">
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px">
+    <div class="hero" style="color:var(--color-teal)">+23.500 €</div>
+    <div style="font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-ghost)">Jahressumme 2026</div>
+  </div>
+
+  <svg viewBox="0 0 590 230" style="width:100%;height:auto;display:block;margin-top:12px">
+    <!-- Vorjahres-Goldlinie, Betrag im rechten Gutter -->
+    <line x1="24" y1="36.9" x2="510" y2="36.9" stroke="rgba(255,200,60,.6)"
+          stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="518" y="40" font-size="10" fill="rgba(255,200,60,.75)">48.445 €</text>
+
+    <!-- Plan-Treppe grau -->
+    <path fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2"
+      d="M24,192.4 H64 V181.7 H104 V171.0 H144 V160.3 H184 V149.6 H224 V138.9 H264 V128.1 H304 V117.4 H344 V106.7 H384 V96.0 H424 V85.3 H464 V65.1 H510"/>
+    <!-- Ist-Treppe türkis -->
+    <path fill="none" stroke="#3ECFAF" stroke-width="2.4"
+      d="M24,191.8 H64 V179.6 H104 V167.4 H144 V155.1 H184 V155.8 H224 V126.2 H264 V114.0 H304 V101.8 H344 V89.6 H384 V77.3 H424 V65.1 H464 V52.9 H510"/>
+
+    <!-- Monatsraster -->
+    <g font-size="9" fill="rgba(255,255,255,.22)" text-anchor="middle">
+      <text x="44" y="216">J</text><text x="84" y="216">F</text><text x="124" y="216">M</text>
+      <text x="164" y="216">A</text><text x="204" y="216">M</text><text x="244" y="216">J</text>
+      <text x="284" y="216">J</text><text x="324" y="216">A</text><text x="364" y="216">S</text>
+      <text x="404" y="216">O</text><text x="444" y="216">N</text><text x="484" y="216">D</text>
+    </g>
+  </svg>
+
+  <div class="legend" style="margin-top:10px;font-size:10px">
+    <span><i style="background:#3ECFAF"></i>Ist</span>
+    <span><i style="background:rgba(255,255,255,.28)"></i>Plan</span>
+    <span><i style="background:none;border-top:1.5px dashed rgba(255,200,60,.6);height:0"></i>Vorjahr</span>
+    <span style="color:rgba(255,255,255,.18)">Klick auf einen Monat zeigt die drei Treiber</span>
+  </div>
+</div>
+
+<div class="cap">
+  <b>Hinweis zu den Zahlen dieser Seite:</b> Die Monatswelle oben zeigt die echten
+  Prüfanker (Mai −86,77 € · Juni 4.589,53 € · sonst 1.931,18 €). Die Treppe im Popup
+  verwendet <em>illustrative</em> Werte, damit Ist- und Plan-Linie sichtbar
+  auseinanderlaufen — im echten Bestand liegen sie fast übereinander, weil erst ein
+  Monat kuratiert ist. Farben, Geometrie, Strichstärken und Regeln sind in beiden
+  Fällen exakt.
+</div>
+
+<div class="note">
+  <b>Die Goldlinie steht hoch — und das stimmt so.</b> Sie zeigt den kumulierten
+  Jahresendwert des Vorjahres, hier 48.445 €. Für 2025 sind bislang keine
+  Kosten-Karten hinterlegt, deshalb entspricht die Sparrate dort dem vollen Netto.
+  Die Linie ist also technisch korrekt und inhaltlich noch nicht vergleichbar. Sobald
+  die Karten auf 2025 zurückdatiert sind, rutscht sie auf ein realistisches Niveau.
+  Bei einem Vorjahr <em>ganz ohne</em> Daten entfällt die Linie komplett — eine
+  0-€-Linie wäre irreführend, denn „nichts gespart“ ist etwas anderes als „keine Daten“.
+</div>
+
+<div class="note info">
+  <b>Was die Welle bewusst nicht hat:</b> keine zweite Welle für den Plan (der
+  Vergleich lebt im Fensterchen), keinen Umschalter zwischen Prozent und kumuliert,
+  kein dauerhaftes Abweichungs-Etikett, keinen Hover-Punkt und keinen Ereignis-Kreis.
+  Es gibt genau <em>einen</em> Kreis: den aktiven Monat.
+</div>
+
+</body>
+</html>

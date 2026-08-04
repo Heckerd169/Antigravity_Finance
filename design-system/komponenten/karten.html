@@ -1,0 +1,311 @@
+<!-- @dsCard group="Komponenten" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Karten — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
+    --bg-card-paid:#0A140E; --bg-card-over:#160A08; --bg-card-ghost:#181818;
+    --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
+    --border-red:rgba(255,69,58,.18);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:68ch; line-height:1.6; margin:0 0 12px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:46px 0 6px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 22px; max-width:70ch; line-height:1.6; }
+  .rail { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  .slot { width:136px; }
+  .cap { margin-top:11px; font-size:10px; color:var(--text-ghost); line-height:1.55; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+
+  /* ── Karten-Basis, 1:1 aus cards.module.css ── */
+  .card {
+    width:136px; min-height:170px; box-sizing:border-box; border-radius:14px;
+    padding:14px 13px 12px; border:1px solid var(--border-subtle);
+    background:var(--bg-card); position:relative; opacity:.75;
+  }
+  .cardBudget { padding-bottom:18px; }
+  .open     { background:var(--bg-card-open);  border-color:var(--border-red); }
+  .paid     { background:var(--bg-card-paid);  border-color:var(--border-teal); }
+  .expected { background:#0D1A16;              border-color:rgba(62,207,175,.18); }
+  .received { background:var(--bg-card-paid);  border-color:var(--border-teal); }
+  .running  { background:var(--bg-card-open);  border-color:var(--border-red); }
+  .over     { background:var(--bg-card-over);  border-color:rgba(255,69,58,.35); }
+  .done     { background:var(--bg-card-paid);  border-color:var(--border-teal); }
+  .ghost    { background:var(--bg-card-ghost); border-color:rgba(255,255,255,.10); opacity:.65; }
+
+  .cardTop { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .cardLabel { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .open .cardLabel, .running .cardLabel, .over .cardLabel { color:rgba(255,99,88,.45); }
+  .paid .cardLabel, .expected .cardLabel, .received .cardLabel, .done .cardLabel { color:rgba(62,207,175,.45); }
+  .ghost .cardLabel { color:rgba(255,255,255,.25); }
+
+  .icon { width:18px; height:18px; border-radius:50%; display:flex;
+          align-items:center; justify-content:center; flex-shrink:0; }
+  .iconOpen     { background:rgba(255,69,58,.1);   border:1px solid rgba(255,69,58,.2); }
+  .iconPaid     { background:rgba(62,207,175,.1);  border:1px solid rgba(62,207,175,.28); }
+  .iconGhost    { background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1); }
+  .iconOver     { background:rgba(255,69,58,.16);  border:1px solid rgba(255,69,58,.35); }
+  .iconExpected { background:rgba(62,207,175,.1);  border:1px solid rgba(62,207,175,.25); }
+
+  .cardName { font-size:13px; font-weight:500; letter-spacing:-.2px; margin-bottom:2px;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .open .cardName, .running .cardName, .expected .cardName { color:var(--text-muted); }
+  .paid .cardName, .received .cardName, .over .cardName, .done .cardName { color:var(--text-primary); }
+  .ghost .cardName { color:rgba(255,255,255,.35); }
+
+  .cardAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px;
+                font-variant-numeric:tabular-nums; line-height:1; margin-bottom:5px; }
+  .open .cardAmount, .running .cardAmount, .expected .cardAmount { color:var(--text-muted); }
+  .paid .cardAmount, .received .cardAmount, .done .cardAmount { color:var(--text-primary); }
+  .over .cardAmount { color:var(--color-red); }
+  .ghost .cardAmount { color:rgba(255,255,255,.32); }
+
+  .stateLabel { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; }
+  .open .stateLabel { color:rgba(255,99,88,.38); }
+  .paid .stateLabel, .expected .stateLabel { color:rgba(62,207,175,.45); }
+  .received .stateLabel, .done .stateLabel { color:rgba(62,207,175,.55); }
+  .running .stateLabel { color:rgba(255,255,255,.2); }
+  .over .stateLabel { color:rgba(255,69,58,.55); }
+  .ghost .stateLabel { color:var(--text-ghost); }
+  .stateLabelRed { color:rgba(255,69,58,.55) !important; }
+
+  .restAmount { font-size:11px; font-weight:500; margin-top:3px; }
+  .restPos { color:rgba(62,207,175,.40); }
+  .restNeg { color:rgba(255,69,58,.65); }
+  .restDone { color:rgba(62,207,175,.55); }
+
+  .cardMeta { display:flex; align-items:center; gap:5px; margin-top:8px; }
+  .metaDot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .metaDotIch { background:rgba(255,255,255,.22); }
+  .metaDotGem { background:rgba(100,168,240,.38); }
+  .metaText { font-size:10px; font-weight:500; color:rgba(255,255,255,.20); letter-spacing:.2px; }
+
+  .progressWrap { position:absolute; bottom:0; left:0; right:0; height:3px;
+                  background:rgba(255,255,255,.04); border-radius:0 0 14px 14px; overflow:hidden; }
+  .progressBar { height:100%; }
+  .pbNorm { background:rgba(62,207,175,.45); }
+  .pbOver { background:#FF453A; }
+
+  .note { margin-top:26px; padding:14px 16px; border-left:2px solid var(--border-teal);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:80ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+</style>
+</head>
+<body>
+
+<h1>Karten</h1>
+<p class="lede">
+  Drei Typen, neun Zustände. Jede Karte ist 136 px breit und mindestens 170 px hoch —
+  einheitlich über alle Typen, damit das Karussell nicht springt. Die Zustandsfarbe
+  sitzt in Hintergrund und Rand, nie im Kartennamen. Nur der Betrag wechselt bei
+  „Überschritten“ ins Rot.
+</p>
+<p class="src">Quelle: <code>src/components/cards/cards.module.css</code> + <code>card.tsx</code> · Design-Doku §7 — Werte 1:1 übernommen</p>
+
+<h2>Fixkosten · drei Zustände</h2>
+<p class="sub">Eine wiederkehrende Ausgabe. Tippen schaltet zwischen Offen und Bezahlt.</p>
+<div class="rail">
+
+  <div class="slot">
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Strom – Mainova</div>
+      <div class="cardAmount">110,00 €</div>
+      <div class="stateLabel">Offen</div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Offen</b>Erwartet, noch nicht abgebucht. Rand und Typ-Label tragen Rot, der Betrag bleibt gedämpft.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card paid">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconPaid"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cardName">Strom – Mainova</div>
+      <div class="cardAmount">110,00 €</div>
+      <div class="stateLabel">Bezahlt</div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Bezahlt</b>Betrag wird voll weiß — hier ist etwas passiert. Kein Unterschied zwischen von Hand getippt und per Kontoumsatz belegt.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card ghost">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconGhost"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,255,255,.25)"/></svg></div></div>
+      <div class="cardName">Strom – Mainova</div>
+      <div class="cardAmount">110,00 €</div>
+      <div class="stateLabel">Forecast</div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Forecast</b>Zukünftiger Monat. Farblos und nicht antippbar — es gibt noch nichts zu bestätigen. Rand solid, nicht gestrichelt.</div>
+  </div>
+
+</div>
+
+<h2>Budget · vier Zustände</h2>
+<p class="sub">
+  Ein Topf für einen Zweck. Budget-Karten sind <b>immer</b> „Ich“ — eine gemeinsame
+  Zuordnung ist in der Datenbank ausgeschlossen. Der Fortschrittsbalken sitzt als
+  3-px-Kante an der Unterseite.
+</p>
+<div class="rail">
+
+  <div class="slot">
+    <div class="card cardBudget running">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Auswärts Essen</div>
+      <div class="cardAmount">200,00 €</div>
+      <div class="stateLabel">Laufend</div>
+      <div class="restAmount restPos">Noch 157,20 € frei</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar pbNorm" style="width:21%"></div></div>
+    </div>
+    <div class="cap"><b>Laufend</b>Solange die Ausgaben unter dem Plan bleiben, zeigt die Karte den <em>Plan</em>, nicht die Realität. Das Statuswort ist bewusst neutral-grau.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget over">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconOver"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#FF453A" stroke-width="1.4" stroke-linecap="round"/></svg></div></div>
+      <div class="cardName">Auswärts Essen</div>
+      <div class="cardAmount">268,40 €</div>
+      <div class="stateLabel">Überschritten</div>
+      <div class="restAmount restNeg">68,40 € über Plan</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar pbOver" style="width:100%"></div></div>
+    </div>
+    <div class="cap"><b>Überschritten</b>Ab hier gewinnt die Realität. Der einzige Zustand, in dem der Betrag selbst rot wird. Kein Minuszeichen im Zusatztext.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget done">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconPaid"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cardName">Auswärts Essen</div>
+      <div class="cardAmount">142,80 €</div>
+      <div class="stateLabel">Abgeschlossen</div>
+      <div class="restAmount restDone">57,20 € nicht verbraucht</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar pbNorm" style="width:71%"></div></div>
+    </div>
+    <div class="cap"><b>Abgeschlossen · unter Plan</b>Der Balken bleibt sichtbar und zeigt weiter den verbrauchten Anteil. Türkis, weil Sparen der Normalfall ist.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget done">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconPaid"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cardName">Auswärts Essen</div>
+      <div class="cardAmount">268,40 €</div>
+      <div class="stateLabel">Abgeschlossen</div>
+      <div class="restAmount restNeg">68,40 € über Plan</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar pbOver" style="width:100%"></div></div>
+    </div>
+    <div class="cap"><b>Abgeschlossen · über Plan</b>Häkchen bleibt türkis — die Überschreitung wurde bewusst akzeptiert. Nur Balken und Zusatztext bleiben rot.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget ghost">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconGhost"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,255,255,.25)"/></svg></div></div>
+      <div class="cardName">Auswärts Essen</div>
+      <div class="cardAmount">200,00 €</div>
+      <div class="stateLabel">Forecast</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar pbNorm" style="width:0%"></div></div>
+    </div>
+    <div class="cap"><b>Forecast</b>Auch für einen vergangenen Monat, in dem nichts ausgegeben und nichts abgeschlossen wurde.</div>
+  </div>
+
+</div>
+
+<h2>Einnahmen · zwei Zustände</h2>
+<p class="sub">
+  Gespiegelte Farblogik zu den Fixkosten: wo dort Rot für „steht noch aus“ steht,
+  steht hier Türkis für „wird erwartet“. Es gibt kein Gegenstück zu „Überschritten“ —
+  ein höherer Eingang als geplant ist nichts Schlechtes und zählt einfach voll.
+</p>
+<div class="rail">
+
+  <div class="slot">
+    <div class="card expected">
+      <div class="cardTop"><div class="cardLabel">Einnahmen</div>
+        <div class="icon iconExpected"><svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.8" fill="none" stroke="rgba(62,207,175,.7)" stroke-width="1.1"/></svg></div></div>
+      <div class="cardName">Nebenjob</div>
+      <div class="cardAmount">200,00 €</div>
+      <div class="stateLabel">Erwartet</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+    </div>
+    <div class="cap"><b>Erwartet</b>Offener Kreis statt gefülltem: wartend, nicht problematisch. Eigener Hintergrundton <code>#0D1A16</code>.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card received">
+      <div class="cardTop"><div class="cardLabel">Einnahmen</div>
+        <div class="icon iconPaid"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cardName">Nebenjob</div>
+      <div class="cardAmount">200,00 €</div>
+      <div class="stateLabel">Erhalten</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+    </div>
+    <div class="cap"><b>Erhalten</b>Sobald ein Kontoumsatz zugeordnet ist, ist die Karte nicht mehr antippbar — der Zustand kommt dann aus den Daten, nicht aus einer Geste.</div>
+  </div>
+
+</div>
+
+<h2>Attribution</h2>
+<p class="sub">Ein 5-px-Punkt in der Fußzeile, mehr nicht.</p>
+<div class="rail" style="gap:44px">
+  <div style="display:flex;align-items:center;gap:5px">
+    <div class="metaDot metaDotIch"></div>
+    <div class="metaText">Ich</div>
+    <div class="cap" style="margin:0 0 0 14px">Weiß bei 22 % — zählt voll in die Sparrate.</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:5px">
+    <div class="metaDot metaDotGem"></div>
+    <div class="metaText">Gemeinsam</div>
+    <div class="cap" style="margin:0 0 0 14px">Blau bei 38 % — zählt nur mit dem eigenen Anteil.</div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Warum „Laufend“ den Plan zeigt und nicht das Ausgegebene.</b> Bei Fixkosten und
+  Einnahmen gilt: sobald Realität da ist, gewinnt sie. Bei Budget gilt das
+  <em>nicht</em> — solange die Ausgaben unter dem Plan liegen, zeigt die Karte den
+  Plan. Sonst würde ein Topf, aus dem am Monatsanfang erst 12 € geflossen sind, so
+  aussehen, als koste er nur 12 €, und die Sparrate wäre zu optimistisch. Erst beim
+  Überschreiten kippt die Karte auf die Realität.
+</div>
+
+<div class="note warn">
+  <b>Offen für den Design-Direktor.</b> Bei sehr langen Kartennamen wird das
+  Vorschlags-Kästchen so breit, dass der Betrag daneben zusammengedrückt wird und das
+  €-Zeichen in die zweite Zeile rutscht. Die Entscheidung vom 04.08.2026 lautet:
+  die Vorschlags-Kästchen verschwinden aus der Anzeige ganz. Die sechs Badge-Farben
+  bleiben ungenutzt im Code stehen. Diese Seite zeigt die Karten deshalb bereits
+  ohne Vorschlags-Kästchen.
+</div>
+
+</body>
+</html>

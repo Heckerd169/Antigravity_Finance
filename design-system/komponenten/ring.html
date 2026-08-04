@@ -1,0 +1,184 @@
+<!-- @dsCard group="Komponenten" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Singularity Ring — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:68ch; line-height:1.6; margin:0 0 12px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:46px 0 22px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .rail { display:flex; gap:38px; flex-wrap:wrap; align-items:flex-start; }
+  .slot { width:248px; }
+  .stage { position:relative; width:248px; height:248px; }
+  .stage svg { position:absolute; inset:0; width:100%; height:100%; }
+  .arc { fill:none; stroke-width:9; stroke-linecap:round; }
+  .track { stroke:rgba(255,255,255,.05); }
+  .arcPos { stroke:var(--color-teal); }
+  .arcNeg { stroke:var(--color-red); }
+  .dot { fill:var(--text-ghost); }
+  .center { position:absolute; inset:0; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:6px; }
+  .val { font-size:34px; font-weight:200; letter-spacing:-1.8px; font-variant-numeric:tabular-nums; }
+  .vWhite { color:var(--text-primary); } .vTeal { color:var(--color-teal); } .vRed { color:var(--color-red); }
+  .lab { font-size:9px; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+         color:rgba(255,255,255,.30); }
+  .sub { font-size:11px; font-weight:500; letter-spacing:.2px; color:var(--text-muted); }
+  .subTeal { color:rgba(62,207,175,.75); } .subRed { color:rgba(255,69,58,.75); }
+  .cap { margin-top:14px; font-size:10.5px; color:var(--text-ghost); line-height:1.6; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .note { margin-top:30px; padding:14px 16px; border-left:2px solid rgba(62,207,175,.22);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:80ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+  .cmp { display:flex; gap:14px; margin-top:12px; flex-wrap:wrap; }
+  .cmp div { padding:9px 13px; border-radius:8px; font-size:11px; line-height:1.5; }
+  .bad  { background:rgba(255,69,58,.07); border:1px solid rgba(255,69,58,.2); }
+  .good { background:rgba(62,207,175,.07); border:1px solid rgba(62,207,175,.22); }
+  .tag { display:block; font-size:8.5px; letter-spacing:1px; text-transform:uppercase;
+         font-weight:600; margin-bottom:4px; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+</style>
+</head>
+<body>
+
+<h1>Singularity Ring</h1>
+<p class="lede">
+  Das Herzstück. Die Zahl in der Mitte ist die tatsächliche Sparrate des angezeigten
+  Monats, der Bogen ihr Verhältnis zur geplanten. Radius 98, Strichstärke 9, runde
+  Enden. Der Ring ist <b>interaktions-transparent</b> — das Abtasten der Jahres-Welle
+  dahinter läuft durch ihn hindurch.
+</p>
+<p class="src">Quelle: <code>src/components/singularity-ring/</code> · Design-Doku §5 — Geometrie, Transformationen und Dash-Werte 1:1</p>
+
+<h2>Die vier Zustände</h2>
+<div class="rail">
+
+  <div class="slot">
+    <div class="stage">
+      <svg viewBox="0 0 248 248">
+        <circle class="arc track" cx="124" cy="124" r="98"/>
+        <circle class="arc arcPos" cx="124" cy="124" r="98"
+                stroke-dasharray="615.752" stroke-dashoffset="368.00"
+                style="transform:rotate(90deg);transform-box:fill-box;transform-origin:center"/>
+        <circle class="dot" cx="124" cy="222" r="3.5"/>
+        <circle class="dot" cx="124" cy="26" r="3.5"/>
+      </svg>
+      <div class="center">
+        <div class="val vWhite">1.931 €</div>
+        <div class="lab">Sparrate</div>
+        <div class="sub">80 % von Plan</div>
+      </div>
+    </div>
+    <div class="cap"><b>Im Plan</b>Zwischen null und der geplanten Sparrate. Die Zahl bleibt weiß — noch kein Grund zu feiern, aber auch keiner zur Sorge. Der Bogen wächst von 6 Uhr aus nach oben.</div>
+  </div>
+
+  <div class="slot">
+    <div class="stage">
+      <svg viewBox="0 0 248 248">
+        <circle class="arc track" cx="124" cy="124" r="98"/>
+        <circle class="arc arcPos" cx="124" cy="124" r="98"
+                stroke-dasharray="615.752" stroke-dashoffset="26.96"
+                style="transform:rotate(90deg);transform-box:fill-box;transform-origin:center"/>
+        <circle class="dot" cx="124" cy="222" r="3.5"/>
+        <circle class="dot" cx="124" cy="26" r="3.5"/>
+      </svg>
+      <div class="center">
+        <div class="val vTeal">4.590 €</div>
+        <div class="lab">Sparrate</div>
+        <div class="sub subTeal">191 % von Plan</div>
+      </div>
+    </div>
+    <div class="cap"><b>Über Plan</b>Ab 12 Uhr wächst der Bogen weiter — bei 200 % ist der Kreis geschlossen. Darüber sagt die Unterzeile „&gt; 200 % von Plan“ statt einer Zahl, passend zum bereits vollen Ring.</div>
+  </div>
+
+  <div class="slot">
+    <div class="stage">
+      <svg viewBox="0 0 248 248">
+        <circle class="arc track" cx="124" cy="124" r="98"/>
+        <circle class="arc arcNeg" cx="124" cy="124" r="98"
+                stroke-dasharray="615.752" stroke-dashoffset="417.59"
+                style="transform:scaleX(-1) rotate(90deg);transform-box:fill-box;transform-origin:center"/>
+        <circle class="dot" cx="124" cy="222" r="3.5"/>
+        <circle class="dot" cx="124" cy="26" r="3.5"/>
+      </svg>
+      <div class="center">
+        <div class="val vRed">−1.223 €</div>
+        <div class="lab">Sparrate</div>
+        <div class="sub subRed">−64 % von Plan</div>
+      </div>
+    </div>
+    <div class="cap"><b>Negativ</b>Der rote Bogen läuft in die <em>andere</em> Richtung — gespiegelt über <code>scaleX(-1)</code>. Er endet spätestens bei 12 Uhr, also nach maximal einem halben Kreis.</div>
+  </div>
+
+  <div class="slot">
+    <div class="stage">
+      <svg viewBox="0 0 248 248">
+        <circle class="arc track" cx="124" cy="124" r="98"/>
+        <circle class="dot" cx="124" cy="222" r="3.5"/>
+        <circle class="dot" cx="124" cy="26" r="3.5"/>
+      </svg>
+      <div class="center">
+        <div class="val vRed">−1.223 €</div>
+        <div class="lab">Sparrate</div>
+        <div class="sub subRed">−1.278 € unter Plan</div>
+      </div>
+    </div>
+    <div class="cap"><b>Sonderfall: Plan unter 100 €</b>Nur die Spur, keine Füllung. Bei einem Plan nahe null wäre jede Prozentangabe irreführend — der Ring wird zum bloßen Rahmen für eine ehrliche Euro-Aussage.</div>
+  </div>
+
+</div>
+
+<div class="note">
+  <b>Warum der Bogen bei einem winzigen Plan gar nichts mehr füllt.</b> Der Bogen
+  rechnet Ist geteilt durch Plan. Steht im Nenner eine sehr kleine oder negative Zahl,
+  kippt das Verhältnis ins Absurde: 55 € Plan und 1.200 € Ist wären 2.200 %, ein
+  negativer Plan würde das Verhältnis sogar umdrehen. Statt eine Quote vorzutäuschen,
+  entkoppelt sich der Bogen und zeigt nur noch die Spur. Die Aussage wandert
+  vollständig in die Euro-Angabe darunter.
+</div>
+
+<div class="note warn">
+  <b>Offene Entscheidung für den Design-Direktor · Fehler 2 vom 04.08.2026.</b>
+  Der vierte Zustand oben zeigt bereits den <em>Vorschlag</em>. Heute steht dort etwas
+  anderes, und es ist falsch:
+  <div class="cmp">
+    <div class="bad"><span class="tag" style="color:rgba(255,69,58,.8)">heute in der App</span>
+      Plan fast 0 € — −1.223 € gespart<br>
+      <span style="color:var(--text-ghost)">Man spart keine minus 1.223 €. Der Text unterstellt ein positives Ist.</span></div>
+    <div class="good"><span class="tag" style="color:rgba(62,207,175,.8)">Vorschlag</span>
+      −1.278 € unter Plan<br>
+      <span style="color:var(--text-ghost)">Eine Regel statt zweier Textzweige, vorzeichensicher.</span></div>
+  </div>
+  <div style="margin-top:12px">
+    Vorgeschlagen sind drei Fälle: <code>+X € über Plan</code> (türkis),
+    <code>−X € unter Plan</code> (rot), <code>genau nach Plan</code> (neutral).
+    <b>Offen ist der dritte:</b> Braucht Gleichstand eine eigene Formulierung, oder
+    darf dort <code>+0 € über Plan</code> stehen?
+  </div>
+</div>
+
+<div class="note" style="border-left-color:rgba(255,255,255,.14);background:rgba(255,255,255,.02)">
+  <b>Was der Ring bewusst nicht hat:</b> keinen Leuchteffekt, keinen zweiten Ring für
+  den Überlauf, keinen Prozentwert in der Bogen-Geometrie und keinen Schieberegler.
+  Der Schieberegler im alten Prototyp war Werkzeug, nie Produkt.
+</div>
+
+</body>
+</html>

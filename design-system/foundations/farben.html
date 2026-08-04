@@ -1,0 +1,160 @@
+<!-- @dsCard group="Grundlagen" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Farben — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
+    --bg-card-paid:#0A140E; --bg-card-over:#160A08; --bg-card-ghost:#181818;
+    --color-teal:#3ECFAF; --color-red:#FF453A;
+    --color-gold:rgba(255,200,60,.6); --color-blue-dot:rgba(100,168,240,.38);
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
+    --border-red:rgba(255,69,58,.18);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:66ch; line-height:1.6; margin:0 0 12px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:44px 0 16px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:12px; }
+  .tok { background:var(--bg-card); border:1px solid var(--border-subtle);
+         border-radius:12px; padding:0; overflow:hidden; }
+  .chip { height:76px; display:flex; align-items:flex-end; padding:9px 11px; }
+  .chip.checker {
+    background-image:linear-gradient(45deg,#1a1a1c 25%,transparent 25%,transparent 75%,#1a1a1c 75%),
+                     linear-gradient(45deg,#1a1a1c 25%,transparent 25%,transparent 75%,#1a1a1c 75%);
+    background-size:12px 12px; background-position:0 0,6px 6px; background-color:#0D0D0F;
+  }
+  .chip span { font-size:9px; letter-spacing:.8px; text-transform:uppercase;
+               color:rgba(255,255,255,.5); mix-blend-mode:difference; }
+  .meta { padding:11px 12px 13px; }
+  .name { font-size:11.5px; font-weight:500; letter-spacing:-.1px; margin-bottom:3px;
+          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .val  { font-size:10px; color:var(--text-muted); margin-bottom:7px;
+          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .use  { font-size:10.5px; color:var(--text-ghost); line-height:1.5; }
+  .note { margin-top:18px; padding:14px 16px; border-left:2px solid var(--border-teal);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:78ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .hue { display:flex; gap:0; border-radius:10px; overflow:hidden; margin-top:4px; }
+  .hue div { flex:1; height:52px; display:flex; align-items:center; justify-content:center;
+             font-size:9px; letter-spacing:.5px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<h1>Farben</h1>
+<p class="lede">
+  Sechzehn Grundtöne plus sechs Badge-Farben. Die Palette ist bewusst schmal:
+  Türkis heißt „erledigt oder positiv“, Rot heißt „offen oder negativ“, alles andere
+  ist Grauwert. Gold ist ausschließlich Vorjahres-Referenz, Blau ausschließlich
+  Attribution „Gemeinsam“.
+</p>
+<p class="src">Quelle: <code>src/styles/tokens.css</code> · Design-Doku §3 — Werte 1:1, nicht nachgebaut</p>
+
+<h2>Flächen</h2>
+<div class="grid">
+  <div class="tok"><div class="chip" style="background:#0D0D0F"><span>0D0D0F</span></div>
+    <div class="meta"><div class="name">--bg-primary</div><div class="val">#0D0D0F</div>
+    <div class="use">App-Hintergrund. Die einzige Fläche, die den ganzen Screen füllt.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#141416"><span>141416</span></div>
+    <div class="meta"><div class="name">--bg-card</div><div class="val">#141416</div>
+    <div class="use">Karten-Hintergrund neutral, vor jeder Zustandsfärbung.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#160D0D"><span>160D0D</span></div>
+    <div class="meta"><div class="name">--bg-card-open</div><div class="val">#160D0D</div>
+    <div class="use">Karte offen bzw. laufend. Rot nur als Ahnung, nicht als Alarm.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#0A140E"><span>0A140E</span></div>
+    <div class="meta"><div class="name">--bg-card-paid</div><div class="val">#0A140E</div>
+    <div class="use">Karte bezahlt, erhalten oder abgeschlossen.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#160A08"><span>160A08</span></div>
+    <div class="meta"><div class="name">--bg-card-over</div><div class="val">#160A08</div>
+    <div class="use">Budget überschritten — der einzige Zustand mit spürbarer Wärme.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#181818"><span>181818</span></div>
+    <div class="meta"><div class="name">--bg-card-ghost</div><div class="val">#181818</div>
+    <div class="use">Ghost / Forecast. Farblos, weil noch nichts passiert ist.</div></div></div>
+</div>
+
+<h2>Bedeutungsträger</h2>
+<div class="grid">
+  <div class="tok"><div class="chip" style="background:#3ECFAF"><span>3ECFAF</span></div>
+    <div class="meta"><div class="name">--color-teal</div><div class="val">#3ECFAF</div>
+    <div class="use">Positiv, bezahlt, Sparrate im Plan, Einnahmen, realisierter Teil der Welle.</div></div></div>
+  <div class="tok"><div class="chip" style="background:#FF453A"><span>FF453A</span></div>
+    <div class="meta"><div class="name">--color-red</div><div class="val">#FF453A</div>
+    <div class="use">Negativ, offen, Defizit, Kurvenabschnitt unter der Null-Linie.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(255,200,60,.6)"><span>Gold 60 %</span></div>
+    <div class="meta"><div class="name">--color-gold</div><div class="val">rgba(255,200,60,.6)</div>
+    <div class="use">Ausschließlich Vorjahres-Referenz und Ereignisse. Nie Status.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(100,168,240,.38)"><span>Blau 38 %</span></div>
+    <div class="meta"><div class="name">--color-blue-dot</div><div class="val">rgba(100,168,240,.38)</div>
+    <div class="use">Attributions-Punkt „Gemeinsam“. Kommt sonst nirgends vor.</div></div></div>
+</div>
+
+<h2>Text</h2>
+<div class="grid">
+  <div class="tok"><div class="chip" style="background:#fff"><span style="color:#000;mix-blend-mode:normal">FFFFFF</span></div>
+    <div class="meta"><div class="name">--text-primary</div><div class="val">#ffffff</div>
+    <div class="use">Aktive, abgeschlossene Zustände. Volles Weiß heißt: hier ist etwas passiert.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.45)"><span>Weiß 45 %</span></div>
+    <div class="meta"><div class="name">--text-muted</div><div class="val">rgba(255,255,255,.45)</div>
+    <div class="use">Offene, noch erwartete Zustände.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.22)"><span>Weiß 22 %</span></div>
+    <div class="meta"><div class="name">--text-ghost</div><div class="val">rgba(255,255,255,.22)</div>
+    <div class="use">Labels, Metadaten, zugeordnete Rohmasse-Fragmente.</div></div></div>
+</div>
+
+<h2>Ränder</h2>
+<div class="grid">
+  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.07)"><span>Weiß 7 %</span></div>
+    <div class="meta"><div class="name">--border-subtle</div><div class="val">rgba(255,255,255,.07)</div>
+    <div class="use">Standard-Rand jeder Karte.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(62,207,175,.22)"><span>Türkis 22 %</span></div>
+    <div class="meta"><div class="name">--border-teal</div><div class="val">rgba(62,207,175,.22)</div>
+    <div class="use">Rand im Bezahlt-/Erhalten-/Abgeschlossen-Zustand.</div></div></div>
+  <div class="tok"><div class="chip checker" style="background-color:rgba(255,69,58,.18)"><span>Rot 18 %</span></div>
+    <div class="meta"><div class="name">--border-red</div><div class="val">rgba(255,69,58,.18)</div>
+    <div class="use">Rand im Offen-/Laufend-Zustand.</div></div></div>
+</div>
+
+<h2>Badge-Farbtöne · sechs Stück</h2>
+<div class="hue">
+  <div style="background:rgba(255,200,60,.30);color:rgba(255,200,60,.95)">1 · Gold</div>
+  <div style="background:rgba(255,150,90,.30);color:rgba(255,150,90,.95)">2 · Orange</div>
+  <div style="background:rgba(170,200,110,.30);color:rgba(170,200,110,.95)">3 · Oliv</div>
+  <div style="background:rgba(100,168,240,.30);color:rgba(100,168,240,.95)">4 · Blau</div>
+  <div style="background:rgba(170,130,255,.30);color:rgba(170,130,255,.95)">5 · Violett</div>
+  <div style="background:rgba(240,120,190,.30);color:rgba(240,120,190,.95)">6 · Magenta</div>
+</div>
+<div class="note">
+  <b>Türkis und Rot sind hier bewusst ausgespart.</b> Beide tragen in der App
+  Statusbedeutung — ein Badge in Türkis würde „bezahlt“ suggerieren, wo nur eine
+  Zuordnung vorgeschlagen wird. Welchen der sechs Töne ein Badge bekommt, entscheidet
+  der Kartenname deterministisch; dieselbe Karte hat immer dieselbe Farbe, ohne dass
+  eine Farbe in der Datenbank gespeichert wird. Die Deckkraft bleibt in allen sechs
+  Fällen gleich: <code>.08</code> Fläche, <code>.5</code> Text, <code>.15</code> Rahmen.
+  Ton 1 ist das bisherige generische Gold — ein Sechstel der Karten sieht damit
+  unverändert aus.
+</div>
+
+<div class="note" style="border-left-color:rgba(255,255,255,.14);background:rgba(255,255,255,.02)">
+  <b>Zwei Töne stehen nicht in dieser Tabelle</b>, weil sie keine eigene Farbe sind,
+  sondern eine Deckkraft-Regel: <code>--fragment-hue</code> ist der gemeinsame
+  Grau-Grundton <em>aller</em> Rohmasse-Fragmente. Zugeordnet und Übertrag unterscheiden
+  sich nur über die Deckkraft (0,22 gegenüber 0,45) und ein Textkürzel — nicht über
+  den Farbton. <code>--wave-opacity</code> (0,80) ist der festgelegte Produktionswert
+  der Jahres-Welle.
+</div>
+
+</body>
+</html>
