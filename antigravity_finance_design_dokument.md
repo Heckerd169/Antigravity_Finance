@@ -1,8 +1,8 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.5 (V2 · v2-02 Doku-Nachzug)
-**Status:** Freigegeben — Schema-Doku v3.1; V2-Patch M3 (Welle/Popup) eingespielt
-**Datum:** 26. Juni 2026
+**Version:** 3.1.6 (V2 · v2-07 Doku-Nachzug)
+**Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
+**Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
 > **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
@@ -18,6 +18,8 @@
 > **Changelog v3.1.4 (24.07.2026):** §11 um Kurations-Leitfaden „Behandlung von Erstattungen" ergänzt (Beschluss Optionspapier Erstattungen, 24.07.2026).
 >
 > **Changelog v3.1.5 (24.07.2026):** §7 Karten-Lebenszyklus (Beenden/Löschen/Papierkorb ersetzt Verbergen, Sprint v2-05).
+>
+> **Changelog v3.1.6 (25.07.2026, Sprint v2-07):** §8 Übertrags-Schalter der Rohmasse (C1 — Standard „aus", Zähler am Schalter, erfasst beide `transfer_type`-Werte); §8 Backfill-Toast-Wortlaut ab 50 nachgepflegten IBANs (C2); §8 Monats-Scope server-seitig statt als JS-Nachfilter (P0-Bugfix, siehe `sprints/sprint_v2-07_review.md` §3); §11 Badge-Farbe karten-spezifisch über sechs deterministische Töne (A1 — schließt Sprint-8-OQ1); §3 sechs neue `--badge-hue-*`-Tokens.
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -232,6 +234,7 @@ Claude Code soll dieses Feld in V1 ignorieren.
 | `--border-red` | `rgba(255,69,58,.18)` | Offen-Border |
 | `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
 | `--fragment-hue` | gemeinsamer Grau-Grundton | Rohmasse-Fragmente §8 (N5) — Unterscheidung nur via Opacity/Badge |
+| `--badge-hue-1` … `--badge-hue-6` | Gold `255,200,60` · Orange `255,150,90` · Oliv `170,200,110` · Blau `100,168,240` · Violett `170,130,255` · Magenta `240,120,190` | KI-Vorschlag-Badge §11 (A1) — der Kartenname wählt den Ton deterministisch; Deckkraft unverändert `.08` Fläche / `.5` Text / `.15` Rahmen. Türkis und Rot bewusst ausgespart (Statusfarben). |
 
 ### Typographie
 
@@ -762,6 +765,8 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 
 **Backfill-Report-Toast (Sprint 9):** Nach einem CSV-Import erscheint direkt unter dem Portal (Drop-Zone) eine kurze Quittung, sofern mindestens einer der Counter `iban_backfilled_count`, `internal_transfers_count`, `links_removed_for_transfers_count` > 0 ist. Der Toast zeigt nur die Counter > 0, je eine Kurzzeile (`N Fragmente mit IBAN ergänzt` / `M Bewegungen als Transfer erkannt` / `K Karten-Zuordnungen gelöst`), ist 4 s sichtbar (Fade-In/Fade-Out) und nicht interaktiv. Bei sukzessivem Re-Import zeigt jeder Toast nur die Counter des aktuellen Imports, nicht kumulativ.
 
+**Wortlaut bei hohem Zähler (v2-07, C2):** Erreicht oder überschreitet `iban_backfilled_count` den Wert **50**, lautet die Zeile `Bestehende Fragmente nachgepflegt` — ohne Zahl. Darunter bleibt sie unverändert `N Fragmente mit IBAN ergänzt`. Grund: ein Re-Import über den Gesamtbestand meldet sonst Zeilen wie „544 Fragmente mit IBAN ergänzt" — fachlich korrekt, in der Wirkung aber ein Großereignis, während lediglich ein berechnungs-irrelevantes Feld nachgetragen wurde. Die Regel gilt **nur** für die IBAN-Zeile; die drei übrigen Zeilen behalten Wortlaut und Zahl, weil dort die Zahl inhaltlich relevant ist. Die Schwelle ist reine Anzeige-Sprache ohne DB-Gegenstück und steht daher bewusst **nicht** in `app_config`.
+
 ### Karussell (Mitte)
 
 - Sortierung: Fixkosten → Einnahmen → Budget
@@ -781,12 +786,17 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Vertikales Scrollen, Mausrad / Scrollbar (`3px`, dezent)
 - Keine Chevrons
 - Fragmente sind Drag-Quellen
-- **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7).
+- **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7). **Umsetzungs-Nachtrag (v2-07, P0):** Der Monats-Scope wird seit v2-07 **server-seitig** abgefragt statt nachträglich in der Anwendung gefiltert. Bis dahin holte die App alle Fragmente aller Monate und filterte anschließend — was ab einem Gesamtbestand von 1000 Fragmenten stillschweigend abschnitt (Befund und Messung: `sprints/sprint_v2-07_review.md` §3). Zusätzlich zum Monats-Scope läuft eine zweite, link-orientierte Abfrage (`assigned_month` = angezeigter Monat), damit ein Fragment aus einem anderen Monat weiterhin als *verknüpftes Fragment auf der Karte* erscheint. An der sichtbaren Regel ändert sich nichts.
 - Zugeordnete Fragmente: `opacity: 0.22`, `pointer-events: none`
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
 - **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment hat **kein** Tap-/Drag-Verhalten (Cursor `default`, `pointer-events: none`). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
+- **Übertrags-Schalter (v2-07, C1):** Fragmente mit gesetztem `transfer_type` (`INTERNAL_TRANSFER` **oder** `ASSET_REALLOCATION`) sind aus der Arbeitsfläche ausgeblendet. Sie erscheinen nur, wenn der Schalter **„Überträge anzeigen"** eingeschaltet ist; **Standard ist „aus"**. Begründung: ein Fragment mit gesetztem `transfer_type` kann per Daten-Invariante nie einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`) und gehört deshalb nicht auf die Fläche, auf der kuratiert wird.
+  **Ort und Form:** rechtsbündig in derselben Zeile wie die Zonen-Überschrift „ROHMASSE" — bewusst nicht in einer eigenen Zeile, damit die Oberkanten von Portal, Karussell und Stack bündig bleiben. Beschriftung `Überträge anzeigen (N)`, wobei **N die Anzahl der Übertrags-Fragmente des angezeigten Monats** ist (beide Typen zusammen, unabhängig von der Schalterstellung). Enthält der Monat keine Überträge, wird der Schalter **nicht gerendert**.
+  **Invarianten:** Der Schalter filtert ausschließlich die Stack-Darstellung. Die Sortierregel ist unberührt — bei eingeschaltetem Schalter steht die Liste exakt so da wie vor v2-07. Ebenso unberührt: die Darstellung eines sichtbaren Übertrags (Opacity `0.45`, Badge „TRANSFER", kein Drag/Tap), die Status-Hierarchie aus Sprint 9, die Drop-Ziele des Karussells und die „N Fragmente offen"-Zählung der Header-Flanke (die zählt `UNASSIGNED` und hat Überträge nie enthalten).
+  **Verhalten:** rein clientseitig, ohne Server-Roundtrip und ohne URL-Parameter. Die Stellung überlebt einen Monatswechsel innerhalb der Sitzung — sie ist eine Ansichts-Vorliebe, kein monatsspezifischer Zustand (bewusste Abweichung vom LL-5-Reset-Muster). Ein Neuladen der Seite setzt auf „aus" zurück; es findet keine Persistierung statt.
+  **Folge:** Wird ein Fragment bei ausgeschaltetem Schalter als Umschichtung markiert, verschwindet es unmittelbar aus dem Stack. Das ist die beabsichtigte Wirkung; die Rücknahme der Markierung ist folgerichtig nur bei eingeschaltetem Schalter erreichbar.
 - **Grundton-Vereinheitlichung (N5):** Alle Rohmasse-Fragmente teilen **einen gemeinsamen Grau-Grundton-Token** (zugeordnet *und* `INTERNAL_TRANSFER`). Die Unterscheidung läuft ausschließlich über **Opacity** (zugeordnet `0.22` / Transfer `0.45`) **+ das „TRANSFER"-Badge** (Grau-Soft). Kein separater Hue je Zustand — das behebt zwei leicht abweichende Grau-Töne nebeneinander. Der Yellow-Soft (KI-Vorschlag-Badge) bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag.
 
 ### Was explizit NICHT
@@ -1083,7 +1093,11 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Betrag | `16px`, `font-weight: 200`, `tabular-nums` | Negativ: `#FF453A` · Positiv: `#3ECFAF` |
 | Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated |
 | Datum | `9px` | `rgba(255,255,255,.15)` |
-| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | Karten-spezifisch |
+| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | Karten-spezifisch — einer von sechs `--badge-hue-*`-Tönen (§3), deterministisch aus dem Kartennamen |
+
+**Badge-Farbe (v2-07, A1):** Welchen der sechs Töne ein Badge trägt, bestimmt allein der **Kartenname** — über eine deterministische Funktion, nicht über eine Datenbank-Spalte. Damit ist die Farbe stabil über Renders, Sitzungen und Geräte hinweg und unabhängig von Anzahl, Reihenfolge oder Anlage-Zeitpunkt der Karten; eine Karte behält ihre Farbe, wenn andere Karten angelegt oder gelöscht werden. Groß-/Kleinschreibung und Randleerzeichen im Namen ändern den Ton nicht. Bei mehr Karten als Tönen teilen sich Karten einen Ton — die Farbe ist ein **Gruppierungs-Hinweis, kein Identitätsmerkmal**; der Kartenname steht daneben. Deckkraft, Typografie und Geometrie des Badges sind unverändert; variabel ist ausschließlich der Farbton. Das **TRANSFER-Badge ist vom Mapping ausgenommen** und behält den neutralen Grau-Soft-Ton auf `--fragment-hue` (AD5, Sprint 9: Transfer ist Fakt, kein Vorschlag).
+
+*Historie:* Sprint 8 (OQ1) hatte übergangsweise **einen** generischen Gold-Ton für alle Karten gesetzt und die karten-spezifische Farbe als V2 vorgemerkt. Die Tabellen-Zelle „Karten-spezifisch" war seither die unerfüllte Soll-Aussage; v2-07 löst sie ein. `--badge-hue-1` ist genau der Gold-Ton aus Sprint 8.
 
 **Drag-Verhalten:**
 

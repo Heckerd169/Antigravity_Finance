@@ -3,7 +3,12 @@
 **Erzeugt von:** Claude Code (LL-16 — Design-/Schema-Doku werden nie direkt editiert)
 **Ziel-Dokument:** `antigravity_finance_design_dokument.md` (aktuell v3.1.5)
 **Datum:** 25. Juli 2026
-**Anzuwenden nach:** Sprint-v2-07-Approval
+**Status:** ✅ **ANGEWENDET** — alle fünf Patches sind in der Design-Doku
+eingespielt, Version steht auf **3.1.6**. Diese Datei ist ab jetzt reines
+Archiv (Nachvollziehbarkeit, welcher Patch woher kam); die maßgebliche Quelle
+ist die Design-Doku selbst. Mit angewendet: CLAUDE.md §3 (Dateistruktur),
+§4 (Sprint-Tabelle + Doku-Stand), §7 (neue Regel 19 = LL-21) und §10
+(Übergabe-Log-Eintrag Sprint v2-07).
 
 **Schema-Doku:** kein Patch — der Sprint fasst das Schema nicht an (keine Tabelle,
 Spalte, RPC, View, Trigger oder Enum berührt).

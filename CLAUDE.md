@@ -73,7 +73,7 @@ Antigravity_Finance/
 │   │   ├── singularity-ring/                          ← entsteht in Sprint 2
 │   │   ├── header-timeline/                           ← Sprint 3
 │   │   ├── cards/                                     ← Sprint 4
-│   │   ├── interaction-zone/                          ← Sprint 5
+│   │   ├── interaction-zone/                          ← Sprint 5; badge-hue.ts = deterministisches Kartenname→Farbton-Mapping (v2-07 A1)
 │   │   ├── welle/                                     ← Jahres-Welle §9 (v2-02); drivers.ts = B2-Heuristik-Anbindung (v2-06, ersetzt drivers-stub.ts)
 │   │   └── treppe/                                    ← Sprint 9 (ersetzt durch components/welle/ seit v2-02)
 │   ├── lib/
@@ -138,8 +138,9 @@ Status-Werte: `⏳ TBD` · `🟡 In Progress` · `🟢 Done` · `🔴 Blocked`
 | v2-04 | Mehrkonten Stufe 1: DKB_VISA + ASSET_REALLOCATION + Hash-Fix | 🟢 Done | sprints/sprint_v2-04_briefing.md | 15.07.2026 |
 | v2-05 | Karten-Lebenszyklus: Beenden/Löschen/Papierkorb ersetzt Verbergen (M1/M2) + Übungs-DB-Aufbau | 🟢 Done | V2/architekt_stufe1_karten_loeschen_m1_m2.md (Stufe-1-Papier = Briefing) | 24.07.2026 |
 | v2-06 | B2 Abweichungs-Treiber (Jahres-RPC + Modul-Tausch) | 🟢 Done | V2/architekt_konzept_b2_treiber_heuristik.md (Konzept-Papier = Briefing) | 25.07.2026 |
+| v2-07 | Rohmasse aufräumen: C1 Übertrags-Schalter + C2 Toast-Wortlaut + A1 Badge-Farben + P0 Lade-Bugfix | 🟢 Done | sprints/sprint_v2-07_briefing.md | 25.07.2026 (Merge durch Claude Code auf User-Anweisung; Browser-Smoke nachgelagert) |
 
-**Doku-Stand nach v2-04:** Design-Doku v3.1.5 (`antigravity_finance_design_dokument.md`), Schema-Doku v3.3 (`antigravity_finance_schema_summary.md`). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
+**Doku-Stand nach v2-07:** Design-Doku **v3.1.6** (`antigravity_finance_design_dokument.md`), Schema-Doku **v3.4** (`antigravity_finance_schema_summary.md`, seit v2-07 unverändert — der Sprint fasste das Schema nicht an). **N4b / N5 / B3:** durch DD-Cluster 3 entschieden (04.07.2026), umgesetzt in v2-03.
 
 **V2-Test-Projekt-Gate (Option A, 26.06.2026):** Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt auf Prod mit manuellem Browser-Smoke (Sparrate-Vorher/Nachher als Wächter). Der **erste** Sprint mit Schema-/RPC-Eingriff **oder** mit automatisierten, daten-mutierenden E2E-Läufen stellt zuerst ein Free-Tier-Test-Projekt auf (Init-1/Init-2: Schema-Reproduktion + deterministischer Anker) und fährt Migrationen erst als Dry-Run dort, dann auf Live. **Migration nie blind auf Prod** — Zwei-Personen-Prinzip + §2.1 nicht verhandelbar.
 
@@ -402,6 +403,23 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     vor Implementierung, auch wenn die §-Lesart eindeutig erscheint (LL-13).
     Zusätzlich: datenlose Referenz-Werte (alle-NULL-Vorjahr) als „keine
     Anzeige" behandeln, nicht als 0. (LL-20)
+19. **Unlimitierte Selects gegen wachsende Tabellen sind grundsätzlich
+    verdächtig.** PostgREST liefert höchstens **1000 Zeilen** je Antwort —
+    ohne Fehler, ohne Warnung, einfach kürzer. In v2-07 fiel dadurch die
+    Rohmasse ab dem 12.01.2026 komplett aus: der Fragment-Loader holte alle
+    Fragmente aller Monate und filterte erst danach auf den Monat; der
+    2025er-Import hatte den Bestand von 544 auf 1508 gehoben. Der Fund war
+    Zufall (Browser-Verifikation eines anderen Features), nicht das Ergebnis
+    einer Prüfung. **Regel:** Jede Abfrage gegen `fragments`,
+    `card_fragment_links` oder eine andere mit den Jahren wachsende Tabelle
+    trägt entweder eine server-seitige Eingrenzung (Monat, Karte, Status)
+    oder eine bewusst begründete Obergrenze. Ein nachgelagerter JS-Filter
+    ist keine Eingrenzung — er sieht nur, was die Antwort übrig ließ.
+    **Diagnose-Reihenfolge bei „Daten fehlen in der UI":** erst prüfen, ob
+    die Zahl der geladenen Zeilen an einer runden Grenze klebt, dann den
+    Rest. Und: Werte, die per RPC in der Datenbank gerechnet werden
+    (Sparrate, Ring, Welle, Treiber), sind von solchen Abschneidungen **nie**
+    betroffen — diese Trennung ist der schnellste erste Prüfschritt. (LL-21)
 
 ### Datei-Konventionen
 - Komponente pro Ordner: `components/<komponente>/index.tsx`,
@@ -1776,3 +1794,64 @@ kuratierten Monat.
 **Offen:** DD-Feinschliff (Label-Format, Leer-Wording, E4-Rohmasse-Pseudo-Treiber
 — E4 bewusst NICHT umgesetzt) · Karten-Rückdatierung 2025 weiterhin offen ·
 `net_estimation_brackets`-Seed der Übungs-DB weiterhin leer.
+
+### Sprint v2-07 · DONE 25. Juli 2026
+
+**Komponente:** „Rohmasse aufräumen" — drei Roadmap-Punkte des Kleinkram-Pakets
+(C1 · C2 · A1) plus ein während des Sprints gefundener Lade-Fehler (P0). Reiner
+Frontend-Sprint: kein Schema-Eingriff, keine Migration, kein DB-Schreibzugriff —
+der Übungs-DB-Tausch entfiel deshalb. Branch
+`sprint/v2-07-rohmasse-aufraeumen`, per Vorspulen auf `main` (`c8ff08c`).
+
+**C1 — Übertrags-Schalter (§8, schließt Sprint-9-V8''):** Fragmente mit
+gesetztem `transfer_type` (beide Werte) sind aus der Arbeitsfläche ausgeblendet;
+sichtbar nur über den Schalter „Überträge anzeigen (N)" in der Zonen-Kopfzeile,
+Standard „aus". N = Übertrags-Bestand des Monats, schalterstellungs-unabhängig;
+kein Schalter, wenn der Monat keine Überträge hat. Rein clientseitig, kein
+Roundtrip, kein URL-Parameter. **Bewusst kein LL-5-Reset** beim Monatswechsel —
+eine Ansichts-Vorliebe ist kein monatsspezifischer Zustand. Prädikat
+`isTransferFragment` als einzige Quelle für Filter *und* Darstellungs-Hierarchie,
+damit beide nicht auseinanderlaufen können.
+
+**C2 — Backfill-Toast (§8, schließt Sprint-9-V9''):** ab 50 nachgepflegten IBANs
+„Bestehende Fragmente nachgepflegt" ohne Zahl; die drei übrigen Zeilen behalten
+Wortlaut und Zahl (User-Entscheid E3). Schwelle als Modul-Konstante, **bewusst
+nicht** in `app_config` — reine Anzeige-Sprache ohne DB-Gegenstück; eine
+`app_config`-Zeile würde eine Kopplung vortäuschen, die nicht existiert
+(Abgrenzung zu Regel 5 / LL-17).
+
+**A1 — Badge-Farben (§11, schließt Sprint-8-OQ1 / V2-C / V3''):** sechs
+`--badge-hue-*`-Tokens, Zuordnung deterministisch aus dem normalisierten
+Kartennamen (FNV-1a in `badge-hue.ts`) — **ohne** `cards.color`-Spalte, also
+ohne Schema-Eingriff. Deckkraft/Typo/Geometrie unverändert, nur der Farbton
+variiert; TRANSFER-Badge bleibt ausgenommen (AD5). Türkis und Rot ausgespart.
+Befund am Rande: §11 forderte „Karten-spezifisch" **schon immer** — Sprint 8
+hatte mit dem generischen Gold nur einen Zwischenstand geliefert.
+
+**P0 — Lade-Fehler (Scope-Erweiterung, User-freigegeben):** siehe **LL-21** in
+§7. Die Rohmasse war ab dem 12.01.2026 leer und alle vier
+`card_fragment_links` im Karten-Overlay unsichtbar, weil der Fragment-Loader in
+die 1000-Zeilen-Grenze lief. Behoben durch zwei monats-enge Abfragen (Monat +
+`assigned_month`). Sparrate/Ring/Welle waren nie betroffen. Belegt gegen die
+DB-Wahrheit: 2026-02 `0 → 42`, 2026-03 `0 → 56`, 2026-05 `0 → 56`,
+2026-07 `0 → 52` — jeweils deckungsgleich mit der Zahl der Nicht-Überträge.
+
+**Verifikation:** Prüfstrecke nach jeder Phase grün (`tsc` 0 · Lint 0 · Build 0 ·
+`pnpm test:visual` 3/3). Zusätzlich: Hash-Determinismus gegen alle 31 realen
+Kartennamen (1000 Wiederholungen, Reihenfolgen-/Mengen-Unabhängigkeit,
+Normalisierung; Verteilung 4/7/9/5/3/3, kein Ton leer) und eine befristete
+read-only Playwright-Spezifikation im Browser (Schalter-Zählregel, keine
+Server-Roundtrips, Monatswechsel 36 → 25, Header-Flanke = DB-Wahrheit,
+Badge-Farben gegen die Statusfarben geprüft). Anker vor *und* nach dem Eingriff
+in DB und App gemessen: 1.931,18 · −86,77 · 4.589,53 · Goldlinie 48.445,32.
+Bundle: Route `/` 29,2 → 29,6 kB, First Load 181 kB unverändert.
+
+**Werkzeug-Hinweis:** `next lint` scheitert **innerhalb eines verschachtelten
+Git-Worktrees** an doppelt aufgelöster ESLint-Konfiguration (Eltern-Repo +
+Worktree). Ersatz ohne Konfigurationsänderung:
+`npx eslint src --ext .ts,.tsx --resolve-plugins-relative-to .`
+
+**Offen nach v2-07:** Badge-Überlauf bei sehr langen Kartennamen (Altbestand,
+nicht von A1 verursacht — kürzen oder umbrechen ist eine DD-Frage) ·
+DD-Feinschliff Palette und Schalter-Sprache (beides reiner Token-/Text-Tausch) ·
+unverändert offen: M2- und B2-Feinschliff, M5, E4, Karten-Rückdatierung 2025.
