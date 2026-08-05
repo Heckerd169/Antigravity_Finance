@@ -163,22 +163,31 @@ Normalzustand.
 
 ## 4. Anker vorher/nachher — Produktion
 
-Produktion wurde in diesem Sprint **ausschließlich lesend** berührt.
+**Migration am 05.08.2026 nach ausdrücklicher Freigabe („Migration go") angewendet.**
+Unmittelbar davor wurde der Anker erneut gemessen und die alte Funktionsdefinition als
+Rückfallweg gesichert (Prüfsumme `fb0363df…`, 2.408 Zeichen). Sie wurde nicht gebraucht.
 
-| Monat 2026 | Ist vorher | Ist jetzt | erwartet **nach** der Migration |
-|---|---:|---:|---:|
-| Januar–April | 1.931,18 € | 1.931,18 € | unverändert |
-| Mai | −86,77 € | −86,77 € | unverändert |
-| Juni | 4.208,76 € | 4.208,76 € | unverändert |
-| **Juli** | **−1.222,75 €** | **−1.222,75 €** | **−322,75 €** *(+900,00 €)* |
-| August | 1.761,08 € | 1.761,08 € | unverändert |
-| September–Dezember | 1.824,08 € | 1.824,08 € | unverändert |
+| Monat 2026 | vorher | nachher | Differenz | Urteil |
+|---|---:|---:|---:|---|
+| Januar–April | 1.931,18 € | 1.931,18 € | 0,00 | unverändert ✓ |
+| Mai | −86,77 € | −86,77 € | 0,00 | unverändert ✓ |
+| Juni | 4.208,76 € | 4.208,76 € | 0,00 | unverändert ✓ |
+| **Juli** | **−1.222,75 €** | **−322,75 €** | **+900,00** | **exakt der Prüfanker** ✓ |
+| August | 1.761,08 € | 1.761,08 € | 0,00 | unverändert ✓ |
+| September–Dezember | 1.824,08 € | 1.824,08 € | 0,00 | unverändert ✓ |
 
-Zusätzlich verifiziert: Die Produktiv-Funktion trägt **noch** `SUM(ABS(f.amount))` —
-belegt per `pg_get_functiondef`. Die Migration ist dort nicht angewendet.
+Der erwartete Wert stand **vor** dem Eingriff fest (Befund §8) und wurde auf den Cent
+getroffen. Elf von zwölf Monaten bewegen sich um exakt 0,00 €.
 
-**Bewegt sich nach der Anwendung ein anderer Monat als Juli, ist etwas falsch →
-zurückrollen, nicht erklären.**
+**Zwei zusätzliche Nachprüfungen:**
+
+- **Die Karte selbst** — „Aline Geburtstag", Juli: Plan 150,00 € · Betrag **168,11 €** ·
+  Fragment-Netto −168,11 €. Identisch zum Probelauf T7 auf der Übungs-Datenbank.
+- **B2-Treiber-Invariante** (§6 Stolperfalle 9): `Σ delta = Ist − Plan` hält in **allen
+  zwölf Monaten** — Juli −378,19 € auf beiden Seiten. Die Treiber erklären also
+  weiterhin genau die Differenz, die der Welle-Tooltip ausweist. Das war der Punkt mit
+  dem höchsten Folgerisiko, weil `get_year_deviation_drivers` dieselbe Kartenfunktion
+  liest.
 
 ---
 

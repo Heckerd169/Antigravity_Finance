@@ -4,7 +4,7 @@
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur)
 **Datum:** 05. August 2026
 
-> **Changelog v3.4.2 (05.08.2026, Sprint v2-11):** §4 `calculate_card_amount_for_month` — Rückgabewert ist nicht mehr „immer ≥ 0". Die Fragment-Aggregation verrechnet seit `BF-5` vorzeichenrichtig (`SUM(f.amount)` statt `SUM(ABS(f.amount))`); übersteigen die Gutschriften die Ausgaben, ist das Ergebnis negativ (Beschluss `E2` — keine Kappung). Migration: `supabase/migrations/20260805_v2_11_bf5_vorzeichen.sql`. **Auf Produktion noch nicht angewendet** — menschliches Gate.
+> **Changelog v3.4.2 (05.08.2026, Sprint v2-11):** §4 `calculate_card_amount_for_month` — Rückgabewert ist nicht mehr „immer ≥ 0". Die Fragment-Aggregation verrechnet seit `BF-5` vorzeichenrichtig (`SUM(f.amount)` statt `SUM(ABS(f.amount))`); übersteigen die Gutschriften die Ausgaben, ist das Ergebnis negativ (Beschluss `E2` — keine Kappung). Migration: `supabase/migrations/20260805_v2_11_bf5_vorzeichen.sql` — **am 05.08.2026 nach Freigabe auf Produktion angewendet**; Juli-Ist −1.222,75 → −322,75 € (exakt +900,00), alle übrigen elf Monate unverändert, B2-Invariante in allen zwölf Monaten gehalten.
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**

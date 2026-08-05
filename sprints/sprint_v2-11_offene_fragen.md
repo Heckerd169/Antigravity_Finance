@@ -8,7 +8,28 @@
 
 ---
 
-## 1 · Die Migration auf Produktion wartet auf dich — **das ist geplant, kein Fehler**
+## ✅ ERLEDIGT am 05.08.2026 — beide Punkte unten sind abgearbeitet
+
+**Freigabe erteilt („Migration go"), Migration angewendet, Ergebnis verifiziert:**
+
+| Monat 2026 | vorher | nachher | |
+|---|---:|---:|---|
+| **Juli** | −1.222,75 € | **−322,75 €** | **+900,00 €** — exakt der Prüfanker ✓ |
+| alle übrigen elf | — | — | **0,00 € Differenz** ✓ |
+
+Zusätzlich verifiziert:
+- Karte „Aline Geburtstag": Plan 150,00 · Betrag **168,11 €** · Fragment-Netto
+  −168,11 € — genau der auf der Übungs-DB geprobte Wert (T7).
+- **B2-Treiber-Invariante** `Σ delta = Ist − Plan` in **allen zwölf Monaten**
+  gehalten (Juli: −378,19 auf beiden Seiten).
+- Vor dem Eingriff wurde die alte Funktionsdefinition als Rückfallweg gesichert
+  (Prüfsumme `fb0363df…`). Sie wurde nicht gebraucht.
+
+**Offen bleibt nur noch der Merge des PR** — siehe §2 unten.
+
+---
+
+## 1 · ~~Die Migration auf Produktion wartet auf dich~~ — **erledigt**
 
 **Was.** Die Migration für `BF-5` ist entworfen, auf der Übungs-Datenbank geprobt und
 als Datei abgelegt. Sie ist **nicht** auf die Produktiv-Datenbank angewendet worden.
@@ -40,7 +61,13 @@ ist mit **E2** am 05.08.2026 bereits gefallen.
 
 ---
 
-## 2 · ⚠️ Reihenfolge: **erst die Migration, dann der Merge**
+## 2 · ⚠️ Reihenfolge: **erst die Migration, dann der Merge** — *Schritt 1 ist erledigt, der Merge fehlt noch*
+
+> **Stand 05.08.2026:** Die Migration ist angewendet. Damit steht die Produktion
+> aktuell im Zwischenzustand **„nur Migration, ohne Merge"** aus der Tabelle unten:
+> Ring, Welle und Sparrate sind bereits korrekt (die 900 € sind zurück), nur die
+> Unterzeile der Karte „Aline Geburtstag" rechnet noch mit der alten Frontend-Formel.
+> **Der Merge schließt das.** Er ist der einzige verbleibende Schritt.
 
 **Das ist der wichtigste Satz dieses Sprints.** Migration und Frontend-Änderung sind
 **gekoppelt** und müssen zusammen wirksam werden. Wird nur eines von beidem

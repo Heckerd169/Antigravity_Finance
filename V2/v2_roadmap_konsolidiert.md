@@ -26,21 +26,21 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 05.08.2026 nach Sprint v2-10 zeilengenau nachgezählt.*
+*Alle Zahlen am 05.08.2026 nach Sprint v2-11 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-10 |
-|---|---|---|
-| Offene Pakete | **14** | 14 |
-| Themen darin | **37** | 40 |
-| Hausaufgaben ohne eigenen Sprint | **7** | 8 |
-| **Offen gesamt** | **44** | 48 |
-| Erledigt | 29 | 25 |
-| Hinfällig geworden | 4 | 4 |
+| | Anzahl | vor v2-11 | vor v2-10 |
+|---|---|---|---|
+| Offene Pakete | **14** | 14 | 14 |
+| Themen darin | **36** | 37 | 40 |
+| Hausaufgaben ohne eigenen Sprint | **7** | 7 | 8 |
+| **Offen gesamt** | **43** | 44 | 48 |
+| Erledigt | 30 | 29 | 25 |
+| Hinfällig geworden | 4 | 4 | 4 |
 
-> **Nach Sprint v2-11 (05.08.2026) unverändert.** `BF-5` steht auf 🟡 und zählt
-> weiterhin als offen — erledigt ist er erst, wenn die Migration auf Produktion
-> angewendet ist. Die Zahlen springen also erst mit diesem Schritt auf
-> **43 offen · 30 erledigt**.
+> **Sprint v2-11 hat `BF-5` geschlossen.** Die Migration ist am 05.08.2026 nach
+> ausdrücklicher Freigabe auf Produktion angewendet und verifiziert: Juli-Ist
+> −1.222,75 → **−322,75 €** (exakt +900,00), alle übrigen elf Monate um 0,00 €
+> bewegt, B2-Invariante in allen zwölf Monaten gehalten.
 
 > **Sprint v2-10 hat vier Themen geschlossen:** `BF-3` und `BF-1` aus Paket 1, `RM-1`
 > aus Paket 2 und die Hausaufgabe `RM-4`. Die Zahl der offenen Pakete bleibt bei 14 —
@@ -77,21 +77,18 @@ keinem anderen Paket und liefert als Einziges Wert, **bevor** kuratiert ist. Sie
 an dieser Stelle, weil Paket 4 noch nicht schneidbar ist — sie füllt die Wartezeit,
 statt sie zu verlängern.
 
-**Was als Nächstes dran ist — Stand 05.08.2026 nach der E2-Entscheidung.**
-Von den fünf Befunden sind zwei erledigt (`BF-3`, `BF-1`, beide in v2-10). Mit **E2**
-ist am 05.08. die Entscheidung gefallen, die `BF-5` blockiert hat.
+**Was als Nächstes dran ist — Stand 05.08.2026 nach Sprint v2-11.**
+Von den fünf Befunden sind **drei erledigt**: `BF-3` und `BF-1` (v2-10) sowie `BF-5`
+(v2-11, Migration angewendet und verifiziert).
 
-**`BF-5` ist in Sprint v2-11 gebaut worden** (05.08.2026) und steht auf 🟡: auf der
-Übungs-Datenbank vollständig geprobt, Migration abgelegt, **auf Produktion noch nicht
-angewendet** — das ist ein menschliches Gate (Fähigkeit `db-eingriff`, Schritt 5.2).
-Nach der Anwendung sind die **900 €** in der Juli-Sparrate zurück
-(−1.222,75 → −322,75 €). **⚠️ Erst migrieren, dann mergen** — Datenbank und Frontend
-sind gekoppelt.
+**Paket 1 besteht damit nur noch aus zwei entscheidungs-gebundenen Punkten:**
+`BF-2` wartet auf **E3**, `BF-4` auf **E1**.
 
-In Paket 1 bleiben damit nur noch die beiden entscheidungs-gebundenen Punkte:
-`BF-2` wartet auf **E3**, `BF-4` auf **E1**. `BF-2` rückt nach der Migration in
-Reichweite — die Juli-Zahl stimmt dann, und der neue Ring-Text wäre am echten Fall zu
-sehen.
+**`BF-2` ist jetzt der naheliegendste nächste Schritt.** Er hing schon immer nur an
+**E3** — der kleinsten der drei Entscheidungen (*„Braucht Gleichstand eine eigene
+Formulierung?"*, Empfehlung liegt vor). Und er ist erst jetzt sinnvoll: Die Juli-Zahl
+stimmt seit v2-11, der neue Ring-Text wäre also am echten Fall zu sehen statt an einer
+erfundenen Situation.
 
 Ohne jede weitere Entscheidung baubar sind außerdem:
 
@@ -128,7 +125,6 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-5 | Fragmente werden ohne Vorzeichen addiert | Bug | **ja** | 🟡 | **Sprint v2-11 (05.08.2026): gebaut und auf der Übungs-Datenbank vollständig geprobt (13/13 grün), Migration liegt als Datei bereit — auf Produktion NICHT angewendet (menschliches Gate).** Erledigt ist der Punkt erst nach der Anwendung; erwartete Wirkung: Juli-Ist −1.222,75 → **−322,75 €**, alle anderen Monate unverändert. **⚠️ Reihenfolge: erst Migration, dann PR mergen** — Datenbank und Frontend sind gekoppelt, Begründung in `sprints/sprint_v2-11_offene_fragen.md` §2. Mitgefunden und mitkorrigiert: dieselbe `Math.abs`-Konstruktion im Frontend (`card.tsx`) sowie zwei falsche Zusagen in den Bibeln (Design-Doku §11 „vorzeichen-agnostisch", Schema-Doku „immer ≥ 0"). Ursprünglicher Befund: `SUM(ABS(...))` wirft Vorzeichen weg. Betrifft heute **eine** Karte („Aline Geburtstag", Juli) mit **900,00 €** Wirkung. Sollverhalten steht bereits in Design-Doku §11 — der Leitfaden beschreibt ein Verhalten, das es nie gab. **E2 ist am 05.08.2026 entschieden („ehrlich rechnen", Netto zählt auch unter null, keine Kappung bei 0) — dieser Punkt ist damit vollständig baubar und der einzige aus Paket 1, der es ist.** Prüfanker: Juli-Ist −1.222,75 → −322,75, alle anderen Monate unverändert. Eingriff in eine Rechenfunktion → Fähigkeit `db-eingriff`, Probe auf der Übungs-Datenbank (steht pausiert, muss vorher geweckt werden). Berührt Design-Doku §11 — der Satz dort beschreibt ein Verhalten, das es nie gab, und ist mit zu korrigieren. |
 | BF-2 | Sinnloser Hinweis unter dem Ring bei negativer Sparrate | Bug | nein | ⬜ | „Plan fast 0 € — −1.223 € gespart". Aus zwei Textzweigen wird einer, vorzeichensicher. **Hängt an E3.** Sinnvoll **nach** BF-5, weil die Juli-Zahl dann stimmt und der neue Text am echten Fall zu sehen ist. |
 | BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Diskussion | **ja** | ⬜ | Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
 
@@ -374,6 +370,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | Init-4 | Sprint-Protokoll-Tabelle in CLAUDE.md | — |
 | M0 | Automatisierte Tests mit Playwright, Pixel-Prüfungen, `smoke-agent` | v2-01 / 23.07. |
 | A1 | Karten-spezifische Badge-Farben aus dem Kartennamen | v2-07 |
+| BF-5 | Fragment-Summe verrechnet vorzeichenrichtig — Migration am 05.08.2026 angewendet, Juli-Sparrate −1.222,75 → **−322,75 €** (+900,00) | v2-11 |
 | BF-3 | Einkommens-Popup mit Portal repariert — öffnet wieder mittig und in voller Breite | v2-10 |
 | BF-1 | KI-Vorschlags-Kästchen aus der Anzeige, Umbruch-Verbot für den Betrag | v2-10 |
 | RM-1 | Rohmasse zeigt den Verwendungszweck statt des Empfängers | v2-10 |
@@ -467,5 +464,5 @@ Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung
 · fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
 `RM-1`, `RM-4` nach §4 gewandert; Paket 2 leer bis auf `RM-2`) · nach der
 **Entscheidung E2** (`BF-5` freigegeben) · **zuletzt nach Sprint v2-11** — `BF-5`
-gebaut und geprobt, steht auf 🟡 bis die Migration auf Produktion angewendet ist;
-in Paket 1 bleiben `BF-2` (E3) und `BF-4` (E1)*
+erledigt, Migration am 05.08.2026 angewendet und verifiziert (Juli +900,00 €); in
+Paket 1 bleiben nur noch `BF-2` (E3) und `BF-4` (E1)*
