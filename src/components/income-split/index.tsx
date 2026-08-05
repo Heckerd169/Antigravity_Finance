@@ -173,7 +173,25 @@ function PopupBody({
      definiert keine eigenen Custom-Properties, sondern liest ausschliesslich
      :root-Tokens aus tokens.css — die vererben ueber document.body weiter. */
   return createPortal(
-    <div className={styles.backdrop} onMouseDown={handleBackdropClick} role="dialog" aria-modal="true">
+    /* v2-10 P6: `data-wave-block` muss jetzt am Backdrop selbst haengen.
+       `welle/index.tsx` oeffnet das Jahres-Popup bei jedem Klick, ausser
+       `e.target.closest("[data-wave-block]")` findet einen Treffer — und das
+       ist eine Suche im **echten DOM**. Bis zum Portal-Fix war das Popup ein
+       Nachfahre von `.splitLeft`/`.splitRight`, die den Marker tragen, also
+       griff der Schutz von allein. Seit dem Portal haengt das Markup unter
+       `document.body`, waehrend React den Klick weiterhin durch den
+       **React-Baum** nach oben reicht (Portale bleiben React-Kinder) — die
+       Suche lief damit ins Leere und jeder Klick im Popup riss zusaetzlich
+       die Jahres-Welle auf. Der Marker hier stellt genau die Absicht wieder
+       her, die der Kommentar in `welle/index.tsx` beschreibt: „Income-Labels
+       inkl. deren Overlays … triggern nicht." */
+    <div
+      className={styles.backdrop}
+      onMouseDown={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      data-wave-block
+    >
       <form className={styles.dialog} onSubmit={handleSubmit}>
         <div className={styles.header}>
           <h2 className={styles.title}>

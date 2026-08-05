@@ -210,3 +210,30 @@ Inhalt", Punkt 4 „bei unverändertem Faktor gar keine Liste, sondern direkt sc
 wie bisher" — dann fällt der Zustand ganz weg, statt eine Null-Zeile zu zeigen.
 Bleiben nur noch Beschriftung und Spaltenköpfe.
 
+---
+
+## 6 · Das Einkommens-Popup lässt sich nicht mit Escape schließen (Altbestand)
+
+**Was.** Vom `smoke-agent` beim optischen Durchgang gefunden:
+`src/components/income-split/index.tsx` hat **keinen** Escape-Handler. „Abbrechen" und
+ein Klick auf den Hintergrund funktionieren einwandfrei — Escape tut nichts.
+
+**Wo.** `income-split/index.tsx`. Zum Vergleich: **sieben** andere Overlays der App
+haben einen `keydown`-Escape-Listener (`adjust-amount-overlay`, `end-card-overlay`,
+`card-interactive`, `recurrence-popup`, `linked-fragments-overlay`,
+`direct-create-overlay`, `welle/popup`). Das Einkommens-Popup ist das einzige ohne.
+
+**Warum nicht in diesem Sprint behoben.** Der Fehler ist **Altbestand** — er stammt
+nicht aus v2-10, sondern existiert seit Sprint 1, genau wie das fehlende Portal. Der
+Auftrag hat ihn nicht beauftragt, und das Sollverhalten steht nirgends: Design-Doku §10
+und §12.7 sagen zum Schließen des Popups nichts. Nach §7 Regel 3 wäre das eine
+Erfindung. Der Bezug zu `RM-4` trägt nicht — die Regel dort betrifft die **Position**
+von Overlays, nicht ihre Schließ-Geste.
+
+**Welche Entscheidung fehlt.** Ob das Popup einen Escape-Handler bekommen soll.
+**Empfehlung: ja** — es wäre reine Angleichung an sieben bestehende Overlays, keine
+neue Gestaltung, und der Aufwand sind vier Zeilen (`useEffect` mit `keydown`-Listener,
+Muster steht in `direct-create-overlay.tsx:41–47`). Sinnvoll zusammen mit `RM-2`, weil
+das Schaufenster-Popup dieselbe Frage neu stellt — oder als Hausaufgabe an den nächsten
+Sprint, der das Popup ohnehin anfasst (`PA-1`).
+

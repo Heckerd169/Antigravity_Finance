@@ -1,7 +1,8 @@
 # Sprint v2-10 — Review
 
 > **Branch:** `sprint/v2-10-fehler-und-lesbarkeit` · **Basis:** `6cab0b1` (= `origin/main`)
-> **Commits:** `173eb53` (P1) · `eb4b64b` (P2) · `d75c89b` (P3) · Doku-Commit (P5)
+> **Commits:** `173eb53` (P1) · `eb4b64b` (P2) · `d75c89b` (P3) · `fee1230` (P5, Doku)
+> · P6 (Regressions-Fix aus dem optischen Smoke)
 > **Datum:** 05. August 2026 · **Lauf:** unbeaufsichtigt, rund zwei Stunden, ohne
 > anwesenden User — nach `sprints/sprint_v2-10_auftrag.md`
 >
@@ -10,6 +11,12 @@
 > Beschreibung zeigt den Verwendungszweck statt des Empfängers; die vierte Phase
 > (`PA-1`) wurde nach der Abbruch-Klausel bewusst nicht gebaut, weil ihre Darstellung
 > nirgends spezifiziert ist.
+>
+> **Nachtrag aus dem optischen Smoke:** Die Reparatur aus Phase 1 hatte eine
+> Regression im Gepäck — der Portal-Hop hebelte einen `closest()`-Wächter der Welle
+> aus, sodass jeder Klick im Popup zusätzlich das Jahres-Popup öffnete. Gefunden,
+> nachgeprüft und in Phase 6 behoben; die Prüfstrecke war zu diesem Zeitpunkt
+> fünfmal grün. Das ist der Lernpunkt des Sprints (§5).
 
 ---
 
@@ -93,6 +100,15 @@ Vorlesen und Sehen dasselbe ergeben. Das Abschneiden mit „…" bleibt unverän
 
 Ausführlich in `sprints/sprint_v2-10_offene_fragen.md` §5 und unten in §6.
 
+### Phase 6 · Regression aus Phase 1 behoben
+
+Nicht im Auftrag vorgesehen — vom `smoke-agent` gefunden, nachgeprüft und behoben:
+Der Portal-Hop aus Phase 1 hatte den `data-wave-block`-Schutz der Welle ausgehebelt,
+sodass jeder Klick im Einkommens-Popup zusätzlich das Jahres-Popup öffnete. Der Marker
+hängt jetzt am Backdrop selbst. Vollständig in §5.
+
+**Berührt:** `src/components/income-split/index.tsx`
+
 ---
 
 ## 2. Prüfstrecke
@@ -117,6 +133,17 @@ Vollständig, nach jeder Phase; die Zahlen unten sind der Schlussstand.
 | Middleware | — | 81,6 kB |
 
 Route `/` ist von 29,7 kB auf 29,6 kB gefallen — das nicht mehr gerenderte Badge-JSX.
+
+Die Strecke lief nach Phase 6 vollständig erneut: `tsc` 0 · Lint 0/0 · Build
+erfolgreich · **E2E 9/9**. Der `smoke-agent` hat die Suite unabhängig davon zweimal
+laufen lassen, ebenfalls grün und ohne Flakes — auch ohne den bekannten
+SSR-`ECONNRESET`-Burst.
+
+> **Bemerkenswert und der eigentliche Lernpunkt dieses Sprints:** Die gesamte
+> Prüfstrecke war grün, **während** die Regression aus §5 offen im Bild stand. Ein
+> Fehler, der nur beim Klicken sichtbar wird, liegt außerhalb dessen, was `tsc`, Lint,
+> Build und die §9-Pixel-Checks überhaupt sehen können. Gefunden hat ihn der optische
+> Smoke — der Schritt, den man am ehesten für Zierrat hält.
 
 > **ESLint im Worktree — der dokumentierte Umweg reichte nicht.** Die Fähigkeit
 > `sprint-abschluss` nennt
@@ -178,25 +205,80 @@ Gemessen lesend gegen `nflkobdfdhncrtjncpmq` (`calculate_sparrate_for_month`, nu
 | A12 | Sparrate unbewegt | ✅ | §3 — alle zwölf Monate identisch |
 | A13 | Ein Commit je Phase (LL-14) | ✅ | `173eb53` · `eb4b64b` · `d75c89b` + Doku-Commit |
 | A14 | Doku nur patch-basiert (LL-16) | ✅ | `sprint_v2-10_doku_patches.md`, Anwendung erst in Phase 5, Bump als eigene Patch-Stelle |
-| A15 | Kein Merge, kein Deploy | ✅ | PR angelegt, nicht gemerged |
+| A15 | Kein Merge, kein Deploy | ✅ | PR #4 angelegt, nicht gemerged |
+| A16 | Klick im Einkommens-Popup öffnet **nicht** die Jahres-Welle | ✅ | Phase 6, `data-wave-block` am Backdrop. 11/11 grün mit Fix, 6 rot ohne — Gegenprobe in §5 |
+| A17 | Klick auf die Welle öffnet das Jahres-Popup weiterhin | ✅ | Gegenprobe im selben Skript — die Reparatur blockiert nicht zu viel |
 
 ---
 
 ## 5. Optische Prüfung
 
-Der Subagent `smoke-agent` (strikt read-only) lief zum Zeitpunkt dieses Commits noch;
-sein Ergebnis wird als eigener Commit nachgetragen. Beauftragt waren drei Dinge:
-das Einkommens-Popup von **beiden** Labels aus geöffnet und mit
-`direct-create-overlay` verglichen · die Rohmasse auf verschwundene
-Vorschlags-Kästchen, erhaltenes TRANSFER-Kästchen, nicht umbrechende Beträge und
-gekürzte Beschreibungen · das übrige Dashboard auf Regressionen.
+Der Subagent `smoke-agent` (strikt read-only, hat zu keinem Zeitpunkt „Übernehmen"
+oder einen anderen mutierenden Knopf geklickt) hat die drei berührten Bereiche
+abgefahren.
 
-Ausdrücklich untersagt war ihm, im Einkommens-Popup „Übernehmen" zu klicken — in der
-Produktiv-Datenbank liegen echte Finanzdaten.
+| Bereich | Urteil |
+|---|---|
+| Einkommens-Popup — Geometrie | **in Ordnung.** Beide Labels öffnen mittig, volle Breite bis 480 px, dunkle Karte, Teal-Akzente, lesbare Felder; Ich und Partner pixelgleich in Position. Zentrierung deckungsgleich mit `direct-create-overlay` |
+| Rohmasse — Kästchen, Betrag, Beschreibung | **in Ordnung.** Kein einziges Vorschlags-Kästchen über Jan–Jul; TRANSFER-Kästchen vorhanden; „−1.089,26 €" einzeilig; „Geburtstagsgeld Gutschein VS" sichtbar bei vollem `title`; „SP SCICON SPORTS" unverändert |
+| Übriges Dashboard | **in Ordnung.** Ring, Welle, Header, Karussell über drei Monatszustände geprüft; Vorjahres-Goldlinie trifft 48.445 € exakt; kein horizontaler Scrollbalken, keine Konsolenfehler |
+| **Einkommens-Popup — Verhalten** | **kaputt → in Phase 6 behoben** (siehe unten) |
+
+Er hat zwei Verhaltens-Befunde gemeldet, die der Auftrag nicht auf dem Zettel hatte.
+Beide wurden **nachgeprüft, nicht geglaubt** (§7 Regel 10).
+
+### Befund B — eine Regression aus Phase 1. Behoben in Phase 6.
+
+**Symptom.** Jeder Klick *innerhalb* des Einkommens-Popups riss zusätzlich das
+Jahres-Popup der Welle im Hintergrund auf — auch ein Klick auf die reine Überschrift.
+
+**Ursache, am Code bestätigt.** `welle/index.tsx:121–126` öffnet das Jahres-Popup bei
+jedem Klick, außer `e.target.closest("[data-wave-block]")` findet einen Treffer — eine
+Suche im **echten DOM**. Der Kommentar zwei Zeilen darüber benennt die Absicht wörtlich:
+
+> „Interaktive Kind-Elemente (Income-Labels **inkl. deren Overlays**, Dev-Panel)
+> tragen `data-wave-block` und triggern nicht."
+
+Bis Phase 1 war das Popup ein Nachfahre von `.splitLeft`/`.splitRight`, die den Marker
+tragen — der Schutz griff also von allein. Der Portal-Hop hat das Markup nach
+`document.body` verschoben, während React den Klick weiterhin durch den **React-Baum**
+nach oben reicht (Portale bleiben React-Kinder). Die DOM-Suche lief damit ins Leere.
+
+**Das ist die Kehrseite von LL-6, die dort bisher nicht steht:** Ein Portal repariert
+den *Layout*-Bezug und zerreißt im selben Zug jede Logik, die sich auf **DOM-Nähe**
+verlässt — während die Event-Kette unverändert weiterläuft. Beides zusammen ergibt
+genau diesen Fehler.
+
+**Behebung (Phase 6).** `data-wave-block` hängt jetzt am portalierten Backdrop selbst.
+Das stellt die Absicht des vorhandenen Mechanismus wieder her, statt mit einem
+`stopPropagation` eine zweite, konkurrierende Regel einzuführen.
+
+**Nachweis.** Ein read-only-Skript (`test-results/verify-p6.mjs`, gitignored) fährt
+beide Labels ab: öffnen · auf die Überschrift klicken · über „Abbrechen" schließen,
+und prüft nach jedem Schritt, ob das Jahres-Popup offen ist. Dazu eine **Gegenprobe**,
+dass ein Klick auf die Welle es weiterhin öffnet — sonst hätte die Reparatur zu viel
+blockiert.
+
+| Lauf | Ergebnis |
+|---|---|
+| **ohne** den Fix (Marker testweise entfernt) | **6 Prüfungen rot** |
+| **mit** dem Fix | **11/11 grün**, Gegenprobe eingeschlossen |
+
+Die Gegenprobe ist der Punkt, der zählt: Der Test schlägt ohne die Reparatur
+tatsächlich an — er ist kein Test, der immer grün ist.
+
+### Befund A — kein Escape im Einkommens-Popup. Altbestand, nicht angefasst.
+
+Das Popup hat als **einziges** Overlay der App keinen Escape-Handler; sieben andere
+haben einen. Das ist **nicht** durch diesen Sprint entstanden und war nicht beauftragt
+— „Abbrechen" und Klick auf den Hintergrund funktionieren. Notiert als offene Frage 6,
+nicht eigenmächtig gebaut.
 
 > **Das ersetzt den Browser-Smoke des Users nicht.** Er ist der Filter davor
-> (CLAUDE.md §4). Der Produktiv-Gate bleibt der manuelle Durchgang — und bei diesem
-> Sprint besonders der Blick ins Einkommens-Popup, weil genau dort der Fehler saß.
+> (CLAUDE.md §4) — und hat sich hier genau dafür bezahlt gemacht: Die Prüfstrecke war
+> fünfmal grün, während dieser Fehler offen im Bild stand. Kein `tsc`, kein Lint und
+> kein Pixel-Check hätte ihn je gefunden. Der Produktiv-Gate bleibt der manuelle
+> Durchgang — bei diesem Sprint besonders das Einkommens-Popup.
 
 ---
 
@@ -211,6 +293,7 @@ Vollständig und begründet in **`sprints/sprint_v2-10_offene_fragen.md`**. Kurz
 | 3 | Doku-Patch für `BF-1` (§11), den der Auftrag nicht vorsah | ja — soll er bleiben? Einzeln rücknehmbar |
 | 4 | Gilt die Kürzung auch im Verknüpfte-Fragmente-Overlay? | ja — fürs Recurrence-Popup lautet die Empfehlung **nein** |
 | 5 | **`PA-1` nicht gebaut** — Rechnung fertig und belegt, Darstellung unspezifiziert | ja — eine Runde `design-direktor`, fünf Punkte |
+| 6 | Einkommens-Popup kennt kein Escape — Altbestand, als einziges von acht Overlays | ja, aber leicht — Empfehlung **ja**, vier Zeilen, reine Angleichung |
 
 **Zu `PA-1` im Klartext:** Es lag nicht an der Zeit und nicht an der Rechnung. Der
 Rechenweg ist vollständig verifiziert (Faktor 0,5721 aus 92.400 / 161.513; vier
@@ -245,12 +328,31 @@ Sie funktioniert in beiden Lagen und ändert weiterhin keine Datei im Repo.
 funktioniert überall wieder, auch im Worktree. Das ist die sauberere Lösung, ändert
 aber eine Konfigurationsdatei; deshalb hier nur als Vorschlag und **nicht** gemacht.
 
-**④ Neue Fragment-Anzeige-Regel als Lessons-Learned?** Eher nicht. Der Portal-Fall ist
-bereits LL-6, und dieser Sprint hat ihn nur bestätigt. Was **fehlt**, ist der Zusatz,
-dass eine `transform`-Regel auf einem *Layout*-Element (hier: das Zentrieren der
-Income-Labels) einen `position: fixed`-Nachfahren mitreißt, ohne dass am Overlay
-selbst etwas falsch ist. Vorschlag: LL-6 um einen Halbsatz ergänzen statt eine neue
-Nummer zu vergeben.
+**④ LL-6 ergänzen — die Kehrseite des Portals.** Das ist nach diesem Sprint der
+wichtigste Vorschlag, und er hat jetzt einen echten Vorfall hinter sich (§5, Befund B).
+LL-6 sagt heute sinngemäß „Overlays in Clipping-Containern brauchen `fixed` oder ein
+Portal". Was fehlt, sind **zwei** Hälften:
+
+- **Auslöser:** Auch ein `transform` auf einem reinen *Layout*-Element — hier das
+  vertikale Zentrieren der Income-Labels — macht dieses zum Bezugsrahmen für jeden
+  `position: fixed`-Nachfahren. Am Overlay selbst ist dann nichts falsch.
+- **Kehrseite:** Ein Portal repariert den Layout-Bezug und **zerreißt im selben Zug
+  jede Logik, die sich auf DOM-Nähe verlässt** (`closest()`, `contains()`,
+  CSS-Nachfahren-Selektoren, Eltern-Hover) — während die React-Event-Kette
+  unverändert weiterläuft, weil Portale React-Kinder bleiben. Wer portiert, muss
+  prüfen, ob ein Vorfahre sich auf Nähe verlässt.
+
+Vorschlagstext für die Registerzeile: *„Portal repariert den Layout-Bezug und zerreißt
+den DOM-Bezug — Event-Bubbling bleibt. `closest()`-Wächter oberhalb müssen mitwandern."*
+
+Ein neuer LL-Eintrag wäre auch vertretbar; ein Halbsatz an LL-6 hält die beiden
+Hälften aber zusammen, statt sie auf zwei Nummern zu verteilen.
+
+**⑥ Vorschlag: den optischen Smoke bei jedem Overlay-Eingriff verbindlich machen.**
+Er hat hier einen Fehler gefunden, den die fünffach grüne Prüfstrecke strukturell
+nicht finden konnte. In `sprint-abschluss` steht er heute als Schritt ohne besondere
+Betonung — nach diesem Sprint gehört mindestens ein Satz dazu, warum er bei
+Portal-/Overlay-Änderungen nicht optional ist.
 
 **⑤ Roadmap — bereits nachgezogen** (Teil des Doku-Commits): `BF-3`, `BF-1`, `RM-1`,
 `RM-4` auf ✅ und in §4 „Erledigt"; §0 zeilengenau nachgezählt (40 → **37** Themen,
