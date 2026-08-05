@@ -1,8 +1,10 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.4.1
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber)
-**Datum:** 25. Juli 2026
+**Version:** 3.4.2
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur)
+**Datum:** 05. August 2026
+
+> **Changelog v3.4.2 (05.08.2026, Sprint v2-11):** §4 `calculate_card_amount_for_month` — Rückgabewert ist nicht mehr „immer ≥ 0". Die Fragment-Aggregation verrechnet seit `BF-5` vorzeichenrichtig (`SUM(f.amount)` statt `SUM(ABS(f.amount))`); übersteigen die Gutschriften die Ausgaben, ist das Ergebnis negativ (Beschluss `E2` — keine Kappung). Migration: `supabase/migrations/20260805_v2_11_bf5_vorzeichen.sql`. **Auf Produktion noch nicht angewendet** — menschliches Gate.
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
 **Iterationen bis hierher:** Phase 1 (4 Iterationen Logik-Klärung) + Phase 2 (9 Migrations-Blöcke) + Phase 3 (Sprint 0–8 mit 6 weiteren RPC-/Spalten-Erweiterungen)
 **Referenz-Dokument für Frontend- und Distiller-Phase**
@@ -167,7 +169,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 |---|---|---|
 | `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) |
 | `calculate_planned_sparrate_for_month(user_id, month)` | Plan-Sparrate (ohne Realität) | `numeric` |
-| `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte (Realität → Anpassung → Plan) | `numeric` (immer ≥ 0) |
+| `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte (Realität → Anpassung → Plan) | `numeric` — **seit v2-11 auch negativ möglich** (BF-5/E2: übersteigen die Gutschriften die Ausgaben, ist der Netto-Verbrauch negativ; keine Kappung bei 0) |
 | `get_effective_plan_for_month(card_id, month)` | „Soll-Wert" für UI-Vergleiche (`adjusted ∨ plan`) | `numeric` |
 | `is_card_active_in_month(card_id, month)` | Karte rendern oder nicht? | `boolean` |
 | `get_planned_amount_for_month(card_id, month)` | Roher Plan ohne Adjustment | `numeric` |

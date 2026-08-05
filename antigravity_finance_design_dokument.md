@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.7 (V2 · v2-10 Doku-Nachzug)
+**Version:** 3.1.8 (V2 · v2-11 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
@@ -22,6 +22,8 @@
 > **Changelog v3.1.6 (25.07.2026, Sprint v2-07):** §8 Übertrags-Schalter der Rohmasse (C1 — Standard „aus", Zähler am Schalter, erfasst beide `transfer_type`-Werte); §8 Backfill-Toast-Wortlaut ab 50 nachgepflegten IBANs (C2); §8 Monats-Scope server-seitig statt als JS-Nachfilter (P0-Bugfix, siehe `sprints/sprint_v2-07_review.md` §3); §11 Badge-Farbe karten-spezifisch über sechs deterministische Töne (A1 — schließt Sprint-8-OQ1); §3 sechs neue `--badge-hue-*`-Tokens.
 >
 > **Changelog v3.1.7 (05.08.2026, Sprint v2-10):** §7 Positionsregel für Overlays und Popups — immer mittig, einzige Ausnahme das Karten-Kontextmenü (`RM-4`); §8 Verweis auf dieselbe Regel für Recurrence-Popup und Direktklick-Overlay; §8 Fragment-Stack zeigt den Verwendungszweck statt des Empfängers, ausschließlich in der Anzeige (`RM-1`); §11 Feld-Tabelle nachgezogen — KI-Vorschlags-Badges seit v2-10 nicht mehr gerendert, Spezifikation bleibt für die Wiedereinschaltung stehen (`BF-1`).
+>
+> **Changelog v3.1.8 (05.08.2026, Sprint v2-11):** §11 Erstattungs-Leitfaden korrigiert — die Aggregation summiert **vorzeichenrichtig**, nicht „vorzeichen-agnostisch"; die Aussage, ein RPC-Eingriff sei nicht nötig, ist widerlegt und als Korrektur kenntlich gemacht (`BF-5`); §11 um das Verhalten bei überwiegenden Gutschriften ergänzt (Beschluss `E2`, keine Kappung bei 0).
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -1143,16 +1145,49 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 Positive Fragmente ohne Transfer-Charakter werden nach vier Regeln kuratiert:
 1. **Retouren/Erstattungen mit Kosten-Bezug** → per Drag auf die verursachende
    Karte (Verrechnung; `calculate_card_amount_for_month` summiert verlinkte
-   Fragmente vorzeichen-agnostisch — bei BUDGET senkt die Gutschrift den
-   Verbrauch, bei FIXED_COST die Realität).
+   Fragmente **vorzeichenrichtig** — Gutschriften und Ausgaben werden gegeneinander
+   aufgerechnet, nicht addiert. Bei BUDGET senkt die Gutschrift damit den Verbrauch,
+   bei FIXED_COST die Realität).
 2. **Wiederkehrende Erstattungs-Quellen** → eigene MONTHLY-INCOME-Karte.
 3. **Einmal-Zuwendungen ab 100 €** (Erheblichkeits-Schwelle) → ONCE-INCOME-Karte
    im betreffenden Monat.
 4. **Unter der Schwelle** → bewusst unzugeordnet in der Rohmasse (die Sparrate
    bleibt insoweit konservativ).
 
-Ein Schema-/RPC-Eingriff ist dafür nicht nötig und wurde bewusst verworfen
-(Kern-Invariante §4.2: Karten sind die einzige Realitäts-Quelle der Sparrate).
+Ein **Schema**-Eingriff ist dafür nicht nötig (Kern-Invariante §4.2: Karten sind die
+einzige Realitäts-Quelle der Sparrate).
+
+> **Korrektur (v2-11, 05.08.2026 — `BF-5`).** Hier stand bis dahin, auch ein
+> **RPC**-Eingriff sei nicht nötig und „bewusst verworfen". Das beruhte auf der
+> ungeprüften Annahme, `calculate_card_amount_for_month` summiere bereits
+> vorzeichenrichtig. Sie tat es nicht: Die Fragment-Aggregation lautete
+> `SUM(ABS(f.amount))` und warf jedes Vorzeichen weg. Der Leitfaden hat damit ab dem
+> Tag seiner Verabschiedung ein Verhalten beschrieben, das es nie gab — aufgefallen
+> ist es erst, als im Juli 2026 zum ersten Mal eine Karte gemischte Vorzeichen bekam
+> („Aline Geburtstag": 1.068,11 € angezeigt statt 168,11 €, **900 €** Wirkung auf die
+> Juli-Sparrate).
+>
+> Der RPC-Eingriff ist in **v2-11** nachgeholt worden
+> (`supabase/migrations/20260805_v2_11_bf5_vorzeichen.sql`). Die Kern-Invariante §4.2
+> bleibt davon unberührt — geändert hat sich nur, wie die Fragmente **einer** Karte
+> zu deren Betrag verrechnet werden.
+>
+> **Lehre:** Ein Leitfaden, der das Verhalten einer Rechenfunktion *beschreibt*, ist
+> keine Prüfung dieser Funktion. Wo die Doku eine Zusicherung über Rechenverhalten
+> macht, gehört sie gegen die Funktion belegt — nicht aus deren Zweck erschlossen.
+
+**Wenn Gutschriften die Ausgaben übersteigen (Beschluss E2, 05.08.2026).** Der
+Netto-Betrag zählt so, wie er ist — **auch unter null**. Es wird **nicht** bei 0
+gekappt; der negative Verbrauch verbessert die Sparrate entsprechend. Eine Zahl zu
+verschlucken wäre genau die Art stiller Ungenauigkeit, die zu den Befunden vom
+04.08.2026 geführt hat (vgl. LL-20).
+
+**Reichweite in der Praxis:** Bei **BUDGET** greift zusätzlich §4.3.2 — der Plan gilt,
+solange die Fragmente ihn nicht übersteigen (LL-12). Ein negativer Netto-Verbrauch ist
+stets ≤ Plan, die Karte zeigt also den Plan; der negative Wert erreicht die Sparrate
+bei BUDGET gar nicht. Wirksam wird E2 damit bei **FIXED_COST** (dort gewinnt immer die
+Realität) und bei **INCOME**. Beide Fälle sind in v2-11 auf der Übungs-Datenbank
+belegt (`sprints/sprint_v2-11_probe.sql`, T4 und T8).
 
 ---
 
