@@ -291,19 +291,84 @@ an Design-Doku §11.
 
 ## 7. Offene Entscheidungen
 
-**Stand 05.08.2026: E2 und E3 sind entschieden, nur E1 steht noch aus.** Vier der fünf
-Fehler sind damit erledigt — Fehler 3 und 1 in v2-10, Fehler 5 in v2-11, Fehler 2 in
-v2-12. **Offen ist allein Fehler 4**, und er wartet auf **E1**.
+**Stand 05.08.2026: alle drei Entscheidungen sind gefallen.** E2 und E3 am Vormittag,
+**E1 am Nachmittag**. Vier der fünf Fehler sind umgesetzt — Fehler 3 und 1 in v2-10,
+Fehler 5 in v2-11, Fehler 2 in v2-12. **Offen ist allein Fehler 4 (`BF-4`)** — er ist
+seit E1 **nicht mehr blockiert, sondern baubar**.
 
-### E1 — Was bedeutet die Zahl auf einer gemeinsamen Karte? *(Fehler 4)*
+> **Damit blockiert keine Entscheidung mehr Arbeit.** Was `BF-4` noch braucht, steht
+> unten am Beschluss zu E1: eine Probe auf der Übungs-Datenbank (`db-eingriff`), einen
+> Patch an Design-Doku §4.5 — und **vorab eine kleine `design-direktor`-Runde** zu der
+> einen offenen Anzeige-Frage.
+
+### E1 — Was bedeutet die Zahl auf einer gemeinsamen Karte? *(Fehler 4)* — ✅ **ENTSCHIEDEN 05.08.2026**
 
 Die ganze Rechnung des Haushalts, oder der eigene Anteil? Alles Weitere folgt
 daraus. Anschlussfrage: Soll eine zugeordnete echte Zahlung als bereits
 anteiliger Betrag gelten (kein zweiter Abzug) oder weiterhin als
 Haushaltsbetrag, von dem der Anteil genommen wird?
 
-*Empfehlung Claude Code:* planen im Haushaltsbetrag, anzeigen als eigener
+*Empfehlung Claude Code war:* planen im Haushaltsbetrag, anzeigen als eigener
 Anteil, zugeordnete Zahlung unverändert übernehmen.
+
+> **Beschluss Dominik, 05.08.2026: nach Empfehlung — „die Zahlung ist mein Anteil".**
+>
+> **Regel.** Eine gemeinsame Karte **plant** weiter im Haushaltsbetrag, **zeigt** den
+> eigenen Anteil, und eine zugeordnete echte Zahlung wird **unverändert übernommen —
+> ohne zweiten Abzug**.
+>
+> **Damit kehrt sich §4.5 der Design-Doku um.** Dort steht heute wörtlich: *„Der Split
+> rechnet immer fair, unabhängig davon wer real überwiesen hat. Wer überweist, ist eine
+> Konto-Frage — nicht eine Fairness-Frage."* Diese Position wird **bewusst aufgegeben**.
+> Das ist keine Korrektur eines Fehlers, sondern eine geänderte Produkt-Entscheidung —
+> und sie gehört in §4.5 als solche kenntlich gemacht, nicht stillschweigend ersetzt.
+>
+> **Das Beweismaterial (gemessen 05.08.2026, lesend gegen Produktion).** Bei **allen
+> vier** gemeinsamen Karten entspricht der tatsächlich überwiesene Betrag dem
+> rechnerischen Anteil **auf den Cent** — und zwar in **Mai, Juni und Juli**, jeweils
+> mit „(Domi)" im Verwendungszweck:
+>
+> | Karte | Plan (Haushalt) | rechnerischer Anteil | tatsächlich überwiesen |
+> |---|---:|---:|---:|
+> | Miete | 1.904,00 € | 1.089,26 € | **−1.089,26 €** |
+> | Strom — Mainova | 63,00 € | 36,04 € | **−36,04 €** |
+> | Internet — Vodafone | 39,98 € | 22,87 € | **−22,87 €** |
+> | Rechtsschutz — Adam Riese | 27,01 € | 15,45 € | **−15,45 €** |
+>
+> Die Daueraufträge sind also bereits auf den Fairness-Anteil eingestellt. Die App
+> gegen diese Realität rechnen zu lassen, hätte bedeutet, das Zahlungsverhalten an die
+> Software anzupassen statt umgekehrt.
+>
+> **Fairness bleibt automatisch.** Ändert sich das Gehaltsverhältnis, wandert der
+> Anteil mit — die Karte zeigt dann unmittelbar, auf welchen Betrag der Dauerauftrag
+> zu stellen ist. Das ist zugleich der Kern von `PA-1` (Konsequenz-Anzeige).
+>
+> **Bewusst in Kauf genommener Haken.** Wird ausnahmsweise doch der volle Betrag
+> überwiesen und der Partner erstattet zurück, zählt die App die Erstattung als eigene
+> Einnahme. Unterm Strich richtig, im einzelnen Monat aber anders als die reine
+> Fairness-Sicht. Verworfen wurde deshalb **Option 3** (je Karte markierbar „anteilig /
+> voll"): Sie bräuchte eine neue Spalte, eine neue Geste und eine
+> `design-direktor`-Runde — und heute werden **alle vier** Karten anteilig gezahlt, es
+> gäbe also nichts zu unterscheiden. Erst wenn der zweite Fall real auftritt, lohnt sie.
+>
+> **Ohne Design-Direktor entschieden.** Es ging nicht um Farbe, Form oder Wortlaut,
+> sondern um eine Annahme mit Geldwirkung: Was bedeutet eine Zahlung an einer
+> gemeinsamen Karte? Die App kann das nicht erkennen — sie muss es annehmen.
+>
+> ---
+>
+> #### ⚠️ Eine Anzeige-Frage bleibt offen
+>
+> Das Bild zur getroffenen Option zeigte auf der Karte eine **zweite Zeile**
+> („Haushalt 1.904,00 €") unter dem eigenen Anteil. Diese Zeile ist durch E1
+> **nicht** entschieden — E1 beantwortet, welche Zahl die Karte führt, nicht, ob der
+> Haushaltsbetrag daneben sichtbar bleibt und in welcher Form.
+>
+> Ein Mockup ist keine Spezifikation. Die Frage gehört vor dem Bauen an den
+> `design-direktor`, zusammen mit: Wo steht die Zeile? Braucht sie ein Label? Gilt sie
+> auch für Karten, deren Plan gleich dem Anteil ist? Falls sie entfällt, funktioniert
+> der Beschluss unverändert — dann fehlt nur der Bezug zum Haushaltsbetrag auf der
+> Karte selbst.
 
 ### E2 — Was, wenn Gutschriften die Ausgaben übersteigen? *(Fehler 5)* — ✅ **ENTSCHIEDEN 05.08.2026**
 

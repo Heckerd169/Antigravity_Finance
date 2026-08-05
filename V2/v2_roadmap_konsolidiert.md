@@ -86,12 +86,17 @@ statt sie zu verlängern.
 Von den fünf Befunden sind **vier erledigt**: `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11)
 und `BF-2` (v2-12).
 
-**Paket 1 besteht damit nur noch aus `BF-4`** — und der hängt an **E1**. Das ist
-zugleich die schwerste der drei Entscheidungen: Sie legt fest, was die Zahl auf einer
-gemeinsamen Karte überhaupt bedeutet, und zieht Design-Doku §4.5 nach sich. Zwei
-unabhängige Argumente dafür sind seit dem 05.08. dokumentiert (siehe am Punkt selbst).
+**Paket 1 besteht damit nur noch aus `BF-4`** — und der ist seit **E1** (05.08.2026)
+**nicht mehr blockiert**. Er ist der letzte der fünf Befunde und zugleich der größte:
+Eingriff in `calculate_sparrate_for_month`, damit Probe auf der Übungs-Datenbank
+(`db-eingriff`), plus ein Patch an Design-Doku §4.5 — dort kehrt sich eine
+ausdrücklich dokumentierte Position um.
 
-Ohne jede weitere Entscheidung baubar sind:
+> **Vor dem Bauen: eine kleine `design-direktor`-Runde.** E1 legt fest, dass die Karte
+> den eigenen Anteil zeigt — **nicht**, ob der Haushaltsbetrag daneben sichtbar bleibt
+> und in welcher Form. Diese eine Anzeige-Frage ist offen (Beschluss-Record zu E1).
+
+Ohne jede Entscheidung baubar sind außerdem:
 
 1. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket, liefert sofort
    Wert.
@@ -99,9 +104,16 @@ Ohne jede weitere Entscheidung baubar sind:
    im Schaufenster-Popup), `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die
    Schneidbarkeit von **Paket 4**.
 
-**Nur noch EINE Entscheidung blockiert Arbeit:** **E1** — Was bedeutet die Zahl auf
-einer gemeinsamen Karte? *(blockiert `BF-4`)*. Empfehlung und Beweismaterial in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7.
+> **✅ Seit 05.08.2026 blockiert KEINE Entscheidung mehr Arbeit.** E1, E2 und E3 sind
+> alle gefallen. `BF-4` ist damit baubar; was er noch braucht, steht am Punkt selbst.
+
+> **✅ E1 ist am 05.08.2026 entschieden** — „die Zahlung ist mein Anteil": Eine
+> gemeinsame Karte plant im Haushaltsbetrag, **zeigt den eigenen Anteil**, und eine
+> zugeordnete echte Zahlung wird **unverändert übernommen, ohne zweiten Abzug**.
+> Belegt durch die Messung vom 05.08.: Bei allen vier gemeinsamen Karten entspricht
+> der überwiesene Betrag dem rechnerischen Anteil **auf den Cent**, in Mai, Juni und
+> Juli. **Damit kehrt sich Design-Doku §4.5 um** — das ist eine geänderte
+> Produkt-Entscheidung, kein Fehler-Fix, und wird als solche kenntlich gemacht.
 
 > **✅ E3 ist am 05.08.2026 entschieden** — eigene Formulierung für den Gleichstand,
 > nach Empfehlung. Umgesetzt in v2-12 als dritte Zeile `genau nach Plan` (neutral),
@@ -129,7 +141,7 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Diskussion | **ja** | ⬜ | Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
+| BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Bug | **ja** | ⬜ | **E1 ist am 05.08.2026 entschieden — der Punkt ist baubar, nicht mehr blockiert.** Regel: Die Karte plant im Haushaltsbetrag, **zeigt den eigenen Anteil**, eine zugeordnete Zahlung wird **unverändert übernommen** (kein zweiter Abzug). **Vor dem Bauen:** kurze `design-direktor`-Runde zu der einen offenen Anzeige-Frage (bleibt der Haushaltsbetrag als zweite Zeile sichtbar?). **Beim Bauen:** Eingriff in `calculate_sparrate_for_month` → `db-eingriff` mit Übungs-DB-Probe; Achtung auf die Reichweite, denn `get_year_deviation_drivers` wendet den Anteil ebenfalls selbst an (B2-Invariante prüfen). **Design-Doku §4.5 kehrt sich um** und ist als geänderte Produkt-Entscheidung kenntlich zu machen, nicht stillschweigend zu ersetzen. Ursprünglicher Befund: Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
 
 > BF-5 und BF-4 fassen beide die Rechenfunktionen an → gemeinsame Übungs-DB-Probe,
 > wenn sie im selben Sprint laufen. Fähigkeit `db-eingriff`.
@@ -468,6 +480,7 @@ Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung
 · fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
 `RM-1`, `RM-4` nach §4 gewandert; Paket 2 leer bis auf `RM-2`) · nach der
 **Entscheidung E2** (`BF-5` freigegeben) · nach **Sprint v2-11** (`BF-5` erledigt,
-Migration angewendet und verifiziert, Juli +900,00 €) · **zuletzt nach Sprint v2-12** —
-`BF-2` erledigt (Entscheidung `E3`); **Paket 1 besteht nur noch aus `BF-4`**, und
-**E1 ist die einzige Entscheidung, die noch Arbeit blockiert***
+Migration angewendet und verifiziert, Juli +900,00 €) · nach **Sprint v2-12** (`BF-2`
+erledigt, Entscheidung `E3`) · **zuletzt nach der Entscheidung E1** (05.08.2026) —
+**Paket 1 besteht nur noch aus `BF-4`, und der ist seit E1 baubar. Es blockiert keine
+Entscheidung mehr Arbeit.***
