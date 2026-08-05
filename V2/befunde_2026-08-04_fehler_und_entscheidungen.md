@@ -280,8 +280,9 @@ bleibt negativ, aber die alarmierende Zahl war zu drei Vierteln dieser Fehler.
 Fixkosten und Budget zählt der Netto-Abfluss, bei Einnahmen der Netto-Zufluss.
 Anzeige-Konvention bleibt (Kosten als positive Zahl).
 
-**Offen:** Verhalten, wenn Gutschriften die Ausgaben übersteigen — siehe
-Entscheidung **E2**.
+**Entschieden am 05.08.2026 (E2, siehe §7):** Der Netto-Betrag zählt so, wie er ist,
+**auch unter null** — es wird nicht bei 0 gekappt. Damit ist dieser Fehler
+**vollständig baubar**; es steht keine Entscheidung mehr aus.
 
 **Einordnung:** Eingriff in die Rechenfunktion → Übungs-Datenbank-Probe. Änderung
 an Design-Doku §11.
@@ -290,7 +291,9 @@ an Design-Doku §11.
 
 ## 7. Offene Entscheidungen
 
-Ohne diese drei Antworten darf an den Fehlern 4 und 5 nicht gebaut werden.
+**Stand 05.08.2026: E2 ist entschieden, E1 und E3 stehen noch aus.** Damit ist
+**Fehler 5 baubar** (er hing allein an E2). Fehler 4 wartet weiter auf **E1**,
+Fehler 2 auf **E3**.
 
 ### E1 — Was bedeutet die Zahl auf einer gemeinsamen Karte? *(Fehler 4)*
 
@@ -302,14 +305,49 @@ Haushaltsbetrag, von dem der Anteil genommen wird?
 *Empfehlung Claude Code:* planen im Haushaltsbetrag, anzeigen als eigener
 Anteil, zugeordnete Zahlung unverändert übernehmen.
 
-### E2 — Was, wenn Gutschriften die Ausgaben übersteigen? *(Fehler 5)*
+### E2 — Was, wenn Gutschriften die Ausgaben übersteigen? *(Fehler 5)* — ✅ **ENTSCHIEDEN 05.08.2026**
 
 Beispiel: 50 € ausgelegt, 80 € zurückbekommen. Zeigt die Karte dann −30 €
 (ehrlich, aber ungewohnt) oder bleibt sie bei 0 € stehen (ruhiger, aber die
 30 € fehlen in der Sparrate)?
 
-*Empfehlung Claude Code:* die ehrliche Variante. Eine Zahl zu verschlucken ist
+*Empfehlung Claude Code war:* die ehrliche Variante. Eine Zahl zu verschlucken ist
 genau die Art stiller Ungenauigkeit, die zu diesen Befunden geführt hat.
+
+> **Beschluss Dominik, 05.08.2026: die ehrliche Variante — „ehrlich rechnen".**
+>
+> **Regel.** Der Netto-Betrag einer Karte zählt so, wie er ist — **auch wenn er unter
+> null geht**. Es wird **nicht** bei 0 gekappt. Übersteigen die Gutschriften die
+> Ausgaben, ist der Verbrauch negativ und verbessert die Sparrate entsprechend.
+>
+> **Anzeige.** Kein neuer Kartenzustand. Bei Plan 150 € und Verbrauch −30 € steht auf
+> der Karte folgerichtig `Noch 180 € frei` — mehr als der Plan. Das ist sachlich
+> richtig: Es *ist* mehr zurückgekommen als ausgegeben wurde. Der Fall ist im
+> Bestand **noch nie aufgetreten** (Messung unten).
+>
+> **Bewusst verworfen (Variante 2, „bei null kappen").** Sie hätte still Geld aus der
+> Sparrate entfernt und widerspricht **LL-20**, das für diese Familie von Fällen
+> bereits festhält: ein fehlender Wert heißt „keine Anzeige", **nicht 0**.
+>
+> **Offen gehalten (Variante 3, „eigener Wortlaut").** Statt `Noch 180 € frei` könnte
+> die Karte im Klartext `30 € zurück` sagen. Das **rechnet identisch** zur getroffenen
+> Entscheidung und ist deshalb **jederzeit nachrüstbar**, ohne die Rechenfunktion
+> erneut anzufassen — es wäre eine reine Wortlaut-Ergänzung in §7/§12.3 und bräuchte
+> dann einen kurzen `design-direktor`-Moment. Nicht Teil dieses Beschlusses.
+>
+> **Warum ohne Design-Direktor entschieden.** E2 ist keine Gestaltungsfrage, sondern
+> eine Rechenfrage mit Geldwirkung: Darf vorhandenes Geld aus der Sparrate
+> verschwinden? Das Sollverhalten steht dem Grunde nach bereits in Design-Doku §11
+> („bei BUDGET senkt die Gutschrift den Verbrauch"); der Beschluss denkt diese Regel
+> nur zu Ende, statt eine neue Gestaltung zu erfinden.
+>
+> **Messung vor der Entscheidung (05.08.2026, lesend gegen Produktion).** Über den
+> gesamten Bestand hat **keine einzige Karte** in irgendeinem Monat mehr Gutschriften
+> als Ausgaben. Die einzige Karte mit gemischten Vorzeichen ist „Aline Geburtstag"
+> (Juli 2026, 6 Gutschriften / 7 Ausgaben, netto **−168,11 €** — also echt
+> ausgegeben). E2 hat damit **heute keine Geldwirkung**; entschieden wurde eine Regel
+> für den Fall, dass er eintritt. Die 900 € aus `BF-5` hängen am weggeworfenen
+> Vorzeichen und kommen unabhängig von E2 zurück.
 
 ### E3 — Dritte Zeile „genau nach Plan"? *(Fehler 2)*
 

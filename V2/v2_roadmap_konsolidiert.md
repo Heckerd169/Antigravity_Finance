@@ -72,29 +72,39 @@ keinem anderen Paket und liefert als Einziges Wert, **bevor** kuratiert ist. Sie
 an dieser Stelle, weil Paket 4 noch nicht schneidbar ist — sie füllt die Wartezeit,
 statt sie zu verlängern.
 
-**Was als Nächstes dran ist — die Lage hat sich mit v2-10 verschoben.** Von den fünf
-Befunden waren drei entschieden und sofort umsetzbar; **zwei davon sind jetzt
-erledigt** (`BF-3`, `BF-1`). Was in Paket 1 übrig bleibt — `BF-5`, `BF-2`, `BF-4` —
-hängt **vollständig an den Entscheidungen E1, E2 und E3**. Paket 1 ist damit nicht
-mehr „das Nächste", sondern **blockiert**; der Rechenfehler mit 900 € Wirkung
-(`BF-5`) wartet auf **E2**, nicht auf freie Kapazität.
+**Was als Nächstes dran ist — Stand 05.08.2026 nach der E2-Entscheidung.**
+Von den fünf Befunden sind zwei erledigt (`BF-3`, `BF-1`, beide in v2-10). Mit **E2**
+ist am 05.08. die Entscheidung gefallen, die `BF-5` blockiert hat.
 
-Drei Wege stehen offen, in dieser Reihenfolge empfohlen:
+**`BF-5` ist damit der nächste Sprint** — und der lohnendste: Er holt **900 €** in die
+Juli-Sparrate zurück (−1.222,75 → −322,75 €) und ist der einzige Punkt aus Paket 1,
+der ohne weitere Entscheidung baubar ist. Er fasst eine Rechenfunktion an, braucht
+also die Fähigkeit `db-eingriff` und eine Probe auf der Übungs-Datenbank — **die steht
+pausiert und muss vorher geweckt werden.**
 
-1. **E1/E2/E3 entscheiden** — jeweils mit fertiger Empfehlung in
-   `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7. Entsperrt Paket 1 und
-   damit die verlässlichen Zahlen, auf denen alles andere aufbaut.
-2. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket und an keiner
-   Entscheidung, liefert sofort Wert.
-3. **Eine Runde `design-direktor`** — sie entsperrt gleich drei Dinge: `RM-2`
-   (Rangfolge im Schaufenster-Popup), `PA-1` (fünf offene Punkte zur Darstellung,
-   Rechnung fertig) und die Schneidbarkeit von **Paket 4**.
+Danach bleiben in Paket 1 nur noch die beiden entscheidungs-gebundenen Punkte:
+`BF-2` wartet auf **E3**, `BF-4` auf **E1**. `BF-2` ist ohnehin erst **nach** `BF-5`
+sinnvoll, weil die Juli-Zahl dann stimmt und der neue Text am echten Fall zu sehen ist.
 
-**Drei Entscheidungen blockieren Arbeit** (alle in
+Ohne jede weitere Entscheidung baubar sind außerdem:
+
+1. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket, liefert sofort
+   Wert.
+2. **Eine Runde `design-direktor`** — entsperrt gleich drei Dinge: `RM-2` (Rangfolge
+   im Schaufenster-Popup), `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die
+   Schneidbarkeit von **Paket 4**.
+
+**Noch zwei Entscheidungen blockieren Arbeit** (beide in
 `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7, jeweils mit Empfehlung):
-**E1** Was bedeutet die Zahl auf einer gemeinsamen Karte? · **E2** Was, wenn
-Gutschriften die Ausgaben übersteigen? · **E3** Braucht Gleichstand eine eigene
-Formulierung? Ohne sie darf an den Befunden 4 und 5 nicht gebaut werden.
+**E1** Was bedeutet die Zahl auf einer gemeinsamen Karte? *(blockiert `BF-4`)* ·
+**E3** Braucht Gleichstand eine eigene Formulierung? *(blockiert `BF-2`)*.
+
+> **✅ E2 ist am 05.08.2026 entschieden** — „ehrlich rechnen": Der Netto-Betrag einer
+> Karte zählt so, wie er ist, **auch unter null**; es wird nicht bei 0 gekappt. Damit
+> ist `BF-5` freigegeben. Der Fall hat heute **keine Geldwirkung** — im gesamten
+> Bestand hat keine Karte mehr Gutschriften als Ausgaben; entschieden wurde die Regel
+> für den Fall, dass er eintritt. Ohne Design-Direktor entschieden, weil es eine
+> Rechenfrage ist und nicht eine der Gestaltung.
 
 ---
 
@@ -111,7 +121,7 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-5 | Fragmente werden ohne Vorzeichen addiert | Bug | **ja** | ⬜ | `SUM(ABS(...))` wirft Vorzeichen weg. Betrifft heute **eine** Karte („Aline Geburtstag", Juli) mit **900,00 €** Wirkung. Sollverhalten steht bereits in Design-Doku §11 — der Leitfaden beschreibt ein Verhalten, das es nie gab. **Hängt an E2.** Prüfanker: Juli-Ist −1.222,75 → −322,75, alle anderen Monate unverändert. |
+| BF-5 | Fragmente werden ohne Vorzeichen addiert | Bug | **ja** | ⬜ | `SUM(ABS(...))` wirft Vorzeichen weg. Betrifft heute **eine** Karte („Aline Geburtstag", Juli) mit **900,00 €** Wirkung. Sollverhalten steht bereits in Design-Doku §11 — der Leitfaden beschreibt ein Verhalten, das es nie gab. **E2 ist am 05.08.2026 entschieden („ehrlich rechnen", Netto zählt auch unter null, keine Kappung bei 0) — dieser Punkt ist damit vollständig baubar und der einzige aus Paket 1, der es ist.** Prüfanker: Juli-Ist −1.222,75 → −322,75, alle anderen Monate unverändert. Eingriff in eine Rechenfunktion → Fähigkeit `db-eingriff`, Probe auf der Übungs-Datenbank (steht pausiert, muss vorher geweckt werden). Berührt Design-Doku §11 — der Satz dort beschreibt ein Verhalten, das es nie gab, und ist mit zu korrigieren. |
 | BF-2 | Sinnloser Hinweis unter dem Ring bei negativer Sparrate | Bug | nein | ⬜ | „Plan fast 0 € — −1.223 € gespart". Aus zwei Textzweigen wird einer, vorzeichensicher. **Hängt an E3.** Sinnvoll **nach** BF-5, weil die Juli-Zahl dann stimmt und der neue Text am echten Fall zu sehen ist. |
 | BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Diskussion | **ja** | ⬜ | Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
 
@@ -447,6 +457,7 @@ beantworten, was offen ist — nicht warum.
 kategorien-orientierten Fassung vom 01. Juni 2026 · fortgeschrieben am
 05. August 2026 (Ideen-Runde: Idee 1 → Paket 2, Idee 2 → Paket 4 und KAT-4,
 Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung gezogen)
-· zuletzt fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
-`RM-1`, `RM-4` nach §4 gewandert; Paket 1 ist seither durch E1/E2/E3 blockiert,
-Paket 2 leer bis auf `RM-2`)*
+· fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
+`RM-1`, `RM-4` nach §4 gewandert; Paket 2 leer bis auf `RM-2`) · **zuletzt am
+05. August 2026 nach der Entscheidung E2** — `BF-5` ist freigegeben und der nächste
+Sprint; in Paket 1 bleiben nur noch `BF-2` (wartet auf E3) und `BF-4` (wartet auf E1)*
