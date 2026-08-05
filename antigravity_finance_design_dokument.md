@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.6 (V2 · v2-07 Doku-Nachzug)
+**Version:** 3.1.7 (V2 · v2-10 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
@@ -20,6 +20,8 @@
 > **Changelog v3.1.5 (24.07.2026):** §7 Karten-Lebenszyklus (Beenden/Löschen/Papierkorb ersetzt Verbergen, Sprint v2-05).
 >
 > **Changelog v3.1.6 (25.07.2026, Sprint v2-07):** §8 Übertrags-Schalter der Rohmasse (C1 — Standard „aus", Zähler am Schalter, erfasst beide `transfer_type`-Werte); §8 Backfill-Toast-Wortlaut ab 50 nachgepflegten IBANs (C2); §8 Monats-Scope server-seitig statt als JS-Nachfilter (P0-Bugfix, siehe `sprints/sprint_v2-07_review.md` §3); §11 Badge-Farbe karten-spezifisch über sechs deterministische Töne (A1 — schließt Sprint-8-OQ1); §3 sechs neue `--badge-hue-*`-Tokens.
+>
+> **Changelog v3.1.7 (05.08.2026, Sprint v2-10):** §7 Positionsregel für Overlays und Popups — immer mittig, einzige Ausnahme das Karten-Kontextmenü (`RM-4`); §8 Verweis auf dieselbe Regel für Recurrence-Popup und Direktklick-Overlay; §8 Fragment-Stack zeigt den Verwendungszweck statt des Empfängers, ausschließlich in der Anzeige (`RM-1`); §11 Feld-Tabelle nachgezogen — KI-Vorschlags-Badges seit v2-10 nicht mehr gerendert, Spezifikation bleibt für die Wiedereinschaltung stehen (`BF-1`).
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -676,6 +678,16 @@ Funktional analog zu Fixkosten-Karten — zwei Zustände statt drei (kein Pendan
 
 Erscheint bei Hover oben links — Default: unsichtbar.
 
+**Position (v2-10, RM-4):** Overlays und Popups erscheinen immer mittig im Bild, an
+derselben Stelle; sie unterscheiden sich in der Größe, nie im Ort. **Kontextmenüs**
+sind davon ausgenommen — sie erscheinen am auslösenden Element, weil sie sonst ihren
+Bezug verlieren. Konkret: Von den sieben Overlays und Popups der App ist
+ausschließlich das Karten-Kontextmenü hier (`cards/card-interactive.tsx`) am
+auslösenden ⋯-Icon verankert; die übrigen sechs — darunter „Betrag anpassen" und
+„Karte beenden…" weiter unten in diesem Abschnitt — zeichnen zentriert per
+React-Portal an `document.body`. Der Rückgängig-Toast ist **kein** Overlay in diesem
+Sinne: er behält seine eigene, in §2.4 spezifizierte Position unten Mitte.
+
 | Karten-Typ | Optionen |
 |---|---|
 | Fixkosten / Einnahmen / Budget | `Betrag anpassen` / `Letzte Zahlung in Monat X` |
@@ -779,6 +791,13 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 **Leerer Slot — Weg 2 (Direktklick):**
 → Overlay: Name + Betrag + Karten-Typ + Frequenz + Attribution. Gilt ab dem aktuell angezeigten Monat.
 
+**Position (v2-10, RM-4):** Das Recurrence-Popup (Weg 1) und das Overlay aus Weg 2
+(Direktklick) folgen derselben Regel wie alle Overlays und Popups der App (§7,
+Abschnitt „Kontextmenü (⋯-Icon)"): sie öffnen zentriert, unabhängig davon, an welcher
+Position der „Leerer Slot" im Karussell steht, von dem aus sie ausgelöst wurden.
+Keines der beiden ist eine Ausnahme — die einzige Ausnahme in der App ist das
+Karten-Kontextmenü.
+
 **Wichtig zur Frequenz „Einmalig":** Nach Bestätigung erzeugt sich die Karte mit `first_active_month = last_active_month = aktuell angezeigter Monat`. Sie verschwindet in Folgemonaten — kein UI-Lärm, keine Anzeige in zukünftigen Monaten.
 
 ### Fragment-Stack (Rechts)
@@ -790,6 +809,7 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 - Zugeordnete Fragmente: `opacity: 0.22`, `pointer-events: none`
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
+- **Angezeigte Beschreibung (v2-10, RM-1):** Die Fragment-Karte zeigt **den letzten durch `|` getrennten Teil** der gespeicherten Beschreibung; ist dieser leer, fällt sie auf den **ersten** Teil zurück. Damit steht der Verwendungszweck vorn statt des Empfängers, ohne dass die Anzeige die Herkunft des Fragments kennen muss: DKB Visa liefert ein Feld ohne Trennzeichen (unverändert), DKB Giro `Empfänger | Zweck`, Cortal `Sender | Buchungstext | Zweck`. **Ausschließlich Anzeige.** Der gespeicherte Text bleibt unverändert — er ist Bestandteil des Duplikat-Hashes, des Trigram-Index der Zuordnung und des Beschreibungs-Tiebreakers der Sortierung unten. Das `title`-Attribut trägt weiterhin den **vollständigen** Text; das Abschneiden mit „…" bleibt reines CSS (`text-overflow: ellipsis`).
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
 - **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment hat **kein** Tap-/Drag-Verhalten (Cursor `default`, `pointer-events: none`). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
 - **Übertrags-Schalter (v2-07, C1):** Fragmente mit gesetztem `transfer_type` (`INTERNAL_TRANSFER` **oder** `ASSET_REALLOCATION`) sind aus der Arbeitsfläche ausgeblendet. Sie erscheinen nur, wenn der Schalter **„Überträge anzeigen"** eingeschaltet ist; **Standard ist „aus"**. Begründung: ein Fragment mit gesetztem `transfer_type` kann per Daten-Invariante nie einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`) und gehört deshalb nicht auf die Fläche, auf der kuratiert wird.
@@ -1091,11 +1111,13 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Feld | Typographie | Farbe |
 |---|---|---|
 | Betrag | `16px`, `font-weight: 200`, `tabular-nums` | Negativ: `#FF453A` · Positiv: `#3ECFAF` |
-| Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated |
+| Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
 | Datum | `9px` | `rgba(255,255,255,.15)` |
-| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | Karten-spezifisch — einer von sechs `--badge-hue-*`-Tönen (§3), deterministisch aus dem Kartennamen |
+| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen |
 
 **Badge-Farbe (v2-07, A1):** Welchen der sechs Töne ein Badge trägt, bestimmt allein der **Kartenname** — über eine deterministische Funktion, nicht über eine Datenbank-Spalte. Damit ist die Farbe stabil über Renders, Sitzungen und Geräte hinweg und unabhängig von Anzahl, Reihenfolge oder Anlage-Zeitpunkt der Karten; eine Karte behält ihre Farbe, wenn andere Karten angelegt oder gelöscht werden. Groß-/Kleinschreibung und Randleerzeichen im Namen ändern den Ton nicht. Bei mehr Karten als Tönen teilen sich Karten einen Ton — die Farbe ist ein **Gruppierungs-Hinweis, kein Identitätsmerkmal**; der Kartenname steht daneben. Deckkraft, Typografie und Geometrie des Badges sind unverändert; variabel ist ausschließlich der Farbton. Das **TRANSFER-Badge ist vom Mapping ausgenommen** und behält den neutralen Grau-Soft-Ton auf `--fragment-hue` (AD5, Sprint 9: Transfer ist Fakt, kein Vorschlag).
+
+**Nicht mehr gerendert (v2-10, BF-1):** Die KI-Vorschlags-Badges sind aus der Anzeige genommen. Anlass war ein Umbruch: Badge und Betrag teilten sich eine Zeile, das Badge durfte weder schrumpfen noch umbrechen, also wurde der Betrag zusammengedrückt und das Euro-Zeichen rutschte in die zweite Zeile. Der Vorschlag wird in der Datenbank unverändert **weiter berechnet** und die sechs Farbtöne bleiben im Code — die Anzeige ist über eine einzelne Konstante (`SHOW_SUGGESTION_BADGES`) wieder einschaltbar. Unberührt bleiben das **TRANSFER-Badge** und die **automatische Zuordnung ab 95 % Konfidenz**: sie ist keine Empfehlung, sondern eine fertige Zuordnung. Der Betrag trägt zusätzlich ein Umbruch-Verbot, damit die Fehlerklasse auch für das TRANSFER-Badge dauerhaft geschlossen ist.
 
 *Historie:* Sprint 8 (OQ1) hatte übergangsweise **einen** generischen Gold-Ton für alle Karten gesetzt und die karten-spezifische Farbe als V2 vorgemerkt. Die Tabellen-Zelle „Karten-spezifisch" war seither die unerfüllte Soll-Aussage; v2-07 löst sie ein. `--badge-hue-1` ist genau der Gold-Ton aus Sprint 8.
 

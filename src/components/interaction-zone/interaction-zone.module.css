@@ -576,6 +576,14 @@
   letter-spacing: -.8px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  /* v2-10 P2 (BF-1): Umbruch-Verbot. Ohne dieses nowrap ist die kleinste
+     Breite des Flex-Items die des breitesten "Wortes" — bei "−1.089,26 €"
+     also der Zahlenteil, worauf das € in die zweite Zeile rutscht, sobald
+     ein Kästchen daneben Platz beansprucht. Mit nowrap zählt die ganze
+     Zeichenkette als Mindestbreite (min-width: auto am Flex-Item), der
+     Betrag wird also nicht mehr zusammengedrückt. Schließt die Fehlerklasse
+     dauerhaft — auch für das TRANSFER-Kästchen, das bleibt. */
+  white-space: nowrap;
 }
 
 .fragmentBadge {

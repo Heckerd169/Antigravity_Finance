@@ -26,23 +26,31 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 05.08.2026 zeilengenau nachgezählt.*
+*Alle Zahlen am 05.08.2026 nach Sprint v2-10 zeilengenau nachgezählt.*
 
-| | Anzahl |
-|---|---|
-| Offene Pakete | **14** |
-| Themen darin | **40** |
-| Hausaufgaben ohne eigenen Sprint | **8** |
-| **Offen gesamt** | **48** |
-| Erledigt | 25 |
-| Hinfällig geworden | 4 |
+| | Anzahl | vor v2-10 |
+|---|---|---|
+| Offene Pakete | **14** | 14 |
+| Themen darin | **37** | 40 |
+| Hausaufgaben ohne eigenen Sprint | **7** | 8 |
+| **Offen gesamt** | **44** | 48 |
+| Erledigt | 29 | 25 |
+| Hinfällig geworden | 4 | 4 |
 
-> Die 48 setzen sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
+> **Sprint v2-10 hat vier Themen geschlossen:** `BF-3` und `BF-1` aus Paket 1, `RM-1`
+> aus Paket 2 und die Hausaufgabe `RM-4`. Die Zahl der offenen Pakete bleibt bei 14 —
+> beide berührten Pakete haben noch Reste (siehe unten). `PA-1` wurde angefasst, aber
+> bewusst nicht gebaut: Die Rechnung steht und ist belegt, die Darstellung ist
+> unentschieden.
+
+> *Herkunft der Zahl (Stand 05.08.2026 **vor** v2-10, zur Nachvollziehbarkeit):* Die
+> damaligen 48 setzten sich zusammen aus 28 offenen Themen der Alt-Roadmap **minus 3**
 > (F1, F2, F3 sind unter M6 zu einer Zeile zusammengefasst) **plus 11 neue**:
 > die fünf Befunde vom 04.08., zwei Datenbasis-Themen und zwei Übungs-DB-Hausaufgaben,
 > die bisher nur im Projekt-Gedächtnis standen, sowie zwei Feinschliff-Punkte
 > (B2-F, A1-F), die zuvor nur im Fließtext erwähnt waren — **plus 12** aus der
 > Ideen-Runde vom 04./05.08.2026 (RM-1…RM-4, KAT-1…KAT-4, LQ-1…LQ-3, PA-1).
+> Davon sind mit v2-10 vier geschlossen worden → **44**.
 
 **Die Pakete 1, 2, 4, 5 und 6 sind eine Kette, keine Liste.** Jedes baut das Werkzeug
 für das nächste:
@@ -64,10 +72,23 @@ keinem anderen Paket und liefert als Einziges Wert, **bevor** kuratiert ist. Sie
 an dieser Stelle, weil Paket 4 noch nicht schneidbar ist — sie füllt die Wartezeit,
 statt sie zu verlängern.
 
-**Was als Nächstes dran ist:** Paket 1. Ein Rechenfehler, der 900 € in der
-Juli-Sparrate bewegt, wiegt schwerer als jedes offene Feature — und drei der fünf
-Befunde sind bereits entschieden und sofort umsetzbar. **Paket 4 ist noch nicht
-schneidbar** und braucht vorher eine Design-Direktor-Runde.
+**Was als Nächstes dran ist — die Lage hat sich mit v2-10 verschoben.** Von den fünf
+Befunden waren drei entschieden und sofort umsetzbar; **zwei davon sind jetzt
+erledigt** (`BF-3`, `BF-1`). Was in Paket 1 übrig bleibt — `BF-5`, `BF-2`, `BF-4` —
+hängt **vollständig an den Entscheidungen E1, E2 und E3**. Paket 1 ist damit nicht
+mehr „das Nächste", sondern **blockiert**; der Rechenfehler mit 900 € Wirkung
+(`BF-5`) wartet auf **E2**, nicht auf freie Kapazität.
+
+Drei Wege stehen offen, in dieser Reihenfolge empfohlen:
+
+1. **E1/E2/E3 entscheiden** — jeweils mit fertiger Empfehlung in
+   `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7. Entsperrt Paket 1 und
+   damit die verlässlichen Zahlen, auf denen alles andere aufbaut.
+2. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket und an keiner
+   Entscheidung, liefert sofort Wert.
+3. **Eine Runde `design-direktor`** — sie entsperrt gleich drei Dinge: `RM-2`
+   (Rangfolge im Schaufenster-Popup), `PA-1` (fünf offene Punkte zur Darstellung,
+   Rechnung fertig) und die Schneidbarkeit von **Paket 4**.
 
 **Drei Entscheidungen blockieren Arbeit** (alle in
 `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7, jeweils mit Empfehlung):
@@ -90,8 +111,6 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-3 | Einkommens-Popup öffnet ~80 px schmal, unbenutzbar | Bug | nein | ⬜ | **Entschieden, sofort umsetzbar.** Popup wird ohne Portal innerhalb eines Elements mit `transform` gezeichnet; ein Vorfahre mit `transform` wird zum Bezugsrahmen für `position: fixed`. Alle acht anderen Overlays nutzen bereits Portale. **Blockiert aktiv das Eintragen von Gehältern — höchste Dringlichkeit.** Die Zentrierung ist im Code bereits hinterlegt (`place-items: center`) und greift nur wegen des fehlenden Portals nicht — die Reparatur stellt damit zugleich die Positionsregel her. **`RM-4` hier anhängen.** |
-| BF-1 | Euro-Zeichen bricht auf die nächste Zeile | Bug | nein | ⬜ | **Entschieden.** Alle KI-Vorschlags-Kästchen entfallen aus der Anzeige; Datenbank rechnet weiter, später mit einer Zeile wieder einschaltbar. Die sechs Badge-Farbtöne bleiben ungenutzt im Code. Zusätzlich Umbruch-Verbot für den Betrag. Schließt zugleich den Badge-Überlauf aus v2-07-Review §5.1. |
 | BF-5 | Fragmente werden ohne Vorzeichen addiert | Bug | **ja** | ⬜ | `SUM(ABS(...))` wirft Vorzeichen weg. Betrifft heute **eine** Karte („Aline Geburtstag", Juli) mit **900,00 €** Wirkung. Sollverhalten steht bereits in Design-Doku §11 — der Leitfaden beschreibt ein Verhalten, das es nie gab. **Hängt an E2.** Prüfanker: Juli-Ist −1.222,75 → −322,75, alle anderen Monate unverändert. |
 | BF-2 | Sinnloser Hinweis unter dem Ring bei negativer Sparrate | Bug | nein | ⬜ | „Plan fast 0 € — −1.223 € gespart". Aus zwei Textzweigen wird einer, vorzeichensicher. **Hängt an E3.** Sinnvoll **nach** BF-5, weil die Juli-Zahl dann stimmt und der neue Text am echten Fall zu sehen ist. |
 | BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Diskussion | **ja** | ⬜ | Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
@@ -108,9 +127,14 @@ Rohmasse-Fragment wird heute vom Empfänger gefüllt, der Verwendungszweck fäll
 dieses Paket das **Werkzeug für Paket 6** (Kuratierung 2026).
 **Kein Datenbank-Eingriff, reine Anzeige.** Quelle: Ideen-Runde 04.08.2026.
 
+> **Stand nach v2-10:** `RM-1` ist erledigt — das Paket ist damit **leer bis auf
+> `RM-2`**. Und `RM-2` ist nicht schneidbar, solange die Rangfolge der Angaben im
+> Schaufenster-Popup nicht entschieden ist (`design-direktor` vor dem Bauen). Das
+> Paket besteht also faktisch aus einer einzigen, auf eine Gestaltungsrunde
+> wartenden Zeile.
+
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| RM-1 | Beschreibung auf den Verwendungszweck kürzen | Feature | nein | ⬜ | **Entschieden.** Regel: **immer der letzte durch `\|` getrennte Teil**; ist er leer, Rückfall auf den Anfang. Deckt alle drei Quellen ab, ohne deren Herkunft zu kennen (Giro 2 Teile · Cortal 3 · Visa 0). Greift auf 1.547 von 1.548 Fragmenten. **Ausschließlich beim Anzeigen** — der gespeicherte Text ist Bestandteil des Duplikat-Hashes, des Trigram-Index der KI-Zuordnung und des Sortier-Tiebreakers und bleibt unangetastet. Abschneiden mit „…" ist bereits gebaut (`text-overflow: ellipsis`), kein Aufwand. Berührt Design-Doku §8. |
 | RM-2 | Schaufenster-Popup für ein Fragment | Feature | nein | ⬜ | **Entschieden: reines Anzeigen, keine Knöpfe** — die Gegenleistung dafür, dass RM-1 Information von der Karte nimmt. Zeigt den vollständigen Text sowie Betrag, Datum, Status und bei Überträgen das **Gegenkonto mit „eigenes Konto"-Hinweis** (`counterparty_iban`, heute schon vorhanden). **Klickbar werden alle Fragmente**, auch zugeordnete und Überträge — beide sind heute per `pointer-events: none` tot gestellt, das ändert Design-Doku §8. Natürlicher Ort für den KI-Vorschlag, den BF-1 von der Karte nimmt. **Gestaltungsfrage offen:** Rangfolge der Angaben und Hauptzeile → `design-direktor` vor dem Bauen. |
 
 > Bewusst **nicht** enthalten: Handlungen im Popup (Zuordnen, Lösen, Umschichten
@@ -302,8 +326,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Stand | Bemerkung |
 |---|---|---|---|
-| PA-1 | Konsequenz-Anzeige beim Einkommens-Eintrag | ⬜ | **An BF-3 anhängen** (Paket 1) — zweite Sache, die am selben Popup andockt. Nach dem Eintragen eines neuen Einkommens zeigt die App unmittelbar, welche Daueraufträge sich dadurch ändern: je gemeinsamem Posten **alt → neu → Differenz**. Symmetrisch, greift bei jeder Einkommensänderung auf beiden Seiten. **Kein Häkchen „umgestellt"** — Handpflege hat in dieser App eine Erfolgsbilanz von null. Rechenweg existiert bereits: `get_split_factor` liest den jüngsten Einkommens-Eintrag ≤ Monat, Vorausdatieren funktioniert also ohne neue Logik. **Achtung:** Der Faktor rechnet mit `gross_annual`, nicht mit dem Netto. **⚠️ Größte Hausaufgabe der Liste** — eine kleine Rechnung plus Anzeige, keine Notiz. Wächst sie im Sprint, herausschneiden und zu einem eigenen Thema machen. |
-| RM-4 | Positionsregel für Overlays in die Design-Doku schreiben | ⬜ | **An BF-3 anhängen** (Paket 1) — dieselbe Sache: BF-3 ist die einzige Verletzung, die Reparatur ist die Durchsetzung. Wortlaut entschieden: *„Overlays und Popups erscheinen immer mittig im Bild, an derselben Stelle; sie unterscheiden sich in der Größe, nie im Ort. **Kontextmenüs** sind davon ausgenommen — sie erscheinen am auslösenden Element, weil sie sonst ihren Bezug verlieren."* Bestandsaufnahme 04.08.2026: 7 von 8 Overlays bereits zentriert, einzige bewusste Ausnahme ist das Karten-Kontextmenü (`card-interactive.tsx`, verankert am Icon). Reine Doku, kein Code. Berührt Design-Doku §7/§8. |
+| PA-1 | Konsequenz-Anzeige beim Einkommens-Eintrag | ⬜ | **An BF-3 anhängen** (Paket 1) — zweite Sache, die am selben Popup andockt. Nach dem Eintragen eines neuen Einkommens zeigt die App unmittelbar, welche Daueraufträge sich dadurch ändern: je gemeinsamem Posten **alt → neu → Differenz**. Symmetrisch, greift bei jeder Einkommensänderung auf beiden Seiten. **Kein Häkchen „umgestellt"** — Handpflege hat in dieser App eine Erfolgsbilanz von null. Rechenweg existiert bereits: `get_split_factor` liest den jüngsten Einkommens-Eintrag ≤ Monat, Vorausdatieren funktioniert also ohne neue Logik. **Achtung:** Der Faktor rechnet mit `gross_annual`, nicht mit dem Netto. **⚠️ Größte Hausaufgabe der Liste** — eine kleine Rechnung plus Anzeige, keine Notiz. Wächst sie im Sprint, herausschneiden und zu einem eigenen Thema machen. **In v2-10 angefasst und bewusst nicht gebaut** (Abbruch-Klausel des Arbeitsauftrags): Die **Rechnung ist fertig und gegen Produktion belegt** — Faktor 92.400 / (92.400 + 69.113) = 0,5721, vier gemeinsame Posten, Summe 2.033,99 € Plan → 1.163,62 € ICH-Anteil; durchgerechnetes Beispiel in `sprints/sprint_v2-10_offene_fragen.md` §5. Offen ist ausschließlich die **Darstellung**: Design-Doku §10 und §12.7 kennen keinen Zustand nach dem Speichern, und §12.7 ist die vollständige Textreferenz. Es fehlen fünf Entscheidungen (was nach dem Speichern passiert · wie man schließt, inkl. neuer UI-Copy · Spaltenköpfe · leerer Fall · ob Einnahmen-Karten mitzählen) → **eine Runde `design-direktor`**, danach ist es ein kleiner Sprint. |
 | J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. **Dringlicher geworden:** `supabase/migrations/` enthält nur zwei Patch-Dateien, der Übungs-DB-Seed ist reine Daten ohne Schema. Es gibt damit **keine versionierte Basis**, gegen die ein Eingriff in eine Rechenfunktion diffen könnte, und die Übungs-Datenbank ist aus dem Repo nicht rekonstruierbar. Spätestens vor `KAT-3` mitnehmen (Befund D15). |
 | TP-1 | Prüfwert im Übungs-DB-Runbook korrigieren | ⬜ | `supabase/test_projekt/README.md:66` nennt Juni 2026 = 4.545,32 €; gültig ist **4.589,53 €**. In der Fähigkeit `db-eingriff` vermerkt, führt also niemanden in die Irre. Beim nächsten Datenbank-Eingriff mitnehmen. |
 | TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
@@ -334,6 +357,10 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | Init-4 | Sprint-Protokoll-Tabelle in CLAUDE.md | — |
 | M0 | Automatisierte Tests mit Playwright, Pixel-Prüfungen, `smoke-agent` | v2-01 / 23.07. |
 | A1 | Karten-spezifische Badge-Farben aus dem Kartennamen | v2-07 |
+| BF-3 | Einkommens-Popup mit Portal repariert — öffnet wieder mittig und in voller Breite | v2-10 |
+| BF-1 | KI-Vorschlags-Kästchen aus der Anzeige, Umbruch-Verbot für den Betrag | v2-10 |
+| RM-1 | Rohmasse zeigt den Verwendungszweck statt des Empfängers | v2-10 |
+| RM-4 | Positionsregel für Overlays in der Design-Doku (§7/§8) | v2-10 |
 | A4 | Papierkorb-Muster über `deleted_entities`, 60-Sekunden-Aufbewahrung | v2-05 |
 | B2 | Abweichungs-Treiber `get_year_deviation_drivers` | v2-06 |
 | B3 | Rot-Regel bei negativer Kumulation | v2-03 |
@@ -417,6 +444,9 @@ beantworten, was offen ist — nicht warum.
 ---
 
 *Roadmap · Antigravity Finance · umgebaut am 04. August 2026 aus der
-kategorien-orientierten Fassung vom 01. Juni 2026 · zuletzt fortgeschrieben am
+kategorien-orientierten Fassung vom 01. Juni 2026 · fortgeschrieben am
 05. August 2026 (Ideen-Runde: Idee 1 → Paket 2, Idee 2 → Paket 4 und KAT-4,
-Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung gezogen)*
+Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung gezogen)
+· zuletzt fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
+`RM-1`, `RM-4` nach §4 gewandert; Paket 1 ist seither durch E1/E2/E3 blockiert,
+Paket 2 leer bis auf `RM-2`)*
