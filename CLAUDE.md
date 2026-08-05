@@ -8,7 +8,9 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 04. August 2026 · **nach:** v2-09 (Workflow-Vereinfachung
+> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-10 (Prüfanker auf den
+> gemessenen Stand, LL-6 um die Portal-Kehrseite ergänzt, §9-Lage nachgezogen).
+> Davor v2-09 (Workflow-Vereinfachung
 > — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
 > Roadmap nach Sprint-Paketen). Davor v2-08: 1.857 → 434 Zeilen, der Sprint-Log liegt
 > seither in `sprints/projekt_historie.md`.
@@ -441,7 +443,22 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
   sonst werden sie abgeschnitten. **Zusätzlich:** Sichtbarkeits-CSS nie an
   Eltern-Hover koppeln, wenn das Element über `useState(isOpen)` gesteuert wird;
   sonst entsteht „Phantom-Sichtbarkeit" (im DOM vorhanden, aber je nach
-  Cursor-Position unsichtbar). (LL-6)
+  Cursor-Position unsichtbar).
+  **Ein zweiter Auslöser (v2-10):** Nicht nur Clipping bricht ein Overlay. Auch ein
+  `transform` auf einem reinen **Layout**-Element — etwa das vertikale Zentrieren der
+  Income-Labels — macht dieses zum Bezugsrahmen für **jeden**
+  `position: fixed`-Nachfahren. `inset: 0` meint dann nicht mehr das Fenster, sondern
+  dieses Element. Am Overlay selbst ist dabei nichts falsch, was die Suche in die
+  Irre führt.
+  **Und die Kehrseite, die genauso teuer ist:** Ein Portal repariert den
+  **Layout**-Bezug und zerreißt im selben Zug **jede Logik, die sich auf DOM-Nähe
+  verlässt** — `closest()`, `contains()`, CSS-Nachfahren-Selektoren, Eltern-Hover.
+  Das **Event-Bubbling läuft unverändert weiter**, weil Portale React-Kinder bleiben.
+  Wer portiert, prüft deshalb: Verlässt sich irgendein Vorfahre auf Nähe im Dokument?
+  In v2-10 war das ein `closest("[data-wave-block]")`-Wächter in `welle/index.tsx` —
+  danach riss jeder Klick im Einkommens-Popup zusätzlich die Jahres-Welle auf, und die
+  **komplette Prüfstrecke blieb dabei grün**. Gefunden hat es erst der optische Smoke.
+  (LL-6)
 - **Drag & Drop:** Identität über `dataTransfer.setData("application/x-<typ>-id", id)`
   mit eigenem MIME-Typ, nicht über globalen State. Drop-Ziele prüfen beim `dragover`
   den MIME-Typ und **müssen** dort `preventDefault()` aufrufen, sonst feuert `drop`
@@ -482,7 +499,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-3 | SVG-Transform-Properties dürfen inline stehen | §7 Datei-Konventionen | Sprint 2 |
 | LL-4 | Bundle-Greps auf `chunks/app/` einschränken | §7 Datei-Konventionen | Sprint 3 |
 | LL-5 | Soft-Navigation un-mountet Client-Komponenten nicht | §7 Datei-Konventionen | Sprint 3 |
-| LL-6 | Overlays in Clipping-Containern: `fixed` oder Portal; nie Hover-gekoppelt | §7 Datei-Konventionen | Sprint 4 K2 |
+| LL-6 | Overlays: `fixed` oder Portal; nie Hover-gekoppelt. **Auch `transform` auf einem Layout-Eltern bricht `fixed`** — und ein Portal repariert den Layout-Bezug, zerreißt aber den DOM-Bezug (`closest()`), während Event-Bubbling bleibt | §7 Datei-Konventionen | Sprint 4 K2 · erweitert v2-10 |
 | LL-7 | `cards`-Spalten ohne `card_`-Präfix | §6 Stolperfalle 1 | Sprint 4 |
 | LL-8 | „Dauerhaft ab diesem Monat" löscht zusätzlich `adjusted_amount` **dieses** Monats — sonst überschattet die alte Anpassung den neuen Plan. `manually_paid` bleibt unberührt, spätere Monate ebenfalls | hier | Sprint 4 K3 |
 | LL-9 | Drag & Drop über eigenen MIME-Typ, `preventDefault()` beim `dragover` | §7 Datei-Konventionen | Sprint 5 |
@@ -503,27 +520,54 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-08 (Repo-Struktur, 04.08.2026) · **davor:** v2-07 (Rohmasse
-aufräumen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+**Letzter Sprint:** v2-10 (Einkommens-Popup, Rohmasse-Lesbarkeit, Positionsregel —
+05.08.2026, unbeaufsichtigter Lauf) · **davor:** v2-09 (Workflow-Vereinfachung) und
+v2-08 (Repo-Struktur). Vollständige Sprint-Tabelle und alle Details:
+`sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.1.6** · Schema-Doku **v3.4.1**.
+**Doku-Versionen:** Design-Doku **v3.1.7** · Schema-Doku **v3.4.1**.
 
-**Prüfanker Produktion** (gemessen 25.07.2026, gültig bis zur nächsten Kuratierung —
-tagesaktuelle Werte und die Juli-Abweichungen stehen in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §1):
+**Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
+`calculate_sparrate_for_month`, nur `SELECT`; in Sprint v2-10 dreimal identisch
+bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 
 | Monat 2026 | Ist-Sparrate |
 |---|---|
-| Januar–April, August–Dezember | 1.931,18 € |
+| Januar–April | 1.931,18 € |
 | Mai | −86,77 € |
-| Juni | 4.589,53 € |
+| Juni | 4.208,76 € |
+| **Juli** | **−1.222,75 €** |
+| August | 1.761,08 € |
+| September–Dezember | 1.824,08 € |
 | 2025 (alle Monate) | 4.037,11 € → Vorjahres-Goldlinie **48.445,32 €** |
+
+> **Warum die alte, flache Tabelle weg ist.** Bis zum 25.07.2026 stand hier 2026
+> durchgehend 1.931,18 €. Mit der Juli-Kuratierung ist das überholt — die Werte oben
+> decken sich exakt mit `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §1. Eine
+> Anker-Tabelle mit falschen Sollwerten ist schlimmer als keine: Sie schlägt entweder
+> falsch an oder wird gewohnheitsmäßig ignoriert.
+>
+> **Juli und Juni bewegen sich noch.** `BF-5` (Fragmente werden ohne Vorzeichen
+> addiert) ist diagnostiziert, aber nicht behoben — er hängt an Entscheidung **E2**.
+> Sein Prüfanker steht fest: Juli-Ist **−1.222,75 → −322,75 €**, alle anderen Monate
+> unverändert. Erst danach ist die Tabelle wieder für längere Zeit stabil.
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
-**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — seit 04.08.2026 nach **elf
-Sprint-Paketen** geordnet statt nach Kategorien; §0 trägt die Zahlen, §5 löst die
-alten Buchstaben-Kennungen auf. **Nächster Arbeitsvorrat:** Paket 1 — die fünf
-diagnostizierten Fehler in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md`; drei davon sind
-freigegeben, zwei hängen an den Entscheidungen E1/E2.
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — seit 04.08.2026 nach
+**Sprint-Paketen** geordnet statt nach Kategorien, aktuell **14**; §0 trägt die
+Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Zahlen nach v2-10:
+**44 offen · 29 erledigt.**
+
+**Paket 1 ist seit v2-10 blockiert, nicht der nächste Arbeitsvorrat.** Die beiden
+sofort umsetzbaren Befunde sind erledigt (`BF-3`, `BF-1`); die verbleibenden drei —
+`BF-5`, `BF-2`, `BF-4` — hängen **ausnahmslos** an den Entscheidungen **E1/E2/E3**
+(alle drei mit fertiger Empfehlung in
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7). Auch der Rechenfehler mit
+**900 € Wirkung** auf die Juli-Sparrate wartet damit auf eine Entscheidung, nicht auf
+freie Kapazität.
+
+**Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau — hängt an keinem
+anderen Paket) oder eine Runde **`design-direktor`**, die gleich drei Dinge entsperrt:
+`RM-2`, `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die Schneidbarkeit von
+Paket 4. Offene Fragen aus v2-10: `sprints/sprint_v2-10_offene_fragen.md`.
