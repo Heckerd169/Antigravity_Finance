@@ -176,9 +176,22 @@ Nicht verhandelbar, Zwei-Personen-Prinzip:
 - **Force-Push / History-Rewrite** auf geteilten Branches
 - **Browser-Smoke als Abnahme** — automatisierte Tests sind ein Filter davor, kein Ersatz
 
-Claude Code legt Branches an, committet pro Phase und pusht. `git push` und
-`git merge` sind in `.claude/settings.json` **bewusst nicht** freigegeben — der Gate
-ist damit technisch, nicht nur schriftlich.
+Claude Code legt Branches an, committet pro Phase, **pusht und legt den Pull Request
+an**. Damit ist alles bis zum merge-fertigen PR vorbereitet; nur der Merge selbst bleibt
+beim Menschen.
+
+Seit dem 05.08.2026 sind `git push` und `gh pr create` in `.claude/settings.json`
+**freigegeben** — die Reibung dort war echt und ohne Sicherheitsgewinn. Gesperrt bleiben
+`git merge` und `gh pr merge`, ebenso Force-Push und ein Push direkt auf `main`. Der
+Gate ist damit weiterhin technisch, aber er sitzt jetzt an der richtigen Stelle.
+
+> **Zur Freigabe vom 05.08.2026:** Der User hat ausdrücklich erlaubt, dass Claude Code
+> den Merge künftig selbst ausführt, sofern er vorher zustimmt. **Wirksam wird das
+> nicht** — das Merge-Verbot ist Teil der Betriebsanweisung von Claude Code und liegt
+> außerhalb dieses Repos; keine Datei hier kann es aufheben. Diese Zeile hält die
+> Absicht fest, damit sie nicht als übersehen gilt. Der bequemste heute gangbare Weg:
+> Claude Code legt den PR an, der User klickt einmal „Merge" — oder aktiviert
+> Auto-Merge auf GitHub, dann führt GitHub den Merge aus.
 
 ### Wann Fähigkeit, wann Subagent, wann selbst
 

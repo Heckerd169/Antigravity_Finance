@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "_hinweis": "Geteilte Projekt-Freigaben (versioniert). Persoenliche Ergaenzungen gehoeren in .claude/settings.local.json (gitignored). Bewusst NICHT freigegeben: git push und git merge - der Zwei-Personen-Gate aus CLAUDE.md Paragraph 4 soll technisch greifen, nicht nur schriftlich. Deshalb ist git je Unterbefehl gelistet statt als Bash(git *), das push und merge mit einschliessen wuerde.",
+  "_hinweis": "Geteilte Projekt-Freigaben (versioniert). Persoenliche Ergaenzungen gehoeren in .claude/settings.local.json (gitignored). Seit 05.08.2026: git push und gh pr create sind FREIGEGEBEN - ein Push auf einen Feature-Branch ist folgenlos und war reine Reibung. Der Zwei-Personen-Gate aus CLAUDE.md Paragraph 4 sitzt jetzt dort, wo er hingehoert: git merge, gh pr merge, Force-Push und jeder Push direkt auf main/master stehen explizit in deny. git ist weiterhin je Unterbefehl gelistet statt als Bash(git *), damit neue Unterbefehle nicht stillschweigend mitlaufen.",
 
   "permissions": {
     "allow": [
@@ -30,6 +30,16 @@
       "Bash(git restore *)",
       "Bash(git stash *)",
       "Bash(git tag *)",
+      "Bash(git push *)",
+
+      "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr status *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh repo view *)",
+      "Bash(gh auth status)",
+      "Bash(gh --version)",
 
       "Bash(pnpm build *)",
       "Bash(pnpm dev *)",
@@ -116,8 +126,16 @@
     ],
 
     "deny": [
+      "Bash(git merge *)",
+      "Bash(gh pr merge *)",
+
+      "Bash(git push origin main*)",
+      "Bash(git push origin master*)",
+      "Bash(git push * HEAD:main*)",
+      "Bash(git push * HEAD:master*)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
+
       "Bash(git filter-branch *)",
       "Bash(git filter-repo *)",
       "Bash(git reflog expire *)",
