@@ -115,12 +115,22 @@ function resolveBudgetState(
 
 /** K1.2/K1.4: „Spent" = Summe der Fragmentwerte (Realität). Getrennt von
  *  `card.amount`, das per §4.3.3 Priorisierung (Realität → Anpassung → Plan)
- *  auch Adjustment oder Plan zurückgeben kann. */
+ *  auch Adjustment oder Plan zurückgeben kann.
+ *
+ *  v2-11 (BF-5): Netto-ABFLUSS statt Summe der Betragshöhen. Vorher stand hier
+ *  `Math.abs(f.amount)` — dieselbe Fehlerklasse wie in der Rechenfunktion, nur
+ *  im Frontend. Solange die Datenbank ebenfalls mit ABS summierte, waren beide
+ *  gleich falsch und damit wenigstens konsistent. Nach der Migration liefert die
+ *  Datenbank den verrechneten Wert; bliebe es hier bei ABS, zeigte die Karte für
+ *  „Aline Geburtstag" oben 168,11 € und darunter „918,11 € über Plan".
+ *
+ *  Wird ausschliesslich fuer BUDGET-Karten aufgerufen, deshalb genügt die eine
+ *  Richtung (Ausgaben sind negative Fragmente → Verbrauch positiv). Das Ergebnis
+ *  entspricht damit exakt dem, was `calculate_card_amount_for_month` intern
+ *  bildet — die Karte rechnet §4.3 weiterhin NICHT nach (§7 Regel 1), sie
+ *  braucht den Wert nur fuer Balken und Restbudget-Text. */
 function sumLinkedFragments(card: EnrichedCard): number {
-  return (card.linkedFragments ?? []).reduce(
-    (acc, f) => acc + Math.abs(f.amount),
-    0,
-  );
+  return -(card.linkedFragments ?? []).reduce((acc, f) => acc + f.amount, 0);
 }
 
 // ── Sub-Components ───────────────────────────────────────────────────────────
@@ -287,7 +297,11 @@ function BudgetCard({
     state === "over" || (isDone && diff < 0)
       ? 100
       : effectivePlan > 0
-      ? Math.min((fragmentSum / effectivePlan) * 100, 100)
+      ? // v2-11 (BF-5/E2): untere Klammer bei 0. Übersteigen die Gutschriften die
+        // Ausgaben, ist `fragmentSum` negativ — ohne die Klammer ergäbe sich eine
+        // negative Balkenbreite. „Nichts verbraucht" ist der einzige sinnvolle
+        // Balken dafür; ein eigener Kartenzustand entsteht dadurch nicht.
+        Math.max(0, Math.min((fragmentSum / effectivePlan) * 100, 100))
       : 0;
   const barIsOver = state === "over" || (isDone && diff < 0);
 
