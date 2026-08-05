@@ -121,7 +121,7 @@ Vollständig, nach jeder Phase; die Zahlen unten sind der Schlussstand.
 | ESLint (`src`, `.ts`/`.tsx`) | **0 Fehler, 0 Warnungen** |
 | `pnpm build` | **erfolgreich**, 7/7 Seiten statisch erzeugt |
 | `pnpm test:visual` | **3/3** Pixel-Checks grün (6,5 s) |
-| `pnpm test:e2e` | **9/9** grün (24,4 s) — setup · visual 3 · unauth 2 · render-smoke 3 |
+| `pnpm test:e2e` | **10/10** grün (20,9 s) — setup · visual 3 · unauth 2 · render-smoke **4** |
 
 **Bundle** (Schlussstand, unverändert gegenüber der Basis):
 
@@ -135,9 +135,9 @@ Vollständig, nach jeder Phase; die Zahlen unten sind der Schlussstand.
 Route `/` ist von 29,7 kB auf 29,6 kB gefallen — das nicht mehr gerenderte Badge-JSX.
 
 Die Strecke lief nach Phase 6 vollständig erneut: `tsc` 0 · Lint 0/0 · Build
-erfolgreich · **E2E 9/9**. Der `smoke-agent` hat die Suite unabhängig davon zweimal
-laufen lassen, ebenfalls grün und ohne Flakes — auch ohne den bekannten
-SSR-`ECONNRESET`-Burst.
+erfolgreich · **E2E 10/10** (ein Test mehr als vorher — der neue Regressions-Wächter
+aus §5). Der `smoke-agent` hat die Suite unabhängig davon zweimal laufen lassen,
+ebenfalls grün und ohne Flakes — auch ohne den bekannten SSR-`ECONNRESET`-Burst.
 
 > **Bemerkenswert und der eigentliche Lernpunkt dieses Sprints:** Die gesamte
 > Prüfstrecke war grün, **während** die Regression aus §5 offen im Bild stand. Ein
@@ -253,19 +253,26 @@ genau diesen Fehler.
 Das stellt die Absicht des vorhandenen Mechanismus wieder her, statt mit einem
 `stopPropagation` eine zweite, konkurrierende Regel einzuführen.
 
-**Nachweis.** Ein read-only-Skript (`test-results/verify-p6.mjs`, gitignored) fährt
-beide Labels ab: öffnen · auf die Überschrift klicken · über „Abbrechen" schließen,
-und prüft nach jedem Schritt, ob das Jahres-Popup offen ist. Dazu eine **Gegenprobe**,
-dass ein Klick auf die Welle es weiterhin öffnet — sonst hätte die Reparatur zu viel
-blockiert.
+**Nachweis — und der Fehler ist jetzt dauerhaft abgesichert.** Der Fall ist als
+Regressions-Wächter in die bestehende, strikt read-only laufende Suite gewandert:
+`tests/e2e/render-smoke.spec.ts` → „einkommens-popup: klick darin öffnet nicht die
+jahres-welle". Er fährt **beide** Labels ab (öffnen · auf die Überschrift klicken ·
+über „Abbrechen" schließen) und prüft nach jedem Schritt, ob das Jahres-Popup offen
+ist. Dazu eine **Gegenprobe**, dass ein Klick auf die Welle es weiterhin öffnet —
+sonst hätte die Reparatur zu viel blockiert. „Übernehmen" klickt er nie.
 
 | Lauf | Ergebnis |
 |---|---|
-| **ohne** den Fix (Marker testweise entfernt) | **6 Prüfungen rot** |
-| **mit** dem Fix | **11/11 grün**, Gegenprobe eingeschlossen |
+| **ohne** den Fix (Marker testweise entfernt) | Test **rot** — er fängt den Fehler wirklich |
+| **mit** dem Fix | **10/10** grün (Suite von 9 auf 10 gewachsen) |
 
-Die Gegenprobe ist der Punkt, der zählt: Der Test schlägt ohne die Reparatur
-tatsächlich an — er ist kein Test, der immer grün ist.
+Der Gegenlauf ist der Punkt, der zählt: Ein Wächter, der auch ohne die Reparatur grün
+bliebe, wäre wertlos. Dieser wurde beide Richtungen geprüft.
+
+> **Warum als E2E und nicht nur als Notiz:** Der Fehler war für `tsc`, Lint, Build und
+> die Pixel-Checks strukturell unsichtbar — er entsteht erst beim Klicken. Genau solche
+> Fälle gehören in die deterministische Suite, sonst hängt ihre Entdeckung beim
+> nächsten Mal wieder daran, dass jemand hinsieht.
 
 ### Befund A — kein Escape im Einkommens-Popup. Altbestand, nicht angefasst.
 
