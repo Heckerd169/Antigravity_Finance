@@ -38,6 +38,12 @@ export type EnrichedCard = {
    *  `get_effective_plan_for_month`: Adjustment falls gesetzt, sonst raw Plan
    *  via Forward-Inheritance. Immer ≥ 0; 0 bei inaktiver Karte. */
   effectivePlan: number;
+  /** v2-13 (BF-4/E1): Haushaltsbetrag für die Zeile `von X €` unter dem eigenen
+   *  Anteil — oder `null`, wenn die Zeile leer bleibt (ICH-Karte, Split-Faktor
+   *  1,0, oder Plan 0). Die Entscheidung fällt SERVER-seitig im Loader
+   *  (§7 Regel 15 / LL-17): die Karte bekommt das Ergebnis, nicht den
+   *  Split-Faktor plus Schwelle. Die Zeilenhöhe ist immer reserviert. */
+  householdAmount: number | null;
   manuallyPaid: boolean;
   adjustedAmount: number | null;
   /** Sprint 5: im aktuellen Monat zugeordnete Fragmente (für „Verknüpfte

@@ -187,6 +187,23 @@ export default async function Home({ searchParams }: HomeProps) {
           last_active_month: c.last_active_month,
           amount,
           effectivePlan,
+          // v2-13 (BF-4/E1): Seit der Migration liefert `amount` bei GEMEINSAM
+          // den EIGENEN ANTEIL. Der Haushaltsbetrag daneben ist `effectivePlan`
+          // — er bleibt bewusst die volle Haushaltsrechnung und wird hier NICHT
+          // umgerechnet (die Karte rechnet §4.3 nicht nach, §7 Regel 1).
+          //
+          // Die Entscheidung, OB die Zeile Inhalt bekommt, fällt server-seitig
+          // (§7 Regel 15 / LL-17) — die Karte erhält das Ergebnis, nicht den
+          // Split-Faktor plus Schwelle. Drei Fälle bleiben leer:
+          //   · ICH-Karte             → es gibt keinen Haushaltsanteil
+          //   · Split-Faktor 1,0      → Anteil und Haushalt wären identisch,
+          //     die Zeile erklärte nichts (User-Entscheid 05.08.2026; in der
+          //     Gestaltungsrunde ausdrücklich offen gelassen)
+          //   · Plan 0                → „von 0,00 €" wäre eine Falschaussage
+          householdAmount:
+            c.attribution === "GEMEINSAM" && splitFactor < 1 && effectivePlan > 0
+              ? effectivePlan
+              : null,
           manuallyPaid: stateRow?.manually_paid ?? false,
           adjustedAmount: stateRow?.adjusted_amount ?? null,
           deleteGate: {

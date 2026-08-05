@@ -244,6 +244,34 @@
   letter-spacing: -1.2px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  /* v2-13: 5px → 2px. Der Abstand zum Status wandert an .householdAmount —
+     die Zuordnung entsteht durch Nähe, nicht durch ein Label. */
+  margin-bottom: 2px;
+}
+
+/* Haushaltsbetrag auf gemeinsamen Karten — `von 1.904,00 €` (v2-13, BF-4/E1)
+ *
+ * Gestaltungsrunde 05.08.2026 (V2/design_direktor_gemeinsame_karte.md):
+ *   · direkt unter dem Betrag, über dem Status — 2px zum Betrag (eng gebunden),
+ *     5px zum Status (abgesetzt). Die Gruppierung macht der Weißraum.
+ *   · Ton --text-muted (.45) in ALLEN Zuständen. Kein neuer Token. --text-ghost
+ *     (.22) und der Meta-Ton (.20) wären genau die Unsichtbarkeit, die schon
+ *     gegen die Alternativvariante sprach; im Ghost-Zustand dimmt die
+ *     Karten-Opacity (.65) die Zeile ohnehin mit.
+ *   · Höhe auf JEDER Karte permanent reserviert, auf ICH-Karten leer. Es
+ *     schaltet ausschließlich der Inhalt, nie die Höhe — alle Karten behalten
+ *     dieselben Maße (Muster aus §6/M3, Ausreißer-Subzeile im Header).
+ *
+ * nowrap: verhindert die Fehlerklasse aus v2-10 (Fehler 1), bei der das
+ * €-Zeichen auf die nächste Zeile umbrach — hier fatal, weil die Höhe fix ist. */
+.householdAmount {
+  font-size: 10px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 12px;
+  min-height: 12px;
+  white-space: nowrap;
+  color: var(--text-muted);
   margin-bottom: 5px;
 }
 
