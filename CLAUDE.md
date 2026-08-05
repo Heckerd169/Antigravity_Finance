@@ -8,9 +8,10 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-10 (Prüfanker auf den
-> gemessenen Stand, LL-6 um die Portal-Kehrseite ergänzt, §9-Lage nachgezogen) und
-> **nach der Entscheidung E2** (§9: `BF-5` ist freigegeben und der nächste Sprint).
+> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-11 (Juli-Anker auf
+> −322,75 € nach der `BF-5`-Migration, **neue Regel 22 / LL-22**, §9-Lage nachgezogen —
+> nächster Sprint ist `BF-2`). Davor v2-10 (Prüfanker auf den gemessenen Stand, LL-6
+> um die Portal-Kehrseite ergänzt) und die Entscheidung E2.
 > Davor v2-09 (Workflow-Vereinfachung
 > — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
 > Roadmap nach Sprint-Paketen). Davor v2-08: 1.857 → 434 Zeilen, der Sprint-Log liegt
@@ -422,6 +423,11 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     ohne Prüfanker vorher/nachher. Fähigkeit: `db-eingriff`.
 21. **Vor und nach jedem Eingriff die Sparrate messen.** Der Anker ist der schärfste
     Regressions-Wächter des Projekts. Aktuelle Werte: §9.
+22. **Eine Doku-Zusage über Rechenverhalten ist keine Prüfung.** Wo ein Papier
+    beschreibt, *was* eine Rechenfunktion tut, gehört die Aussage **gegen die
+    Funktion belegt** — nicht aus ihrem Zweck erschlossen. Und eine
+    Aufwands-Entscheidung, die auf einer solchen ungeprüften Zusage aufbaut, ist
+    genauso ungeprüft. (LL-22)
 
 ### Datei-Konventionen
 
@@ -516,6 +522,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-19 | Akzeptanzkriterien regel-basiert, nicht instanz-basiert | §7 Regel 13 | Sprint 9 AC4 |
 | LL-20 | Bei Widerspruch Budget ↔ Semantik gewinnt die Semantik | §7 Regel 17 | Sprint 10 |
 | LL-21 | Unlimitierte Selects gegen wachsende Tabellen sind verdächtig (1000-Zeilen-Grenze) | §7 Regel 18 | v2-07 P0 |
+| LL-22 | Eine Doku-Zusage über Rechenverhalten ist keine Prüfung — gegen die Funktion belegen, nicht aus dem Zweck erschließen | §7 Regel 22 | v2-11 (BF-5) |
 
 ---
 
@@ -526,7 +533,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 v2-08 (Repo-Struktur). Vollständige Sprint-Tabelle und alle Details:
 `sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.1.7** · Schema-Doku **v3.4.1**.
+**Doku-Versionen:** Design-Doku **v3.1.8** · Schema-Doku **v3.4.2**.
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
 `calculate_sparrate_for_month`, nur `SELECT`; in Sprint v2-10 dreimal identisch
@@ -537,7 +544,7 @@ bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 | Januar–April | 1.931,18 € |
 | Mai | −86,77 € |
 | Juni | 4.208,76 € |
-| **Juli** | **−1.222,75 €** |
+| **Juli** | **−322,75 €** |
 | August | 1.761,08 € |
 | September–Dezember | 1.824,08 € |
 | 2025 (alle Monate) | 4.037,11 € → Vorjahres-Goldlinie **48.445,32 €** |
@@ -548,10 +555,13 @@ bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 > Anker-Tabelle mit falschen Sollwerten ist schlimmer als keine: Sie schlägt entweder
 > falsch an oder wird gewohnheitsmäßig ignoriert.
 >
-> **Juli und Juni bewegen sich noch.** `BF-5` (Fragmente werden ohne Vorzeichen
-> addiert) ist diagnostiziert, aber nicht behoben — er hängt an Entscheidung **E2**.
-> Sein Prüfanker steht fest: Juli-Ist **−1.222,75 → −322,75 €**, alle anderen Monate
-> unverändert. Erst danach ist die Tabelle wieder für längere Zeit stabil.
+> **Der Juli-Wert ist seit v2-11 neu.** `BF-5` (Fragmente wurden ohne Vorzeichen
+> addiert) ist am 05.08.2026 behoben und die Migration auf Produktion angewendet:
+> Juli-Ist **−1.222,75 → −322,75 €**, exakt die vorab festgelegten +900,00 €, alle
+> übrigen elf Monate um 0,00 € bewegt. Zusätzlich verifiziert: die
+> B2-Treiber-Invariante `Σ delta = Ist − Plan` hält in allen zwölf Monaten.
+> Die Tabelle ist damit wieder für längere Zeit stabil — der nächste Wert, der sich
+> planmäßig bewegen wird, hängt an `BF-4` (Entscheidung **E1**, gemeinsame Karten).
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
@@ -560,23 +570,16 @@ bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Zahlen nach v2-10:
 **44 offen · 29 erledigt.**
 
-**Nächster Sprint: `BF-5`.** Von den fünf Befunden sind zwei erledigt (`BF-3`, `BF-1`,
-beide in v2-10). Mit **E2** ist am 05.08.2026 die Entscheidung gefallen, die `BF-5`
-blockiert hat — *„ehrlich rechnen"*: Der Netto-Betrag einer Karte zählt so, wie er
-ist, **auch unter null**; keine Kappung bei 0. Damit ist `BF-5` **vollständig
-baubar** und holt **900 €** in die Juli-Sparrate zurück (−1.222,75 → −322,75 €).
+**Nächster Sprint: `BF-2`.** Von den fünf Befunden sind **drei erledigt** — `BF-3` und
+`BF-1` (v2-10) sowie `BF-5` (v2-11, Migration angewendet und verifiziert). Paket 1
+besteht damit nur noch aus zwei entscheidungs-gebundenen Punkten: **`BF-2` wartet auf
+E3**, `BF-4` auf **E1** (beide mit fertiger Empfehlung in
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7).
 
-> **`BF-5` ist kein Anzeige-Sprint.** Er fasst eine Rechenfunktion an → Fähigkeit
-> **`db-eingriff`**, Trockenlauf und Anker vorher/nachher sind Pflicht (§7 Regel 20).
-> Die **Übungs-Datenbank steht pausiert** und muss vorher geweckt werden. Zusätzlich
-> ist **Design-Doku §11** mitzukorrigieren: Der Erstattungs-Leitfaden dort beschreibt
-> ein Verhalten, das es nie gab.
-
-In Paket 1 bleiben danach nur noch zwei entscheidungs-gebundene Punkte: `BF-2` wartet
-auf **E3**, `BF-4` auf **E1** (beide mit fertiger Empfehlung in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7). `BF-2` ist ohnehin erst
-**nach** `BF-5` sinnvoll, weil die Juli-Zahl dann stimmt und der neue Text am echten
-Fall zu sehen ist.
+`BF-2` (sinnloser Hinweis unter dem Ring bei negativer Sparrate) ist der
+naheliegendste nächste Schritt: **E3** ist die kleinste der drei Entscheidungen, und
+der Punkt ist erst jetzt sinnvoll — seit v2-11 stimmt die Juli-Zahl, der neue Text
+wäre also am echten Fall zu sehen statt an einer erfundenen Situation.
 
 **Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau — hängt an keinem
 anderen Paket) oder eine Runde **`design-direktor`**, die gleich drei Dinge entsperrt:
