@@ -99,6 +99,20 @@ Ende zurückgerollt wird** (siehe Trockenlauf unten). Erprobter Umfang:
 > Append-Operator auf `text[]`), bevor er Produktion erreichte. Das ist der ganze
 > Zweck des Schritts.
 
+> **Die Reihe zweimal fahren — einmal VOR der Migration.** Der Baseline-Lauf gegen
+> die unveränderte Funktion kostet nichts (alles rollt ohnehin zurück) und liefert
+> zwei Dinge, die der Nachher-Lauf allein nicht kann: Er belegt, dass die Migration
+> **genau** das ändert, was sie ändern soll — und er entlarvt Fehler im Testaufbau.
+>
+> In v2-11 hat er beides getan: Eine Budget-Testkarte war versehentlich ab Januar
+> aktiv und zog den Anker innerhalb der Transaktion von 2.200 auf 2.050. Das sah aus
+> wie eine Wirkung der Migration, war aber ein Fehler in der Probe. Ohne den
+> Vorher-Lauf wäre er als Migrationsfehler missdeutet worden — oder schlimmer, als
+> hinnehmbare Abweichung durchgewinkt.
+>
+> Faustregel: **Die Zeilen, die sich NICHT bewegen dürfen, sind der eigentliche
+> Beweis.** Ohne Vorher-Wert kann man sie nicht zeigen.
+
 ### 4 · Der Trockenlauf (LL-18)
 
 So prüft man eine **mutierende** RPC gegen eine echte Datenbank, ohne etwas zu
