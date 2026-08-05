@@ -9,7 +9,8 @@
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
 > **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-10 (Prüfanker auf den
-> gemessenen Stand, LL-6 um die Portal-Kehrseite ergänzt, §9-Lage nachgezogen).
+> gemessenen Stand, LL-6 um die Portal-Kehrseite ergänzt, §9-Lage nachgezogen) und
+> **nach der Entscheidung E2** (§9: `BF-5` ist freigegeben und der nächste Sprint).
 > Davor v2-09 (Workflow-Vereinfachung
 > — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
 > Roadmap nach Sprint-Paketen). Davor v2-08: 1.857 → 434 Zeilen, der Sprint-Log liegt
@@ -559,13 +560,23 @@ bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Zahlen nach v2-10:
 **44 offen · 29 erledigt.**
 
-**Paket 1 ist seit v2-10 blockiert, nicht der nächste Arbeitsvorrat.** Die beiden
-sofort umsetzbaren Befunde sind erledigt (`BF-3`, `BF-1`); die verbleibenden drei —
-`BF-5`, `BF-2`, `BF-4` — hängen **ausnahmslos** an den Entscheidungen **E1/E2/E3**
-(alle drei mit fertiger Empfehlung in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7). Auch der Rechenfehler mit
-**900 € Wirkung** auf die Juli-Sparrate wartet damit auf eine Entscheidung, nicht auf
-freie Kapazität.
+**Nächster Sprint: `BF-5`.** Von den fünf Befunden sind zwei erledigt (`BF-3`, `BF-1`,
+beide in v2-10). Mit **E2** ist am 05.08.2026 die Entscheidung gefallen, die `BF-5`
+blockiert hat — *„ehrlich rechnen"*: Der Netto-Betrag einer Karte zählt so, wie er
+ist, **auch unter null**; keine Kappung bei 0. Damit ist `BF-5` **vollständig
+baubar** und holt **900 €** in die Juli-Sparrate zurück (−1.222,75 → −322,75 €).
+
+> **`BF-5` ist kein Anzeige-Sprint.** Er fasst eine Rechenfunktion an → Fähigkeit
+> **`db-eingriff`**, Trockenlauf und Anker vorher/nachher sind Pflicht (§7 Regel 20).
+> Die **Übungs-Datenbank steht pausiert** und muss vorher geweckt werden. Zusätzlich
+> ist **Design-Doku §11** mitzukorrigieren: Der Erstattungs-Leitfaden dort beschreibt
+> ein Verhalten, das es nie gab.
+
+In Paket 1 bleiben danach nur noch zwei entscheidungs-gebundene Punkte: `BF-2` wartet
+auf **E3**, `BF-4` auf **E1** (beide mit fertiger Empfehlung in
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7). `BF-2` ist ohnehin erst
+**nach** `BF-5` sinnvoll, weil die Juli-Zahl dann stimmt und der neue Text am echten
+Fall zu sehen ist.
 
 **Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau — hängt an keinem
 anderen Paket) oder eine Runde **`design-direktor`**, die gleich drei Dinge entsperrt:
