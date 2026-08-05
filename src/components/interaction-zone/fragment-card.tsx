@@ -50,6 +50,8 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
   const isPos = fragment.amount >= 0;
   const sign = isPos ? "+" : "−";
   const abs = Math.abs(fragment.amount);
+  // v2-10 P3 (RM-1): nur die Anzeige wird gekuerzt, siehe displayDescription().
+  const descShort = displayDescription(fragment.description);
 
   // Sprint 9: Transfer-Status schlägt alle anderen Stati (§6.1). Eigenes
   // Dimming (0.45) + TRANSFER-Badge, kein Drag/Tap. Höchste Status-Priorität,
@@ -71,11 +73,14 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
       draggable={!isLocked && !isTransfer}
       data-fragment-id={fragment.id}
       aria-label={
+        /* v2-10 P3 (RM-1): dieselbe gekuerzte Fassung wie im sichtbaren Text —
+           Vorlesen und Sehen sollen dasselbe ergeben. Der vollstaendige Text
+           bleibt im title-Attribut der Beschreibung erreichbar. */
         isTransfer
-          ? `${fragment.description} (Transfer zwischen eigenen Konten)`
+          ? `${descShort} (Transfer zwischen eigenen Konten)`
           : isLocked
-            ? `${fragment.description} (zugeordnet)`
-            : `${fragment.description}, ${sign}${formatAmount(abs)} Euro`
+            ? `${descShort} (zugeordnet)`
+            : `${descShort}, ${sign}${formatAmount(abs)} Euro`
       }
     >
       <div className={styles.fragmentTop}>
@@ -107,8 +112,9 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           )
         )}
       </div>
+      {/* title traegt bewusst weiterhin den VOLLSTAENDIGEN Text (RM-1). */}
       <div className={styles.fragmentDesc} title={fragment.description}>
-        {fragment.description}
+        {descShort}
       </div>
       <div className={styles.fragmentDate}>{formatDateShort(fragment.transaction_date)}</div>
       {/* v2-04 ② Interim: Markier-Auslösung. Setzen aus UNASSIGNED (Broker-
@@ -124,6 +130,31 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
       ) : null}
     </div>
   );
+}
+
+/** v2-10 P3 (RM-1): Beschreibung auf den Verwendungszweck kuerzen — AUSSCHLIESSLICH
+ *  fuer die Anzeige.
+ *
+ *  Regel: immer den letzten durch `|` getrennten Teil zeigen; ist er leer, auf den
+ *  ersten Teil zurueckfallen. Damit sind alle drei Importformate abgedeckt, ohne
+ *  ihre Herkunft kennen zu muessen (am 05.08.2026 gegen den Bestand geprueft):
+ *
+ *    DKB Visa  „SP SCICON SPORTS"                    1 Teil   → unveraendert   469
+ *    DKB Giro  „Empfaenger | Zweck"                  2 Teile  → Zweck          973
+ *    Cortal    „Sender | Buchungstext | Zweck"       3 Teile  → Zweck          106
+ *
+ *  Genau ein Fragment im Bestand hat einen leeren Zweck („Burschen- und
+ *  Maedchenschaft … | ") — dort greift der Rueckfall auf den ersten Teil.
+ *
+ *  WICHTIG: Der gespeicherte Text bleibt unangetastet. Er ist Bestandteil des
+ *  Duplikat-Hashes, des Trigram-Index der Zuordnung und des Sortier-Tiebreakers
+ *  (`page.tsx`, `localeCompare`). Hier wird nichts umgeschrieben, nur weniger
+ *  angezeigt; das `title`-Attribut behaelt den vollstaendigen Text. Das Abschneiden
+ *  mit „…" macht unveraendert das CSS (`.fragmentDesc`, `text-overflow: ellipsis`). */
+function displayDescription(raw: string): string {
+  const parts = raw.split("|");
+  const last = parts[parts.length - 1].trim();
+  return last !== "" ? last : parts[0].trim();
 }
 
 function formatDateShort(iso: string): string {

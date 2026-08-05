@@ -73,3 +73,57 @@ ausdrücklich als nicht von der Regel erfasst vermerkt.
 belegt. Der Eintrag steht hier nur, damit die Abweichung vom Auftragstext sichtbar
 bleibt.
 
+---
+
+## 3 · Doku-Patch für `BF-1`, den der Auftrag nicht vorsah
+
+**Was.** Der Arbeitsauftrag nennt für Phase 2 (`BF-1`, KI-Vorschlags-Badges) keinen
+Doku-Patch. Beim Schreiben des `RM-1`-Patches ist aufgefallen, dass die Design-Doku
+in §11 („Fragment-Karte — Spezifikation") eine Tabellenzeile
+„Kategorie-Badge (nur 0.60–0.95)" führt und darunter einen ganzen Absatz zur
+Badge-Farbe. Beides beschreibt ab sofort etwas, das nicht mehr gezeichnet wird.
+
+**Wo.** `antigravity_finance_design_dokument.md` §11 · Patch 4b in
+`sprints/sprint_v2-10_doku_patches.md`.
+
+**Warum notiert.** Die Design-Doku ist normativ (CLAUDE.md §5). Eine Zeile, die ein
+Badge verspricht, das die App nicht mehr zeigt, ist ein echter Fehler in der Bibel —
+und genau die Sorte Divergenz, die später als Regressions-Verdacht missgedeutet wird.
+Der zugrunde liegende Beschluss ist am 04.08.2026 gefallen und dokumentiert
+(`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §2, Punkte 1/2/4); der Patch
+trägt ihn nur nach, er entscheidet nichts.
+
+**Wie dieser Lauf damit umgegangen ist.** Patch 4b ist geschrieben und in Phase 5
+mit angewendet worden — die Spezifikation bleibt dabei **stehen** und wird nur als
+„seit v2-10 nicht mehr gerendert" markiert, passend dazu, dass die Anzeige über eine
+Konstante wieder einschaltbar ist.
+
+**Welche Entscheidung fehlt.** Ob dieser über den Auftrag hinausgehende Patch so
+bleiben soll. Er ist bewusst als eigene Stelle geführt und lässt sich einzeln
+zurücknehmen, ohne die übrigen Patches zu berühren.
+
+---
+
+## 4 · Gilt die Kürzung auf den Verwendungszweck auch außerhalb der Rohmasse?
+
+**Was.** `RM-1` ist im Auftrag ausdrücklich auf
+`src/components/interaction-zone/fragment-card.tsx` verortet. Die gespeicherte
+Beschreibung wird aber an zwei weiteren Stellen angezeigt:
+
+| Ort | Was dort passiert | in diesem Sprint |
+|---|---|---|
+| `linked-fragments-overlay.tsx:103` | Liste der verknüpften Fragmente auf einer Karte | **unverändert** |
+| `recurrence-popup.tsx:40` | Beschreibung als **vorausgefüllter Kartenname** | **unverändert** |
+
+**Warum nicht mitgezogen.** Für das Overlay wäre es eine reine Gestaltungsfrage —
+dasselbe Lesbarkeits-Argument gilt dort, der Auftrag hat es aber nicht entschieden,
+und §7 Regel 3 verbietet die Erfindung. Beim Recurrence-Popup wäre es sogar
+**mehr** als Anzeige: Der Text landet als Kartenname in der Datenbank. Ihn dort zu
+kürzen hieße, gespeicherte Daten zu verändern — genau das, was `RM-1` ausschließt
+(„Nichts in der Datenbank ändern").
+
+**Welche Entscheidung fehlt.** Ob die Liste der verknüpften Fragmente
+(`linked-fragments-overlay`) dieselbe Kürzung bekommen soll. Für das Recurrence-Popup
+lautet die Empfehlung ausdrücklich **nein** — dort ist der vollständige Text die
+bessere Vorlage für einen Kartennamen, und der User kann ihn ohnehin überschreiben.
+

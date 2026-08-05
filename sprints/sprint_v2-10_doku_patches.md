@@ -142,6 +142,128 @@ wartbar.
 
 ---
 
+## Patch 3 — §8 Fragment-Stack: Anzeige zeigt den Verwendungszweck (`RM-1`)
+
+**Anker:** §8 → „Fragment-Stack (Rechts)" → exaktes Zitat des Listenpunkts zur
+Sortierung (er nennt die Beschreibung als finalen Tiebreaker und ist damit die
+Stelle, an der die Unterscheidung „gespeichert vs. angezeigt" hingehört):
+
+```
+- **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt).
+```
+
+**Patch:** Als neuen Listenpunkt **direkt davor** einfügen:
+
+```markdown
+- **Angezeigte Beschreibung (v2-10, RM-1):** Die Fragment-Karte zeigt **den letzten
+  durch `|` getrennten Teil** der gespeicherten Beschreibung; ist dieser leer, fällt
+  sie auf den **ersten** Teil zurück. Damit steht der Verwendungszweck vorn statt des
+  Empfängers, ohne dass die Anzeige die Herkunft des Fragments kennen muss: DKB Visa
+  liefert ein Feld ohne Trennzeichen (unverändert), DKB Giro `Empfänger | Zweck`,
+  Cortal `Sender | Buchungstext | Zweck`.
+  **Ausschließlich Anzeige.** Der gespeicherte Text bleibt unverändert — er ist
+  Bestandteil des Duplikat-Hashes, des Trigram-Index der Zuordnung und des
+  Beschreibungs-Tiebreakers der Sortierung unten. Das `title`-Attribut trägt weiterhin
+  den **vollständigen** Text; das Abschneiden mit „…" bleibt reines CSS
+  (`text-overflow: ellipsis`).
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-10_auftrag.md` Phase 3 (`RM-1`) — Regel dort
+festgelegt. Die Trennung „gespeichert ≠ angezeigt" gehört zwingend in dieselbe Liste
+wie der Sortier-Tiebreaker, sonst liest sich der Tiebreaker künftig so, als sortiere
+er nach dem gekürzten Text.
+
+---
+
+## Patch 4 — §11 „Fragment-Karte — Spezifikation": zwei Zeilen der Feld-Tabelle
+
+**Anker:** §11 → „### Fragment-Karte — Spezifikation" → die Feld-Tabelle, exakte
+Zeilen:
+
+```
+| Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated |
+```
+
+```
+| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | Karten-spezifisch — einer von sechs `--badge-hue-*`-Tönen (§3), deterministisch aus dem Kartennamen |
+```
+
+**Patch 4a — Beschreibungs-Zeile ersetzen durch:**
+
+```markdown
+| Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
+```
+
+**Patch 4b — Badge-Zeile ersetzen durch:**
+
+```markdown
+| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen |
+```
+
+**Ergänzender Absatz** direkt unter dem bestehenden Absatz „**Badge-Farbe (v2-07,
+A1):** …" einfügen:
+
+```markdown
+**Nicht mehr gerendert (v2-10, BF-1):** Die KI-Vorschlags-Badges sind aus der Anzeige
+genommen. Anlass war ein Umbruch: Badge und Betrag teilten sich eine Zeile, das Badge
+durfte weder schrumpfen noch umbrechen, also wurde der Betrag zusammengedrückt und das
+Euro-Zeichen rutschte in die zweite Zeile. Der Vorschlag wird in der Datenbank
+unverändert **weiter berechnet** und die sechs Farbtöne bleiben im Code — die Anzeige
+ist über eine einzelne Konstante (`SHOW_SUGGESTION_BADGES`) wieder einschaltbar.
+Unberührt bleiben das **TRANSFER-Badge** und die **automatische Zuordnung ab 95 %
+Konfidenz**: sie ist keine Empfehlung, sondern eine fertige Zuordnung. Der Betrag trägt
+zusätzlich ein Umbruch-Verbot, damit die Fehlerklasse auch für das TRANSFER-Badge
+dauerhaft geschlossen ist.
+```
+
+**Quelle/Begründung:** Punkte 1/2/4 in
+`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §2 (User-Entscheid 04.08.2026).
+
+> **Hinweis — dieser Patch geht über den Wortlaut des Arbeitsauftrags hinaus.** Der
+> Auftrag nennt für Phase 2 (`BF-1`) ausdrücklich **keinen** Doku-Patch. Ohne 4b
+> behauptet die Design-Doku allerdings weiterhin, ein Badge werde gerendert, das seit
+> diesem Sprint nicht mehr erscheint — die Doku ist normativ (§5), eine solche
+> Divergenz wäre also ein echter Fehler in der Bibel. Der zugrunde liegende Beschluss
+> ist am 04.08.2026 gefallen und dokumentiert; hier wird nichts entschieden, nur
+> nachgetragen. Beim Anwenden in Phase 5 kann diese Stelle einzeln zurückgestellt
+> werden, ohne die übrigen Patches zu berühren. Vermerkt in
+> `sprints/sprint_v2-10_offene_fragen.md` §3.
+
+---
+
+## Patch 5 — Header: Versions-Bump und Changelog
+
+**Anker 1:** Kopfzeile des Dokuments, exaktes Zitat:
+
+```
+**Version:** 3.1.6 (V2 · v2-07 Doku-Nachzug)
+```
+
+**Patch:** ersetzen durch:
+
+```markdown
+**Version:** 3.1.7 (V2 · v2-10 Doku-Nachzug)
+```
+
+**Anker 2:** die letzte Changelog-Zeile im Kopf-Blockzitat, exaktes Zitat des
+Zeilenanfangs:
+
+```
+> **Changelog v3.1.6 (25.07.2026, Sprint v2-07):**
+```
+
+**Patch:** direkt **darunter** eine neue Changelog-Zeile einfügen:
+
+```markdown
+> **Changelog v3.1.7 (05.08.2026, Sprint v2-10):** §7 Positionsregel für Overlays und Popups — immer mittig, einzige Ausnahme das Karten-Kontextmenü (`RM-4`); §8 Verweis auf dieselbe Regel für Recurrence-Popup und Direktklick-Overlay; §8 Fragment-Stack zeigt den Verwendungszweck statt des Empfängers, ausschließlich in der Anzeige (`RM-1`); §11 Feld-Tabelle nachgezogen — KI-Vorschlags-Badges seit v2-10 nicht mehr gerendert, Spezifikation bleibt für die Wiedereinschaltung stehen (`BF-1`).
+```
+
+**Begründung:** Ein gemeinsamer Patch-Level-Bump für alle Stellen dieses Sprints statt
+getrennter Bumps je Phase. §7 Regel 14 verlangt den Bump als eigene Patch-Stelle —
+das ist er hier.
+
+---
+
 ## Offene Fragen aus diesem Auftrag
 
 Keine. `RM-4` ist im Arbeitsauftrag vollständig entschieden; beide Anker waren vor
@@ -152,15 +274,14 @@ Dokument bestätigt.
 
 ## Weiteres Vorgehen (nicht Teil dieses Patches)
 
-- **Zweiter Patch folgt:** Phase 3 (`RM-1`, §8 — Rohmasse zeigt den
-  Verwendungszweck statt des Empfängers) wird laut Arbeitsauftrag als weiterer
-  Patch an diese Datei angehängt.
-- **Versions-Bump erfolgt nicht hier.** Beide Patches werden gemeinsam in Phase 5
-  angewendet, mit einem gemeinsamen Versions-Bump im Header (**3.1.6 → 3.1.7**)
-  und einem gemeinsamen Changelog-Eintrag — statt zwei getrennter
-  Patch-Level-Bumps für zwei Phasen desselben Sprints.
-- **Reihenfolge beim Anwenden:** Patch 1 (§7) vor Patch 2 (§8) — reine Lesefolge,
-  keine Abhängigkeit zwischen den beiden Stellen.
+- **Vollständig.** Alle Patches dieses Sprints stehen jetzt in dieser Datei:
+  Patch 1 (§7, `RM-4`), Patch 2 (§8, `RM-4`-Verweis), Patch 3 (§8, `RM-1`),
+  Patch 4 (§11, `RM-1` + `BF-1`) und Patch 5 (Header, Versions-Bump 3.1.6 → 3.1.7).
+- **Reihenfolge beim Anwenden:** Patch 1 → 2 → 3 → 4 → 5. Reine Lesefolge; zwischen
+  den Stellen besteht keine Abhängigkeit. Patch 5 (Bump) zuletzt, damit der
+  Changelog beschreibt, was tatsächlich angewendet wurde.
+- **Anker vor dem Anwenden einzeln auf Eindeutigkeit prüfen** (Fähigkeit
+  `sprint-abschluss`, Schritt 6).
 
 ---
 
