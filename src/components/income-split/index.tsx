@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { estimateNetMonthly } from "@/lib/rpc";
 import { saveIncomeChange } from "./actions";
@@ -159,7 +160,18 @@ function PopupBody({
     if (e.target === e.currentTarget) onClose();
   }
 
-  return (
+  /* v2-10 P1 (BF-3): Portal nach document.body — dasselbe Muster wie bei den
+     acht uebrigen Overlays der App (LL-6). Die Income-Labels tragen in
+     welle.module.css `.splitLeft/.splitRight { transform: translateY(-50%) }`;
+     ein Vorfahre mit `transform` wird nach CSS-Spezifikation zum Bezugsrahmen
+     fuer `position: fixed`-Nachfahren. Dadurch meinte `inset: 0` bisher das
+     rund 80 px breite Label statt des Fensters — `width: 100%` ergab 80 px,
+     `max-width: 480px` griff nie. Die Zentrierung in `.backdrop` ist richtig
+     und bleibt unveraendert; erst der Portal-Hop gibt ihr den Bezug zurueck.
+     Die Portal-Falle aus Sprint-5 K2.1 greift hier nicht: income-split.module.css
+     definiert keine eigenen Custom-Properties, sondern liest ausschliesslich
+     :root-Tokens aus tokens.css — die vererben ueber document.body weiter. */
+  return createPortal(
     <div className={styles.backdrop} onMouseDown={handleBackdropClick} role="dialog" aria-modal="true">
       <form className={styles.dialog} onSubmit={handleSubmit}>
         <div className={styles.header}>
@@ -265,7 +277,8 @@ function PopupBody({
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
