@@ -37,3 +37,42 @@ Bewegt sich ein anderer Monat, ist etwas falsch — dann zurückrollen, nicht er
 
 **Welche Entscheidung fehlt.** Keine — nur die Ausführung. Die fachliche Entscheidung
 ist mit **E2** am 05.08.2026 bereits gefallen.
+
+---
+
+## 2 · ⚠️ Reihenfolge: **erst die Migration, dann der Merge**
+
+**Das ist der wichtigste Satz dieses Sprints.** Migration und Frontend-Änderung sind
+**gekoppelt** und müssen zusammen wirksam werden. Wird nur eines von beidem
+ausgeliefert, zeigt die Karte „Aline Geburtstag" zwei Zahlen, die nicht zueinander
+passen:
+
+| Zustand | Karte zeigt oben | Karte zeigt darunter | |
+|---|---|---|---|
+| Heute (beides alt) | 1.068,11 € | 918,11 € über Plan | konsistent, aber falsch |
+| **Nur Merge, ohne Migration** | 1.068,11 € | **18,11 € über Plan** | ✗ widersprüchlich |
+| **Nur Migration, ohne Merge** | 168,11 € | **918,11 € über Plan** | ✗ widersprüchlich |
+| Beides | 168,11 € | 18,11 € über Plan | ✓ richtig |
+
+Der Grund: Die Zahl oben kommt aus der **Datenbank**
+(`calculate_card_amount_for_month`), die Zeile darunter rechnet das **Frontend** aus
+den verlinkten Fragmenten. Beide summierten bisher mit `ABS` — gleich falsch, aber
+konsistent. Dieser Sprint korrigiert beide; sie müssen deshalb gemeinsam scharf
+geschaltet werden.
+
+**Empfohlene Reihenfolge:**
+
+1. **Migration auf Produktion anwenden** (siehe §1 oben).
+2. **Anker prüfen** — Juli muss von −1.222,75 € auf **−322,75 €** springen, alle
+   anderen Monate unverändert.
+3. **Erst dann PR mergen** — der Merge löst den Vercel-Deploy aus.
+
+Umgekehrt (erst mergen, dann migrieren) entsteht ein Fenster, in dem die Karte
+widersprüchlich aussieht. Das Fenster ist ungefährlich — es bewegt kein Geld und
+verfälscht keine gespeicherten Daten —, aber es ist unnötig.
+
+> **Warum das Frontend überhaupt mitgeändert wurde:** `sumLinkedFragments` in
+> `card.tsx` trug dieselbe `Math.abs`-Konstruktion. Ohne die Korrektur hätte die
+> Datenbank-Reparatur die Karte **schlechter** aussehen lassen als vorher — der
+> Fehler wäre von „beide falsch, aber einig" zu „offen widersprüchlich" gewandert.
+> Gefunden beim Durchsehen der Aufrufer, nicht im Auftrag benannt.
