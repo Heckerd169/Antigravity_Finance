@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.8 (V2 · v2-11 Doku-Nachzug)
+**Version:** 3.1.9 (V2 · v2-12 Doku-Nachzug)
 **Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
@@ -24,6 +24,8 @@
 > **Changelog v3.1.7 (05.08.2026, Sprint v2-10):** §7 Positionsregel für Overlays und Popups — immer mittig, einzige Ausnahme das Karten-Kontextmenü (`RM-4`); §8 Verweis auf dieselbe Regel für Recurrence-Popup und Direktklick-Overlay; §8 Fragment-Stack zeigt den Verwendungszweck statt des Empfängers, ausschließlich in der Anzeige (`RM-1`); §11 Feld-Tabelle nachgezogen — KI-Vorschlags-Badges seit v2-10 nicht mehr gerendert, Spezifikation bleibt für die Wiedereinschaltung stehen (`BF-1`).
 >
 > **Changelog v3.1.8 (05.08.2026, Sprint v2-11):** §11 Erstattungs-Leitfaden korrigiert — die Aggregation summiert **vorzeichenrichtig**, nicht „vorzeichen-agnostisch"; die Aussage, ein RPC-Eingriff sei nicht nötig, ist widerlegt und als Korrektur kenntlich gemacht (`BF-5`); §11 um das Verhalten bei überwiegenden Gutschriften ergänzt (Beschluss `E2`, keine Kappung bei 0).
+>
+> **Changelog v3.1.9 (05.08.2026, Sprint v2-12):** §5 N4b — der Degenerations-Modus verzweigte am Vorzeichen des **Plans** und unterstellte im Zweig „Plan fast 0 € (positiv)" ein positives Ist („+X € gespart"). Ersetzt durch **eine** Regel auf der Differenz, mit dritter Zeile `genau nach Plan` (Entscheidung `E3`); der Zusatz „Plan fast 0 €" entfällt ersatzlos (`BF-2`). §12.1 um die drei Copy-Zeilen des Degenerations-Modus ergänzt, die dort bisher fehlten.
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -472,10 +474,25 @@ Die Subzeile unter der Ringzahl kommuniziert das Verhältnis zur geplanten Sparr
 **a) Normalfall — Cap an den Arc gekoppelt.** Ab **> 200 %** zeigt die Subzeile „**> 200 % von Plan**" statt einer exakten Zahl — konsistent zum bereits bei 200 % geschlossenen Arc.
 
 **b) Degenerations-Modus — Schwelle `Plan < 100 €` (inkl. jedem negativen Plan).** „% von Plan" wird bei einem Plan nahe/unter Null bedeutungslos bzw. irreführend (bei negativem Plan invertiert das Verhältnis). Die Prozent-Quote wird durch die **absolute EUR-Aussage** ersetzt — **Prozent wird hier nie gezeigt:**
-- **Plan fast 0 € (positiv):** Subzeile „Plan fast 0 € — +X € gespart" (EUR-Betrag als Held in der Ringmitte).
-- **Plan negativ (Sonderausgabe):** Held = IST in EUR (rot, wenn negativ); Subzeile = EUR-Differenz in „über/unter Plan"-Sprache. **Subzeilen-Farbe folgt dem Differenz-Vorzeichen**, nicht dem absoluten IST:
-  - Plan −500 €, IST −400 € → Held „−400 €" (rot) · „+100 € über Plan" (teal — besser als geplanter Deficit).
-  - Plan −500 €, IST −700 € → Held „−700 €" (rot) · „−200 € unter Plan" (rot — schlechter).
+**Eine Regel, unabhängig vom Vorzeichen des Plans (v2-12, `BF-2` + `E3`).** Held = IST in EUR (rot, wenn negativ). Die Subzeile nennt immer die **Differenz zum Plan**, die **Farbe folgt dem Differenz-Vorzeichen**, nicht dem absoluten IST:
+
+| Fall | Subzeile | Farbe |
+|---|---|---|
+| besser als geplant | `+X € über Plan` | Türkis |
+| schlechter als geplant | `−X € unter Plan` | Rot |
+| genau auf Plan | `genau nach Plan` | Neutral (`muted`) |
+
+- Plan −500 €, IST −400 € → Held „−400 €" (rot) · „+100 € über Plan" (teal — besser als geplanter Deficit).
+- Plan −500 €, IST −700 € → Held „−700 €" (rot) · „−200 € unter Plan" (rot — schlechter).
+- Plan 55 €, IST −323 € → Held „−323 €" (rot) · „−378 € unter Plan" (rot).
+
+**„genau nach Plan" gilt ab einer Abweichung unter 0,50 €** — also der Anzeige-Schwelle, nicht bei exakt null. Die EUR-Anzeige rundet auf ganze Euro; eine Abweichung von 0,30 € stünde sonst als „+0 € über Plan" da, genau der Text, den `E3` abschaffen sollte.
+
+> **Was hier bis v2-12 stand — und warum es falsch war.** Die Spezifikation kannte zwei Zweige, getrennt nach dem **Vorzeichen des Plans**. Der Zweig für einen kleinen *positiven* Plan lautete „Plan fast 0 € — **+X € gespart**" und unterstellte damit ein positives Ist. Juli 2026 (Plan 55,44 €, Ist negativ) fiel genau dort hinein: „−1.223 € gespart". Man spart keine minus 1.223 €.
+>
+> Aufgefallen ist es erst nach einem Jahr, weil die Kombination *kleiner positiver Plan + negatives Ist* bis zur Juli-Kuratierung **nicht erreichbar** war — Ist und Plan waren in jedem Monat identisch. Der Zusatz „Plan fast 0 €" entfällt ersatzlos: Er war ohnehin ungenau (55 € sind nicht fast 0), und die Euro-Aussage erklärt sich selbst.
+>
+> Die Regel liegt seit v2-12 in einer eigenen, reinen Datei (`singularity-ring/ring-subline.ts`) und wird von `tests/e2e/ring-subline.spec.ts` gegen die echte Quelle geprüft — nach dem Vorbild von `welle/draw.ts`. Sie war vorher im Bauteil eingebettet und damit nicht einzeln prüfbar; das ist der zweite Grund, warum der Fehler so lange überlebt hat.
 
 **c) Neutraler Arc im Degenerations-Modus.** Da der Arc `IST/Plan` rechnet, wäre er bei winzigem/negativem Plan ebenso invertiert. Er **entkoppelt sich von der Quote → nur die Spur (Track), keine Füllung.** Der Ring wird zum Rahmen für die ehrliche EUR-Aussage, statt eine Quote vorzutäuschen.
 
@@ -1203,6 +1220,9 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Prozent — im Plan | `[N] % von Plan` |
 | Prozent — über Plan | `+[N] % über Plan` |
 | Prozent — Defizit | `[N] % Defizit` |
+| Degenerations-Modus — besser | `+[N] € über Plan` |
+| Degenerations-Modus — schlechter | `−[N] € unter Plan` |
+| Degenerations-Modus — genau auf Plan | `genau nach Plan` |
 
 ### 12.2 Header / Timeline-Navigation
 
