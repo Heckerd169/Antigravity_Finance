@@ -16,6 +16,21 @@ const BADGE_HUE_CLASSES = [
   styles.fragmentBadgeHue6,
 ];
 
+/* v2-10 P2 (BF-1): Die KI-Vorschlags-Kaestchen sind aus der ANZEIGE genommen.
+   Berechnet wird der Vorschlag unveraendert weiter — `suggestedCardName` kommt
+   nach wie vor am Fragment an, es wird nur nicht mehr gezeichnet. Diese eine
+   Konstante auf `true` zu setzen schaltet sie vollstaendig wieder ein; genau
+   deshalb bleiben BADGE_HUE_CLASSES und `badgeHueIndex` in Gebrauch statt
+   geloescht zu werden (User-Entscheid 04.08.2026, Punkte 1/2/4 in
+   V2/befunde_2026-08-04_fehler_und_entscheidungen.md §2).
+
+   Anlass war der Zeilenumbruch des Euro-Zeichens: Kaestchen und Betrag teilten
+   sich eine Zeile, das Kaestchen durfte weder schrumpfen noch umbrechen
+   (flex-shrink: 0, white-space: nowrap), also wurde der Betrag zusammen-
+   gedrueckt. Die automatische Zuordnung ab 95 % Konfidenz ist davon NICHT
+   beruehrt — sie ist keine Empfehlung, sondern eine fertige Zuordnung. */
+const SHOW_SUGGESTION_BADGES: boolean = false;
+
 /* Server-Component: ein Fragment-Item ohne Event-Handler. Drag-Start wird
    per Event-Delegation in der FragmentStack-Client-Component gefangen
    (Lookup über `data-fragment-id`-Attribut). */
@@ -77,7 +92,7 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
             Transfer
           </div>
         ) : (
-          fragment.suggestedCardName && (
+          SHOW_SUGGESTION_BADGES && fragment.suggestedCardName && (
             /* v2-07 A1: Farbton deterministisch aus dem Kartennamen — gleiche
                Karte, gleiche Farbe. Fallback auf Hue-1 (den Gold-Ton aus
                Sprint 8), falls die Klassen-Tabelle je aus dem Tritt gerät. */
