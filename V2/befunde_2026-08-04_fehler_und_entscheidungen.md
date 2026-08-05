@@ -291,9 +291,9 @@ an Design-Doku §11.
 
 ## 7. Offene Entscheidungen
 
-**Stand 05.08.2026: E2 ist entschieden, E1 und E3 stehen noch aus.** Damit ist
-**Fehler 5 baubar** (er hing allein an E2). Fehler 4 wartet weiter auf **E1**,
-Fehler 2 auf **E3**.
+**Stand 05.08.2026: E2 und E3 sind entschieden, nur E1 steht noch aus.** Vier der fünf
+Fehler sind damit erledigt — Fehler 3 und 1 in v2-10, Fehler 5 in v2-11, Fehler 2 in
+v2-12. **Offen ist allein Fehler 4**, und er wartet auf **E1**.
 
 ### E1 — Was bedeutet die Zahl auf einer gemeinsamen Karte? *(Fehler 4)*
 
@@ -349,12 +349,27 @@ genau die Art stiller Ungenauigkeit, die zu diesen Befunden geführt hat.
 > für den Fall, dass er eintritt. Die 900 € aus `BF-5` hängen am weggeworfenen
 > Vorzeichen und kommen unabhängig von E2 zurück.
 
-### E3 — Dritte Zeile „genau nach Plan"? *(Fehler 2)*
+### E3 — Dritte Zeile „genau nach Plan"? *(Fehler 2)* — ✅ **ENTSCHIEDEN 05.08.2026**
 
 Heute stünde bei Gleichstand `+0 € über Plan`. Eigene Formulierung dafür oder
 nicht?
 
-*Empfehlung Claude Code:* eigene Formulierung, Aufwand vernachlässigbar.
+*Empfehlung Claude Code war:* eigene Formulierung, Aufwand vernachlässigbar.
+
+> **Beschluss Dominik, 05.08.2026: nach Empfehlung — eigene Formulierung.**
+>
+> Wortlaut **`genau nach Plan`**, Farbe neutral (`muted`). Umgesetzt in **v2-12**
+> zusammen mit `BF-2`.
+>
+> **Eine Präzisierung, die beim Bauen nötig wurde:** Die Zeile greift ab einer
+> Abweichung **unter 0,50 €**, nicht bei exakt null. Grund: Die EUR-Anzeige rundet auf
+> ganze Euro — bei 0,30 € Abweichung stünde sonst weiterhin `+0 € über Plan` da, genau
+> der Text, den diese Entscheidung abschaffen sollte. Unterhalb eines halben Euro ist
+> „genau nach Plan" die ehrlichere von zwei ungenauen Aussagen.
+>
+> **Nicht betroffen ist der Normalfall** (`Plan ≥ 100 €`): Dort zeigt die Subzeile bei
+> Gleichstand weiterhin `100,0 % von Plan`, was keine sinnlose Aussage ist. `genau nach
+> Plan` gilt ausschließlich im Degenerations-Modus.
 
 ---
 

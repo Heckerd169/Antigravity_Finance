@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import type {
   RingCenterColor,
   RingState,
-  RingSubtextColor,
   SingularityRingProps,
 } from "./singularity-ring.types";
+import { degenerateSubline, formatEur } from "./ring-subline";
 import styles from "./singularity-ring.module.css";
 
 const R = 98;
@@ -46,11 +46,8 @@ function formatPct(n: number): string {
   });
 }
 
-function formatEur(n: number): string {
-  const sign = n >= 0 ? "+" : MINUS;
-  const abs = Math.abs(n).toLocaleString("de-DE", { maximumFractionDigits: 0 });
-  return `${sign}${abs}${NBSP}€`;
-}
+// `formatEur` liegt seit v2-12 in `ring-subline.ts` (dort auch die Begründung
+// zur Rundung) und wird von hier importiert — eine Quelle für beide Stellen.
 
 // N4b (§5 v3.1.2): Unterhalb dieser Plan-Schwelle (inkl. jedem negativen Plan)
 // ist „% von Plan" bedeutungslos/invertiert → Degenerations-Modus mit
@@ -69,20 +66,16 @@ function computeRingState(current: number, plan: number): RingState {
   // Füllung (N4b-c) — der Ring rahmt die ehrliche EUR-Aussage, statt eine
   // Quote vorzutäuschen.
   if (plan < DEGENERATE_PLAN_THRESHOLD) {
-    const diff = current - plan;
-    const subtextColor: RingSubtextColor = diff >= 0 ? "teal" : "red";
-    const subtext =
-      plan < 0
-        ? diff >= 0
-          ? `${formatEur(diff)} über Plan`
-          : `${formatEur(diff)} unter Plan`
-        : `Plan fast 0${NBSP}€ — ${formatEur(current)} gespart`;
+    // v2-12 (BF-2 / E3): Wortlaut und Farbe liegen in `ring-subline.ts` —
+    // eigene reine Datei, damit die Regel einzeln prüfbar ist. Genau ihre
+    // Unprüfbarkeit hat den Fehler zwei Sprints überleben lassen.
+    const { text, color } = degenerateSubline(current, plan);
     return {
       posOffset: C,
       negOffset: C,
       centerColor,
-      subtext,
-      subtextColor,
+      subtext: text,
+      subtextColor: color,
     };
   }
 
