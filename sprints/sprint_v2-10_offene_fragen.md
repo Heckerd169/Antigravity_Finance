@@ -127,3 +127,86 @@ kürzen hieße, gespeicherte Daten zu verändern — genau das, was `RM-1` aussc
 lautet die Empfehlung ausdrücklich **nein** — dort ist der vollständige Text die
 bessere Vorlage für einen Kartennamen, und der User kann ihn ohnehin überschreiben.
 
+---
+
+## 5 · `PA-1` (Phase 4) nicht gebaut — die Rechnung steht, die Darstellung ist offen
+
+**Entscheidung dieses Laufs: abgebrochen und notiert**, nach der Abbruch-Klausel des
+Arbeitsauftrags („Wird es größer als eine Rechnung plus Liste: abbrechen, notieren,
+weiter zu Phase 5") in Verbindung mit „**Keine Gestaltungsentscheidung**" und §7
+Regel 3. Phase 1 war grün, die Voraussetzung war also erfüllt — es lag **nicht** an
+der Zeit und nicht an der Rechnung.
+
+### Was bereits gesichert ist — die Rechnung ist vollständig gelöst
+
+Der Rechenweg wurde am 05.08.2026 lesend gegen die Produktiv-Datenbank verifiziert.
+`get_split_factor(user_id, monat)` liefert den ICH-Anteil aus dem **Jahresbrutto**,
+nicht aus dem Netto:
+
+```
+Faktor = brutto_ich / (brutto_ich + brutto_partner)
+       = 92.400 / (92.400 + 69.113) = 0,572090   →  ICH 57 %
+```
+
+Betroffen sind heute genau **vier** gemeinsame Posten, alle Fixkosten:
+
+| Posten | Plan | ICH-Anteil heute |
+|---|---:|---:|
+| Miete | 1.904,00 € | 1.089,26 € |
+| Strom — Mainova | 63,00 € | 36,04 € |
+| Internet — Vodafone | 39,98 € | 22,87 € |
+| Rechtsschutz — Adam Riese | 27,01 € | 15,45 € |
+| **Summe** | **2.033,99 €** | **1.163,62 €** |
+
+Durchgerechnetes Beispiel — ICH-Brutto 92.400 € → 96.000 € (Faktor 0,5721 → 0,5814):
+
+| Posten | alt | neu | Differenz |
+|---|---:|---:|---:|
+| Miete | 1.089,26 € | 1.107,02 € | **+17,76 €** |
+| Strom — Mainova | 36,04 € | 36,63 € | +0,59 € |
+| Internet — Vodafone | 22,87 € | 23,24 € | +0,37 € |
+| Rechtsschutz — Adam Riese | 15,45 € | 15,70 € | +0,25 € |
+| **Summe** | **1.163,62 €** | **1.182,60 €** | **+18,98 €** |
+
+Das ist exakt die im Auftrag verlangte Form „je gemeinsamem Posten alt → neu →
+Differenz". Es fehlt kein Datum und keine Funktion; alles Nötige ist vorhanden.
+
+### Woran es hängt — die Darstellung ist nirgends spezifiziert
+
+Geprüft wurden Design-Doku **§10** (Income / Partner-Split) und **§12.7** (UI-Copy
+Income). §12.7 ist laut §12-Anmoderation die **vollständige** Textreferenz der App —
+dort steht für einen Zustand nach dem Speichern **kein einziger** Eintrag, und §10
+kennt den Zustand ebenfalls nicht. Heute ruft das Popup bei Erfolg schlicht
+`onClose()` und verschwindet.
+
+Damit müsste dieser Lauf fünf Dinge frei erfinden:
+
+1. **Was nach dem Speichern passiert.** Bleibt das Popup offen und tauscht seinen
+   Inhalt gegen die Liste? Oder erscheint die Liste woanders?
+2. **Wie man sie wieder schließt.** Heute gibt es „Abbrechen" und „Übernehmen";
+   nach dem Speichern passt beides nicht mehr. Ein Schließen-Knopf braucht eine
+   Beschriftung — und jede Beschriftung ist ein neuer §12.7-Eintrag.
+3. **Die Spaltenüberschriften** für alt / neu / Differenz.
+4. **Der leere Fall.** Was zeigt die Liste, wenn sich der Faktor nicht geändert hat
+   oder es keine gemeinsamen Posten gibt? „Keine Anzeige" und „0,00 €" sind nach
+   §7 Regel 17 (LL-20) ausdrücklich **nicht** dasselbe.
+5. **Der Umfang.** „Gemeinsamer Posten" umfasst neben Fixkosten grundsätzlich auch
+   Einnahmen-Karten mit `GEMEINSAM`. Heute existiert keine solche Karte, die Frage
+   ist also latent — aber sie entscheidet, ob eine Einnahme mit umgekehrtem
+   Vorzeichen in derselben Liste steht.
+
+Jeder einzelne Punkt ist eine Gestaltungsfrage, und Punkt 2 legt zusätzlich neue
+UI-Copy fest. Genau davor steht im Auftrag zweimal ein Verbot.
+
+### Empfehlung
+
+Die Rechnung oben ist fertig und belegt — es fehlt **eine** Sitzung mit der Fähigkeit
+`design-direktor`, in der die fünf Punkte entschieden werden. Danach ist `PA-1` ein
+kleiner Sprint: eine Server-Action, die alten und neuen Faktor plus die Kartenliste
+zurückgibt, und eine Ergebnis-Ansicht im Popup.
+
+Konkreter Vorschlag zur Beschleunigung: Punkt 1 „Popup bleibt offen und tauscht den
+Inhalt", Punkt 4 „bei unverändertem Faktor gar keine Liste, sondern direkt schließen
+wie bisher" — dann fällt der Zustand ganz weg, statt eine Null-Zeile zu zeigen.
+Bleiben nur noch Beschriftung und Spaltenköpfe.
+

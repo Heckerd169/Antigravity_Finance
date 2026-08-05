@@ -9,11 +9,9 @@ in die Design-Doku übernehmen — inklusive der Kontextmenü-Ausnahme.
 Zeilen 73–83). Der Wortlaut der Regel steht dort **wörtlich fest** und wird
 unverändert übernommen; Zeile 83 benennt den Anwendungsbereich explizit: „Berührt
 Design-Doku §7/§8."
-**Status:** Entwurf — **noch nicht angewendet**. Diese Datei enthält bislang nur
-den Patch aus Phase 1 (`RM-4`). Laut Arbeitsauftrag („Phase 5 · Abschluss", Punkt 3)
-wird ein zweiter Patch aus Phase 3 (`RM-1` — §8, Verwendungszweck-Anzeige statt
-Empfänger) noch in dieselbe Datei nachgetragen, bevor beide gemeinsam angewendet
-werden.
+**Status:** ✅ **Angewendet am 05.08.2026 in Phase 5** — alle fünf Patches, Design-Doku
+steht auf **v3.1.7**. Alle sechs Anker waren vor der Anwendung einzeln per Volltextsuche
+als eindeutig bestätigt (je genau ein Treffer). Diese Datei bleibt als Beleg stehen.
 
 **Schema-Doku:** kein Patch — `RM-4` ist reine Anzeige-/Layout-Dokumentation ohne
 Tabellen-, Spalten-, RPC-, Trigger- oder Enum-Bezug.

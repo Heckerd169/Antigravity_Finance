@@ -161,7 +161,8 @@ function PopupBody({
   }
 
   /* v2-10 P1 (BF-3): Portal nach document.body — dasselbe Muster wie bei den
-     acht uebrigen Overlays der App (LL-6). Die Income-Labels tragen in
+     uebrigen sechs Overlays der App (LL-6; das Karten-Kontextmenu ist die
+     bewusste Ausnahme, der Rueckgaengig-Toast kein Overlay). Die Labels tragen in
      welle.module.css `.splitLeft/.splitRight { transform: translateY(-50%) }`;
      ein Vorfahre mit `transform` wird nach CSS-Spezifikation zum Bezugsrahmen
      fuer `position: fixed`-Nachfahren. Dadurch meinte `inset: 0` bisher das
