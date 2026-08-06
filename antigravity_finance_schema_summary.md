@@ -1,8 +1,10 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.4.3
+**Version:** 3.4.4
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur)
 **Datum:** 05. August 2026
+
+> **Changelog v3.4.4 (06.08.2026, Sprint v2-14 · `LQ-1`):** `cards` bekommt **`due_day smallint NULL`** (CHECK `1..31`) — den Tag im Monat, an dem die Karte fällig ist. Damit wird die Frage „was steht bis zum Stichtag noch aus?“ überhaupt formulierbar; bis dahin legten Frequenz und erster aktiver Monat nur den *Monat* fest (Befund `L2`). `NULL` bedeutet „kein Termin“ und ist der richtige Wert für **BUDGET**-Karten (Befund `L7`) und für Karten ohne Historie. Gespeichert wird der **Soll-Tag**, nicht der reale Buchungstag — Daueraufträge zum Ersten rutschen auf den nächsten Bankarbeitstag. Die 17 Startwerte sind aus `fragments` abgeleitet, nicht geschätzt. Migration: `supabase/migrations/20260806_v2_14_lq1_faelligkeitstag.sql`. **Keine Rechenfunktion berührt** — alle zwölf Monate 2026 vor und nach der Anwendung identisch, B2-Invariante 12/12.
 
 > **Changelog v3.4.3 (05.08.2026, Sprint v2-13 · `BF-4`):** §4 — die **Split-Logik wandert in `calculate_card_amount_for_month`**. Sie wird dort auf Plan/Anpassung angewandt, **nicht** auf Fragment-Summen (Beschluss `E1`: eine zugeordnete Zahlung *ist* bereits der eigene Anteil). `calculate_sparrate_for_month` wendet den Anteil dadurch **nicht mehr selbst** an — die doppelte Anwendung war der Fehler `BF-4` (Miete: 623,17 € statt 1.089,26 €, rund 466 €/Monat zu gut). `calculate_planned_sparrate_for_month` bleibt **unverändert** (rechnet auf dem Roh-Plan). `get_year_deviation_drivers`: `delta = vorzeichen × (ist − plan × anteil)` — der Anteil steht jetzt **innen** am Plan-Teil, weil die Klammer gemischt ist. Alle vier Funktionen in **einer** Migration `supabase/migrations/20260805_v2_13_bf4_gemeinsame_karten.sql`, weil ein Zwischenzustand doppelt anteilig gerechnet hätte. §3 Wahrheitsquellen nachgezogen.
 
@@ -55,6 +57,26 @@
   durch „Globale Konstanten — `app_config`" belegt. Keine schema- oder
   datenseitige Änderung, reine Nummerierungskorrektur (Sprint-v2-08-Review
   §6 F4).
+
+**Änderungen v3.4.3 → v3.4.4 (Sprint v2-14 „Fälligkeitstag“, `LQ-1`):**
+
+- `cards`: **+1 Spalte** — `due_day smallint NULL`, CHECK `cards_due_day_range`
+  (`NULL` oder `1..31`). Tag im Monat, an dem die Karte fällig ist.
+- **`NULL` ist ein Wert, keine Lücke.** Er steht für „kein Termin“ und ist der
+  korrekte Zustand bei **BUDGET**-Karten (ein Budget ist eine Erlaubnis ohne
+  Termin, Befund `L7`) sowie bei Karten ohne Buchungshistorie.
+- **Gespeichert wird der SOLL-Tag, nicht der reale Buchungstag.** Sieben Karten
+  zeigen über 19 Monate dasselbe Muster: gebucht am 1., 2., 3. oder 4. — nie
+  früher. Das ist ein Dauerauftrag zum Ersten, der auf den nächsten
+  Bankarbeitstag rutscht. Die Klammerung auf die tatsächliche Monatslänge
+  (Februar) gehört in die Vorhersage-Logik, **nicht** in die Spalte.
+- Keine RPC, keine Rechenfunktion und keine bestehende Spalte berührt. Die
+  Sparrate ist von der Erweiterung **nicht** betroffen — nachgewiesen über alle
+  zwölf Monate 2026, Ist und Plan, vor und nach der Anwendung; die Prüfsummen
+  der vier Rechenfunktionen sind unverändert gegenüber v2-13.
+- Es gibt **noch keine Oberfläche** zum Setzen des Werts. Die 17 Startwerte kommen
+  aus der Migration, abgeleitet aus der Buchungshistorie; die Bearbeitung folgt
+  mit `LQ-2` nach der Gestaltungsrunde.
 
 **`transfer_type` — Wertemenge + Semantik (v3.2):**
 
