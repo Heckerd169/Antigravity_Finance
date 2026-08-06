@@ -558,7 +558,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 06.08.2026 gemerged) · **davor:** v2-12 (`BF-2`, Ring-Subzeile) und v2-11 (`BF-5`,
 Vorzeichen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.2.0** · Schema-Doku **v3.4.3**.
+**Doku-Versionen:** Design-Doku **v3.3.0** · Schema-Doku **v3.4.4**.
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
 `calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
