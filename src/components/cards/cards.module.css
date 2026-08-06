@@ -302,6 +302,42 @@
 .over .stateLabel { color: rgba(255, 69, 58, .55); }
 .ghost .stateLabel { color: var(--text-ghost); }
 
+/* Statuszeile mit zwei Enden (v2-15, LQ-1) — links Zustand, rechts Termin.
+ *
+ * Getrennt wird durch die POSITION, nicht durch ein Trennzeichen. Der Wrapper
+ * ersetzt bei FIXED_COST und INCOME das frühere Block-`.stateLabel`; die
+ * Zustandsfarben greifen unverändert weiter, weil sie über den Nachfahren-
+ * Selektor (`.open .stateLabel` usw.) laufen.
+ *
+ * KEINE zusätzliche Kartenhöhe: `align-items: baseline` legt beide Enden auf
+ * dieselbe Schriftlinie, und beide tragen 9px/500 — die Zeile bleibt exakt so
+ * hoch wie das Status-Label allein. Anders als bei `.householdAmount` ist hier
+ * deshalb auch nichts zu reservieren; fehlt der Tag, rendert rechts gar nichts.
+ *
+ * BUDGET nutzt diesen Wrapper NICHT — dort gibt es per Migration keinen Termin
+ * (Befund L7), und die Karte behält ihre Teal-/Rot-Varianten unverändert.
+ *
+ * Werte aus der Entwurfsseite `design-system/entwuerfe/lq1-faelligkeitstag.html`
+ * (Variante A1), Beleg: V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md §2 */
+.stateRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.dueDay {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .4px;
+  color: rgba(255, 255, 255, .30);
+  white-space: nowrap;
+}
+
+/* Ghost dimmt den Termin eigenständig mit — die Karten-Opacity allein ließe ihn
+   im Forecast lauter wirken als das Status-Label daneben. */
+.ghost .dueDay { color: rgba(255, 255, 255, .20); }
+
 /* Standalone State-Label-Varianten für Budget-done (Sprint 7) */
 .stateLabelTeal {
   font-size: 9px;

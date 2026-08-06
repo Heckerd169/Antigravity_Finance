@@ -156,6 +156,42 @@ function HouseholdRow({ householdAmount }: { householdAmount: number | null }) {
   );
 }
 
+/** v2-15 (LQ-1): Die Statuszeile mit zwei Enden — links der Zustand, rechts der
+ *  Termin. `Offen ····· am 1.`
+ *
+ *  Getrennt wird durch die POSITION, nicht durch ein Trennzeichen: Zustand und
+ *  Termin sind zwei Aussagen über dieselbe Karte, und der Weißraum dazwischen
+ *  sagt das deutlicher als ein „·".
+ *
+ *  KEINE neue Zeile, KEINE zusätzliche Kartenhöhe (§7 „Fälligkeitstag-Anzeige").
+ *  Anders als bei der Haushaltsbetrag-Zeile ist hier deshalb auch nichts zu
+ *  reservieren — fehlt der Tag, bleibt rechts schlicht nichts stehen.
+ *
+ *  Der Tag bleibt in JEDEM Zustand stehen, auch bei „Bezahlt"/„Erhalten": er ist
+ *  eine Eigenschaft der Karte, kein Zustand. Verschwände er beim Bezahlen,
+ *  spränge die Zeile — und der Wert wäre genau dann nicht mehr prüfbar, wenn man
+ *  ihn gegen den echten Umsatz hält.
+ *
+ *  Nur FIXED_COST und INCOME rufen das auf. BUDGET hat per Migration kein
+ *  `due_day` (ein Budget ist eine Erlaubnis ohne Termin, Befund L7) und behält
+ *  seine bisherige einzeilige Darstellung samt Teal-/Rot-Varianten.
+ *
+ *  Gestaltungsrunde: V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md §2 */
+function StateRow({
+  stateLabel,
+  dueDay,
+}: {
+  stateLabel: string;
+  dueDay: number | null;
+}) {
+  return (
+    <div className={styles.stateRow}>
+      <span className={styles.stateLabel}>{stateLabel}</span>
+      {dueDay !== null && <span className={styles.dueDay}>am {dueDay}.</span>}
+    </div>
+  );
+}
+
 function MetaRow({ attribution }: { attribution: "ICH" | "GEMEINSAM" }) {
   const isGem = attribution === "GEMEINSAM";
   return (
@@ -208,7 +244,7 @@ function FixedCostCard({
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
       <HouseholdRow householdAmount={card.householdAmount} />
-      <div className={styles.stateLabel}>{stateLabel}</div>
+      <StateRow stateLabel={stateLabel} dueDay={card.dueDay} />
       <MetaRow attribution={card.attribution} />
 
       <CardInteractive
@@ -277,7 +313,7 @@ function IncomeCard({
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
       <HouseholdRow householdAmount={card.householdAmount} />
-      <div className={styles.stateLabel}>{stateLabel}</div>
+      <StateRow stateLabel={stateLabel} dueDay={card.dueDay} />
       <MetaRow attribution={card.attribution} />
 
       <CardInteractive

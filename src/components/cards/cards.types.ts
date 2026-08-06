@@ -44,6 +44,13 @@ export type EnrichedCard = {
    *  (§7 Regel 15 / LL-17): die Karte bekommt das Ergebnis, nicht den
    *  Split-Faktor plus Schwelle. Die Zeilenhöhe ist immer reserviert. */
   householdAmount: number | null;
+  /** v2-14/v2-15 (LQ-1): Tag im Monat, an dem die Karte fällig ist (1–31), oder
+   *  `null` für „kein Termin". `null` ist ein Wert, keine Lücke — so bei
+   *  BUDGET-Karten (ein Budget ist eine Erlaubnis ohne Termin, Befund L7) und bei
+   *  Karten ohne Buchungshistorie. Die Klammerung auf die tatsächliche Monatslänge
+   *  (Februar!) gehört in die Vorhersage-Logik von LQ-2, nicht hierher — der
+   *  gespeicherte Wert bleibt der Soll-Tag. */
+  dueDay: number | null;
   manuallyPaid: boolean;
   adjustedAmount: number | null;
   /** Sprint 5: im aktuellen Monat zugeordnete Fragmente (für „Verknüpfte
