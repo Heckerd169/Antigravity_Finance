@@ -8,11 +8,15 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-13 (`BF-4` — der
+> **Letzte Aktualisierung:** 06. August 2026 · **nach:** der Design-Direktor-Runde
+> (`LQ-2` `LQ-1` `RM-2` `PA-1` entschieden, Design-Doku **v3.3.0**) und Sprint **v2-14**
+> (`LQ-1`, `cards.due_day`). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
+> nachgezogen; die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind
+> unverändert gültig, weil seither keine Rechenfunktion berührt wurde.
+> Davor v2-13 (`BF-4` — der
 > Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
 > 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
-> 04.08. sind erledigt. **§9 ist in diesem Patch NICHT nachgezogen** — die Prüfanker
-> stehen weiterhin auf dem v2-11-Stand und brauchen eine eigene Freigabe.
+> 04.08. sind erledigt.
 > Davor v2-11 (Juli-Anker auf
 > −322,75 € nach der `BF-5`-Migration, **neue Regel 22 / LL-22**, §9-Lage nachgezogen).
 > Davor v2-10 (Prüfanker auf den gemessenen Stand, LL-6
@@ -554,11 +558,18 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-13 (`BF-4` — der Split-Anteil wird genau einmal angewandt,
-06.08.2026 gemerged) · **davor:** v2-12 (`BF-2`, Ring-Subzeile) und v2-11 (`BF-5`,
-Vorzeichen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+**Letzter Sprint:** v2-14 (`LQ-1` — `cards.due_day`, der Fälligkeitstag je Karte; reine
+Schema-Erweiterung, keine Rechenfunktion berührt, 06.08.2026 gemerged `576ea43`) ·
+**davor:** v2-13 (`BF-4`, Split-Anteil genau einmal) und v2-12 (`BF-2`, Ring-Subzeile).
+Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.2.0** · Schema-Doku **v3.4.3**.
+**Zuletzt entschieden, noch nicht gebaut:** die Design-Direktor-Runde vom 06.08.2026 —
+`LQ-2` (Ausstehend-Anzeige), `LQ-1`-Anzeigeseite (Fälligkeitstag auf der Karte), `RM-2`
+(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige). Record:
+`V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`; Spezifikation in der
+Design-Doku v3.3.0.
+
+**Doku-Versionen:** Design-Doku **v3.3.0** · Schema-Doku **v3.4.4**.
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
 `calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
@@ -598,15 +609,22 @@ Vorzeichen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_his
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
-**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet,
-aktuell **13**; §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf.
-Zahlen nach v2-13: **40 offen · 32 erledigt.**
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
+§0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
+**05.08.2026, nach v2-13**: **13 offene Pakete · 39 offen · 33 erledigt**. v2-14 und die
+Entscheidungen vom 06.08.2026 sind darin **noch nicht verrechnet** — die Zahlen sind
+gespiegelt, nicht nachgerechnet. **Vorsicht:** §0 nennt sie zweimal verschieden —
+Zahlen-Tabelle gegen Herleitungs-Kasten (Hausaufgaben 6/7, Erledigt 33/32). Übernommen
+ist die Tabelle, weil sie aufgeht (33 + 6 = 39); die Auflösung gehört in die Roadmap.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
 Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 
-**Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau — hängt an keinem
-anderen Paket) oder eine Runde **`design-direktor`**, die gleich drei Dinge entsperrt:
-`RM-2`, `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die Schneidbarkeit von
-Paket 4. Offene Fragen aus v2-10: `sprints/sprint_v2-10_offene_fragen.md`.
+**Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau) sowie die vier am
+06.08.2026 entschiedenen Anzeigen — Spezifikation in der Design-Doku v3.3.0, kein
+Datenbank-Eingriff nötig. Weiterhin **offen**: **Paket 4** (Kategorien im Karussell) —
+die Runde vom 06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
+Aus `sprints/sprint_v2-10_offene_fragen.md` ist §5 (`PA-1`) durch die Runde erledigt;
+**§6 bleibt offener Altbestand:** Das Einkommens-Popup hat als einziges von acht
+Overlays keinen Escape-Handler — Bauauftrag für den Sprint, der das Popup anfasst.

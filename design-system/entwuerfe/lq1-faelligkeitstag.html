@@ -1,0 +1,393 @@
+<!-- @dsCard group="Entwürfe" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>LQ-1 · Fälligkeitstag auf der Karte — Varianten</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
+    --bg-card-paid:#0A140E; --bg-card-ghost:#181818;
+    --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
+    --border-red:rgba(255,69,58,.18);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:44px 40px 90px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:74ch; line-height:1.65; margin:0 0 10px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 34px; line-height:1.6; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:52px 0 6px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 20px; max-width:78ch; line-height:1.65; }
+  .verdict { font-size:11.5px; margin:14px 0 0; max-width:78ch; line-height:1.6; color:var(--text-muted); }
+  .verdict b { font-weight:600; }
+  .yes b { color:var(--color-teal); }
+  .no  b { color:var(--color-red); }
+
+  .rail { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  .slot { width:136px; }
+  .cap { margin-top:11px; font-size:10px; color:var(--text-ghost); line-height:1.55; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+
+  /* Karten-Basis 1:1 aus cards.module.css */
+  .card { width:136px; min-height:170px; border-radius:14px; padding:14px 13px 12px;
+          border:1px solid var(--border-subtle); background:var(--bg-card);
+          position:relative; opacity:.75; }
+  .cardBudget { padding-bottom:18px; }
+  .open     { background:var(--bg-card-open);  border-color:var(--border-red); }
+  .paid     { background:var(--bg-card-paid);  border-color:var(--border-teal); }
+  .expected { background:#0D1A16;              border-color:rgba(62,207,175,.18); }
+  .running  { background:var(--bg-card-open);  border-color:var(--border-red); }
+  .ghost    { background:var(--bg-card-ghost); border-color:rgba(255,255,255,.10); opacity:.65; }
+
+  .cardTop { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .cardLabel { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .open .cardLabel, .running .cardLabel { color:rgba(255,99,88,.45); }
+  .paid .cardLabel, .expected .cardLabel { color:rgba(62,207,175,.45); }
+  .ghost .cardLabel { color:rgba(255,255,255,.25); }
+
+  .icon { width:18px; height:18px; border-radius:50%; display:flex;
+          align-items:center; justify-content:center; flex-shrink:0; }
+  .iconOpen  { background:rgba(255,69,58,.1);   border:1px solid rgba(255,69,58,.2); }
+  .iconPaid  { background:rgba(62,207,175,.1);  border:1px solid rgba(62,207,175,.28); }
+  .iconGhost { background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1); }
+  .iconExp   { background:rgba(62,207,175,.1);  border:1px solid rgba(62,207,175,.25); }
+
+  .cardName { font-size:13px; font-weight:500; letter-spacing:-.2px; margin-bottom:2px;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .open .cardName, .running .cardName, .expected .cardName { color:var(--text-muted); }
+  .paid .cardName { color:var(--text-primary); }
+  .ghost .cardName { color:rgba(255,255,255,.35); }
+
+  .cardAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px; line-height:1; margin-bottom:2px; }
+  .open .cardAmount, .running .cardAmount, .expected .cardAmount { color:var(--text-muted); }
+  .paid .cardAmount { color:var(--text-primary); }
+  .ghost .cardAmount { color:rgba(255,255,255,.32); }
+
+  .householdAmount { font-size:10px; font-weight:400; line-height:12px; min-height:12px;
+                     white-space:nowrap; color:var(--text-muted); margin-bottom:5px; }
+
+  .stateLabel { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; }
+  .open .stateLabel { color:rgba(255,99,88,.38); }
+  .paid .stateLabel, .expected .stateLabel { color:rgba(62,207,175,.45); }
+  .running .stateLabel { color:rgba(255,255,255,.2); }
+  .ghost .stateLabel { color:var(--text-ghost); }
+
+  /* ── A: Statuszeile mit rechtem Anschlag ── */
+  .stateRow { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .dueRight { font-size:9px; font-weight:500; letter-spacing:.4px;
+              color:rgba(255,255,255,.30); white-space:nowrap; }
+  .ghost .dueRight { color:rgba(255,255,255,.20); }
+
+  /* ── A2: inline mit Mittelpunkt ── */
+  .dueInline { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
+               color:rgba(255,255,255,.30); }
+
+  /* ── B: eigene Zeile ── */
+  .dueLine { font-size:10px; font-weight:400; line-height:12px; min-height:12px;
+             color:rgba(255,255,255,.30); margin-top:4px; }
+
+  .restAmount { font-size:11px; font-weight:500; margin-top:3px; color:rgba(62,207,175,.40); }
+  .cardMeta { display:flex; align-items:center; gap:5px; margin-top:8px; }
+  .metaDot { width:5px; height:5px; border-radius:50%; }
+  .metaDotIch { background:rgba(255,255,255,.22); }
+  .metaDotGem { background:rgba(100,168,240,.38); }
+  .metaText { font-size:10px; font-weight:500; color:rgba(255,255,255,.20); letter-spacing:.2px; }
+  .progressWrap { position:absolute; bottom:0; left:0; right:0; height:3px;
+                  background:rgba(255,255,255,.04); border-radius:0 0 14px 14px; overflow:hidden; }
+  .progressBar { height:100%; background:rgba(62,207,175,.45); }
+
+  /* Overlay-Skizzen */
+  .ovRail { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .overlay { width:300px; border-radius:14px; border:1px solid rgba(255,255,255,.10);
+             background:#161618; padding:20px 20px 18px; }
+  .ovTitle { font-size:13px; font-weight:600; letter-spacing:-.2px; color:#fff; margin-bottom:4px; }
+  .ovSub { font-size:10.5px; color:var(--text-ghost); margin-bottom:16px; line-height:1.5; }
+  .ovOpt { border:1px solid rgba(255,255,255,.10); border-radius:9px; padding:11px 13px;
+           margin-bottom:8px; font-size:12px; color:var(--text-muted); }
+  .ovOpt.sel { border-color:rgba(62,207,175,.35); background:rgba(62,207,175,.05); color:#fff; }
+  .ovNew { border-color:rgba(255,200,60,.35); background:rgba(255,200,60,.04); }
+  .ovField { display:flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,.10);
+             border-radius:9px; padding:11px 13px; margin-bottom:8px; }
+  .ovFieldLabel { font-size:11px; color:var(--text-muted); }
+  .ovFieldVal { font-size:15px; font-weight:200; color:#fff; margin-left:auto; }
+  .ovBtns { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+  .btn { font-size:10px; font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
+         padding:8px 14px; border-radius:8px; border:1px solid rgba(255,255,255,.12);
+         color:var(--text-muted); }
+  .btn.primary { border-color:rgba(62,207,175,.35); color:var(--color-teal); }
+
+  .menu { width:210px; border-radius:11px; border:1px solid rgba(255,255,255,.10);
+          background:#161618; padding:6px; }
+  .menuItem { font-size:12px; color:var(--text-muted); padding:9px 11px; border-radius:7px; }
+  .menuItem.new { color:#fff; background:rgba(255,200,60,.07); }
+  .menuItem.dis { color:rgba(255,255,255,.18); }
+
+  .note { margin-top:24px; padding:14px 16px; border-left:2px solid var(--border-teal);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.7; max-width:84ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .note.warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+  .note.plain { border-left-color:rgba(255,255,255,.14); background:rgba(255,255,255,.02); }
+</style>
+</head>
+<body>
+
+<h1>LQ-1 — der Fälligkeitstag auf der Karte</h1>
+<p class="lede">
+  Der Tag liegt seit v2-14 in der Datenbank: 17 Karten haben einen, <b>Budget-Karten
+  haben bewusst keinen</b> („ein Budget ist eine Erlaubnis ohne Termin“), und eine Karte
+  ohne Buchungshistorie ebenfalls nicht. Die Frage ist, ob und wo er sichtbar wird —
+  auf einer Karte, die seit v2-13 bereits eine Zusatzzeile trägt.
+</p>
+<p class="src">
+  Quelle: <code>supabase/migrations/20260806_v2_14_lq1_faelligkeitstag.sql</code> ·
+  <code>cards.module.css</code> · Design-Doku §7 · §12.3 · §12.4.<br>
+  <b>Entwurfs-Seite — kein Ist-Zustand.</b> Nichts davon ist gebaut.
+</p>
+
+<!-- ═══════════ WARUM ÜBERHAUPT ═══════════ -->
+<div class="note warn">
+  <b>Warum der Tag nicht unsichtbar bleiben darf.</b> Die 17 Werte sind
+  <em>abgeleitet</em> — aus der Buchungshistorie gelesen, nie von dir bestätigt. Sie
+  steuern ab LQ-2 eine Zahl auf dem Dashboard. Ein geratener Wert, der eine sichtbare
+  Zahl treibt und selbst nicht sichtbar ist, ist genau die Bauart, aus der die Befunde
+  vom 04.08. entstanden sind.
+  <br><br>
+  Dazu kommt ein Fall, der ohne den Tag unerklärlich wird: Eine Karte kann
+  <b>„Offen“</b> sein und trotzdem <b>nicht mehr</b> in „noch fällig“ zählen — weil ihr
+  Termin verstrichen ist. Am 6. August steht die Miete auf „Offen“ (kein Umsatz
+  verknüpft), war aber am 1. fällig und ist längst abgebucht. Steht der Tag auf der
+  Karte, erklärt sich das von selbst. Steht er nirgends, sieht es nach einem Fehler aus.
+</div>
+
+<!-- ═══════════ VARIANTE A ═══════════ -->
+<h2>A · In der Statuszeile, rechter Anschlag <span style="color:var(--color-teal)">— Empfehlung</span></h2>
+<p class="sub">
+  Keine neue Zeile. Die Statuszeile bekommt zwei Enden: links der Zustand, rechts der
+  Termin. Zwei verschiedene Aussagen, sauber durch Position getrennt statt durch ein
+  Trennzeichen — dasselbe Prinzip wie die Zonen-Kopfzeile der Rohmasse.
+</p>
+<div class="rail">
+
+  <div class="slot">
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Miete</div>
+      <div class="cardAmount">1.089,26 €</div>
+      <div class="householdAmount">von 1.904,00 €</div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueRight">am 1.</div></div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Voller Fall</b>Gemeinsame Karte mit beiden Zusätzen — die dichteste Karte, die es geben kann.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card paid">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconPaid"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="rgba(62,207,175,.85)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="cardName">Internet – Vodafone</div>
+      <div class="cardAmount">22,87 €</div>
+      <div class="householdAmount">von 39,98 €</div>
+      <div class="stateRow"><div class="stateLabel">Bezahlt</div><div class="dueRight">am 15.</div></div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Bezahlt</b>Zu klären: Verschwindet der Tag, wenn der Termin erledigt ist? Hier steht er noch.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card expected">
+      <div class="cardTop"><div class="cardLabel">Einnahmen</div>
+        <div class="icon iconExp"><svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="2.8" fill="none" stroke="rgba(62,207,175,.7)" stroke-width="1.1"/></svg></div></div>
+      <div class="cardName">Gehalt</div>
+      <div class="cardAmount">3.480,00 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="stateLabel">Erwartet</div><div class="dueRight">am 28.</div></div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+    </div>
+    <div class="cap"><b>Einnahme</b>Funktioniert gespiegelt — „erwartet am 28.“ ist dieselbe Vorhersage in die andere Richtung.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget running">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Tanken</div>
+      <div class="cardAmount">240,00 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="stateLabel">Laufend</div><div class="dueRight"></div></div>
+      <div class="restAmount">Noch 240,00 € frei</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar" style="width:0%"></div></div>
+    </div>
+    <div class="cap"><b>Budget · nie ein Tag</b>Rechts bleibt leer. Kein Termin, per Migration NULL — die Leerstelle ist die Aussage.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Friseur</div>
+      <div class="cardAmount">45,00 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueRight"></div></div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+    </div>
+    <div class="cap"><b>Fixkosten ohne Tag</b>Keine Historie, kein abgeleiteter Wert. Auch hier bleibt es leer — statt „—“ zu zeigen.</div>
+  </div>
+
+</div>
+<p class="verdict yes">
+  <b>Was sie kostet:</b> die Statuszeile trägt zwei Dinge statt einem; bei Karten ohne
+  Tag steht rechts nichts, die Zeile wirkt dann leicht unausgewogen.
+  <b>Was sie bringt:</b> keine zusätzliche Höhe, alle Karten behalten ihre Maße, und
+  der Termin steht neben dem Zustand, zu dem er gehört. Budget-Karten bleiben von selbst
+  frei — die Leerstelle sagt genau das, was Befund L7 sagt.
+</p>
+
+<!-- ═══════════ VARIANTE B ═══════════ -->
+<h2>B · Eigene Zeile unter dem Status</h2>
+<p class="sub">
+  Der Tag bekommt seinen eigenen Platz, wie „von X €“ ihn bekommen hat. Auf jeder Karte
+  reserviert, damit die Maße gleich bleiben — also <b>12 px mehr Höhe auf allen Karten</b>,
+  auch auf denen, die nie einen Tag haben.
+</p>
+<div class="rail">
+
+  <div class="slot">
+    <div class="card open" style="min-height:186px">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Miete</div>
+      <div class="cardAmount">1.089,26 €</div>
+      <div class="householdAmount">von 1.904,00 €</div>
+      <div class="stateLabel">Offen</div>
+      <div class="dueLine">fällig am 1.</div>
+      <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="cap"><b>Mit Tag</b>Drei Textzeilen unter dem Betrag. Der Betrag verliert seine Alleinstellung.</div>
+  </div>
+
+  <div class="slot">
+    <div class="card cardBudget running" style="min-height:186px">
+      <div class="cardTop"><div class="cardLabel">Budget</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Tanken</div>
+      <div class="cardAmount">240,00 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateLabel">Laufend</div>
+      <div class="dueLine"></div>
+      <div class="restAmount">Noch 240,00 € frei</div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+      <div class="progressWrap"><div class="progressBar" style="width:0%"></div></div>
+    </div>
+    <div class="cap"><b>Budget</b>Trägt zwei leere reservierte Zeilen mit — für Haushaltsbetrag und Termin, von denen sie keinen je füllt.</div>
+  </div>
+
+</div>
+<p class="verdict no">
+  <b>Was sie kostet:</b> jede Karte wird höher, auch die, die nie einen Tag zeigen. Eine
+  Budget-Karte trüge dann <em>zwei</em> dauerhaft leere Zeilen. Und der Betrag — das
+  Herz der Karte — steht über drei kleinen Textzeilen statt über zweien.
+  <b>Was sie bringt:</b> die klarste Lesbarkeit, voller Wortlaut („fällig am 1.“) ohne
+  Platznot, und ein sauber eigener Ort, der nichts mit dem Zustand vermischt.
+</p>
+
+<!-- ═══════════ VARIANTE C ═══════════ -->
+<h2>C · Gar nicht auf der Karte — nur dort, wo man ihn ändert</h2>
+<p class="sub">
+  Die Karte bleibt exakt wie heute. Der Tag lebt ausschließlich im Kontextmenü-Overlay.
+</p>
+<p class="verdict no">
+  <b>Was sie kostet:</b> die 17 abgeleiteten Werte bleiben unsichtbar, bis man jede
+  Karte einzeln öffnet — und der Fall „Karte steht auf Offen, zählt aber nicht mehr als
+  fällig“ bleibt unerklärt. Man müsste ihn suchen gehen, um ihn zu prüfen.
+  <b>Was sie bringt:</b> null Dichte-Zuwachs. Die Karte, die gerade erst eine Zeile
+  bekommen hat, bekommt keine zweite.
+</p>
+
+<!-- ═══════════ ÄNDERN ═══════════ -->
+<h2>Wie man ihn ändert — eigener Eintrag oder „Betrag anpassen“ erweitern?</h2>
+<p class="sub">
+  Das ist keine Platzfrage, sondern eine Bedeutungsfrage.
+</p>
+
+<div class="ovRail">
+
+  <div>
+    <div class="menu">
+      <div class="menuItem">Betrag anpassen</div>
+      <div class="menuItem new">Fällig am …</div>
+      <div class="menuItem">Karte beenden …</div>
+      <div class="menuItem dis">Karte löschen</div>
+    </div>
+    <div class="cap" style="width:210px"><b>Empfehlung · eigener Eintrag</b>Ein fünfter Menüpunkt, auf Budget-Karten nicht vorhanden.</div>
+  </div>
+
+  <div>
+    <div class="overlay">
+      <div class="ovTitle">Fällig am</div>
+      <div class="ovSub">Miete · gilt für alle Monate</div>
+      <div class="ovField">
+        <span class="ovFieldLabel">Tag im Monat</span>
+        <span class="ovFieldVal">1.</span>
+      </div>
+      <div class="ovOpt">Kein fester Tag</div>
+      <div class="ovSub" style="margin:12px 0 0">
+        Aus deinen Buchungen abgeleitet — 19 Monate, immer am 1. bis 4.
+      </div>
+      <div class="ovBtns"><span class="btn">Abbrechen</span><span class="btn primary">Übernehmen</span></div>
+    </div>
+    <div class="cap" style="width:300px"><b>Das kleine Overlay</b>Ein Zahlenfeld, eine Ausschalt-Option, ein Satz Herkunft. „Gilt für alle Monate“ ist die entscheidende Zeile.</div>
+  </div>
+
+  <div>
+    <div class="overlay">
+      <div class="ovTitle">Betrag anpassen</div>
+      <div class="ovSub">Miete · August 2026</div>
+      <div class="ovField">
+        <span class="ovFieldLabel">Neuer Betrag</span>
+        <span class="ovFieldVal">1.904,00 €</span>
+      </div>
+      <div class="ovOpt sel">Nur dieser Monat</div>
+      <div class="ovOpt">Dauerhaft ab diesem Monat</div>
+      <div class="ovField ovNew" style="margin-top:14px">
+        <span class="ovFieldLabel">Fällig am</span>
+        <span class="ovFieldVal">1.</span>
+      </div>
+      <div class="ovBtns"><span class="btn">Abbrechen</span><span class="btn primary">Übernehmen</span></div>
+    </div>
+    <div class="cap" style="width:300px"><b>Verworfen · eingebaut</b>Welche der beiden Optionen oben gilt für den Tag? Keine — und genau das sieht man ihm nicht an.</div>
+  </div>
+
+</div>
+
+<div class="note plain">
+  <b>Warum der Tag nicht in „Betrag anpassen“ gehört.</b> Dieses Overlay hat eine
+  Monats-Semantik: alles darin gilt entweder <em>nur diesen Monat</em> oder <em>ab diesem
+  Monat vorwärts</em>. Der Fälligkeitstag steht dagegen in der Karte selbst und gilt
+  immer — er kennt keine Monatsabgrenzung. Setzt man ihn zwischen die zwei Optionen,
+  entsteht eine Frage, die die Oberfläche nicht beantwortet: gilt der neue Tag nur für
+  August? Genau die Sorte stiller Widerspruch, gegen die §7 Regel 10 geschrieben wurde.
+</div>
+
+<div class="note warn">
+  <b>Was diese Seite nicht entscheidet.</b> Ob der Tag auch auf <em>bezahlten</em> Karten
+  stehen bleibt (Termin erledigt — braucht man ihn dann noch?). Ob eine Karte, deren Wert
+  nur abgeleitet und nie bestätigt ist, das kenntlich machen soll — das wäre eine weitere
+  Spalte und gehört nicht in diese Runde. Und der Wortlaut: <code>am 1.</code> gegen
+  <code>fällig am 1.</code> gegen <code>1.</code> — Variante A hat rund 46 px Platz, das
+  reicht für <code>am 1.</code>, nicht für <code>fällig am 1.</code>
+</div>
+
+</body>
+</html>
