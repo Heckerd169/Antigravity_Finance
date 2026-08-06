@@ -174,6 +174,7 @@ export type Database = {
           attribution: Database["public"]["Enums"]["card_attribution"]
           created_at: string
           deleted_at: string | null
+          due_day: number | null
           first_active_month: string
           frequency: Database["public"]["Enums"]["card_frequency"]
           id: string
@@ -187,6 +188,7 @@ export type Database = {
           attribution: Database["public"]["Enums"]["card_attribution"]
           created_at?: string
           deleted_at?: string | null
+          due_day?: number | null
           first_active_month: string
           frequency: Database["public"]["Enums"]["card_frequency"]
           id?: string
@@ -200,6 +202,7 @@ export type Database = {
           attribution?: Database["public"]["Enums"]["card_attribution"]
           created_at?: string
           deleted_at?: string | null
+          due_day?: number | null
           first_active_month?: string
           frequency?: Database["public"]["Enums"]["card_frequency"]
           id?: string
