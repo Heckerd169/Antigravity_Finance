@@ -63,5 +63,12 @@ Schritt 3, Filter).
 
 - Test-Projekt enthält **niemals Echtdaten** — nur den synthetischen Seed.
 - Migrationen laufen IMMER zuerst hier (Dry-Run), dann auf Prod (User-Go).
-- Nach jeder Live-Migration: Prod-Anker prüfen (aktuell: Juni 2026 = 4.545,32 €
-  und die 12-Monats-Kurve unverändert, sofern nicht beabsichtigt geändert).
+- Nach jeder Live-Migration: Prod-Anker prüfen — **alle zwölf Monate**, Ist **und**
+  Plan, unverändert sofern nicht beabsichtigt geändert.
+
+  > **Maßgeblich ist `CLAUDE.md` §9, nicht diese Datei.** Hier stand bis zum
+  > 06.08.2026 „Juni 2026 = 4.545,32 €“ — ein Wert, der schon durch den
+  > 2025er-Import überholt war (4.589,53 €) und seit der Juli-Kuratierung erneut
+  > (**4.208,76 €**). Zweimal veraltet, zweimal unbemerkt: einen Anker an einer
+  > zweiten Stelle zu pflegen funktioniert nicht. Deshalb steht hier jetzt **kein
+  > Zahlenwert** mehr, sondern nur noch der Verweis.
