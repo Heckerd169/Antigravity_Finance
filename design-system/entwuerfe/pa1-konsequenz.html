@@ -1,0 +1,331 @@
+<!-- @dsCard group="Entwürfe" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>PA-1 · Konsequenz-Anzeige — Varianten</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:44px 40px 90px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:76ch; line-height:1.65; margin:0 0 10px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 34px; line-height:1.6; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:52px 0 6px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  h3 { font-size:12px; font-weight:600; letter-spacing:.2px; color:var(--text-muted);
+       margin:30px 0 10px; }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 20px; max-width:80ch; line-height:1.65; }
+  .verdict { font-size:11.5px; margin:16px 0 0; max-width:80ch; line-height:1.6; color:var(--text-muted); }
+  .verdict b { font-weight:600; }
+  .yes b { color:var(--color-teal); }
+  .no  b { color:var(--color-red); }
+  .cap { margin-top:11px; font-size:10px; color:var(--text-ghost); line-height:1.55; max-width:340px; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  .rail { display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; }
+
+  /* Popup — 400 px seit der Entscheidung vom 06.08.: drei Zahlenspalten plus
+     ungekürzter Kartenname passen bei 340 px nicht nebeneinander. */
+  .pop { width:400px; border-radius:14px; border:1px solid rgba(255,255,255,.10);
+         background:#161618; padding:22px 22px 18px; }
+  .popHead { font-size:13px; font-weight:600; letter-spacing:-.2px; color:#fff; }
+  .popSub { font-size:10.5px; color:var(--text-ghost); margin-top:3px; margin-bottom:18px; line-height:1.5; }
+
+  /* Eingabe-Zustand (heute) */
+  .field { border:1px solid rgba(255,255,255,.10); border-radius:9px; padding:11px 13px;
+           margin-bottom:9px; display:flex; align-items:baseline; }
+  .fieldLabel { font-size:11px; color:var(--text-muted); }
+  .fieldVal { font-size:15px; font-weight:200; color:#fff; margin-left:auto;
+              font-variant-numeric:tabular-nums; }
+  .slider { height:3px; border-radius:2px; background:rgba(255,255,255,.08); margin:14px 2px 6px;
+            position:relative; }
+  .sliderFill { position:absolute; left:0; top:0; bottom:0; width:58%;
+                background:rgba(255,255,255,.25); border-radius:2px; }
+  .sliderKnob { position:absolute; left:58%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px;
+                border-radius:50%; background:#fff; }
+  .splitPrev { display:flex; justify-content:space-between; font-size:10.5px;
+               color:var(--text-ghost); margin-bottom:16px; }
+  .badge { font-size:10px; color:var(--text-ghost); background:rgba(255,255,255,.04);
+           border-radius:7px; padding:8px 11px; line-height:1.5; margin-top:4px; }
+
+  /* Ergebnis-Zustand */
+  .heroNum { font-size:30px; font-weight:200; letter-spacing:-1.4px; line-height:1;
+             font-variant-numeric:tabular-nums; color:var(--color-red); }
+  .heroNum.teal { color:var(--color-teal); }
+  .heroCap { font-size:11.5px; color:var(--text-muted); line-height:1.5; margin-top:7px; }
+  .heroCap b { color:#fff; font-weight:500; }
+
+  .rule { height:1px; background:rgba(255,255,255,.06); margin:16px 0 12px; }
+
+  .tHead { display:flex; font-size:8.5px; font-weight:600; letter-spacing:1.1px;
+           text-transform:uppercase; color:var(--text-ghost); padding-bottom:7px;
+           border-bottom:1px solid rgba(255,255,255,.05); margin-bottom:4px; }
+  .tRow  { display:flex; font-size:11.5px; padding:6px 0; align-items:baseline; }
+  .tName { flex:1; min-width:0; color:var(--text-muted); white-space:nowrap;
+           overflow:hidden; text-overflow:ellipsis; padding-right:10px; }
+  .tCol  { width:68px; text-align:right; font-variant-numeric:tabular-nums; }
+  .tColWide { width:80px; text-align:right; font-variant-numeric:tabular-nums; }
+  .tOld  { color:var(--text-ghost); }
+  .tNew  { color:#fff; }
+  .tDiff { color:var(--color-red); }
+  .tDiff.teal { color:var(--color-teal); }
+  .tSum  { border-top:1px solid rgba(255,255,255,.08); margin-top:6px; padding-top:9px;
+           font-weight:500; }
+  .tSum .tName { color:#fff; }
+
+  .btns { display:flex; gap:8px; margin-top:18px; justify-content:flex-end; }
+  .btn { font-size:10px; font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
+         padding:8px 15px; border-radius:8px; border:1px solid rgba(255,255,255,.12);
+         color:var(--text-muted); }
+  .btn.primary { border-color:rgba(62,207,175,.35); color:var(--color-teal); }
+  .btn.new { border-color:rgba(255,200,60,.35); color:rgba(255,200,60,.85); }
+
+  /* Toast */
+  .toast { width:330px; border-radius:11px; border:1px solid rgba(255,255,255,.08);
+           background:#141416; padding:13px 15px; }
+  .toastTitle { font-size:12px; font-weight:500; color:#fff; }
+  .toastSub { font-size:10.5px; color:var(--text-muted); margin-top:4px; line-height:1.5; }
+
+  .arrow { text-align:center; font-size:16px; color:var(--text-ghost); padding:60px 4px 0; }
+
+  .note { margin-top:24px; padding:14px 16px; border-left:2px solid rgba(62,207,175,.22);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.7; max-width:86ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .note.warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+  .note.plain { border-left-color:rgba(255,255,255,.14); background:rgba(255,255,255,.02); }
+</style>
+</head>
+<body>
+
+<h1>PA-1 — was passiert, nachdem du dein Gehalt änderst</h1>
+<p class="lede">
+  Die Rechnung ist fertig und gegen die Produktiv-Datenbank belegt. Offen ist allein
+  die Darstellung. Alle Zahlen hier sind das durchgerechnete Beispiel aus
+  <code>sprints/sprint_v2-10_offene_fragen.md</code> §5: ICH-Brutto <b>92.400 € →
+  96.000 €</b>, Split <b>0,5721 → 0,5814</b>.
+</p>
+<p class="src">
+  Quelle: Design-Doku §10 (Income/Partner-Split) · §12.7 (UI-Copy) · §4.5
+  (Split-Anwendung, Stand nach BF-4).<br>
+  <b>Entwurfs-Seite — kein Ist-Zustand.</b> Nichts davon ist gebaut.
+</p>
+
+<div class="note">
+  <b>Die Rahmung, die aus §4.5 folgt.</b> Der Split wird nur auf Beträge angewandt, die
+  aus <em>Plan oder Anpassung</em> stammen — nie auf einen realen Umsatz. Was die Liste
+  also zeigt, ist der <b>künftige Plan-Anteil</b>. §4.5 sagt selbst, wozu der gut ist:
+  <em>„die Karte zeigt dann unmittelbar, auf welchen Betrag der Dauerauftrag zu stellen
+  ist.“</em>
+  <br><br>
+  Damit ist diese Anzeige keine Buchhaltungs-Quittung, sondern eine <b>Handlungsliste</b>:
+  <em>diese Daueraufträge musst du jetzt umstellen.</em> Das ist der Maßstab, an dem
+  die drei Varianten unten gemessen werden.
+</div>
+
+<!-- ═══════════ ABLAUF ═══════════ -->
+<h2>Frage 1 · Was passiert nach dem Speichern</h2>
+
+<h3>A · Das Popup tauscht seinen Inhalt — Summe als Held, Liste als Beleg <span style="color:var(--color-teal)">— entschieden</span></h3>
+<p class="sub">
+  Derselbe Rahmen, neuer Inhalt. Die große Zahl ist nicht die Liste, sondern was die
+  Änderung <em>kostet</em>; die vier Zeilen darunter belegen sie.
+</p>
+<div class="rail">
+  <div>
+    <div class="pop">
+      <div class="popHead">Ich — Jahresbrutto</div>
+      <div class="popSub">August 2026</div>
+      <div class="field"><span class="fieldLabel">Jahresbrutto</span><span class="fieldVal">96.000 €</span></div>
+      <div class="slider"><div class="sliderFill"></div><div class="sliderKnob"></div></div>
+      <div class="splitPrev"><span>Ich 58 %</span><span>Partner 42 %</span></div>
+      <div class="field"><span class="fieldLabel">Monatliches Netto</span><span class="fieldVal">4.310 €</span></div>
+      <div class="badge">Gilt ab August 2026 für alle Folgemonate bis zur nächsten Änderung.</div>
+      <div class="btns"><span class="btn">Abbrechen</span><span class="btn primary">Übernehmen</span></div>
+    </div>
+    <div class="cap"><b>Vorher — heutiger Zustand</b>Unverändert. „Übernehmen“ speichert und schließt heute sofort.</div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div>
+    <div class="pop">
+      <div class="popHead">Dein Anteil steigt</div>
+      <div class="popSub">Split 57,2 % → 58,1 % · ab August 2026</div>
+      <div class="heroNum">+18,98 €</div>
+      <div class="heroCap">mehr pro Monat für <b>vier gemeinsame Posten</b>.<br>
+        Die Sparrate sinkt um denselben Betrag.</div>
+      <div class="rule"></div>
+      <div class="tHead"><div class="tName">Posten</div><div class="tCol">Bisher</div><div class="tCol">Künftig</div><div class="tCol">Diff.</div></div>
+      <div class="tRow"><div class="tName">Miete</div><div class="tCol tOld">1.089,26</div><div class="tCol tNew">1.107,02</div><div class="tCol tDiff">+17,76</div></div>
+      <div class="tRow"><div class="tName">Strom – Mainova</div><div class="tCol tOld">36,04</div><div class="tCol tNew">36,63</div><div class="tCol tDiff">+0,59</div></div>
+      <div class="tRow"><div class="tName">Internet – Vodafone</div><div class="tCol tOld">22,87</div><div class="tCol tNew">23,24</div><div class="tCol tDiff">+0,37</div></div>
+      <div class="tRow"><div class="tName">Rechtsschutz – Adam Riese</div><div class="tCol tOld">15,45</div><div class="tCol tNew">15,70</div><div class="tCol tDiff">+0,25</div></div>
+      <div class="tRow tSum"><div class="tName">Zusammen</div><div class="tCol tOld">1.163,62</div><div class="tCol tNew">1.182,60</div><div class="tCol tDiff">+18,98</div></div>
+      <div class="btns"><span class="btn new">Schließen</span></div>
+    </div>
+    <div class="cap"><b>Nachher — die Quittung</b>Ein Ausgang statt zweier. „Abbrechen“ wäre hier sinnlos, es gibt nichts mehr abzubrechen.</div>
+  </div>
+</div>
+<p class="verdict yes">
+  <b>Was sie kostet:</b> das Popup hat plötzlich zwei Gesichter — wer es kennt, sieht
+  beim zweiten Öffnen erst wieder die Felder. Und ein Overlay mit sechs Textzeilen plus
+  fünfzeiliger Tabelle ist das dichteste Element der ganzen App.
+  <b>Was sie bringt:</b> Ursache und Wirkung an einem Ort, ohne Ortswechsel des Blicks.
+  Die Summe beantwortet die Frage sofort, die Liste beantwortet die Rückfrage „bei
+  welchen?“ — und niemand muss eine Tabelle lesen, der es nicht will.
+</p>
+
+<h3>B · Popup schließt, Quittung erscheint als Toast</h3>
+<p class="sub">
+  Wie heute — „Übernehmen“ schließt. Unten Mitte erscheint für einige Sekunden eine
+  Quittung, wie beim Import (§8) und beim Rückgängig-Toast (§2.4).
+</p>
+<div class="rail">
+  <div>
+    <div class="toast">
+      <div class="toastTitle">Dein Anteil steigt um 18,98 €</div>
+      <div class="toastSub">Vier gemeinsame Posten · ab August 2026 · Details im Karussell</div>
+    </div>
+    <div class="cap"><b>Toast unten Mitte</b>Der Ort ist etabliert. Aber vier Beträge passen dort nicht hinein — die Liste fällt weg.</div>
+  </div>
+</div>
+<p class="verdict no">
+  <b>Was sie kostet:</b> die Liste geht verloren — ein Toast trägt keine fünf Zeilen,
+  und er verschwindet nach Sekunden. Genau die Handlungsliste („welche Daueraufträge
+  umstellen?“) wäre damit weg, also der Zweck der ganzen Anzeige.
+  <b>Was sie bringt:</b> null neue Dichte, ein bestehendes Muster, kein zweites Gesicht
+  am Popup. Der Ablauf bleibt exakt wie heute, es kommt nur eine Rückmeldung dazu.
+</p>
+
+<h3>C · Vorschau <em>vor</em> dem Speichern statt Quittung danach</h3>
+<p class="sub">
+  Die Liste erscheint, während man noch am Slider steht — als Entscheidungshilfe, nicht
+  als Bericht. „Übernehmen“ steht darunter und speichert erst dann.
+</p>
+<div class="rail">
+  <div>
+    <div class="pop">
+      <div class="popHead">Ich — Jahresbrutto</div>
+      <div class="popSub">August 2026</div>
+      <div class="field"><span class="fieldLabel">Jahresbrutto</span><span class="fieldVal">96.000 €</span></div>
+      <div class="slider"><div class="sliderFill"></div><div class="sliderKnob"></div></div>
+      <div class="splitPrev"><span>Ich 58 %</span><span>Partner 42 %</span></div>
+      <div class="rule"></div>
+      <div class="tHead"><div class="tName">Wenn du übernimmst</div><div class="tColWide">Künftig</div><div class="tCol">Diff.</div></div>
+      <div class="tRow"><div class="tName">Miete</div><div class="tColWide tNew">1.107,02</div><div class="tCol tDiff">+17,76</div></div>
+      <div class="tRow"><div class="tName">Strom – Mainova</div><div class="tColWide tNew">36,63</div><div class="tCol tDiff">+0,59</div></div>
+      <div class="tRow"><div class="tName">Internet – Vodafone</div><div class="tColWide tNew">23,24</div><div class="tCol tDiff">+0,37</div></div>
+      <div class="tRow"><div class="tName">Rechtsschutz – Adam Riese</div><div class="tColWide tNew">15,70</div><div class="tCol tDiff">+0,25</div></div>
+      <div class="tRow tSum"><div class="tName">Zusammen</div><div class="tColWide tNew">1.182,60</div><div class="tCol tDiff">+18,98</div></div>
+      <div class="btns"><span class="btn">Abbrechen</span><span class="btn primary">Übernehmen</span></div>
+    </div>
+    <div class="cap"><b>Alles in einem</b>Kein zweites Gesicht, kein neuer Knopf — aber ein Popup, das während der Slider-Bewegung ständig neue Zahlen zeigt.</div>
+  </div>
+</div>
+<p class="verdict no">
+  <b>Was sie kostet:</b> Der Brutto-Slider läuft in 100-€-Schritten von 20.000 bis
+  150.000 — die Tabelle darunter würde bei jeder Bewegung flimmern. Das ist das
+  Gegenteil von „Ruhe vor Betonung“, und es macht das Popup dauerhaft so hoch wie in
+  Variante A, auch wenn man nur das Netto tippen wollte.
+  <b>Was sie bringt:</b> die ehrlichste Reihenfolge — man sieht die Folge, <em>bevor</em>
+  man sie auslöst, und kann noch abbrechen. Kein neuer Knopf, keine neue UI-Copy, kein
+  zweiter Zustand.
+</p>
+
+<!-- ═══════════ BESCHRIFTUNG ═══════════ -->
+<h2>Frage 2 · Wie die Spalten heißen</h2>
+<p class="sub">
+  <b>Entschieden am 06.08.2026: Variante a</b> — alle drei Zahlen erscheinen, und das
+  Popup wird dafür breiter (340 → <b>400 px</b>). Die Vollständigkeit gewinnt gegen die
+  Dichte; die Breite ist der Preis, und sie ist zulässig, weil sich Overlays laut §7
+  (RM-4) ausdrücklich <em>„in der Größe, nie im Ort“</em> unterscheiden dürfen.
+</p>
+<div class="rail">
+  <div>
+    <div class="pop" style="padding-bottom:14px">
+      <div class="tHead"><div class="tName">Posten</div><div class="tCol">Bisher</div><div class="tCol">Künftig</div><div class="tCol">Diff.</div></div>
+      <div class="tRow"><div class="tName">Miete</div><div class="tCol tOld">1.089,26</div><div class="tCol tNew">1.107,02</div><div class="tCol tDiff">+17,76</div></div>
+      <div class="tRow"><div class="tName">Rechtsschutz – Adam Riese</div><div class="tCol tOld">15,45</div><div class="tCol tNew">15,70</div><div class="tCol tDiff">+0,25</div></div>
+    </div>
+    <div class="cap"><b>a · Bisher / Künftig / Diff. — entschieden</b>„Künftig“ trägt die Forward-Inheritance-Semantik: es gilt ab diesem Monat vorwärts. Bei 400 px steht auch der längste Kartenname ungekürzt.</div>
+  </div>
+  <div>
+    <div class="pop" style="padding-bottom:14px">
+      <div class="tHead"><div class="tName">Dauerauftrag umstellen auf</div><div class="tColWide">Neu</div><div class="tCol">Diff.</div></div>
+      <div class="tRow"><div class="tName">Miete</div><div class="tColWide tNew">1.107,02</div><div class="tCol tDiff">+17,76</div></div>
+      <div class="tRow"><div class="tName">Strom – Mainova</div><div class="tColWide tNew">36,63</div><div class="tCol tDiff">+0,59</div></div>
+    </div>
+    <div class="cap"><b>b · Nur neu + Differenz</b>Der alte Wert entfällt — er steht ohnehin noch auf jeder Karte im Karussell. Acht Zahlen statt zwölf, und die Überschrift sagt, was zu tun ist.</div>
+  </div>
+  <div>
+    <div class="pop" style="padding-bottom:14px">
+      <div class="tHead"><div class="tName">Posten</div><div class="tCol">Vorher</div><div class="tCol">Nachher</div><div class="tCol">±</div></div>
+      <div class="tRow"><div class="tName">Miete</div><div class="tCol tOld">1.089,26</div><div class="tCol tNew">1.107,02</div><div class="tCol tDiff">+17,76</div></div>
+      <div class="tRow"><div class="tName">Strom – Mainova</div><div class="tCol tOld">36,04</div><div class="tCol tNew">36,63</div><div class="tCol tDiff">+0,59</div></div>
+    </div>
+    <div class="cap"><b>c · Vorher / Nachher / ±</b>Zeitwörter statt Zustandswörter. „±“ spart Platz, ist aber ein Zeichen ohne Anschluss im übrigen Wortschatz.</div>
+  </div>
+</div>
+<p class="verdict yes">
+  <b>Entschieden: a</b> — „Bisher / Künftig / Diff.“, alle drei Zahlen, Popup 400 px.
+  <br><br>
+  <b>Verworfen b</b> (nur Künftig + Differenz): Der alte Wert steht zwar auf jeder Karte
+  im Karussell und wäre dort nachschlagbar — aber <em>nachschlagen</em> ist nicht
+  <em>vergleichen</em>. Eine Änderungs-Anzeige, die den Ausgangswert weglässt, verlangt,
+  dass man ihn im Kopf behält. Das war der Preis, den die kürzere Variante nicht wert war.
+  <b>Verworfen c</b> („±“ hat im UI-Wortschatz kein Gegenstück; „Vorher/Nachher“ klingt
+  nach Vergangenheit, obwohl die Aussage in die Zukunft zeigt).
+  <br><br>
+  <b>Folge, die mitentschieden ist:</b> Beide Zustände des Popups sind <b>gleich breit</b>.
+  Ein Overlay, das beim Übernehmen unter der Hand wächst, wäre unruhig — also bekommt
+  auch der Eingabe-Zustand 400 px.
+</p>
+
+<!-- ═══════════ RESTFRAGEN ═══════════ -->
+<h2>Frage 3 · Der leere Fall — und wer mitzählt</h2>
+
+<div class="note plain">
+  <b>Wenn sich der Split nicht ändert</b> — etwa weil nur das Netto angepasst wurde —
+  passiert <b>gar nichts Neues</b>: Das Popup speichert und schließt, genau wie heute.
+  Kein Bildschirm „Keine Änderungen“, keine Null-Zeile. Das ist der Unterschied, den
+  §7 Regel 17 (LL-20) verlangt: <em>ein Referenzwert ohne Daten ist „keine Anzeige“,
+  nicht 0.</em> Dasselbe gilt, wenn es keine gemeinsamen Posten gibt.
+  <br><br>
+  <b>Wichtig dabei:</b> Das Netto ändert die Sparrate trotzdem. Diese Anzeige handelt
+  aber vom <em>Split</em> — die Sparrate steht ohnehin im Ring, sobald das Popup zu ist.
+</div>
+
+<div class="note plain">
+  <b>Zählen gemeinsame Einnahmen mit?</b> Ja — und zwar in derselben Liste, mit dem
+  Vorzeichen, das ihnen zusteht. Eine gemeinsame Einnahme wird nach §4.5 genauso
+  gesplittet wie eine gemeinsame Ausgabe; sie wegzulassen machte die Summe falsch.
+  Heute existiert keine solche Karte, die Frage ist also latent — aber sie muss
+  entschieden sein, bevor die erste angelegt wird, sonst fehlt sie stillschweigend.
+  <br><br>
+  Eine eigene Gruppe oder Zwischensumme bekommen sie <b>nicht</b>: Das wäre Aufbau für
+  einen Fall, den es nicht gibt, und das Vorzeichen trägt die Aussage bereits.
+</div>
+
+<div class="note warn">
+  <b>Der Fall, den keine der drei Varianten zeigt.</b> Hat eine gemeinsame Karte im
+  laufenden Monat bereits einen zugeordneten Umsatz, gewinnt nach §4.5 die Realität —
+  ihr Betrag ändert sich durch den neuen Split <em>nicht</em>, wohl aber der aller
+  Folgemonate. Heute tritt das nicht auf (keine gemeinsame Karte hat je ein verknüpftes
+  Fragment, Befund L4), doch die Liste müsste dann sagen, ab wann sie gilt. Der
+  Untertitel <em>„ab August 2026“</em> in Variante A trägt das bereits — das ist kein
+  Zufall, sondern der Grund, warum er dort steht.
+</div>
+
+</body>
+</html>
