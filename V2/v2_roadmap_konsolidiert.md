@@ -2,7 +2,7 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 05. August 2026 (nach v2-09, Ideen-Runde) · **Vorgänger-Struktur:** bis zum
+> **Stand:** 05. August 2026 (nach v2-13 — Paket 1 vollständig) · **Vorgänger-Struktur:** bis zum
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
@@ -26,21 +26,40 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 05.08.2026 nach Sprint v2-12 zeilengenau nachgezählt.*
+*Alle Zahlen am 05.08.2026 nach Sprint v2-13 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-12 | vor v2-11 | vor v2-10 |
-|---|---|---|---|---|
-| Offene Pakete | **14** | 14 | 14 | 14 |
-| Themen darin | **35** | 36 | 37 | 40 |
-| Hausaufgaben ohne eigenen Sprint | **7** | 7 | 7 | 8 |
-| **Offen gesamt** | **42** | 43 | 44 | 48 |
-| Erledigt | 31 | 30 | 29 | 25 |
-| Hinfällig geworden | 4 | 4 | 4 | 4 |
+| | Anzahl | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
+|---|---|---|---|---|---|
+| Offene Pakete | **13** | 14 | 14 | 14 | 14 |
+| Themen darin | **33** | 34 | 35 | 36 | 39 |
+| Hausaufgaben ohne eigenen Sprint | **7** | 7 | 7 | 7 | 8 |
+| **Offen gesamt** | **40** | 41 | 42 | 43 | 47 |
+| Erledigt | 32 | 31 | 30 | 29 | 25 |
+| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 |
 
+> **Korrektur um eine Zeile (05.08.2026, v2-13).** Beim zeilengenauen Nachzählen ergaben
+> sich **33** offene Themen in den Paketen, nicht 34. Die Spalten davor sind entsprechend
+> um eins nach unten korrigiert; die Reihenfolge und alle Aussagen bleiben unberührt.
+> Nachgezählt wurde: 13 Paket-Tabellen (⬜ 30 · 🟡 3), Hausaufgaben (⬜ 6 · 🟡 1) = 7,
+> §4 Erledigt 31 Zeilen + `BF-4` = **32**, §3 Dauerhaft nicht = **4**.
+
+> **Paket 1 fällt weg** — es bestand nur noch aus `BF-4`. Damit sinkt die Zahl der
+> offenen Pakete erstmals seit dem Umbau vom 04.08.2026, von 14 auf **13**.
+
+> **Sprint v2-13 hat `BF-4` geschlossen — und damit PAKET 1 VOLLSTÄNDIG.** Alle fünf
+> Befunde vom 04.08.2026 sind erledigt. Der Split-Anteil wird jetzt genau **einmal**
+> angewandt (in `calculate_card_amount_for_month`, auf Plan/Anpassung — nicht auf
+> Fragment-Summen). Migration am 05.08.2026 nach ausdrücklicher Freigabe auf Produktion
+> angewendet: **alle zwölf Monate um 0,00 € bewegt**, Ist wie Plan, B2-Invariante 12/12
+> gehalten. Das war die Erwartung — heute hat keine gemeinsame Karte ein Fragment, der
+> Fehler war einen Kuratierungs-Schritt entfernt. Der Beweis der Richtigkeit kommt aus
+> der Übungs-DB: Ist-Sparrate dort 1.840,00 → **1.600,00 €** (der doppelte Abzug von
+> 240,00 € verschwindet), Anker unverändert 2.200,00 €. Die vier gemeinsamen Karten
+> zeigen seither den eigenen Anteil und darunter `von [Haushaltsbetrag] €`.
+>
 > **Sprint v2-12 hat `BF-2` geschlossen** (Ring-Subzeile vorzeichensicher, dritte
-> Zeile `genau nach Plan` nach Entscheidung `E3`). **Paket 1 besteht damit nur noch
-> aus `BF-4`** — dem einzigen der fünf Befunde, der noch offen ist, und er hängt an
-> **E1**.
+> Zeile `genau nach Plan` nach Entscheidung `E3`). *(Damals bestand Paket 1 nur noch
+> aus `BF-4` — der ist seit v2-13 ebenfalls erledigt.)*
 
 > **Sprint v2-11 hat `BF-5` geschlossen.** Die Migration ist am 05.08.2026 nach
 > ausdrücklicher Freigabe auf Produktion angewendet und verifiziert: Juli-Ist
@@ -82,16 +101,15 @@ keinem anderen Paket und liefert als Einziges Wert, **bevor** kuratiert ist. Sie
 an dieser Stelle, weil Paket 4 noch nicht schneidbar ist — sie füllt die Wartezeit,
 statt sie zu verlängern.
 
-**Was als Nächstes dran ist — Stand 05.08.2026 nach Sprint v2-12.**
-Von den fünf Befunden sind **vier erledigt**: `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11)
-und `BF-2` (v2-12).
+**Was als Nächstes dran ist — Stand 05.08.2026 nach Sprint v2-13.**
+Von den fünf Befunden sind **alle fünf erledigt**: `BF-3` und `BF-1` (v2-10),
+`BF-5` (v2-11), `BF-2` (v2-12) und `BF-4` (v2-13).
 
-**Paket 1 besteht damit nur noch aus `BF-4`** — und der hängt an **E1**. Das ist
-zugleich die schwerste der drei Entscheidungen: Sie legt fest, was die Zahl auf einer
-gemeinsamen Karte überhaupt bedeutet, und zieht Design-Doku §4.5 nach sich. Zwei
-unabhängige Argumente dafür sind seit dem 05.08. dokumentiert (siehe am Punkt selbst).
+**Paket 1 ist damit vollständig abgeschlossen.** Die Zahlen sind belastbar — das war
+die Voraussetzung für alles, was auf ihnen aufbaut (Treiber, Auswertungen,
+Liquiditäts-Vorschau).
 
-Ohne jede weitere Entscheidung baubar sind:
+**Frei baubar, ohne jede offene Entscheidung:**
 
 1. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket, liefert sofort
    Wert.
@@ -99,9 +117,16 @@ Ohne jede weitere Entscheidung baubar sind:
    im Schaufenster-Popup), `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die
    Schneidbarkeit von **Paket 4**.
 
-**Nur noch EINE Entscheidung blockiert Arbeit:** **E1** — Was bedeutet die Zahl auf
-einer gemeinsamen Karte? *(blockiert `BF-4`)*. Empfehlung und Beweismaterial in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7.
+> **✅ Seit 05.08.2026 blockiert KEINE Entscheidung mehr Arbeit.** E1, E2 und E3 sind
+> alle gefallen. `BF-4` ist damit baubar; was er noch braucht, steht am Punkt selbst.
+
+> **✅ E1 ist am 05.08.2026 entschieden** — „die Zahlung ist mein Anteil": Eine
+> gemeinsame Karte plant im Haushaltsbetrag, **zeigt den eigenen Anteil**, und eine
+> zugeordnete echte Zahlung wird **unverändert übernommen, ohne zweiten Abzug**.
+> Belegt durch die Messung vom 05.08.: Bei allen vier gemeinsamen Karten entspricht
+> der überwiesene Betrag dem rechnerischen Anteil **auf den Cent**, in Mai, Juni und
+> Juli. **Damit kehrt sich Design-Doku §4.5 um** — das ist eine geänderte
+> Produkt-Entscheidung, kein Fehler-Fix, und wird als solche kenntlich gemacht.
 
 > **✅ E3 ist am 05.08.2026 entschieden** — eigene Formulierung für den Gleichstand,
 > nach Empfehlung. Umgesetzt in v2-12 als dritte Zeile `genau nach Plan` (neutral),
@@ -121,7 +146,7 @@ einer gemeinsamen Karte? *(blockiert `BF-4`)*. Empfehlung und Beweismaterial in
 Die Reihenfolge ist ein **Vorschlag**, kein Beschluss. Sie ändert sich erfahrungsgemäß
 mit dem, was beim Benutzen auffällt.
 
-### Paket 1 · Fehler aus der Nutzung
+### Paket 1 · Fehler aus der Nutzung — ✅ **VOLLSTÄNDIG ERLEDIGT (05.08.2026)**
 **Entsperrt:** verlässliche Zahlen. Solange die Sparrate falsch rechnet, ist jede
 Auswertung darauf wertlos — auch die Abweichungs-Treiber.
 **Quelle:** `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` (Diagnose vollständig,
@@ -129,7 +154,7 @@ Prüfanker je Fehler benannt)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Diskussion | **ja** | ⬜ | Anzeige ist spec-konform (§4.5), dahinter steckt aber ein Rechenproblem mit Geldwirkung: Der Anteil wird auch auf eine zugeordnete Fragment-Summe angewandt → Sparrate rund **466 €/Monat zu gut**, sobald eine gemeinsame Karte ein Fragment bekommt. Heute noch nicht eingetreten (keine gemeinsame Karte hat eines). **Hängt an E1.** Eigene Phase, berührt Design-Doku §4.5. **Neues Beweismaterial für E1** (Messung 05.08.2026, `V2/befunde_2026-08-05_liquiditaet.md` L4): Bei **allen vier** gemeinsamen Karten entspricht der tatsächlich abgebuchte Betrag auf den Cent dem rechnerischen Anteil — Miete 1.089,26 statt 1.904,00 · Strom 36,04 statt 63,00 · Internet 22,87 statt 39,98 · Rechtsschutz 15,45 statt 27,01, jeweils mit „(Domi)" im Verwendungszweck. Das sagt nicht, was die Karte zeigen *soll*, ist aber ein starkes Argument für den Anteil — und lag bei der Formulierung von E1 nicht vor. **Zweites, unabhängiges Argument** (Ideen-Runde 05.08.2026, Idee 4): Ändert sich der Split-Faktor durch eine Gehaltsänderung, ist der Bruttobetrag auf der Karte genau die Zahl, die **nicht** weiterhilft — gesucht ist dann der eigene Anteil, um die Daueraufträge umzustellen. |
+| BF-4 | Gemeinsame Karten zeigen den Gesamtbetrag | Bug | **ja** | ✅ | **Erledigt in Sprint v2-13 (05.08.2026).** Der Anteil wird jetzt genau **einmal** angewandt — in `calculate_card_amount_for_month`, und zwar auf **Plan/Anpassung**, **nicht** auf Fragment-Summen (die sind bereits der überwiesene Anteil). `calculate_sparrate_for_month` multipliziert nicht mehr selbst; `get_year_deviation_drivers` rechnet `delta = sign × (ist − plan × share)` — der Anteil steht jetzt **innen** am Plan-Teil, weil die Klammer gemischt ist. `calculate_planned_sparrate_for_month` blieb unverändert (Prüfsumme identisch belegt). **Alle vier Funktionen in EINER Migration**, weil ein Zwischenzustand doppelt anteilig gerechnet hätte. Probe auf der Übungs-DB **zweimal** gefahren: Ist-Sparrate 1.840,00 → **1.600,00 €**, B2 12/12 vorher wie nachher, Anker 2.200,00 € unverändert. Auf Produktion **alle zwölf Monate um 0,00 € bewegt** — erwartet, weil noch keine gemeinsame Karte ein Fragment hat. Die vier Karten zeigen jetzt 1.089,26 / 36,04 / 22,87 / 15,45 € — auf den Cent die realen Daueraufträge aus der E1-Messung. Design-Doku **§4.5 umgekehrt** und als geänderte Produkt-Entscheidung kenntlich gemacht (3.2.0), Schema-Doku 3.4.3, neue Kartenzeile `von [N] €` (§7/§12.3). Belege: `sprints/sprint_v2-13_review.md`. |
 
 > BF-5 und BF-4 fassen beide die Rechenfunktionen an → gemeinsame Übungs-DB-Probe,
 > wenn sie im selben Sprint laufen. Fähigkeit `db-eingriff`.
@@ -367,6 +392,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| BF-4 | Gemeinsame Karten: Split-Anteil genau **einmal** angewandt; Karte zeigt den eigenen Anteil mit `von [N] €` darunter. Prod alle 12 Monate um 0,00 € bewegt, B2 12/12 | v2-13 |
 | Init-1 | Übungs-Datenbank aufgesetzt, Runbook in `supabase/test_projekt/` | v2-05 |
 | Init-2 | Deterministischer Prüfwert 2.200,00 € definiert | v2-05 |
 | Init-3 | Branch-Namenskonvention `sprint/v2-NN-<thema>` | — |
@@ -468,6 +494,7 @@ Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung
 · fortgeschrieben am 05. August 2026 nach **Sprint v2-10** (`BF-3`, `BF-1`,
 `RM-1`, `RM-4` nach §4 gewandert; Paket 2 leer bis auf `RM-2`) · nach der
 **Entscheidung E2** (`BF-5` freigegeben) · nach **Sprint v2-11** (`BF-5` erledigt,
-Migration angewendet und verifiziert, Juli +900,00 €) · **zuletzt nach Sprint v2-12** —
-`BF-2` erledigt (Entscheidung `E3`); **Paket 1 besteht nur noch aus `BF-4`**, und
-**E1 ist die einzige Entscheidung, die noch Arbeit blockiert***
+Migration angewendet und verifiziert, Juli +900,00 €) · nach **Sprint v2-12** (`BF-2`
+erledigt, Entscheidung `E3`) · **zuletzt nach der Entscheidung E1** (05.08.2026) —
+**Paket 1 besteht nur noch aus `BF-4`, und der ist seit E1 baubar. Es blockiert keine
+Entscheidung mehr Arbeit.***

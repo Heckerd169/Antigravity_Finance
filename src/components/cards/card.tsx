@@ -135,6 +135,27 @@ function sumLinkedFragments(card: EnrichedCard): number {
 
 // ── Sub-Components ───────────────────────────────────────────────────────────
 
+/** v2-13 (BF-4/E1): Der Haushaltsbetrag unter dem eigenen Anteil — `von 1.904,00 €`.
+ *
+ *  Wortlaut ohne neues Substantiv: laut vorgelesen ergibt sich der richtige Satz
+ *  („1.089,26 € VON 1.904,00 €"). „Haushalt" ist bewusst verworfen — das Wort
+ *  kommt in der Design-Doku genau einmal vor, als Verneinung in §10.
+ *
+ *  Die Zeilenhöhe ist auf JEDER Karte permanent reserviert (`min-height`), auf
+ *  ICH-Karten bleibt sie leer. Es schaltet ausschließlich der Inhalt, nie die
+ *  Höhe — alle Karten behalten dieselben Maße. Kein neues Muster: §6 (M3)
+ *  schreibt das für die Ausreißer-Subzeile im Header bereits so fest.
+ *
+ *  Ob die Zeile Inhalt bekommt, entscheidet der Loader (§7 Regel 15 / LL-17);
+ *  hier wird nur noch gerendert. Gestaltungsrunde: V2/design_direktor_gemeinsame_karte.md */
+function HouseholdRow({ householdAmount }: { householdAmount: number | null }) {
+  return (
+    <div className={styles.householdAmount}>
+      {householdAmount !== null ? `von ${formatEuro(householdAmount)}` : null}
+    </div>
+  );
+}
+
 function MetaRow({ attribution }: { attribution: "ICH" | "GEMEINSAM" }) {
   const isGem = attribution === "GEMEINSAM";
   return (
@@ -186,6 +207,7 @@ function FixedCostCard({
       </div>
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
+      <HouseholdRow householdAmount={card.householdAmount} />
       <div className={styles.stateLabel}>{stateLabel}</div>
       <MetaRow attribution={card.attribution} />
 
@@ -254,6 +276,7 @@ function IncomeCard({
       </div>
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
+      <HouseholdRow householdAmount={card.householdAmount} />
       <div className={styles.stateLabel}>{stateLabel}</div>
       <MetaRow attribution={card.attribution} />
 
@@ -361,6 +384,10 @@ function BudgetCard({
       </div>
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
+      {/* BUDGET ist per DB-Constraint `budget_never_shared` nie GEMEINSAM — die
+          Zeile bleibt hier immer leer. Sie wird trotzdem gerendert, damit ALLE
+          Karten dieselben Maße behalten (Gestaltungsrunde, Punkt 5). */}
+      <HouseholdRow householdAmount={card.householdAmount} />
       <div className={stateLabelClass}>{stateLabel}</div>
 
       {!isGhost && restText && (

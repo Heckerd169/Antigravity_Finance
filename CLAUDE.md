@@ -8,9 +8,14 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-11 (Juli-Anker auf
-> −322,75 € nach der `BF-5`-Migration, **neue Regel 22 / LL-22**, §9-Lage nachgezogen —
-> nächster Sprint ist `BF-2`). Davor v2-10 (Prüfanker auf den gemessenen Stand, LL-6
+> **Letzte Aktualisierung:** 05. August 2026 · **nach:** v2-13 (`BF-4` — der
+> Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
+> 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
+> 04.08. sind erledigt. **§9 ist in diesem Patch NICHT nachgezogen** — die Prüfanker
+> stehen weiterhin auf dem v2-11-Stand und brauchen eine eigene Freigabe.
+> Davor v2-11 (Juli-Anker auf
+> −322,75 € nach der `BF-5`-Migration, **neue Regel 22 / LL-22**, §9-Lage nachgezogen).
+> Davor v2-10 (Prüfanker auf den gemessenen Stand, LL-6
 > um die Portal-Kehrseite ergänzt) und die Entscheidung E2.
 > Davor v2-09 (Workflow-Vereinfachung
 > — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
@@ -333,6 +338,12 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
 9. **Treiber-Invariante (B2):** `Σ delta = Ist-Sparrate − Plan-Sparrate` pro Monat.
    Läuft sie auseinander, ist das der erste Verdacht bei jedem Treiber-Bug.
 10. **`card_monthly_states.closed_at` ignorieren** — wird nicht genutzt.
+11. **Der Split-Anteil wird genau EINMAL angewandt** — in
+    `calculate_card_amount_for_month`, und dort **nur auf Plan/Anpassung**.
+    Fragment-Summen sind bereits der überwiesene Anteil und bleiben unangetastet.
+    Wer einen neuen Aufrufer baut, darf den Anteil **nicht erneut** anwenden.
+    Einzige Ausnahme: `calculate_planned_sparrate_for_month` rechnet auf dem
+    Roh-Plan und wendet ihn deshalb weiterhin selbst an. (v2-13, LL-23)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -428,6 +439,19 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Funktion belegt** — nicht aus ihrem Zweck erschlossen. Und eine
     Aufwands-Entscheidung, die auf einer solchen ungeprüften Zusage aufbaut, ist
     genauso ungeprüft. (LL-22)
+23. **Wandert ein Faktor aus einer Aggregation in eine Basis-Funktion, ist jede
+    Formel zu prüfen, die beide Seiten einer Differenz benutzt.** Aus
+    `f × (a − b)` wird dann `(a − b × f)` — die Klammer ist **gemischt**, ein
+    Faktor außen würde die bereits umgerechnete Seite ein zweites Mal kürzen.
+    Das fällt nicht auf, weil keine Zahl offensichtlich falsch *aussieht*.
+    Wächter ist die B2-Invariante (§6 Stolperfalle 9), und sie ist in **allen
+    zwölf** Monaten zu prüfen, nicht stichprobenartig. (LL-23)
+24. **Runden ist eine Entscheidung mit Anker-Wirkung.** Eine Zwischengröße je
+    Karte zu runden, während die Vergleichsfunktion erst die Endsumme rundet,
+    bewegt die Sparrate um Cent-Beträge — und damit den schärfsten
+    Regressions-Wächter des Projekts. Vor jedem neuen `round()` prüfen, ob die
+    **Gegenseite genauso rundet**. Im Zweifel nicht runden: die Aufrufer runden
+    ohnehin am Ende. (LL-24)
 
 ### Datei-Konventionen
 
@@ -523,6 +547,8 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-20 | Bei Widerspruch Budget ↔ Semantik gewinnt die Semantik | §7 Regel 17 | Sprint 10 |
 | LL-21 | Unlimitierte Selects gegen wachsende Tabellen sind verdächtig (1000-Zeilen-Grenze) | §7 Regel 18 | v2-07 P0 |
 | LL-22 | Eine Doku-Zusage über Rechenverhalten ist keine Prüfung — gegen die Funktion belegen, nicht aus dem Zweck erschließen | §7 Regel 22 | v2-11 (BF-5) |
+| LL-23 | Wandert ein Faktor in eine Basis-Funktion, wird aus `f × (a − b)` ein `(a − b × f)` — gemischte Klammer, B2 in allen zwölf Monaten prüfen | §7 Regel 23 · §6 Stolperfalle 11 | v2-13 (BF-4) |
+| LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
 
 ---
 

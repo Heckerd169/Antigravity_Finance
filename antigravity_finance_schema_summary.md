@@ -1,8 +1,10 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.4.2
+**Version:** 3.4.3
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur)
 **Datum:** 05. August 2026
+
+> **Changelog v3.4.3 (05.08.2026, Sprint v2-13 · `BF-4`):** §4 — die **Split-Logik wandert in `calculate_card_amount_for_month`**. Sie wird dort auf Plan/Anpassung angewandt, **nicht** auf Fragment-Summen (Beschluss `E1`: eine zugeordnete Zahlung *ist* bereits der eigene Anteil). `calculate_sparrate_for_month` wendet den Anteil dadurch **nicht mehr selbst** an — die doppelte Anwendung war der Fehler `BF-4` (Miete: 623,17 € statt 1.089,26 €, rund 466 €/Monat zu gut). `calculate_planned_sparrate_for_month` bleibt **unverändert** (rechnet auf dem Roh-Plan). `get_year_deviation_drivers`: `delta = vorzeichen × (ist − plan × anteil)` — der Anteil steht jetzt **innen** am Plan-Teil, weil die Klammer gemischt ist. Alle vier Funktionen in **einer** Migration `supabase/migrations/20260805_v2_13_bf4_gemeinsame_karten.sql`, weil ein Zwischenzustand doppelt anteilig gerechnet hätte. §3 Wahrheitsquellen nachgezogen.
 
 > **Changelog v3.4.2 (05.08.2026, Sprint v2-11):** §4 `calculate_card_amount_for_month` — Rückgabewert ist nicht mehr „immer ≥ 0". Die Fragment-Aggregation verrechnet seit `BF-5` vorzeichenrichtig (`SUM(f.amount)` statt `SUM(ABS(f.amount))`); übersteigen die Gutschriften die Ausgaben, ist das Ergebnis negativ (Beschluss `E2` — keine Kappung). Migration: `supabase/migrations/20260805_v2_11_bf5_vorzeichen.sql` — **am 05.08.2026 nach Freigabe auf Produktion angewendet**; Juli-Ist −1.222,75 → −322,75 € (exakt +900,00), alle übrigen elf Monate unverändert, B2-Invariante in allen zwölf Monaten gehalten.
 **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_schema_summary.md` — Version nur noch im Header.
@@ -157,7 +159,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 |---|---|---|---|
 | **Plan** | `get_planned_amount_for_month` | `card_planned_timeline` Forward-Inheritance | Roh-Plan ohne Monats-Anpassung |
 | **Effective Plan** | `get_effective_plan_for_month` | `COALESCE(adjusted_amount, plan)` | „Soll-Wert für diesen Monat" — Vergleichsbasis für Status-Labels |
-| **Anzeige-Betrag** | `calculate_card_amount_for_month` | §4.3-Prioritätskette Realität → Anpassung → Plan | Was auf der Karte steht |
+| **Anzeige-Betrag** | `calculate_card_amount_for_month` | §4.3-Prioritätskette Realität → Anpassung → Plan, **seit v2-13 inkl. Split-Anteil auf Plan/Anpassung** | Was auf der Karte steht — bei GEMEINSAM der **eigene Anteil** |
 
 ---
 
@@ -167,9 +169,9 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) |
+| `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) — **seit v2-13 ohne eigene Split-Anwendung**: der Anteil steckt bereits im Rückgabewert von `calculate_card_amount_for_month` |
 | `calculate_planned_sparrate_for_month(user_id, month)` | Plan-Sparrate (ohne Realität) | `numeric` |
-| `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte (Realität → Anpassung → Plan) | `numeric` — **seit v2-11 auch negativ möglich** (BF-5/E2: übersteigen die Gutschriften die Ausgaben, ist der Netto-Verbrauch negativ; keine Kappung bei 0) |
+| `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte (Realität → Anpassung → Plan) | `numeric` — **seit v2-11 auch negativ möglich** (BF-5/E2: übersteigen die Gutschriften die Ausgaben, ist der Netto-Verbrauch negativ; keine Kappung bei 0). **Seit v2-13 (BF-4) trägt sie die Split-Logik**: bei `attribution = 'GEMEINSAM'` wird `get_split_factor(cards.user_id, month)` auf **Plan/Anpassung** angewandt, **nicht** auf Fragment-Summen — die sind bereits der überwiesene Anteil. Der Rückgabewert ist damit stets die **eigene** Zahl; Aufrufer dürfen den Anteil nicht erneut anwenden |
 | `get_effective_plan_for_month(card_id, month)` | „Soll-Wert" für UI-Vergleiche (`adjusted ∨ plan`) | `numeric` |
 | `is_card_active_in_month(card_id, month)` | Karte rendern oder nicht? | `boolean` |
 | `get_planned_amount_for_month(card_id, month)` | Roher Plan ohne Adjustment | `numeric` |
@@ -194,13 +196,14 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 **Heuristik (Konzept-Papier E1 + User-Entscheid 25.07.2026):**
 
 ```
-delta := round( vorzeichen × anteil × ( calculate_card_amount_for_month(karte, M)
-                                      − get_effective_plan_for_month(karte, M) ), 2)
+delta := round( vorzeichen × ( calculate_card_amount_for_month(karte, M)
+                             − get_effective_plan_for_month(karte, M) × anteil ), 2)
          vorzeichen = +1 für INCOME, −1 für FIXED_COST/BUDGET
          anteil     = get_split_factor(M) bei GEMEINSAM, sonst 1
 ```
 
-- `delta` ist damit die **Wirkung auf die Sparrate**: negativ = der Monat ist um diesen Betrag schlechter als geplant. `ist`/`plan` bleiben die **rohen** Kartenwerte (wie auf der Karte sichtbar), `share` weist den angewandten Anteil aus.
+- `delta` ist damit die **Wirkung auf die Sparrate**: negativ = der Monat ist um diesen Betrag schlechter als geplant. `ist`/`plan` bleiben die Kartenwerte **so, wie sie auf der Karte stehen** — `ist` ist die große Zahl (seit v2-13 bei GEMEINSAM der **eigene Anteil**), `plan` die Zeile `von X €` darunter (der **Haushaltsbetrag**); `share` weist den angewandten Anteil aus.
+- **`anteil` steht seit v2-13 INNEN am Plan-Teil, nicht mehr außen vor der Klammer.** Weil `ist` bereits anteilig ist und `plan` nicht, ist die Klammer **gemischt** — ein Faktor außen würde den Ist-Teil ein zweites Mal kürzen. Wird das übersehen, laufen Welle-Tooltip und Ring auseinander, **ohne dass eine Zahl offensichtlich falsch aussieht**. Wächter ist die Invariante unten; sie ist genau dafür da.
 - **Invariante:** `Σ delta(alle aktiven Karten, M) = calculate_sparrate_for_month(M) − calculate_planned_sparrate_for_month(M)`. Beide Sparrate-RPCs aggregieren über exakt dieselbe Kartenmenge, denselben Split-Faktor und dieselben Vorzeichen — die Treiber erklären also genau die IST/Plan-Differenz, die der Tooltip darüber ausweist. Auf der Übungs-DB und auf Prod (alle 12 Monate 2026) verifiziert.
 - Ranking `|delta|` absteigend, Tiebreaker Kartenname aufsteigend (deterministisch, analog §11-Mehrfach-Match). `delta = 0` fällt raus; Monat ohne Abweichung → `"drivers": []`.
 - **Keine eigene Betragslogik** (§7 Regel 1): ausschließlich Aufrufe der bestehenden §4.3-kompletten Basis-RPCs. Transfer-Fragmente sind dadurch transitiv ausgeschlossen.

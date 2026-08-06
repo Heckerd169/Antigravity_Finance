@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.1.9 (V2 · v2-12 Doku-Nachzug)
+**Version:** 3.2.0 (V2 · v2-13 `BF-4` — Split-Semantik umgekehrt)
 **Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
@@ -26,6 +26,8 @@
 > **Changelog v3.1.8 (05.08.2026, Sprint v2-11):** §11 Erstattungs-Leitfaden korrigiert — die Aggregation summiert **vorzeichenrichtig**, nicht „vorzeichen-agnostisch"; die Aussage, ein RPC-Eingriff sei nicht nötig, ist widerlegt und als Korrektur kenntlich gemacht (`BF-5`); §11 um das Verhalten bei überwiegenden Gutschriften ergänzt (Beschluss `E2`, keine Kappung bei 0).
 >
 > **Changelog v3.1.9 (05.08.2026, Sprint v2-12):** §5 N4b — der Degenerations-Modus verzweigte am Vorzeichen des **Plans** und unterstellte im Zweig „Plan fast 0 € (positiv)" ein positives Ist („+X € gespart"). Ersetzt durch **eine** Regel auf der Differenz, mit dritter Zeile `genau nach Plan` (Entscheidung `E3`); der Zusatz „Plan fast 0 €" entfällt ersatzlos (`BF-2`). §12.1 um die drei Copy-Zeilen des Degenerations-Modus ergänzt, die dort bisher fehlten.
+
+> **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -343,15 +345,38 @@ Der Split-Faktor wird zum Zeitpunkt M aus dem Brutto-Verhältnis berechnet:
 Split-Faktor ICH (M) = ich.brutto (M) / (ich.brutto (M) + partner.brutto (M))
 ```
 
-**Anwendungs-Modell:** Der Split wirkt auf den Anzeige-Betrag einer Karte **nach** der Auflösung der Berechnungstabelle. Das gilt unabhängig davon, ob der Anzeige-Betrag aus Plan, Anpassung oder Realität (Fragment-Summe) stammt.
+**Anwendungs-Modell (seit `BF-4`, 05.08.2026):** Der Split wird **genau einmal** angewandt — an der Stelle, an der ein Betrag den Haushalt verlässt und zur eigenen Zahl wird. Das ist **nicht** mehr pauschal „nach der Berechnungstabelle“, sondern hängt an der **Herkunft** des Betrags:
 
-**Konkretes Beispiel:** Miete 1.200 € (gemeinsam, Split 60/40 zu meinen Lasten).
+| Herkunft des Karten-Betrags | Split anwenden? | Begründung |
+|---|---|---|
+| **Plan** oder **Anpassung** | **ja** | das ist die Haushaltsrechnung |
+| **Realität** (Fragment-Summe) | **nein** | die Überweisung *ist* bereits der eigene Anteil |
 
-- Ich überweise persönlich 1.200 € → Fragment +1.200 € → an Mietkarte gehängt
-- Anzeige-Betrag der Karte = 1.200 € (Realität)
-- Mein Anteil in der Sparrate = 60 % × 1.200 € = **720 €**
+Entschieden wird das in `calculate_card_amount_for_month` — der einzigen Stelle, die die Herkunft überhaupt kennt. Alle Aufrufer erhalten dadurch bereits die eigene Zahl und dürfen den Anteil **nicht erneut** anwenden.
 
-Der Split rechnet immer fair, unabhängig davon wer real überwiesen hat. Wer überweist, ist eine Konto-Frage — nicht eine Fairness-Frage.
+**Konkretes Beispiel:** Miete 1.904 € (gemeinsam, Split 57,21 % zu meinen Lasten).
+
+- Dauerauftrag überweist **1.089,26 €** — den rechnerischen Anteil
+- Fragment −1.089,26 € → an die Mietkarte gehängt
+- Anzeige-Betrag der Karte = **1.089,26 €** (Realität, bereits Anteil)
+- Mein Anteil in der Sparrate = **1.089,26 €** — **kein zweiter Abzug**
+- Auf der Karte darunter: `von 1.904,00 €` (§7)
+
+Ohne zugeordnetes Fragment zeigt dieselbe Karte `1.904,00 € × 57,21 % = 1.089,26 €` aus dem Plan — dieselbe Zahl auf dem anderen Weg.
+
+> ### ⚠️ Geänderte Produkt-Entscheidung, kein Bugfix
+>
+> Bis zum 05.08.2026 stand hier wörtlich:
+>
+> > *„Der Split rechnet immer fair, unabhängig davon wer real überwiesen hat. Wer überweist, ist eine Konto-Frage — nicht eine Fairness-Frage.“*
+>
+> Diese Position ist mit `E1` **bewusst aufgegeben** worden. Anlass war die Messung vom 05.08.2026: bei **allen vier** gemeinsamen Karten entspricht der tatsächlich überwiesene Betrag dem rechnerischen Anteil **auf den Cent**, in Mai, Juni und Juli. Die Daueraufträge stehen bereits auf dem Fairness-Anteil; die App gegen diese Realität rechnen zu lassen hätte bedeutet, das Zahlungsverhalten an die Software anzupassen statt umgekehrt.
+>
+> **Fairness bleibt automatisch:** Ändert sich das Gehaltsverhältnis, wandert der Anteil mit — die Karte zeigt dann unmittelbar, auf welchen Betrag der Dauerauftrag zu stellen ist.
+>
+> **Bewusst in Kauf genommener Haken:** Wird ausnahmsweise doch der volle Betrag überwiesen und der Partner erstattet zurück, zählt die App die Erstattung als eigene Einnahme. Unterm Strich richtig, im einzelnen Monat aber anders als die reine Fairness-Sicht. Eine Markierung „anteilig / voll“ je Karte wurde geprüft und verworfen (neue Spalte, neue Geste, kein realer Anwendungsfall).
+>
+> Beleg: `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §5 + §7.
 
 **Edge-Case Partner unbekannt:** Split-Faktor = 1.0, ICH trägt alles allein. Sinnvoll für Single-Nutzer.
 
@@ -363,7 +388,7 @@ Der Split rechnet immer fair, unabhängig davon wer real überwiesen hat. Wer ü
 - Split-Faktor ICH: 60 %, PARTNER: 40 %
 
 **Karten:**
-- Miete 1.200 € (Fixkosten, GEMEINSAM, monatlich) — Fragment +1.200 € verknüpft
+- Miete 1.200 € (Fixkosten, GEMEINSAM, monatlich) — Dauerauftrag überweist den Anteil, Fragment −720 € verknüpft
 - Strom 120 € (Fixkosten, GEMEINSAM, monatlich) — Offen, kein Fragment, kein Tap
 - Netflix 17,99 € (Fixkosten, ICH, monatlich) — manuell getappt
 - Tanken 200 € (Budget, ICH, monatlich) — Fragmente in Höhe von 180 € verknüpft, manuell getappt
@@ -378,7 +403,7 @@ Mein Netto:
   = 3.900,00 €
 
 Fixkosten:
-  Miete (Realität 1.200 € × Split 60%)     =   720,00 €
+  Miete (Realität 720 €, ist schon Anteil) =   720,00 €
   Strom (Plan 120 € × Split 60%)           =    72,00 €
   Netflix (Plan, ICH 100%)                 =    17,99 €
   = 809,99 €
@@ -595,6 +620,35 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 - Dot ICH: `rgba(255,255,255,.22)`
 - Dot GEMEINSAM: `rgba(100,168,240,.38)`
 - Meta-Text: `rgba(255,255,255,.20)`
+
+**Haushaltsbetrag-Zeile (seit `BF-4`, 05.08.2026):**
+
+Eine gemeinsame Karte zeigt als große Zahl den **eigenen Anteil** (§4.5) und darunter den vollen Betrag des Haushalts.
+
+| Eigenschaft | Wert |
+|---|---|
+| Reihenfolge auf der Karte | Name → Betrag → **`von X €`** → Status → Attribution |
+| Wortlaut | `von [N] €` — **kein** Label, kein neues Substantiv (§12.3) |
+| Schriftgröße | `10px`, Weight `400`, `tabular-nums`, `white-space: nowrap` |
+| Farbe | `--text-muted` (`rgba(255,255,255,.45)`) in **allen** Zuständen |
+| Abstand nach oben | `2px` zum Betrag — eng gebunden |
+| Abstand nach unten | `5px` zum Status — abgesetzt |
+| Zeilenhöhe | `min-height: 12px`, auf **jeder** Karte permanent reserviert |
+
+**Die Zuordnung entsteht durch Nähe, nicht durch ein Label.** Der Qualifizierer steht unmittelbar unter der Zahl, die er qualifiziert; die Gruppierung macht der Weißraum.
+
+**Die Höhe schaltet nie, nur der Inhalt.** Auf ICH-Karten bleibt die Zeile leer, die Höhe bleibt reserviert — alle Karten behalten dieselben Maße. Das ist kein neues Muster: §6 (M3) schreibt es für die Ausreißer-Subzeile im Header bereits so fest.
+
+**Leer bleibt die Zeile in drei Fällen:**
+1. ICH-Karte — es gibt keinen Haushaltsanteil
+2. Split-Faktor `1,0` (kein Partner-Einkommen) — Anteil und Haushalt wären identisch, die Zeile erklärte nichts *(Entscheid 05.08.2026; in der Gestaltungsrunde ausdrücklich offen gelassen)*
+3. Effektiver Plan `0` — `von 0,00 €` wäre eine Falschaussage
+
+Im Ghost-Zustand dimmt die Karten-Opacity (`0.65`) die Zeile mit; ein eigener Ghost-Ton ist **nicht** vorgesehen. `--text-ghost` (`.22`) und der Meta-Ton (`.20`) wären genau die Unsichtbarkeit, die schon gegen die Alternativvariante sprach.
+
+**Budget-Karten tragen die Zeile nie mit Inhalt** — eine GEMEINSAM-Attribution ist per Constraint `budget_never_shared` ausgeschlossen. Die Zeile wird dort trotzdem gerendert, damit die Maße gleich bleiben.
+
+Beleg der Gestaltung: `V2/design_direktor_gemeinsame_karte.md`.
 
 ### Fixkosten-Karte — 3 Zustände
 
@@ -1260,6 +1314,7 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Betrag-Abweichungs-Hinweis | `Betrag weicht vom Plan ab — anpassen?` |
 | Attribution ICH | `Ich` |
 | Attribution GEMEINSAM | `Gemeinsam` |
+| Gemeinsame Karte — Haushaltsbetrag | `von [N] €` *(leer bei ICH, Split-Faktor 1,0 oder Plan 0)* |
 
 ### 12.4 Kontextmenü + Overlays
 
