@@ -5,7 +5,9 @@ import { DropTargetWrapper } from "./drop-target-wrapper";
 import { EmptySlot } from "./empty-slot";
 import { RecurrencePopup } from "./recurrence-popup";
 import { DirectCreateOverlay } from "./direct-create-overlay";
+import type { Liquidity } from "./liquidity";
 import type { FragmentRow } from "./interaction-zone.types";
+import { formatEuroRounded } from "@/lib/format";
 import styles from "./interaction-zone.module.css";
 
 type CarouselCardItem = {
@@ -22,6 +24,9 @@ type CarouselProps = {
   /** Fragmente, sodass beim Empty-Slot-Drop das passende Fragment-Objekt für
    *  das Recurrence-Popup gefunden werden kann. */
   fragments: FragmentRow[];
+  /** v2-15 (LQ-2): Ausstehend-Anzeige der Kopfzeile. `null` außerhalb des
+   *  laufenden Monats — dort wird die Zeile gar nicht gerendert. */
+  liquidity: Liquidity | null;
 };
 
 const SCROLL_STEP = 146; // 136 Karten-Breite + 10 Gap
@@ -32,6 +37,7 @@ export function Carousel({
   targetMonth,
   targetDbMonth,
   fragments,
+  liquidity,
 }: CarouselProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scrollState, setScrollState] = useState({
@@ -88,7 +94,44 @@ export function Carousel({
 
   return (
     <div className={styles.carouselColumn}>
-      <div className={styles.zoneLabel}>Planung</div>
+      {/* v2-15 (LQ-2): Die Ausstehend-Anzeige sitzt in DERSELBEN Zeile wie die
+          Zonen-Überschrift — dasselbe Muster wie der Übertrags-Schalter der
+          Rohmasse (v2-07, C1), damit die Oberkanten der drei Zonen bündig
+          bleiben und kein vierter waagerechter Bereich entsteht (§8).
+          Nie eine Summe: Der eine Betrag sind Termine, der andere ist eine
+          Erlaubnis (Befund L7). Deshalb auch zwei verschiedene Wörter — mit
+          demselben Wort darüber lüden zwei Zahlen nebeneinander zum Addieren
+          ein. */}
+      <div className={styles.carouselZoneHeader}>
+        <div className={`${styles.zoneLabel} ${styles.zoneLabelInline}`}>
+          Planung
+        </div>
+        {liquidity &&
+          (liquidity.dueAmount !== null || liquidity.budgetFree !== null) && (
+            <div className={styles.liquidityLine}>
+              {liquidity.dueAmount !== null && (
+                <div className={styles.liquidityGroup}>
+                  <span className={styles.liquidityNum}>
+                    {formatEuroRounded(liquidity.dueAmount)}
+                  </span>
+                  <span className={styles.liquidityWord}>noch fällig</span>
+                </div>
+              )}
+              {liquidity.dueAmount !== null &&
+                liquidity.budgetFree !== null && (
+                  <div className={styles.liquiditySep} aria-hidden="true" />
+                )}
+              {liquidity.budgetFree !== null && (
+                <div className={styles.liquidityGroup}>
+                  <span className={styles.liquidityNum}>
+                    {formatEuroRounded(liquidity.budgetFree)}
+                  </span>
+                  <span className={styles.liquidityWord}>Budget frei</span>
+                </div>
+              )}
+            </div>
+          )}
+      </div>
       <div className={styles.carouselRow}>
         <button
           type="button"
