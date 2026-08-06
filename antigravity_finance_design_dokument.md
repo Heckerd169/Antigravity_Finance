@@ -1,7 +1,7 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.2.0 (V2 · v2-13 `BF-4` — Split-Semantik umgekehrt)
-**Status:** Freigegeben — Schema-Doku v3.4; V2-Patches bis Sprint v2-07 eingespielt
+**Version:** 3.3.0 (V2 · DD-Runde 06.08.2026 — Liquidität, Schaufenster, Split-Folgen)
+**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-14 eingespielt, dazu die Design-Entscheidungen vom 06.08.2026 (`LQ-2` · `LQ-1` · `RM-2` · `PA-1` — entschieden, Umsetzung steht aus)
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -28,6 +28,8 @@
 > **Changelog v3.1.9 (05.08.2026, Sprint v2-12):** §5 N4b — der Degenerations-Modus verzweigte am Vorzeichen des **Plans** und unterstellte im Zweig „Plan fast 0 € (positiv)" ein positives Ist („+X € gespart"). Ersetzt durch **eine** Regel auf der Differenz, mit dritter Zeile `genau nach Plan` (Entscheidung `E3`); der Zusatz „Plan fast 0 €" entfällt ersatzlos (`BF-2`). §12.1 um die drei Copy-Zeilen des Degenerations-Modus ergänzt, die dort bisher fehlten.
 
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
+>
+> **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -650,6 +652,30 @@ Im Ghost-Zustand dimmt die Karten-Opacity (`0.65`) die Zeile mit; ein eigener Gh
 
 Beleg der Gestaltung: `V2/design_direktor_gemeinsame_karte.md`.
 
+**Fälligkeitstag-Anzeige (seit `LQ-1`, 06.08.2026):**
+
+Die Statuszeile bekommt zwei Enden: **links der Zustand, rechts der Termin** — zwei Aussagen, getrennt durch die Position, nicht durch ein Trennzeichen.
+
+| Eigenschaft | Wert |
+|---|---|
+| Ort | rechter Anschlag der **Statuszeile** — **keine** neue Zeile, **keine** zusätzliche Kartenhöhe |
+| Wortlaut | `am [N].` (§12.3) |
+| Schriftgröße | `9px`, Weight `500`, `white-space: nowrap` |
+| Farbe | `rgba(255,255,255,.30)` |
+
+**Alle Karten behalten ihre Maße.** Weil keine Zeile hinzukommt, bleibt die Vorgabe gleicher Kartenmaße unberührt — anders als bei der Haushaltsbetrag-Zeile oben ist hier keine Höhe zu reservieren.
+
+**Rechts steht in drei Fällen nichts** — kein „—", kein Platzhalter:
+1. **Budget-Karte** — `due_day` ist dort per Migration `NULL`; ein Budget ist eine Erlaubnis ohne Termin (Befund `L7`). Die Leerstelle **ist** die Aussage.
+2. **Fixkosten-/Einnahmen-Karte ohne Buchungshistorie** — es gibt keinen ableitbaren Tag.
+3. **Kein Wert gesetzt.**
+
+**Der Tag bleibt auch im Zustand „Bezahlt" / „Erhalten" stehen.** Er ist eine Eigenschaft der Karte, kein Zustand. Verschwände er beim Bezahlen, spränge die Zeile — und der Wert wäre genau dann nicht mehr prüfbar, wenn man ihn gegen den echten Umsatz hält.
+
+**Herkunft:** Die Werte sind aus der Buchungshistorie **abgeleitet** (Sprint v2-14, `LQ-1`), nicht vom Nutzer bestätigt. Genau deshalb sind sie sichtbar: Ein geratener Wert, der eine sichtbare Zahl treibt (§8, `LQ-2`), darf nicht selbst unsichtbar sein.
+
+Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §2.
+
 ### Fixkosten-Karte — 3 Zustände
 
 **Offen:**
@@ -763,12 +789,17 @@ Sinne: er behält seine eigene, in §2.4 spezifizierte Position unten Mitte.
 
 | Karten-Typ | Optionen |
 |---|---|
-| Fixkosten / Einnahmen / Budget | `Betrag anpassen` / `Letzte Zahlung in Monat X` |
+| Fixkosten / Einnahmen | `Betrag anpassen` / `Fällig am …` / `Letzte Zahlung in Monat X` |
+| Budget | `Betrag anpassen` / `Letzte Zahlung in Monat X` — **kein** `Fällig am …` |
 | Karte nie genutzt (kein State, keine Fragmente) | zusätzlich `Karte löschen` (Hard-Delete) |
 
 **„Betrag anpassen":** Overlay mit zwei Optionen
 - **Nur dieser Monat** → UPSERT `card_monthly_states.adjusted_amount` (einmalig, vergangene/zukünftige Monate unberührt)
 - **Dauerhaft ab diesem Monat** → INSERT in `card_planned_timeline` mit `effective_month = aktuell angezeigter Monat` (Forward-Inheritance, vergangene Monate eingefroren)
+
+**„Fällig am …" (neu mit `LQ-1`, 06.08.2026):** Eigener Menüpunkt, **nicht** Teil von „Betrag anpassen". Das ist keine Platz-, sondern eine Bedeutungsfrage: „Betrag anpassen" hat durchgängig Monats-Semantik (*nur dieser Monat* / *dauerhaft ab diesem Monat*), `cards.due_day` gilt dagegen **immer** und kennt keine Monatsabgrenzung. Ein Feld dazwischen erzeugte die Frage *„gilt der neue Tag nur für diesen Monat?"* — und die Oberfläche beantwortet sie nicht.
+
+**Auf Budget-Karten erscheint der Eintrag nicht** (kein Termin — siehe „Fälligkeitstag-Anzeige" oben). Das Overlay trägt ein Zahlenfeld (Tag im Monat), die Option `Kein fester Tag` und einen Satz zur Herkunft des Werts. Copy: §12.4.
 
 **„Letzte Zahlung in Monat X":** UX-Bezeichnung für das Soft-End einer Karte.
 - Setzt `cards.last_active_month = X` (inklusiv — Monat X selbst ist noch enthalten, X+1 nicht mehr)
@@ -873,24 +904,46 @@ Karten-Kontextmenü.
 
 **Wichtig zur Frequenz „Einmalig":** Nach Bestätigung erzeugt sich die Karte mit `first_active_month = last_active_month = aktuell angezeigter Monat`. Sie verschwindet in Folgemonaten — kein UI-Lärm, keine Anzeige in zukünftigen Monaten.
 
+**Ausstehend-Anzeige in der Kopfzeile (06.08.2026, `LQ-2`):** Die Zone „Planung" trägt rechtsbündig in **derselben Zeile wie die Zonen-Überschrift** zwei Beträge. Das ist dasselbe Muster wie der Übertrags-Schalter der Rohmasse (v2-07, `C1`) — bewusst keine eigene Zeile, damit die Oberkanten von Portal, Karussell und Stack bündig bleiben.
+
+| Angabe | Wortlaut | Inhalt |
+|---|---|---|
+| Feste Posten | `[N] € noch fällig` | Fixkosten- und Einnahmen-Karten mit Termin (`cards.due_day`, §7) |
+| Budgets | `[N] € Budget frei` | Restbudget der Budget-Karten — eine Erlaubnis ohne Termin |
+
+**Nie eine Summe.** Die beiden Zahlen stehen getrennt und werden nie zu einer addiert: Der eine Betrag sind Termine, der andere ist eine Erlaubnis — ein Budget lässt sich zurückhalten, ein Dauerauftrag nicht. Eine gemeinsame Zahl machte beides zur Verpflichtung und wäre in der Sache falsch (Befund `L7`, `V2/befunde_2026-08-05_liquiditaet.md`).
+
+**Die verschiedenen Wörter sind Absicht.** Zwei Zahlen nebeneinander mit demselben Wort darüber laden zum Addieren ein; die Trennung hält erst, wenn die beiden Angaben verschieden **heißen**. „fällig" trägt den Termin, „frei" ist bereits die Vokabel der Budget-Karte (`Noch [N] € frei`, §12.3) — es wird kein Begriff erfunden.
+
+**Die Aussage ist eine Vorhersage, keine Feststellung.** Sie entsteht aus dem Fälligkeitstag (§7), nicht aus einem Bezahlt-Häkchen. Eine Karte kann „Offen" sein und trotzdem nicht mehr in „noch fällig" zählen, weil ihr Termin verstrichen ist.
+
+Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §1.
+
 ### Fragment-Stack (Rechts)
 
 - Vertikales Scrollen, Mausrad / Scrollbar (`3px`, dezent)
 - Keine Chevrons
 - Fragmente sind Drag-Quellen
 - **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7). **Umsetzungs-Nachtrag (v2-07, P0):** Der Monats-Scope wird seit v2-07 **server-seitig** abgefragt statt nachträglich in der Anwendung gefiltert. Bis dahin holte die App alle Fragmente aller Monate und filterte anschließend — was ab einem Gesamtbestand von 1000 Fragmenten stillschweigend abschnitt (Befund und Messung: `sprints/sprint_v2-07_review.md` §3). Zusätzlich zum Monats-Scope läuft eine zweite, link-orientierte Abfrage (`assigned_month` = angezeigter Monat), damit ein Fragment aus einem anderen Monat weiterhin als *verknüpftes Fragment auf der Karte* erscheint. An der sichtbaren Regel ändert sich nichts.
-- Zugeordnete Fragmente: `opacity: 0.22`, `pointer-events: none`
+- Zugeordnete Fragmente: `opacity: 0.22` · ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`)**, siehe „Klickbarkeit des Stacks" unten. Die Deckkraft bleibt unverändert.
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
 - **Angezeigte Beschreibung (v2-10, RM-1):** Die Fragment-Karte zeigt **den letzten durch `|` getrennten Teil** der gespeicherten Beschreibung; ist dieser leer, fällt sie auf den **ersten** Teil zurück. Damit steht der Verwendungszweck vorn statt des Empfängers, ohne dass die Anzeige die Herkunft des Fragments kennen muss: DKB Visa liefert ein Feld ohne Trennzeichen (unverändert), DKB Giro `Empfänger | Zweck`, Cortal `Sender | Buchungstext | Zweck`. **Ausschließlich Anzeige.** Der gespeicherte Text bleibt unverändert — er ist Bestandteil des Duplikat-Hashes, des Trigram-Index der Zuordnung und des Beschreibungs-Tiebreakers der Sortierung unten. Das `title`-Attribut trägt weiterhin den **vollständigen** Text; das Abschneiden mit „…" bleibt reines CSS (`text-overflow: ellipsis`).
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
-- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment hat **kein** Tap-/Drag-Verhalten (Cursor `default`, `pointer-events: none`). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
+- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment ist **keine Drag-Quelle** und lässt sich keiner Karte zuordnen; ~~`pointer-events: none`~~ ist mit `RM-2` **aufgehoben** (06.08.2026, siehe „Klickbarkeit des Stacks" unten). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
 - **Übertrags-Schalter (v2-07, C1):** Fragmente mit gesetztem `transfer_type` (`INTERNAL_TRANSFER` **oder** `ASSET_REALLOCATION`) sind aus der Arbeitsfläche ausgeblendet. Sie erscheinen nur, wenn der Schalter **„Überträge anzeigen"** eingeschaltet ist; **Standard ist „aus"**. Begründung: ein Fragment mit gesetztem `transfer_type` kann per Daten-Invariante nie einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`) und gehört deshalb nicht auf die Fläche, auf der kuratiert wird.
   **Ort und Form:** rechtsbündig in derselben Zeile wie die Zonen-Überschrift „ROHMASSE" — bewusst nicht in einer eigenen Zeile, damit die Oberkanten von Portal, Karussell und Stack bündig bleiben. Beschriftung `Überträge anzeigen (N)`, wobei **N die Anzahl der Übertrags-Fragmente des angezeigten Monats** ist (beide Typen zusammen, unabhängig von der Schalterstellung). Enthält der Monat keine Überträge, wird der Schalter **nicht gerendert**.
   **Invarianten:** Der Schalter filtert ausschließlich die Stack-Darstellung. Die Sortierregel ist unberührt — bei eingeschaltetem Schalter steht die Liste exakt so da wie vor v2-07. Ebenso unberührt: die Darstellung eines sichtbaren Übertrags (Opacity `0.45`, Badge „TRANSFER", kein Drag/Tap), die Status-Hierarchie aus Sprint 9, die Drop-Ziele des Karussells und die „N Fragmente offen"-Zählung der Header-Flanke (die zählt `UNASSIGNED` und hat Überträge nie enthalten).
   **Verhalten:** rein clientseitig, ohne Server-Roundtrip und ohne URL-Parameter. Die Stellung überlebt einen Monatswechsel innerhalb der Sitzung — sie ist eine Ansichts-Vorliebe, kein monatsspezifischer Zustand (bewusste Abweichung vom LL-5-Reset-Muster). Ein Neuladen der Seite setzt auf „aus" zurück; es findet keine Persistierung statt.
   **Folge:** Wird ein Fragment bei ausgeschaltetem Schalter als Umschichtung markiert, verschwindet es unmittelbar aus dem Stack. Das ist die beabsichtigte Wirkung; die Rücknahme der Markierung ist folgerichtig nur bei eingeschaltetem Schalter erreichbar.
 - **Grundton-Vereinheitlichung (N5):** Alle Rohmasse-Fragmente teilen **einen gemeinsamen Grau-Grundton-Token** (zugeordnet *und* `INTERNAL_TRANSFER`). Die Unterscheidung läuft ausschließlich über **Opacity** (zugeordnet `0.22` / Transfer `0.45`) **+ das „TRANSFER"-Badge** (Grau-Soft). Kein separater Hue je Zustand — das behebt zwei leicht abweichende Grau-Töne nebeneinander. Der Yellow-Soft (KI-Vorschlag-Badge) bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag.
+- **Klickbarkeit des Stacks (06.08.2026, `RM-2`) — Aufhebung einer bestehenden Regel:** Bis dahin galt, dass zugeordnete Fragmente **und** Überträge per `pointer-events: none` tot gestellt sind. Diese Regel ist **aufgehoben**: **jedes** Fragment im Stack ist anklickbar und öffnet das Schaufenster-Popup (§11) — auch ein zugeordnetes, auch ein Übertrag.
+  **Das betrifft ausschließlich das Öffnen des Popups.** Unberührt bleiben:
+  - Die **Daten-Invariante**: Ein Fragment mit gesetztem `transfer_type` kann weiterhin **nie** einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`, RPC-Filter, Link-Auflösung beim Import). **Klickbar ≠ verlinkbar** — aus dieser Änderung folgt an keiner Stelle, dass Überträge wieder zuordenbar wären.
+  - Die **Drag-Sperre**: Weder zugeordnete Fragmente noch Überträge sind Drag-Quellen.
+  - Die **Deckkraft-Werte** `0.22` (zugeordnet) und `0.45` (Übertrag) sowie das TRANSFER-Badge und die Status-Hierarchie aus Sprint 9.
+
+  Entscheidung vom 06.08.2026, **Umsetzung steht aus**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
@@ -1024,6 +1077,30 @@ Wenn der User das Onboarding (Schritt 2) abbricht, bleibt `onboarded_at = NULL` 
 - Wirkung: Treibt die Sparrate
 
 **Forward-Inheritance-Badge:** `Gilt ab [Monat] für alle Folgemonate bis zur nächsten Änderung`
+
+### Konsequenz-Anzeige nach dem Speichern (06.08.2026, `PA-1`)
+
+**Zweiter Zustand desselben Popups.** „Übernehmen" speichert und **tauscht den Inhalt**, statt zu schließen — derselbe Rahmen, neuer Inhalt. Ursache und Wirkung stehen damit an einem Ort, ohne Ortswechsel des Blicks.
+
+**Held ist die Summe, nicht die Liste:**
+
+- große Zahl `+[N] €`
+- darunter: *„mehr pro Monat für [N] gemeinsame Posten. Die Sparrate sinkt um denselben Betrag."*
+- Untertitel: alter und neuer Split sowie der Geltungsmonat (`ab [Monat] [Jahr]`) — die Aussage gilt **vorwärts** (Forward-Inheritance), nicht für einen einzelnen Monat
+
+**Tabelle darunter**, eine Zeile je gemeinsamem Posten, Spalten `Bisher` / `Künftig` / `Diff.`, dazu eine Summenzeile. **Alle drei Zahlen erscheinen** (Entscheidung des Users, 06.08.2026): Eine Änderungs-Anzeige ohne den Ausgangswert verlangt, dass man ihn im Kopf behält — *nachschlagen* auf der Karte ist nicht dasselbe wie *vergleichen*.
+
+**Breite 400 px in beiden Zuständen** — auch im Eingabe-Zustand, damit das Overlay beim Übernehmen nicht unter der Hand wächst. Das ist ausdrücklich zulässig: §7 (`RM-4`) schreibt für Overlays den **Ort** fest, nicht die Größe — wörtlich *„sie unterscheiden sich in der Größe, nie im Ort"*.
+
+**Ein Knopf: `Schließen`.** „Abbrechen" wäre sinnlos — es gibt nichts mehr abzubrechen; „Übernehmen" ist bereits geschehen.
+
+**Der leere Fall — gar nichts.** Ändert sich der Split-Faktor nicht (etwa weil nur das Netto angepasst wurde) oder gibt es keine gemeinsamen Posten, **speichert das Popup und schließt wie bisher**. Kein Zwischenbildschirm, keine Null-Zeile, kein „Keine Änderungen" (CLAUDE.md §7 Regel 17 / LL-20: *ein Referenzwert ohne Daten ist „keine Anzeige", nicht 0*). Das Netto ändert die Sparrate trotzdem — diese Anzeige handelt aber vom **Split**, und die Sparrate steht ohnehin im Ring, sobald das Popup zu ist.
+
+**Umfang — gemeinsame Einnahmen zählen mit**, in **derselben** Liste, mit dem Vorzeichen, das ihnen zusteht: Sie werden nach §4.5 genauso gesplittet wie gemeinsame Ausgaben. Keine eigene Gruppe, keine Zwischensumme. Heute existiert keine solche Karte — die Regel steht, damit sie nicht stillschweigend fehlt, wenn die erste angelegt wird.
+
+**Was die Liste zeigt.** Nach §4.5 wirkt der Split nur auf Beträge aus Plan oder Anpassung, nie auf einen realen Umsatz. Die Liste zeigt also den künftigen **Plan-Anteil** — praktisch: auf welchen Betrag ein Dauerauftrag zu stellen ist.
+
+Copy: §12.7. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §4.
 
 ### Netto-Vorschlag-Algorithmus (Tier 2)
 
@@ -1201,7 +1278,32 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Default Opacity | `0.72` |
 | Hover | `translateY(-1px)`, `opacity: 0.92` |
 | Drag-Start | `opacity: 0.35`, `scale(.97)`, cursor: `grabbing` |
-| Zugeordnet | `opacity: 0.22`, `pointer-events: none` |
+| Zugeordnet | `opacity: 0.22` · **kein Drag** · ~~`pointer-events: none`~~ — aufgehoben, siehe unter der Tabelle |
+
+**Zur Zeile „Zugeordnet" (06.08.2026, `RM-2`):** `pointer-events: none` sperrte bisher **Klick und Drag in einem**. Aufgehoben ist **ausschließlich die Klick-Sperre** — ein zugeordnetes Fragment öffnet jetzt das Schaufenster-Popup (nächster Abschnitt; Stack-Regel: §8). **Die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger:** Sie folgt nicht mehr nebenbei aus `pointer-events`, sondern muss eigenständig gesetzt werden. Dasselbe gilt für Fragmente mit gesetztem `transfer_type` (§8). Kurzform: **klickbar ≠ ziehbar ≠ verlinkbar** — die Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist davon ohnehin unberührt.
+
+### Schaufenster-Popup (06.08.2026, `RM-2`)
+
+Ein Klick auf ein Fragment im Stack (§8) öffnet ein **reines Anzeige-Popup — keine Knöpfe**: keine Zuordnung, kein Eject, keine Korrektur.
+
+**Aufbau.** Das **Datum** steht in der Kopfzeile. Die **Hauptzeile trägt den Empfänger** — den **ersten** durch `|` getrennten Teil der gespeicherten Beschreibung —, der **Betrag** steht rechts in derselben Zeile. Darunter folgt der **Verwendungszweck**, ungekürzt.
+
+**Warum der Empfänger führt:** `RM-1` zeigt auf der Fragment-Karte seit v2-10 den *letzten* Teil, also den Verwendungszweck (§8). Der Empfänger ist damit nirgends sonst mehr sichtbar. Das Popup ist deshalb nicht „die Karte in groß", sondern der einzige Ort, an dem steht, wer das Geld bekommen hat.
+
+**Sonderfall ohne Trennzeichen** (DKB Visa liefert ein einziges Feld): Der gesamte Text steht in der Hauptzeile, die Zweck-Zeile **entfällt**. Es wird **nicht** auf ein anderes Layout umgeschaltet — das wären zwei Popups unter einem Namen; eine wegfallende Zeile ist ruhiger als ein springender Aufbau.
+
+**Rangfolge unter dem Strich — eine Regel:** *erst was immer gilt, dann was den Zustand erklärt, dann was selten vorkommt.*
+
+1. **Datum** (in der Kopfzeile)
+2. **Status** bzw. die **zugeordnete Karte**
+3. **Gegenkonto** — nur bei Übertrag, mit dem Hinweis `Eigenes Konto — zählt nicht in die Sparrate`
+4. **KI-Vorschlag** — nur bei unzugeordnetem Fragment
+
+**Nicht im Popup:** Duplikat-Hash und Import-Zeitpunkt. Beides ist Maschinerie und beantwortet keine Frage, die man beim Klicken hatte.
+
+**Ort und Schließen:** Das Popup öffnet **zentriert per React-Portal** (§7, `RM-4`) und hat einen **Escape-Handler**.
+
+Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
 
 ### Was explizit NICHT
 - Kein Modal bei Fehlern
@@ -1315,6 +1417,7 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Attribution ICH | `Ich` |
 | Attribution GEMEINSAM | `Gemeinsam` |
 | Gemeinsame Karte — Haushaltsbetrag | `von [N] €` *(leer bei ICH, Split-Faktor 1,0 oder Plan 0)* |
+| Fälligkeitstag (rechts in der Statuszeile) | `am [N].` *(leer bei Budget-Karten und Karten ohne Fälligkeitstag)* |
 
 ### 12.4 Kontextmenü + Overlays
 
@@ -1323,8 +1426,10 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Kontextmenü — Option 1 | `Betrag anpassen` |
 | Kontextmenü — Option 2 | `Letzte Zahlung in Monat X` *(X = vom Nutzer gewählter Monat aus Monatspicker)* |
 | Kontextmenü — Option 3 | `Karte löschen` |
+| Kontextmenü — Fälligkeitstag | `Fällig am …` *(nicht auf Budget-Karten)* |
 | Betrag anpassen — Option 1 | `Nur dieser Monat` |
 | Betrag anpassen — Option 2 | `Dauerhaft ab diesem Monat` |
+| Fällig am — Overlay-Option | `Kein fester Tag` |
 | Neue Karte — Popup-Titel | `Neue Karte erstellen` |
 | Neue Karte — Frequenz-Label | `Wiederholung` |
 | Frequenz Monatlich | `Monatlich` |
@@ -1385,6 +1490,9 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Vergangener Monat — Warnung | `Vergangener Monat — Werte sind eingefroren.` |
 | Illustrativ-Hinweis Split-Vorschau | `(nur illustrativ)` |
 | Confirm-Button | `Übernehmen` |
+| Konsequenz-Anzeige — Held-Zeile | `+[N] € mehr pro Monat für [N] gemeinsame Posten` |
+| Konsequenz-Anzeige — Spaltenköpfe | `Bisher` / `Künftig` / `Diff.` |
+| Konsequenz-Anzeige — Abschluss-Button | `Schließen` |
 
 ### 12.8 Jahres-Welle + Popup
 
@@ -1397,6 +1505,13 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Popup — Held | Jahressumme (€) |
 | Popup — Unterzeile | `IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber` |
 | Popup — Monatsklick | drei Positionen (Top-3-Treiber, B2-Heuristik offen) |
+
+### 12.9 Liquidität
+
+| Kontext | Text |
+|---|---|
+| Kopfzeile „Planung" — feste Posten | `[N] € noch fällig` |
+| Kopfzeile „Planung" — Budgets | `[N] € Budget frei` |
 
 ---
 

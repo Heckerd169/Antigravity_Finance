@@ -365,7 +365,12 @@ hier nichts.
 ## Doku-Folge
 
 Patch über den `docs-maintainer` nach §7 Regel 14 (LL-16), mit Versions-Bump. Die
-Design-Doku steht heute auf **v3.1.6**.
+Design-Doku steht auf **v3.2.0** (v2-13, `BF-4`) → Ziel **v3.3.0**.
+
+**Minor-Bump, kein Patch-Bump.** Begründung nach dem Vorbild von v3.2.0: Es werden
+nicht nur Beschreibungen nachgezogen, sondern vier neue Spezifikationen aufgenommen —
+und **§8 hebt eine bestehende Regel auf** (`pointer-events: none` auf zugeordneten
+Fragmenten und Überträgen entfällt, beide werden klickbar).
 
 | Was | Wohin |
 |---|---|
