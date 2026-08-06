@@ -554,16 +554,15 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-10 (Einkommens-Popup, Rohmasse-Lesbarkeit, Positionsregel —
-05.08.2026, unbeaufsichtigter Lauf) · **davor:** v2-09 (Workflow-Vereinfachung) und
-v2-08 (Repo-Struktur). Vollständige Sprint-Tabelle und alle Details:
-`sprints/projekt_historie.md`.
+**Letzter Sprint:** v2-13 (`BF-4` — der Split-Anteil wird genau einmal angewandt,
+06.08.2026 gemerged) · **davor:** v2-12 (`BF-2`, Ring-Subzeile) und v2-11 (`BF-5`,
+Vorzeichen). Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Doku-Versionen:** Design-Doku **v3.1.8** · Schema-Doku **v3.4.2**.
+**Doku-Versionen:** Design-Doku **v3.2.0** · Schema-Doku **v3.4.3**.
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
-`calculate_sparrate_for_month`, nur `SELECT`; in Sprint v2-10 dreimal identisch
-bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
+`calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
+`BF-4`-Migration bestätigt):
 
 | Monat 2026 | Ist-Sparrate |
 |---|---|
@@ -581,31 +580,31 @@ bestätigt — vor Phase 1, nach Phase 5 und nach Phase 6):
 > Anker-Tabelle mit falschen Sollwerten ist schlimmer als keine: Sie schlägt entweder
 > falsch an oder wird gewohnheitsmäßig ignoriert.
 >
-> **Der Juli-Wert ist seit v2-11 neu.** `BF-5` (Fragmente wurden ohne Vorzeichen
-> addiert) ist am 05.08.2026 behoben und die Migration auf Produktion angewendet:
-> Juli-Ist **−1.222,75 → −322,75 €**, exakt die vorab festgelegten +900,00 €, alle
-> übrigen elf Monate um 0,00 € bewegt. Zusätzlich verifiziert: die
-> B2-Treiber-Invariante `Σ delta = Ist − Plan` hält in allen zwölf Monaten.
-> Die Tabelle ist damit wieder für längere Zeit stabil — der nächste Wert, der sich
-> planmäßig bewegen wird, hängt an `BF-4` (Entscheidung **E1**, gemeinsame Karten).
+> **Der Juli-Wert stammt aus v2-11.** `BF-5` (Fragmente wurden ohne Vorzeichen
+> addiert) ist am 05.08.2026 behoben: Juli-Ist **−1.222,75 → −322,75 €**, exakt die
+> vorab festgelegten +900,00 €, alle übrigen elf Monate um 0,00 € bewegt.
+>
+> **v2-13 (`BF-4`) hat die Tabelle NICHT bewegt** — und das war die Erwartung. Der
+> Eingriff verlagert die Split-Anwendung, wirkt aber erst, sobald eine gemeinsame
+> Karte ein verknüpftes Fragment hat; heute hat das keine. Alle zwölf Monate wurden
+> vorher und nachher gemessen, Ist **und** Plan, Abweichung überall 0,00 €; die
+> B2-Invariante hielt in allen zwölf Monaten mit identischen Summen.
+> **Ein grüner Anker beweist in so einem Fall wenig** — der Nachweis kam aus der
+> Übungs-Datenbank (Ist-Sparrate dort 1.840,00 → 1.600,00 €).
+>
+> **Was sich als Nächstes planmäßig bewegen wird:** der erste Monat, in dem eine
+> gemeinsame Karte eine zugeordnete Zahlung bekommt. Dann greift `BF-4` — bewusst
+> und richtig.
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
-**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — seit 04.08.2026 nach
-**Sprint-Paketen** geordnet statt nach Kategorien, aktuell **14**; §0 trägt die
-Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Zahlen nach v2-10:
-**44 offen · 29 erledigt.**
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet,
+aktuell **13**; §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf.
+Zahlen nach v2-13: **40 offen · 32 erledigt.**
 
-**Nächster Sprint: `BF-2`.** Von den fünf Befunden sind **drei erledigt** — `BF-3` und
-`BF-1` (v2-10) sowie `BF-5` (v2-11, Migration angewendet und verifiziert). Paket 1
-besteht damit nur noch aus zwei entscheidungs-gebundenen Punkten: **`BF-2` wartet auf
-E3**, `BF-4` auf **E1** (beide mit fertiger Empfehlung in
-`V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §7).
-
-`BF-2` (sinnloser Hinweis unter dem Ring bei negativer Sparrate) ist der
-naheliegendste nächste Schritt: **E3** ist die kleinste der drei Entscheidungen, und
-der Punkt ist erst jetzt sinnvoll — seit v2-11 stimmt die Juli-Zahl, der neue Text
-wäre also am echten Fall zu sehen statt an einer erfundenen Situation.
+**Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
+erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
+Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 
 **Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau — hängt an keinem
 anderen Paket) oder eine Runde **`design-direktor`**, die gleich drei Dinge entsperrt:

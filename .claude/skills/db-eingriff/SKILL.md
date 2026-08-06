@@ -79,6 +79,23 @@ Fixkosten + 200 Einnahme; Seed: `supabase/test_projekt/init2_seed.sql`).
 3. Anker der Übungs-DB messen: **2.200,00 €**. Weicht er ab, ist die Übungs-DB nicht
    im erwarteten Zustand — **anhalten**, nicht migrieren.
 
+> ### ⚠️ Erst `ACTIVE_HEALTHY`, dann urteilen — nicht vorher
+>
+> **Postgres nimmt Verbindungen an, BEVOR die Daten wieder da sind.** In diesem
+> Fenster antwortet die Datenbank auf jede Abfrage korrekt — und meldet dabei
+> **keine Tabellen, keine Funktionen, keinen Nutzer**. Das sieht exakt aus wie ein
+> leeres Projekt.
+>
+> Am 05.08.2026 (v2-13) war genau das der Fall: `status` stand minutenlang auf
+> `COMING_UP`, `SELECT 1` lief bereits durch, und `public` wirkte vollständig leer.
+> Die Übungs-DB war die ganze Zeit **intakt**. Wer in diesem Moment nach dem Runbook
+> (`supabase/test_projekt/README.md`) neu aufbaut, **zerstört eine gesunde
+> Datenbank** — und merkt es nicht, weil der Wiederaufbau ja „funktioniert“.
+>
+> **Regel:** Status über `get_project` abfragen, bis er **`ACTIVE_HEALTHY`** ist.
+> Erst dann den Anker messen, erst dann urteilen. Ein `SELECT`, das durchläuft, ist
+> **kein** Beleg dafür, dass der Restore fertig ist.
+
 ### 3 · Migration auf der Übungs-DB proben
 
 Die Migration **wortgleich** einspielen, wie sie später auf Produktion laufen soll.
@@ -158,6 +175,21 @@ sie fallen hier nicht von selbst auf.
    Supabase (Roadmap J1).
 2. **Menschliche Freigabe einholen.** Das ist ein Gate, keine Formalie.
 3. Migration wortgleich auf `nflkobdfdhncrtjncpmq` anwenden.
+4. **Wortgleichheit belegen statt zusichern.** Nach dem Einspielen auf **beiden**
+   Projekten dieselbe Abfrage laufen lassen und die Werte vergleichen:
+
+   ```sql
+   SELECT p.proname, md5(pg_get_functiondef(p.oid))
+   FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'public' AND p.proname IN ('…', '…')
+   ORDER BY 1;
+   ```
+
+   Identische Prüfsummen heißen: Produktion führt **byte-genau** den Code aus, der
+   auf der Übungs-DB grün war. Der Vergleich kostet einen Aufruf und ersetzt eine
+   Zusicherung durch einen Beleg. Nützlich auch für Funktionen, die eine Migration
+   **unverändert** mitführt — dort muss die Prüfsumme dieselbe sein wie **vorher**
+   (so belegt in v2-13 für `calculate_planned_sparrate_for_month`).
 
 ### 6 · Anker nachher messen
 
@@ -193,6 +225,7 @@ Bei Treiber-Änderungen zusätzlich die Invariante prüfen:
 - [ ] Migrationsdatei unter `supabase/migrations/` abgelegt
 - [ ] **Menschliche Freigabe für Produktion eingeholt**
 - [ ] Migration auf Produktion angewendet
+- [ ] Prüfsummen Übung ↔ Produktion verglichen (Wortgleichheit belegt)
 - [ ] Anker Produktion **nachher** gemessen, Abweichung = erwartete Abweichung
 - [ ] Übungs-DB pausiert, Rennrad-Trainer zurück auf `ACTIVE_HEALTHY`
 - [ ] Schema-Doku-Patch beauftragt (Subagent `docs-maintainer`, LL-16)

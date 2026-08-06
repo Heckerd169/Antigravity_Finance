@@ -19,17 +19,32 @@ Nach **jeder** Phase, nicht nur am Sprint-Ende.
 
 ```bash
 node_modules/.bin/tsc --noEmit
-npx eslint src --ext .ts,.tsx --resolve-plugins-relative-to .
+npx eslint src --ext .ts,.tsx --no-eslintrc --config .eslintrc.json --resolve-plugins-relative-to .
 pnpm build
 pnpm test:visual
 ```
 
-Erwartung: `tsc` 0 Fehler · Lint 0/0 · Build 0 Fehler · Pixel-Checks 3/3.
+Erwartung: `tsc` 0 Fehler · Lint 0/0 · Build 0 Fehler · Pixel-Checks **12/12**
+(9 Ring-Subzeile seit v2-12 + 3 §9-Pixel).
 
 > **`pnpm lint` bzw. `next lint` scheitert innerhalb eines Git-Worktrees** an doppelt
-> aufgelöster ESLint-Konfiguration (Eltern-Repo + Worktree). Der Aufruf oben ist der
-> Ersatz **ohne** Konfigurationsänderung. Im normalen Arbeitsverzeichnis
-> funktionieren beide; der Ersatz funktioniert überall — deshalb immer er.
+> aufgelöster ESLint-Konfiguration. Der Aufruf oben ist der Ersatz **ohne**
+> Konfigurationsänderung; er funktioniert überall — deshalb immer er.
+>
+> **`--no-eslintrc` ist der entscheidende Teil, nicht `--resolve-plugins-relative-to`.**
+> Bis v2-13 stand hier nur Letzteres, und es reichte nicht: Es verhindert die doppelte
+> **Plugin**-Auflösung, nicht die doppelte **Konfigurations**-Auflösung. Weil die
+> Worktrees unter `.claude/worktrees/` **innerhalb** des Repos liegen, findet ESLint
+> beim Hochlaufen zusätzlich die `.eslintrc.json` des Eltern-Checkouts (die kein
+> `"root": true` trägt) und bricht mit *„couldn't determine the plugin
+> @next/next uniquely“* ab. `--no-eslintrc` schaltet die Kaskade ab, `--config`
+> liefert die Konfiguration dann explizit nach.
+
+> **Ein frischer Worktree braucht außerdem `pnpm install` und eine `.env.local`**
+> mit `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` — beide sind
+> gitignored und deshalb dort nicht vorhanden. Ohne sie bricht `pnpm build` beim
+> Prerender von `/onboarding` ab. Ohne `.env.e2e.local` läuft nur das
+> `visual`-Projekt; ein authentifizierter Render-Smoke ist dann nicht möglich.
 
 > **`pnpm test:visual` gehört dazu.** Es kam am 23./24.07.2026 hinzu und stand bis
 > zum 04.08.2026 nicht in der kanonischen Liste. Die Pixel-Checks laufen gegen
