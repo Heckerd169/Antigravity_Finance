@@ -2,7 +2,7 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 05. August 2026 (nach v2-13 — Paket 1 vollständig) · **Vorgänger-Struktur:** bis zum
+> **Stand:** 06. August 2026 (nach v2-13 und dem Nachzug A–E) · **Vorgänger-Struktur:** bis zum
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
@@ -32,9 +32,9 @@
 |---|---|---|---|---|---|
 | Offene Pakete | **13** | 14 | 14 | 14 | 14 |
 | Themen darin | **33** | 34 | 35 | 36 | 39 |
-| Hausaufgaben ohne eigenen Sprint | **7** | 7 | 7 | 7 | 8 |
-| **Offen gesamt** | **40** | 41 | 42 | 43 | 47 |
-| Erledigt | 32 | 31 | 30 | 29 | 25 |
+| Hausaufgaben ohne eigenen Sprint | **6** | 7 | 7 | 7 | 8 |
+| **Offen gesamt** | **39** | 41 | 42 | 43 | 47 |
+| Erledigt | 33 | 31 | 30 | 29 | 25 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 |
 
 > **Korrektur um eine Zeile (05.08.2026, v2-13).** Beim zeilengenauen Nachzählen ergaben
@@ -369,7 +369,6 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|---|---|
 | PA-1 | Konsequenz-Anzeige beim Einkommens-Eintrag | ⬜ | **An BF-3 anhängen** (Paket 1) — zweite Sache, die am selben Popup andockt. Nach dem Eintragen eines neuen Einkommens zeigt die App unmittelbar, welche Daueraufträge sich dadurch ändern: je gemeinsamem Posten **alt → neu → Differenz**. Symmetrisch, greift bei jeder Einkommensänderung auf beiden Seiten. **Kein Häkchen „umgestellt"** — Handpflege hat in dieser App eine Erfolgsbilanz von null. Rechenweg existiert bereits: `get_split_factor` liest den jüngsten Einkommens-Eintrag ≤ Monat, Vorausdatieren funktioniert also ohne neue Logik. **Achtung:** Der Faktor rechnet mit `gross_annual`, nicht mit dem Netto. **⚠️ Größte Hausaufgabe der Liste** — eine kleine Rechnung plus Anzeige, keine Notiz. Wächst sie im Sprint, herausschneiden und zu einem eigenen Thema machen. **In v2-10 angefasst und bewusst nicht gebaut** (Abbruch-Klausel des Arbeitsauftrags): Die **Rechnung ist fertig und gegen Produktion belegt** — Faktor 92.400 / (92.400 + 69.113) = 0,5721, vier gemeinsame Posten, Summe 2.033,99 € Plan → 1.163,62 € ICH-Anteil; durchgerechnetes Beispiel in `sprints/sprint_v2-10_offene_fragen.md` §5. Offen ist ausschließlich die **Darstellung**: Design-Doku §10 und §12.7 kennen keinen Zustand nach dem Speichern, und §12.7 ist die vollständige Textreferenz. Es fehlen fünf Entscheidungen (was nach dem Speichern passiert · wie man schließt, inkl. neuer UI-Copy · Spaltenköpfe · leerer Fall · ob Einnahmen-Karten mitzählen) → **eine Runde `design-direktor`**, danach ist es ein kleiner Sprint. |
 | J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. **Dringlicher geworden:** `supabase/migrations/` enthält nur zwei Patch-Dateien, der Übungs-DB-Seed ist reine Daten ohne Schema. Es gibt damit **keine versionierte Basis**, gegen die ein Eingriff in eine Rechenfunktion diffen könnte, und die Übungs-Datenbank ist aus dem Repo nicht rekonstruierbar. Spätestens vor `KAT-3` mitnehmen (Befund D15). |
-| TP-1 | Prüfwert im Übungs-DB-Runbook korrigieren | ⬜ | `supabase/test_projekt/README.md:66` nennt Juni 2026 = 4.545,32 €; gültig ist **4.589,53 €**. In der Fähigkeit `db-eingriff` vermerkt, führt also niemanden in die Irre. Beim nächsten Datenbank-Eingriff mitnehmen. |
 | TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
@@ -392,6 +391,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| TP-1 | Prüfwert im Übungs-DB-Runbook: Anker **ersatzlos entfernt** statt korrigiert — er war zweimal veraltet (4.545,32 → 4.589,53 → tatsächlich 4.208,76 €). Anker werden jetzt nur noch an EINER Stelle gepflegt: `CLAUDE.md` §9 | v2-13 Nachzug |
 | BF-4 | Gemeinsame Karten: Split-Anteil genau **einmal** angewandt; Karte zeigt den eigenen Anteil mit `von [N] €` darunter. Prod alle 12 Monate um 0,00 € bewegt, B2 12/12 | v2-13 |
 | Init-1 | Übungs-Datenbank aufgesetzt, Runbook in `supabase/test_projekt/` | v2-05 |
 | Init-2 | Deterministischer Prüfwert 2.200,00 € definiert | v2-05 |
