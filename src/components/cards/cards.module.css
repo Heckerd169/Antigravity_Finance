@@ -560,6 +560,16 @@
   color: rgba(255, 69, 58, .85);
 }
 
+/* Hinweiszeile im Overlay (v2-15, LQ-1) — Herkunft eines abgeleiteten Werts.
+   Leiser als `.overlayCurrentValue` (.35), weil sie erklärt statt zu benennen;
+   `line-height` gesetzt, weil der Satz umbricht. */
+.overlayHint {
+  font-size: 11px;
+  line-height: 15px;
+  color: rgba(255, 255, 255, .28);
+  margin-top: -4px;
+}
+
 .overlayActions {
   display: flex;
   flex-direction: column;

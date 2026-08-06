@@ -257,6 +257,8 @@ function FixedCostCard({
         canEnd={card.frequency !== "ONCE"}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
+        cardType={card.type}
+        currentDueDay={card.dueDay}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
       />
@@ -326,6 +328,8 @@ function IncomeCard({
         canEnd={card.frequency !== "ONCE"}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
+        cardType={card.type}
+        currentDueDay={card.dueDay}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
       />
@@ -464,6 +468,8 @@ function BudgetCard({
         canEnd={card.frequency !== "ONCE"}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
+        cardType={card.type}
+        currentDueDay={card.dueDay}
         linkedFragments={card.linkedFragments}
         ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
       />
