@@ -1,5 +1,14 @@
 export type Person = "ICH" | "PARTNER";
 
+/** v2-16 (PA-1): Die Typen der Konsequenz-Anzeige leben in `consequence.ts` —
+ *  zusammen mit der Rechnung, und dort ohne Importe, damit der
+ *  Regressions-Wächter die Quelldatei direkt laden kann. Hier nur
+ *  weitergereicht, damit die bestehenden Importpfade gültig bleiben. */
+export type {
+  SplitConsequence,
+  SplitConsequenceItem,
+} from "./consequence";
+
 export type ActiveMonth = {
   year: number;
   month: number; // 1..12
