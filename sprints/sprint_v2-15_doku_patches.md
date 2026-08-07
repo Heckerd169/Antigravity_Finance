@@ -527,4 +527,24 @@ unbaubar entlarvt.
 
 ---
 
+### Patch 17 — §4, Umgebungsdateien: Präzisierung von Patch 15
+
+**Anlass:** Patch 15 sagte, die beiden Dateien „gehören in den Haupt-Checkout, nicht in
+einen Sprint-Worktree". Das ist **zu knapp und in der Wirkung irreführend**: Beim
+Anlegen der Dateien am 07.08.2026 zeigte ein Blick in `playwright.config.ts` Z. 7, dass
+die Konfiguration `.env.e2e.local` aus ihrem **eigenen** Verzeichnis liest
+(`path.join(__dirname, ".env.e2e.local")`) — im Haupt-Checkout allein wirkt sie also
+nicht. Wer den Hinweis wörtlich befolgt und das Kopieren unterlässt, steht wieder ohne
+angemeldeten Smoke da, diesmal aber im Glauben, alles richtig gemacht zu haben.
+
+**Anker:** der mit Patch 15 eingefügte Absatz (`**\`.env.local\` und \`.env.e2e.local\`
+gehören in den Haupt-Checkout …`), vollständig ersetzt.
+
+**Patch:** Neufassung in drei Absätzen — dauerhafte Heimat im Haupt-Checkout **plus
+Kopierpflicht in jeden Worktree**, mit dem `__dirname`-Beleg; Folgen getrennt für
+`.env.e2e.local` (kein angemeldeter Render-Smoke) und `.env.local` (`pnpm build` bricht
+beim Prerender von `/onboarding` ab); Gegenbeleg aus v2-10 unverändert.
+
+---
+
 *Patch-Datei · Antigravity Finance · Sprint v2-15 · 06.–07. August 2026*

@@ -272,13 +272,22 @@ dem Browser-Smoke des Users als Wächter (Sparrate vorher/nachher, §7 Regel 21)
 **Jeder** Sprint mit Schema-/RPC-Eingriff oder mit daten-mutierenden E2E-Läufen
 probt zuerst auf der Übungs-Datenbank → Fähigkeit `db-eingriff`.
 
-**`.env.local` und `.env.e2e.local` gehören in den Haupt-Checkout, nicht in einen
-Sprint-Worktree** — beide sind gitignored und verschwinden sonst mit dessen
-Aufräumen, wie zwischen v2-10 und v2-15 geschehen. Fehlt `.env.e2e.local`, schließt
-`playwright.config.ts` das `render-smoke`-Projekt aus der Projektliste aus; der
-**angemeldete** Render-Smoke entfällt ersatzlos, und der `smoke-agent` kann die
-Oberfläche nicht mehr beurteilen (Beleg: `sprints/sprint_v2-10_review.md` §2,
-`pnpm test:e2e` 10/10 inkl. `render-smoke` 4).
+**`.env.local` und `.env.e2e.local` haben ihre dauerhafte Heimat im Haupt-Checkout und
+werden in jeden neuen Worktree kopiert.** Beide sind gitignored; liegen sie *nur* im
+Worktree, verschwinden sie mit dessen Aufräumen — genau das ist zwischen v2-10 und
+v2-15 passiert.
+
+**Kopieren ist Pflicht, nicht Kür:** `playwright.config.ts` liest `.env.e2e.local` aus
+seinem **eigenen** Verzeichnis (`__dirname`), und Next.js liest `.env.local` ebenso aus
+dem Projekt-Wurzelverzeichnis. Im Haupt-Checkout allein wirken sie also nicht — dort
+überleben sie nur. Fehlt `.env.e2e.local` im Arbeitsverzeichnis, schließt die
+Konfiguration das `render-smoke`-Projekt aus der Projektliste aus: Der **angemeldete**
+Render-Smoke entfällt dann ersatzlos, und der `smoke-agent` kann die Oberfläche nicht
+mehr beurteilen — er kommt nicht am Login vorbei. Fehlt `.env.local`, bricht
+zusätzlich `pnpm build` beim Prerender von `/onboarding` ab.
+
+Beleg, dass es früher lief: `sprints/sprint_v2-10_review.md` §2 weist `pnpm test:e2e`
+**10/10** aus, darunter `render-smoke` 4.
 
 ---
 
