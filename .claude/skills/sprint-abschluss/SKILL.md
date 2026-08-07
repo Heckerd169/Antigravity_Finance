@@ -24,8 +24,13 @@ pnpm build
 pnpm test:visual
 ```
 
-Erwartung: `tsc` 0 Fehler · Lint 0/0 · Build 0 Fehler · Pixel-Checks **12/12**
-(9 Ring-Subzeile seit v2-12 + 3 §9-Pixel).
+Erwartung: `tsc` 0 Fehler · Lint 0/0 · Build 0 Fehler · `test:visual` **25/25**
+(9 Ring-Subzeile seit v2-12 + 3 §9-Pixel + 13 Liquiditäts-Regel seit v2-15).
+
+> **Das `visual`-Projekt hat eine feste Dateiliste.** Eine neue `*.spec.ts` in
+> `tests/e2e/` läuft **nicht** von allein mit — sie muss in `playwright.config.ts` in
+> `testMatch` des Projekts eingetragen werden, sonst bleibt sie unbemerkt liegen und
+> die Gesamtzahl oben verrät den Unterschied nicht.
 
 > **`pnpm lint` bzw. `next lint` scheitert innerhalb eines Git-Worktrees** an doppelt
 > aufgelöster ESLint-Konfiguration. Der Aufruf oben ist der Ersatz **ohne**
