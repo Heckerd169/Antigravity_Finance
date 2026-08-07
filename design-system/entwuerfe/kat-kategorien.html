@@ -1,0 +1,516 @@
+<!-- @dsCard group="Entwürfe" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Paket 4 · Kategorien im Karussell — Varianten</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
+    --bg-card-paid:#0A140E; --bg-card-over:#160A08; --bg-card-ghost:#181818;
+    --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
+    --border-red:rgba(255,69,58,.18);
+    --outline-drop:rgba(255,255,255,.35);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; padding:44px 40px 96px; background:var(--bg-primary); color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+  }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:76ch; line-height:1.65; margin:0 0 10px; }
+  .src  { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 30px; line-height:1.6; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:54px 0 6px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  h3 { font-size:15px; font-weight:400; letter-spacing:-.3px; margin:30px 0 4px; }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 20px; max-width:80ch; line-height:1.65; }
+  .cap { margin-top:11px; font-size:10px; color:var(--text-ghost); line-height:1.55; max-width:400px; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  code { font-size:.92em; color:rgba(255,255,255,.6); }
+
+  .badgeRec { display:inline-block; font-size:8.5px; font-weight:600; letter-spacing:1.1px;
+              text-transform:uppercase; padding:3px 8px; border-radius:5px; vertical-align:3px;
+              margin-left:10px; background:rgba(62,207,175,.10); color:rgba(62,207,175,.75);
+              border:1px solid rgba(62,207,175,.28); }
+  .badgeBad { display:inline-block; font-size:8.5px; font-weight:600; letter-spacing:1.1px;
+              text-transform:uppercase; padding:3px 8px; border-radius:5px; vertical-align:3px;
+              margin-left:10px; background:rgba(255,69,58,.08); color:rgba(255,69,58,.7);
+              border:1px solid rgba(255,69,58,.25); }
+
+  /* ══ Maßstäbliches Karussell — Werte 1:1 aus interaction-zone.module.css ══
+     Grid 180px | 1fr | 220px, gap 14px, Seitenpadding 32px → bei 1440px
+     Fenster bleiben 948px für die Spalte, davon 2×28px Chevron + 2×8px Gap
+     → Viewport exakt 876px. Karten-Slot flex:0 0 136px, gap 10px. */
+  .frame { width:876px; max-width:100%; }
+  .frameLabel { font-size:9px; font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
+                color:var(--text-ghost); margin-bottom:9px; display:flex;
+                justify-content:space-between; align-items:baseline; gap:16px; }
+  .frameLabel .liq { font-size:10px; font-weight:500; letter-spacing:.2px;
+                     color:rgba(255,255,255,.34); text-transform:none; }
+  .row { display:flex; align-items:stretch; gap:8px; }
+  .chev { width:28px; height:28px; border-radius:50%; flex-shrink:0; align-self:center;
+          border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03);
+          color:rgba(255,255,255,.35); display:flex; align-items:center;
+          justify-content:center; font-size:11px; }
+  .viewport { display:flex; gap:10px; flex:1; min-width:0; overflow-x:auto;
+              padding:4px 0 16px; scrollbar-width:thin;
+              scrollbar-color:rgba(255,255,255,.14) transparent; }
+  .viewport::-webkit-scrollbar { height:6px; }
+  .viewport::-webkit-scrollbar-thumb { background:rgba(255,255,255,.14); border-radius:3px; }
+  .ruler { font-size:10px; color:var(--text-ghost); margin-top:2px; }
+  .ruler b { color:var(--text-muted); font-weight:600; }
+
+  /* ── Karten-Basis, 1:1 aus cards.module.css / Design-Doku §7 ── */
+  .card { width:136px; flex:0 0 136px; min-height:170px; border-radius:14px;
+          padding:14px 13px 12px; border:1px solid var(--border-subtle);
+          background:var(--bg-card); position:relative; opacity:.75; }
+  .cardBudget { padding-bottom:18px; }
+  .open{background:var(--bg-card-open);border-color:var(--border-red);}
+  .paid{background:var(--bg-card-paid);border-color:var(--border-teal);}
+  .expected{background:#0D1A16;border-color:rgba(62,207,175,.18);}
+  .running{background:var(--bg-card-open);border-color:var(--border-red);}
+  .over{background:var(--bg-card-over);border-color:rgba(255,69,58,.35);}
+  .cardTop { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .cardLabel { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .open .cardLabel,.running .cardLabel,.over .cardLabel { color:rgba(255,99,88,.45); }
+  .paid .cardLabel,.expected .cardLabel { color:rgba(62,207,175,.45); }
+  .icon { width:18px; height:18px; border-radius:50%; flex-shrink:0; }
+  .iconOpen{background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.2);}
+  .iconPaid{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.28);}
+  .iconOver{background:rgba(255,69,58,.16);border:1px solid rgba(255,69,58,.35);}
+  .iconExpected{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.25);}
+  .cardName { font-size:13px; font-weight:500; letter-spacing:-.2px; margin-bottom:2px;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .open .cardName,.running .cardName,.expected .cardName { color:var(--text-muted); }
+  .paid .cardName,.over .cardName { color:var(--text-primary); }
+  .cardAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px; line-height:1; margin-bottom:2px; }
+  .open .cardAmount,.running .cardAmount,.expected .cardAmount { color:var(--text-muted); }
+  .paid .cardAmount { color:var(--text-primary); }
+  .over .cardAmount { color:var(--color-red); }
+  .householdAmount { font-size:10px; font-weight:400; line-height:12px; min-height:12px;
+                     white-space:nowrap; color:var(--text-muted); margin-bottom:5px; }
+  .stateRow { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .stateLabel { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; }
+  .open .stateLabel { color:rgba(255,99,88,.38); }
+  .paid .stateLabel,.expected .stateLabel { color:rgba(62,207,175,.45); }
+  .running .stateLabel { color:rgba(255,255,255,.2); }
+  .over .stateLabel { color:rgba(255,69,58,.55); }
+  .dueDay { font-size:9px; font-weight:500; letter-spacing:.4px;
+            color:rgba(255,255,255,.30); white-space:nowrap; }
+  .restAmount { font-size:11px; font-weight:500; margin-top:3px; }
+  .restPos { color:rgba(62,207,175,.40); } .restNeg { color:rgba(255,69,58,.65); }
+  .cardMeta { display:flex; align-items:center; gap:5px; margin-top:8px; }
+  .metaDot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+  .metaDotIch { background:rgba(255,255,255,.22); }
+  .metaDotGem { background:rgba(100,168,240,.38); }
+  .metaText { font-size:10px; font-weight:500; color:rgba(255,255,255,.20); letter-spacing:.2px; }
+  .progressWrap { position:absolute; bottom:0; left:0; right:0; height:3px;
+                  background:rgba(255,255,255,.04); border-radius:0 0 14px 14px; overflow:hidden; }
+  .progressBar { height:100%; } .pbNorm{background:rgba(62,207,175,.45);} .pbOver{background:#FF453A;}
+
+  /* ══ VARIANTE A — Stapel-Kachel im Kartenformat ══ */
+  .catA { width:136px; flex:0 0 136px; min-height:170px; border-radius:14px;
+          padding:14px 13px 12px; position:relative; cursor:pointer;
+          background:#131318; border:1px solid rgba(255,255,255,.13);
+          opacity:.82; transition:opacity .13s, transform .13s; }
+  .catA:hover { opacity:1; transform:translateY(-2px); }
+  /* Gestapelte Kanten: zwei versetzte Kopien der Form via box-shadow —
+     zuverlässiger als Pseudo-Elemente mit negativem z-index. */
+  .catA { box-shadow:
+      0 5px 0 -1px #101014, 0 5px 0 0 rgba(255,255,255,.13),
+      0 10px 0 -2px #101014, 0 10px 0 -1px rgba(255,255,255,.09); }
+  .catA.isOpen { box-shadow:none; }
+  .catKicker { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+               color:rgba(255,255,255,.30); }
+  .catChev { font-size:10px; color:rgba(255,255,255,.30); transition:transform .15s; }
+  .catA.isOpen .catChev { transform:rotate(90deg); }
+  .catName { font-size:13px; font-weight:500; letter-spacing:-.2px; color:#fff;
+             margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .catAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px; line-height:1;
+               margin-bottom:2px; color:#fff; }
+  .catAmount.pos { color:var(--color-teal); }
+  .catCount { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
+              color:rgba(255,255,255,.28); }
+  .catOpenFlag { font-size:9px; font-weight:600; letter-spacing:.6px; text-transform:uppercase;
+                 color:rgba(255,99,88,.62); }
+  /* Der Offen-Streifen: linke Kante rot, solange drin etwas offen ist (Fallstrick ①) */
+  .catA.hasOpen { border-left:2px solid rgba(255,69,58,.45); padding-left:12px; }
+  .catA.allDone { border-left:2px solid rgba(62,207,175,.35); padding-left:12px; }
+
+  /* Kinder eines aufgeklappten Ordners liegen in EINER Klammer — eine
+     durchgehende Grundlinie unter allen Kindern. Ohne sie verliert man beim
+     Weiterscrollen, zu welchem Ordner eine Karte gehört (bei „Abos" sind das
+     zehn Karten = fast zwei Bildschirmbreiten). */
+  .childGroup { display:flex; gap:10px; flex:0 0 auto; padding:0 4px 7px;
+                border-bottom:1px solid rgba(255,255,255,.14);
+                border-radius:0 0 3px 3px; margin-bottom:9px; }
+  .childGroup.openFlag { border-bottom-color:rgba(255,69,58,.32); }
+
+  /* ══ VARIANTE B — breite, flache Klammer ══ */
+  .catB { width:172px; flex:0 0 172px; align-self:center; border-radius:10px;
+          padding:13px 14px; cursor:pointer; background:rgba(255,255,255,.035);
+          border:1px solid rgba(255,255,255,.11); border-left:3px solid rgba(255,255,255,.16);
+          transition:background .13s; }
+  .catB:hover { background:rgba(255,255,255,.06); }
+  .catB.hasOpen { border-left-color:rgba(255,69,58,.5); }
+  .catB.allDone { border-left-color:rgba(62,207,175,.4); }
+  .catBTop { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .catBName { font-size:12.5px; font-weight:500; letter-spacing:-.1px; color:#fff; }
+  .catBAmt { font-size:16px; font-weight:200; letter-spacing:-.7px; color:#fff; white-space:nowrap; }
+  .catBAmt.pos { color:var(--color-teal); }
+  .catBMeta { font-size:9px; font-weight:500; letter-spacing:.5px; text-transform:uppercase;
+              color:rgba(255,255,255,.26); margin-top:5px; }
+  .catBMeta .flag { color:rgba(255,99,88,.62); font-weight:600; }
+
+  /* ══ VARIANTE C — nur Trennung, kein Falten ══ */
+  .sep { flex:0 0 26px; align-self:stretch; margin:4px 0 16px; position:relative;
+         border-left:1px solid rgba(255,255,255,.10); }
+  .sepName { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-90deg);
+             transform-origin:center; white-space:nowrap; font-size:8.5px; font-weight:600;
+             letter-spacing:1.2px; text-transform:uppercase; color:rgba(255,255,255,.30); }
+
+  /* ══ Aufstellungs-Tabelle ══ */
+  table { border-collapse:collapse; font-size:12px; margin-top:6px; }
+  th { text-align:left; font-size:8.5px; font-weight:600; letter-spacing:1.1px;
+       text-transform:uppercase; color:var(--text-ghost); padding:0 18px 8px 0;
+       border-bottom:1px solid var(--border-subtle); }
+  td { padding:6px 18px 6px 0; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.035); }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.sum td { border-top:1px solid rgba(255,255,255,.14); border-bottom:none;
+              color:#fff; font-weight:500; padding-top:9px; }
+  .neg { color:rgba(255,99,88,.72); } .pos { color:rgba(62,207,175,.72); }
+
+  .note { margin-top:24px; padding:14px 16px; border-left:2px solid var(--border-teal);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.7; max-width:86ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .note.warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+  .note.plain { border-left-color:rgba(255,255,255,.14); background:rgba(255,255,255,.02); }
+
+  .kv { display:grid; grid-template-columns:82px 1fr; gap:5px 14px; font-size:11.5px;
+        line-height:1.6; max-width:74ch; margin-top:13px; }
+  .kv dt { font-size:8.5px; font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
+           color:var(--text-ghost); padding-top:3px; }
+  .kv dd { margin:0; color:var(--text-muted); }
+  .kv dd b { color:#fff; font-weight:500; }
+  .hint { font-size:10.5px; color:var(--text-ghost); margin:10px 0 0; }
+</style>
+</head>
+<body>
+
+<h1>Paket 4 — Kategorien im Karussell</h1>
+<p class="lede">
+  Entschieden ist bereits: Eine Kategorie ist ein <b>Ordner</b>, kein eigener Posten — sie
+  hat keine eigene Zahl außer der Summe ihres Inhalts, und die Sparrate rechnet weiter
+  kategorie-blind. Offen ist, <b>wie der Ordner aussieht</b> und <b>welche Geste ihn öffnet</b>.
+  Drei Varianten, alle im Maßstab des echten Karussells.
+</p>
+<p class="src">
+  Quelle: <code>V2/befunde_2026-08-04_kategorien.md</code> §4 (U1–U15) · Design-Doku §1, §7, §8 ·
+  <code>interaction-zone.module.css</code> (Grid 180/1fr/220, gap 14, Slot 136+10) ·
+  Beträge aus <code>calculate_card_amount_for_month</code> gegen Produktion, Juli 2026.<br>
+  <b>Entwurfs-Seite — kein Ist-Zustand.</b> Nichts davon ist gebaut.
+  <b>Die Kategorien-Kacheln sind anklickbar</b> — probier das Auf- und Zuklappen aus.
+</p>
+
+<h2>1 · Der Ausgangspunkt — dein Juli, maßstäblich</h2>
+<p class="sub">
+  Der Rahmen unten ist <b>exakt so breit wie das echte Karussell bei 1440 px Fensterbreite</b>:
+  876 px, also genau sechs Kartenplätze. Im Juli stehen 32 Karten darin. Scroll einmal
+  von links nach rechts — in der App macht das der Pfeil, und der rückt um <b>eine</b> Karte
+  pro Klick.
+</p>
+<div class="frame">
+  <div class="frameLabel"><span>Planung</span>
+    <span class="liq">1.814 € noch fällig · 590 € Budget frei</span></div>
+  <div class="row">
+    <div class="chev">‹</div>
+    <div class="viewport" id="vpToday"></div>
+    <div class="chev">›</div>
+  </div>
+  <div class="ruler">32 Karten · 6 sichtbar · <b>27 Pfeilklicks</b> von einem Ende zum anderen · 5,4 Bildschirmbreiten</div>
+</div>
+
+<h2>2 · Was die Ordner daraus machen — und dass die Rechnung aufgeht</h2>
+<p class="sub">
+  Elf Ordner statt 32 Karten. Wichtiger noch: Sie ergeben zusammen <b>exakt</b> die Sparrate —
+  das war die Bedingung. Möglich wird das nur, weil das Nettogehalt einen eigenen Ordner
+  bekommt; es ist heute keine Karte und steht gar nicht im Karussell.
+</p>
+<table>
+  <tr><th>Ordner</th><th>Posten</th><th style="text-align:right">Juli 2026</th></tr>
+  <tr><td>Einkommen</td><td>1</td><td class="num pos">+4.165,11 €</td></tr>
+  <tr><td>Wohnen</td><td>3</td><td class="num neg">−1.148,17 €</td></tr>
+  <tr><td>Lebensmittel</td><td>1</td><td class="num neg">−257,50 €</td></tr>
+  <tr><td>Mobilität</td><td>3</td><td class="num neg">−522,00 €</td></tr>
+  <tr><td>Abos &amp; Mitgliedschaften</td><td>10</td><td class="num neg">−374,02 €</td></tr>
+  <tr><td>Versicherungen</td><td>3</td><td class="num neg">−232,83 €</td></tr>
+  <tr><td>Hobby</td><td>3</td><td class="num neg">−369,14 €</td></tr>
+  <tr><td>Urlaub</td><td>2</td><td class="num neg">−738,01 €</td></tr>
+  <tr><td>Geschenke &amp; Anlässe</td><td>1</td><td class="num neg">−168,11 €</td></tr>
+  <tr><td>Persönliches</td><td>4</td><td class="num neg">−747,58 €</td></tr>
+  <tr><td>Rückflüsse</td><td>2</td><td class="num pos">+69,51 €</td></tr>
+  <tr class="sum"><td>Sparrate Juli</td><td>32</td><td class="num neg">−322,75 €</td></tr>
+</table>
+<p class="hint">
+  Gemessen am 07.08.2026 gegen <code>nflkobdfdhncrtjncpmq</code>, nur lesend.
+  Netto 4.165,11 € · Split-Faktor 0,57209 · Sparrate laut <code>calculate_sparrate_for_month</code> −322,75 €.
+</p>
+
+<div class="note">
+  <b>Warum der Juli negativ ist, sieht man jetzt auf einen Blick:</b> Urlaub 738 €,
+  Persönliches 748 € und Hobby 369 € sind zusammen <b>1.855 €</b> einmalige Ausgaben in
+  einem einzigen Monat. In der heutigen Reihe aus 32 gleich aussehenden Karten ist das
+  nicht zu erkennen — man müsste 27-mal blättern und im Kopf addieren.
+</div>
+
+<div class="note warn">
+  <b>Fallstrick, der beim Nachrechnen auffällt — und den du sofort finden würdest.</b>
+  Rundet jeder Ordner seine eigene Summe, ergibt die Spalte oben <b>−322,74 €</b>, also
+  einen Cent daneben. Der Grund sitzt in <b>Wohnen</b>: Miete, Strom und Internet sind
+  Anteile mit vielen Nachkommastellen (1089,25968… + 36,04168… + 22,87216…). Einzeln
+  gerundet fehlt ein halber Cent, der sich im Ergebnis zeigt.
+  <b>Die Ordner müssen ihre Summe daher aus ungerundeten Kartenwerten bilden und erst
+  ganz am Ende runden</b> — genau wie die Sparrate es tut (Regel LL-24).
+</div>
+
+<h2>3 · Variante A — Stapel-Kachel im Kartenformat <span class="badgeRec">Empfehlung</span></h2>
+<p class="sub">
+  Der Ordner behält das Kartenformat (136 px), hebt sich aber in drei Punkten ab:
+  <b>neutraler Grundton</b> statt roter oder türkiser Tönung, <b>kein Status-Icon</b>,
+  und <b>gestapelte Kanten</b> darunter, die zeigen, dass mehr dahinter liegt. Die linke
+  Kante ist rot, solange drinnen etwas offen ist, und türkis, wenn alles erledigt ist.
+</p>
+<div class="frame">
+  <div class="frameLabel"><span>Planung</span>
+    <span class="liq">1.814 € noch fällig · 590 € Budget frei</span></div>
+  <div class="row">
+    <div class="chev">‹</div>
+    <div class="viewport" id="vpA"></div>
+    <div class="chev">›</div>
+  </div>
+  <div class="ruler">11 Ordner · 6 sichtbar · <b>5 Pfeilklicks</b> · alles zu = 1,8 Bildschirmbreiten</div>
+</div>
+<dl class="kv">
+  <dt>Bringt</dt><dd>Die Reihe bleibt <b>eine</b> homogene Reihe — gleiche Höhe, gleiche Kante, gleiche Zahl an derselben Stelle. Der Ordner ist ein vollwertiges Ablageziel: Eine Zahlung darauf zu ziehen öffnet das Anlege-Fenster mit vorausgewählter Kategorie. Und die rote Kante beantwortet Fallstrick ① — man sieht zugeklappt, wo noch Arbeit liegt.</dd>
+  <dt>Kostet</dt><dd>Er sieht einer Karte <b>ähnlich</b>. Über jeder echten Karte liegt eine unsichtbare Klickfläche, die „bezahlt" umschaltet und die Sparrate bewegt — ein Fehlklick ist zwar rücknehmbar, aber stumm. Die Unterscheidung muss also durch Ton, fehlendes Icon und Stapelkante wirklich tragen.</dd>
+</dl>
+
+<h2>4 · Variante B — flache Klammer, bewusst kein Kartenformat</h2>
+<p class="sub">
+  Der Ordner ist breiter (172 px), aber deutlich <b>flacher</b> und vertikal zentriert. Er
+  kann mit einer Karte nicht verwechselt werden, weil er die Kantenlinie der Reihe bricht.
+  Farbe der linken Kante wie in A.
+</p>
+<div class="frame">
+  <div class="frameLabel"><span>Planung</span>
+    <span class="liq">1.814 € noch fällig · 590 € Budget frei</span></div>
+  <div class="row">
+    <div class="chev">‹</div>
+    <div class="viewport" id="vpB"></div>
+    <div class="chev">›</div>
+  </div>
+  <div class="ruler">11 Ordner · ~4,5 sichtbar · <b>7 Pfeilklicks</b> · breiterer Slot, dafür null Verwechslungsgefahr</div>
+</div>
+<dl class="kv">
+  <dt>Bringt</dt><dd>Ein Fehlklick auf „bezahlt" ist <b>ausgeschlossen</b> — Ordner und Karte sind auf einen Blick verschiedene Dinge. Die flache Form liest sich wie eine Überschrift, was sie ja auch ist.</dd>
+  <dt>Kostet</dt><dd>Die Reihe wird unruhig: hohe Karten neben flachen Klammern, ständig wechselnde Oberkante. Das steht gegen „Ruhe vor Betonung". Außerdem ist der Ordner breiter und passt schlechter — statt fünf Klicks sind es sieben.</dd>
+</dl>
+
+<h2>5 · Variante C — nur Trennung, kein Zuklappen <span class="badgeBad">belegt die Regel</span></h2>
+<p class="sub">
+  Alle Karten bleiben stehen, dazwischen stehen schmale beschriftete Trenner. Das ist die
+  Variante, die die <b>Verfassung garantiert nicht berührt</b> — es gibt nichts zum
+  Aufklappen, also keine zweite Ebene und keine Gestenfrage. Sie ist bewusst dabei, weil
+  sie zeigt, was Gliederung <em>ohne</em> Faltung leistet: Orientierung, aber keinen
+  kürzeren Weg.
+</p>
+<div class="frame">
+  <div class="frameLabel"><span>Planung</span>
+    <span class="liq">1.814 € noch fällig · 590 € Budget frei</span></div>
+  <div class="row">
+    <div class="chev">‹</div>
+    <div class="viewport" id="vpC"></div>
+    <div class="chev">›</div>
+  </div>
+  <div class="ruler">32 Karten + 10 Trenner · 6 sichtbar · <b>36 Pfeilklicks</b> — der Weg wird länger, nicht kürzer</div>
+</div>
+<dl class="kv">
+  <dt>Bringt</dt><dd>Kein Regelkonflikt, keine neue Geste, kein Fehlklick-Risiko, kein Zustand, der über den Monatswechsel überleben muss. Man weiß beim Scrollen immer, wo man ist.</dd>
+  <dt>Kostet</dt><dd><b>Sie löst dein Hauptproblem nicht.</b> Du hast „Arbeiten" als wichtigsten Schmerz genannt — der besteht aus Scrollweg, und der wird hier sogar um zehn Trenner <em>länger</em>. Genau deshalb steht sie hier: Sie belegt, dass Zuklappen keine Bequemlichkeit ist, sondern der eigentliche Zweck.</dd>
+</dl>
+
+<h2>6 · Was in allen drei Varianten gleich bleibt</h2>
+<div class="note plain">
+  <b>Ordner mit nur einem Kind — offene Frage.</b> Lebensmittel hat im Juli nur
+  „Haushaltsgeld", Geschenke nur „Aline Geburtstag", Einkommen immer nur das Netto.
+  Zugeklappt ist so ein Ordner genauso groß wie die Karte darin: Er spart keinen Platz
+  und kostet einen Klick. <b>Empfehlung trotzdem: Er bleibt ein normaler Ordner.</b>
+  Er ist der Ort für den Verlauf und für neue Karten, und im nächsten Monat können zwei
+  darin liegen. Eine Sonderregel „ab zwei Kindern ein Ordner" ließe die Reihe bei jedem
+  Monatswechsel die Form wechseln.<br><br>
+  <b>Beim Ziehen einer Zahlung öffnen sich alle Ordner.</b> Sonst hat ein Drop auf einen
+  zugeklappten Ordner kein gültiges Ziel — das ist der Blocker U1. Lässt man los,
+  schließen sie sich wieder in den vorherigen Zustand. Beim Arbeiten ist alles offen,
+  beim Ansehen ist es aufgeräumt.<br><br>
+  <b>Der Verlauf liegt im ⋯-Menü, nicht auf dem Klick.</b> Aufklappen ist die häufige
+  Handlung, der Verlauf die seltene — die direkte Geste gehört der häufigen. Karte und
+  Ordner bekommen denselben Menüpunkt auf zwei Ebenen.<br><br>
+  <b>Der Ordner trägt ein Vorzeichen, die Karte nicht.</b> Auf einer Karte transportiert
+  der Typ die Richtung — „Fixkosten" heißt Abgang, „Einnahme" heißt Zugang. Ein Ordner
+  hat keinen Typ und kann beides mischen: In „Abos" liegen acht Ausgaben und die zwei
+  Erstattungen von Aline und deiner Mama. Ohne Vorzeichen wäre nicht lesbar, wohin die
+  374,02 € wirken. Deshalb steht am Ordner <code>−374,02 €</code> und <code>+69,51 €</code>.<br><br>
+  <b>Ein offener Ordner steht in einer Klammer.</b> Die aufgeklappten Karten bekommen
+  eine durchgehende Grundlinie. Ohne sie verliert man beim Weiterscrollen, zu welchem
+  Ordner eine Karte gehört — „Abos" ist mit zehn Karten fast zwei Bildschirmbreiten lang,
+  und die Ordner-Kachel ist dann längst aus dem Bild.
+</div>
+
+<script>
+/* Echte Juli-Werte aus calculate_card_amount_for_month (Prod, 07.08.2026).
+   st: open|paid|running|over|expected · hh: Haushaltsbetrag · due: Fälligkeitstag */
+const K = {
+  miete:{n:"Miete",a:"1.089,26",st:"open",lab:"Fixkosten",hh:"von 1.904,00 €",gem:1,due:"am 1."},
+  strom:{n:"Strom - Mainova",a:"36,04",st:"open",lab:"Fixkosten",hh:"von 63,00 €",gem:1,due:"am 1."},
+  inet:{n:"Internet - Vodafone",a:"22,87",st:"open",lab:"Fixkosten",hh:"von 39,98 €",gem:1,due:"am 1."},
+  haus:{n:"Haushaltsgeld",a:"257,50",st:"over",lab:"Budget",bud:1,rest:"57,50 € über Plan",pb:100,po:1},
+  dtick:{n:"Deutschlandticket",a:"63,00",st:"open",lab:"Fixkosten",due:"am 2."},
+  tank:{n:"Tanken",a:"240,00",st:"running",lab:"Budget",bud:1,rest:"Noch 0 € frei",pb:100},
+  reif:{n:"Autoreifen",a:"219,00",st:"paid",lab:"Fixkosten",due:"am 9."},
+  adac:{n:"ADAC Mitgliedsbeitrag",a:"99,00",st:"open",lab:"Fixkosten",due:"am 15."},
+  claude:{n:"ANTHROPIC - CLAUDE",a:"107,10",st:"paid",lab:"Fixkosten",due:"am 4."},
+  aud:{n:"Audible",a:"9,95",st:"paid",lab:"Fixkosten",due:"am 8."},
+  fit:{n:"Fitnessstudio",a:"104,00",st:"open",lab:"Fixkosten",due:"am 1."},
+  handy:{n:"Handyvertrag",a:"35,00",st:"open",lab:"Fixkosten",due:"am 3."},
+  icl:{n:"iCloud",a:"9,99",st:"paid",lab:"Fixkosten",due:"am 12."},
+  netf:{n:"Netflix",a:"13,99",st:"paid",lab:"Fixkosten",due:"am 5."},
+  spot:{n:"Spotify",a:"12,99",st:"paid",lab:"Fixkosten",due:"am 7."},
+  handyA:{n:"Handyvertrag - Aline",a:"11,00",st:"expected",lab:"Einnahme",due:"am 5."},
+  iclM:{n:"iCloud - Anteil Mama",a:"7,00",st:"expected",lab:"Einnahme",due:"am 15."},
+  bu:{n:"Berufsunfähigkeit",a:"100,68",st:"open",lab:"Fixkosten",due:"am 1."},
+  av:{n:"Private Altersvorsorge",a:"116,70",st:"open",lab:"Fixkosten",due:"am 1."},
+  rs:{n:"Rechtsschutz",a:"15,45",st:"open",lab:"Fixkosten",hh:"von 27,01 €",gem:1,due:"am 1."},
+  rad1:{n:"Fahrradzubehör",a:"34,69",st:"paid",lab:"Fixkosten",due:"am 14."},
+  rad2:{n:"Fahrradzubehör",a:"305,45",st:"paid",lab:"Fixkosten",due:"am 21."},
+  brille:{n:"Radbrille - Glas",a:"29,00",st:"paid",lab:"Fixkosten",due:"am 18."},
+  urlFR:{n:"Urlaub Frankreich",a:"700,00",st:"running",lab:"Budget",bud:1,rest:"Noch 0 € frei",pb:100},
+  urlAT:{n:"Urlaub Österreich",a:"38,01",st:"paid",lab:"Fixkosten",due:"am 29."},
+  geb:{n:"Aline Geburtstag",a:"168,11",st:"over",lab:"Budget",bud:1,rest:"18,11 € über Plan",pb:100,po:1},
+  priv:{n:"Privates Budget",a:"452,58",st:"over",lab:"Budget",bud:1,rest:"302,58 € über Plan",pb:100,po:1},
+  fris:{n:"Friseur",a:"45,00",st:"open",lab:"Fixkosten"},
+  essen:{n:"Essen gehen",a:"50,00",st:"open",lab:"Fixkosten",due:"am 20."},
+  phone:{n:"Kauf iPhone 15ProMax",a:"200,00",st:"paid",lab:"Fixkosten",due:"am 11."},
+  muenz:{n:"Einzahlung Münzen",a:"30,51",st:"expected",lab:"Einnahme",due:"am 24."},
+  klein:{n:"Verkauf Kleinanzeigen",a:"39,00",st:"expected",lab:"Einnahme",due:"am 27."}
+};
+
+/* Vorzeichen stehen am Ordner, weil er — anders als eine Karte — keinen Typ
+   trägt, der sie transportieren könnte. „Abos" enthält Ausgaben UND zwei
+   Erstattungen; ohne Vorzeichen wäre nicht lesbar, in welche Richtung die
+   374,02 € wirken. */
+const CATS = [
+  {n:"Einkommen",   sum:"+4.165,11",pos:1,noflag:1,kids:["netto"]},
+  {n:"Wohnen",      sum:"−1.148,17",kids:["miete","strom","inet"]},
+  {n:"Lebensmittel",sum:"−257,50",  kids:["haus"]},
+  {n:"Mobilität",   sum:"−522,00",  kids:["dtick","tank","reif"]},
+  {n:"Abos & Mitgliedschaften",sum:"−374,02",kids:["adac","claude","aud","fit","handy","icl","netf","spot","handyA","iclM"]},
+  {n:"Versicherungen",sum:"−232,83",kids:["bu","av","rs"]},
+  {n:"Hobby",       sum:"−369,14",  kids:["rad1","rad2","brille"]},
+  {n:"Urlaub",      sum:"−738,01",  kids:["urlFR","urlAT"]},
+  {n:"Geschenke & Anlässe",sum:"−168,11",kids:["geb"]},
+  {n:"Persönliches",sum:"−747,58",  kids:["priv","fris","essen","phone"]},
+  {n:"Rückflüsse",  sum:"+69,51",pos:1,kids:["muenz","klein"]}
+];
+
+/* Netto ist keine Karte — es bekommt eine eigene, ruhige Kachel. */
+K.netto = {n:"Nettogehalt",a:"4.165,11",st:"expected",lab:"Einkommen",due:"am 30."};
+
+function cardHTML(key){
+  const c = K[key]; if(!c) return "";
+  const icon = c.st==="over" ? "iconOver" : c.st==="expected" ? "iconExpected"
+             : c.st==="paid" ? "iconPaid" : "iconOpen";
+  const state = {open:"Offen",paid:"Bezahlt",running:"Laufend",over:"Überschritten",expected:"Erwartet"}[c.st];
+  return `<div class="card ${c.st} ${c.bud?"cardBudget":""}">
+    <div class="cardTop"><div class="cardLabel">${c.lab}</div><div class="icon ${icon}"></div></div>
+    <div class="cardName">${c.n}</div>
+    <div class="cardAmount">${c.a} €</div>
+    <div class="householdAmount">${c.hh||""}</div>
+    <div class="stateRow"><div class="stateLabel">${state}</div>
+      <div class="dueDay">${c.due||""}</div></div>
+    ${c.rest?`<div class="restAmount ${c.po?"restNeg":"restPos"}">${c.rest}</div>`:""}
+    <div class="cardMeta"><div class="metaDot ${c.gem?"metaDotGem":"metaDotIch"}"></div>
+      <div class="metaText">${c.gem?"Gemeinsam":"Ich"}</div></div>
+    ${c.bud?`<div class="progressWrap"><div class="progressBar ${c.po?"pbOver":"pbNorm"}" style="width:${c.pb}%"></div></div>`:""}
+  </div>`;
+}
+
+/* ── 1 · heutiger Zustand: alle 32 Karten in Typ-Reihenfolge ── */
+const heute = ["miete","strom","inet","dtick","reif","adac","claude","aud","fit","handy","icl",
+  "netf","spot","bu","av","rs","rad1","rad2","brille","urlAT","fris","essen","phone",
+  "handyA","iclM","muenz","klein","haus","tank","urlFR","geb","priv"];
+document.getElementById("vpToday").innerHTML = heute.map(cardHTML).join("");
+
+/* ── Zähler für den Offen-Zustand eines Ordners ── */
+function offen(cat){ return cat.kids.filter(k => K[k] && (K[k].st==="open"||K[k].st==="over")).length; }
+
+/* ── 3 · Variante A ── */
+function renderA(){
+  const vp = document.getElementById("vpA");
+  vp.innerHTML = CATS.map((c,i)=>{
+    const o = offen(c);
+    const flag = c.noflag ? "" : (o ? o + " offen" : "erledigt");
+    const tile = `<div class="catA ${c.noflag?"":(o?"hasOpen":"allDone")} ${c.open?"isOpen":""}" data-i="${i}">
+      <div class="cardTop"><div class="catKicker">Kategorie</div><div class="catChev">›</div></div>
+      <div class="catName">${c.n}</div>
+      <div class="catAmount ${c.pos?"pos":""}">${c.sum} €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="catCount">${c.kids.length} Posten</div>
+        <div class="${o&&!c.noflag?"catOpenFlag":"catCount"}">${flag}</div></div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div>
+        <div class="metaText">Ordner</div></div>
+    </div>`;
+    return tile + (c.open
+      ? `<div class="childGroup ${o?"openFlag":""}">` + c.kids.map(cardHTML).join("") + `</div>`
+      : "");
+  }).join("");
+  vp.querySelectorAll(".catA").forEach(el=>el.addEventListener("click",()=>{
+    const c = CATS[+el.dataset.i]; c.open = !c.open; renderA();
+  }));
+}
+renderA();
+
+/* ── 4 · Variante B ── */
+function renderB(){
+  const vp = document.getElementById("vpB");
+  vp.innerHTML = CATS.map((c,i)=>{
+    const o = offen(c);
+    const flag = c.noflag ? "" : (o ? `· <span class="flag">${o} offen</span>` : "· erledigt");
+    const tile = `<div class="catB ${c.noflag?"":(o?"hasOpen":"allDone")}" data-i="${i}">
+      <div class="catBTop"><span class="catBName">${c.n}</span>
+        <span class="catBAmt ${c.pos?"pos":""}">${c.sum} €</span></div>
+      <div class="catBMeta">${c.kids.length} Posten ${flag}</div>
+    </div>`;
+    return tile + (c.openB
+      ? `<div class="childGroup ${o?"openFlag":""}">` + c.kids.map(cardHTML).join("") + `</div>`
+      : "");
+  }).join("");
+  vp.querySelectorAll(".catB").forEach(el=>el.addEventListener("click",()=>{
+    const c = CATS[+el.dataset.i]; c.openB = !c.openB; renderB();
+  }));
+}
+renderB();
+
+/* ── 5 · Variante C: alles offen, nur Trenner ── */
+document.getElementById("vpC").innerHTML = CATS.map(c=>
+  `<div class="sep"><span class="sepName">${c.n}</span></div>` + c.kids.map(cardHTML).join("")
+).join("");
+</script>
+
+</body>
+</html>
