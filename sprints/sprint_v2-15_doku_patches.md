@@ -204,4 +204,288 @@ neu: … dort wäre ein eigener Ton genau die Unsichtbarkeit, die schon gegen di
 
 ---
 
-*Patch-Datei · Antigravity Finance · Sprint v2-15 · 06. August 2026*
+## Abschnitt 07.08.2026 — CLAUDE.md-Nachzug (User-Freigabe)
+
+> **Ziel-Dokument dieses Abschnitts:** `CLAUDE.md` — abweichend von Patch 1–7 oben
+> (Design-Doku). **Freigabe:** User, „Ziehe die Claude.md nach" (07.08.2026).
+> **Quelle:** `sprints/sprint_v2-15_review.md` (insb. Abschnitt 7, Vorschläge ①/②),
+> `sprints/sprint_v2-15_briefing.md`, `V2/v2_roadmap_konsolidiert.md` (bereits
+> nachgezogen, §0).
+> **Verfahren:** LL-16 / §7 Regel 14 CLAUDE.md — zusätzlich User-Freigabe vor
+> Anwendung, weil Ziel-Dokument die Verfassung selbst ist.
+> **Ausdrücklich nicht Teil dieses Abschnitts:** die vom Review vorgeschlagene neue
+> Stolperfalle („ein Beleg, der nur im Migrations-Kommentar steht, ist zur Laufzeit
+> nicht vorhanden") — die geht dem User separat zur Freigabe vor, weil sie eine neue
+> Arbeitsregel wäre.
+
+---
+
+### Patch 8 — Kopfblock: „Letzte Aktualisierung" auf v2-15
+
+**Ziel-Datei:** `CLAUDE.md`, Kopfblock direkt unter der Titelzeile
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+> **Letzte Aktualisierung:** 06. August 2026 · **nach:** der Design-Direktor-Runde
+> (`LQ-2` `LQ-1` `RM-2` `PA-1` entschieden, Design-Doku **v3.3.0**) und Sprint **v2-14**
+> (`LQ-1`, `cards.due_day`). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
+> nachgezogen; die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind
+> unverändert gültig, weil seither keine Rechenfunktion berührt wurde.
+> Davor v2-13 (`BF-4` — der
+> Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
+> 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
+> 04.08. sind erledigt.
+```
+
+**Patch (alt → neu):**
+```
+neu:
+> **Letzte Aktualisierung:** 07. August 2026 · **nach:** Sprint **v2-15**
+> (`LQ-1`-Anzeigeseite + `LQ-2` gebaut, Design-Doku **v3.3.1**, PR **#17** offen, noch
+> nicht gemerged). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
+> nachgezogen; die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind
+> unverändert gültig — in v2-15 vor und nach dem Sprint erneut bestätigt, weil keine
+> Rechenfunktion berührt wurde.
+> Davor die Design-Direktor-Runde vom 06.08.2026 (`LQ-2` `LQ-1` `RM-2` `PA-1`
+> entschieden, Design-Doku v3.3.0) und Sprint v2-14 (`LQ-1`, `cards.due_day`). Davor
+> v2-13 (`BF-4` — der
+> Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
+> 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
+> 04.08. sind erledigt.
+```
+
+Die nachfolgende, nicht zitierte Kette („Davor v2-11 …" bis „Davor v2-08 …") bleibt
+unverändert stehen — sie ist nicht Teil dieses Ankers.
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` Kopf (Branch/Commits/Datum,
+PR-Status) + §7 Vorschlag ②; Design-Doku-Version aus Patch 6 dieser Datei (v3.3.1).
+
+---
+
+### Patch 9 — §9: „Letzter Sprint" auf v2-15
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand"
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Letzter Sprint:** v2-14 (`LQ-1` — `cards.due_day`, der Fälligkeitstag je Karte; reine
+Schema-Erweiterung, keine Rechenfunktion berührt, 06.08.2026 gemerged `576ea43`) ·
+**davor:** v2-13 (`BF-4`, Split-Anteil genau einmal) und v2-12 (`BF-2`, Ring-Subzeile).
+Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+```
+
+**Patch (alt → neu):**
+```
+neu:
+**Letzter Sprint:** v2-15 (`LQ-1`-Anzeigeseite + `LQ-2` Ausstehend-Anzeige,
+07.08.2026, PR **#17** offen, noch nicht gemerged) · **davor:** v2-14 (`LQ-1`
+Datengrundlage, `cards.due_day`) und v2-13 (`BF-4`, Split-Anteil genau einmal).
+Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` Kopf + §1 (drei Phasen,
+Commits `d531dfe`/`6272ed7`/`d0cc5cc`); PR-Nummer und -Status aus dem Auftrag dieser
+Sitzung.
+
+---
+
+### Patch 10 — §9: „Zuletzt entschieden, noch nicht gebaut" — LQ-1/LQ-2 jetzt gebaut
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand"
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Zuletzt entschieden, noch nicht gebaut:** die Design-Direktor-Runde vom 06.08.2026 —
+`LQ-2` (Ausstehend-Anzeige), `LQ-1`-Anzeigeseite (Fälligkeitstag auf der Karte), `RM-2`
+(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige). Record:
+`V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`; Spezifikation in der
+Design-Doku v3.3.0.
+```
+
+**Patch (alt → neu):**
+```
+neu:
+**Zuletzt entschieden, noch nicht gebaut:** aus der Design-Direktor-Runde vom
+06.08.2026 sind `LQ-2` (Ausstehend-Anzeige) und die `LQ-1`-Anzeigeseite
+(Fälligkeitstag auf der Karte) mit Sprint v2-15 gebaut. Offen bleiben `RM-2`
+(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige) — beide vollständig entschieden
+und ohne Datenbank-Eingriff baubar. Record:
+`V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`; Spezifikation in der
+Design-Doku v3.3.1.
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_briefing.md` Kopf („Themen: LQ-1 +
+LQ-2") + Nicht-Ziel-Absatz („nicht RM-2, nicht PA-1"); `sprints/sprint_v2-15_review.md`
+Abschnitt 1 (alle drei Phasen umgesetzt).
+
+---
+
+### Patch 11 — §9: Doku-Versionen v3.3.1
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand"
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Doku-Versionen:** Design-Doku **v3.3.0** · Schema-Doku **v3.4.4**.
+```
+
+**Patch (alt → neu):**
+```
+alt: **Doku-Versionen:** Design-Doku **v3.3.0** · Schema-Doku **v3.4.4**.
+neu: **Doku-Versionen:** Design-Doku **v3.3.1** · Schema-Doku **v3.4.4**.
+```
+
+**Quelle/Begründung:** Patch 6 dieser Datei (Design-Doku-Bump v3.3.0 → v3.3.1,
+bereits angewendet). Schema-Doku unberührt laut Auftrag.
+
+---
+
+### Patch 12 — §9: Prüfanker-Tabelle bleibt, Bestätigungsvermerk v2-15 ergänzt
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand" — nur der Einleitungssatz vor der
+Anker-Tabelle, **die Tabelle selbst wird nicht angefasst**.
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
+`calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
+`BF-4`-Migration bestätigt):
+```
+
+**Patch (alt → neu):**
+```
+neu:
+**Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
+`calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
+`BF-4`-Migration bestätigt; in v2-15 vor **und** nach dem Sprint erneut gemessen —
+`calculate_sparrate_for_month` **und** `calculate_planned_sparrate_for_month`, alle
+zwölf Monate, Ist **und** Plan, Abweichung überall 0,00 €, erwartet, weil keine
+Rechenfunktion berührt wurde):
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` §3 „Anker vorher/nachher"
+(Tabelle Ist/Plan vorher/nachher, alle zwölf Monate, Abweichung überall 0,00 €) +
+Zeile „Die Anker-Tabelle in CLAUDE.md §9 bleibt unverändert gültig."
+
+---
+
+### Patch 13 — §9: Roadmap-Lage — Selbstwiderspruch aufgelöst, neuer Stand 12/38/35
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand"
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
+§0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
+**05.08.2026, nach v2-13**: **13 offene Pakete · 39 offen · 33 erledigt**. v2-14 und die
+Entscheidungen vom 06.08.2026 sind darin **noch nicht verrechnet** — die Zahlen sind
+gespiegelt, nicht nachgerechnet. **Vorsicht:** §0 nennt sie zweimal verschieden —
+Zahlen-Tabelle gegen Herleitungs-Kasten (Hausaufgaben 6/7, Erledigt 33/32). Übernommen
+ist die Tabelle, weil sie aufgeht (33 + 6 = 39); die Auflösung gehört in die Roadmap.
+```
+
+**Patch (alt → neu):**
+```
+neu:
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
+§0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
+**06.08.2026, nach v2-15**: **12 offene Pakete · 38 offen · 35 erledigt**. Der frühere
+Selbstwiderspruch ist aufgelöst: Die Zahlen-Tabelle hatte recht, der
+Herleitungs-Kasten hatte sich zweimal verzählt (§2 trägt 6 Zeilen, nicht 7; `BF-4`
+stand in §4 bereits drin und wurde ein zweites Mal addiert). Eine dritte Zahl stimmte
+allerdings nirgends — in den Paket-Tabellen standen 34 offene Themen, nicht 33.
+```
+
+**Quelle/Begründung:** `V2/v2_roadmap_konsolidiert.md` §0 „Stand in Zahlen" (Tabelle:
+12/32/6/38/35/4) + Kasten „Der Selbstwiderspruch in diesem Abschnitt ist aufgelöst
+(06.08.2026, v2-15)" — verifiziert per `Grep` gegen die Roadmap-Datei vor Anwendung.
+
+---
+
+### Patch 14 — §9: Paket 3 abgeschlossen, „Ohne Entscheidung baubar" auf RM-2/PA-1
+
+**Ziel-Datei:** `CLAUDE.md`, §9 „Aktueller Stand" (Schlussabsätze)
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+**Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
+erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
+Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
+
+**Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau) sowie die vier am
+06.08.2026 entschiedenen Anzeigen — Spezifikation in der Design-Doku v3.3.0, kein
+Datenbank-Eingriff nötig. Weiterhin **offen**: **Paket 4** (Kategorien im Karussell) —
+die Runde vom 06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
+Aus `sprints/sprint_v2-10_offene_fragen.md` ist §5 (`PA-1`) durch die Runde erledigt;
+**§6 bleibt offener Altbestand:** Das Einkommens-Popup hat als einziges von acht
+Overlays keinen Escape-Handler — Bauauftrag für den Sprint, der das Popup anfasst.
+```
+
+**Patch (alt → neu):**
+```
+neu:
+**Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
+erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
+Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
+
+**Paket 3 ist ebenfalls vollständig abgeschlossen.** `LQ-1` und `LQ-2` sind mit
+Sprint v2-15 gebaut. `LQ-3` gehörte nie dazu — es liegt in Paket 9.
+
+**Ohne Entscheidung baubar:** `RM-2` (Schaufenster-Popup) und `PA-1`
+(Konsequenz-Anzeige) — beide am 06.08.2026 entschieden, Spezifikation in der
+Design-Doku v3.3.1, kein Datenbank-Eingriff nötig. Weiterhin **offen**, für eine
+eigene Gestaltungsrunde: **Paket 4** (Kategorien im Karussell) — die Runde vom
+06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
+Aus `sprints/sprint_v2-10_offene_fragen.md` ist §5 (`PA-1`) durch die Runde erledigt;
+**§6 bleibt offener Altbestand:** Das Einkommens-Popup hat als einziges von acht
+Overlays keinen Escape-Handler — Bauauftrag für den Sprint, der das Popup anfasst.
+Das neue „Fällig am …"-Overlay aus v2-15 hat einen Escape-Handler von Anfang an, der
+Rückstand wächst also nicht weiter.
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` §7 Vorschlag ① („LQ-1 und
+LQ-2 auf ✅ … Paket 3 vollständig abgeschlossen bis auf LQ-3, das ohnehin in Paket 9
+liegt") + §6 Punkt ⑥ (neues Overlay hat Escape-Handler von Anfang an); Design-Doku-
+Version aus Patch 6 dieser Datei.
+
+---
+
+### Patch 15 — §4 „Test- und Migrations-Gate": Zugangsdaten gehören in den
+Haupt-Checkout
+
+**Ziel-Datei:** `CLAUDE.md`, §4 „Rollen, Gates und Werkzeuge", Abschnitt
+„Test- und Migrations-Gate"
+
+**Warum diese Stelle statt §3:** Der Befund betrifft unmittelbar, welcher Test-Gate
+greift (angemeldeter Render-Smoke vs. nur `visual`+`unauth`) — das ist genau das
+Thema dieses Abschnitts, nicht die Datei-Ablage-Frage aus §3.
+
+**Anker (exaktes Zitat, muss eindeutig sein):**
+```
+### Test- und Migrations-Gate
+
+Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt gegen Produktion, mit
+dem Browser-Smoke des Users als Wächter (Sparrate vorher/nachher, §7 Regel 21).
+**Jeder** Sprint mit Schema-/RPC-Eingriff oder mit daten-mutierenden E2E-Läufen
+probt zuerst auf der Übungs-Datenbank → Fähigkeit `db-eingriff`.
+```
+
+**Patch (Einfügetext als neuer Absatz direkt danach):**
+```
+**`.env.local` und `.env.e2e.local` gehören in den Haupt-Checkout, nicht in einen
+Sprint-Worktree** — beide sind gitignored und verschwinden sonst mit dessen
+Aufräumen, wie zwischen v2-10 und v2-15 geschehen. Fehlt `.env.e2e.local`, schließt
+`playwright.config.ts` das `render-smoke`-Projekt aus der Projektliste aus; der
+**angemeldete** Render-Smoke entfällt ersatzlos, und der `smoke-agent` kann die
+Oberfläche nicht mehr beurteilen (Beleg: `sprints/sprint_v2-10_review.md` §2,
+`pnpm test:e2e` 10/10 inkl. `render-smoke` 4).
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` §2 „Was NICHT geprüft werden
+konnte" + §6 Punkt ① („Die Zugangsdaten für den angemeldeten Smoke sind verloren
+gegangen"); Gegenbeleg `sprints/sprint_v2-10_review.md` §2 (`pnpm test:e2e` 10/10,
+`render-smoke` 4) — per `Grep` vor Anwendung verifiziert.
+
+---
+
+*Patch-Datei · Antigravity Finance · Sprint v2-15 · 06.–07. August 2026*

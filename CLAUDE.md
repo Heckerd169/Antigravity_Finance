@@ -8,12 +8,15 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 06. August 2026 · **nach:** der Design-Direktor-Runde
-> (`LQ-2` `LQ-1` `RM-2` `PA-1` entschieden, Design-Doku **v3.3.0**) und Sprint **v2-14**
-> (`LQ-1`, `cards.due_day`). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
+> **Letzte Aktualisierung:** 07. August 2026 · **nach:** Sprint **v2-15**
+> (`LQ-1`-Anzeigeseite + `LQ-2` gebaut, Design-Doku **v3.3.1**, PR **#17** offen, noch
+> nicht gemerged). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
 > nachgezogen; die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind
-> unverändert gültig, weil seither keine Rechenfunktion berührt wurde.
-> Davor v2-13 (`BF-4` — der
+> unverändert gültig — in v2-15 vor und nach dem Sprint erneut bestätigt, weil keine
+> Rechenfunktion berührt wurde.
+> Davor die Design-Direktor-Runde vom 06.08.2026 (`LQ-2` `LQ-1` `RM-2` `PA-1`
+> entschieden, Design-Doku v3.3.0) und Sprint v2-14 (`LQ-1`, `cards.due_day`). Davor
+> v2-13 (`BF-4` — der
 > Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
 > 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
 > 04.08. sind erledigt.
@@ -268,6 +271,14 @@ Reine UI-/Loader-Sprints ohne Schema-Eingriff laufen direkt gegen Produktion, mi
 dem Browser-Smoke des Users als Wächter (Sparrate vorher/nachher, §7 Regel 21).
 **Jeder** Sprint mit Schema-/RPC-Eingriff oder mit daten-mutierenden E2E-Läufen
 probt zuerst auf der Übungs-Datenbank → Fähigkeit `db-eingriff`.
+
+**`.env.local` und `.env.e2e.local` gehören in den Haupt-Checkout, nicht in einen
+Sprint-Worktree** — beide sind gitignored und verschwinden sonst mit dessen
+Aufräumen, wie zwischen v2-10 und v2-15 geschehen. Fehlt `.env.e2e.local`, schließt
+`playwright.config.ts` das `render-smoke`-Projekt aus der Projektliste aus; der
+**angemeldete** Render-Smoke entfällt ersatzlos, und der `smoke-agent` kann die
+Oberfläche nicht mehr beurteilen (Beleg: `sprints/sprint_v2-10_review.md` §2,
+`pnpm test:e2e` 10/10 inkl. `render-smoke` 4).
 
 ---
 
@@ -558,22 +569,27 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-14 (`LQ-1` — `cards.due_day`, der Fälligkeitstag je Karte; reine
-Schema-Erweiterung, keine Rechenfunktion berührt, 06.08.2026 gemerged `576ea43`) ·
-**davor:** v2-13 (`BF-4`, Split-Anteil genau einmal) und v2-12 (`BF-2`, Ring-Subzeile).
+**Letzter Sprint:** v2-15 (`LQ-1`-Anzeigeseite + `LQ-2` Ausstehend-Anzeige,
+07.08.2026, PR **#17** offen, noch nicht gemerged) · **davor:** v2-14 (`LQ-1`
+Datengrundlage, `cards.due_day`) und v2-13 (`BF-4`, Split-Anteil genau einmal).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Zuletzt entschieden, noch nicht gebaut:** die Design-Direktor-Runde vom 06.08.2026 —
-`LQ-2` (Ausstehend-Anzeige), `LQ-1`-Anzeigeseite (Fälligkeitstag auf der Karte), `RM-2`
-(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige). Record:
+**Zuletzt entschieden, noch nicht gebaut:** aus der Design-Direktor-Runde vom
+06.08.2026 sind `LQ-2` (Ausstehend-Anzeige) und die `LQ-1`-Anzeigeseite
+(Fälligkeitstag auf der Karte) mit Sprint v2-15 gebaut. Offen bleiben `RM-2`
+(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige) — beide vollständig entschieden
+und ohne Datenbank-Eingriff baubar. Record:
 `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`; Spezifikation in der
-Design-Doku v3.3.0.
+Design-Doku v3.3.1.
 
-**Doku-Versionen:** Design-Doku **v3.3.0** · Schema-Doku **v3.4.4**.
+**Doku-Versionen:** Design-Doku **v3.3.1** · Schema-Doku **v3.4.4**.
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
 `calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
-`BF-4`-Migration bestätigt):
+`BF-4`-Migration bestätigt; in v2-15 vor **und** nach dem Sprint erneut gemessen —
+`calculate_sparrate_for_month` **und** `calculate_planned_sparrate_for_month`, alle
+zwölf Monate, Ist **und** Plan, Abweichung überall 0,00 €, erwartet, weil keine
+Rechenfunktion berührt wurde):
 
 | Monat 2026 | Ist-Sparrate |
 |---|---|
@@ -611,20 +627,26 @@ Design-Doku v3.3.0.
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**05.08.2026, nach v2-13**: **13 offene Pakete · 39 offen · 33 erledigt**. v2-14 und die
-Entscheidungen vom 06.08.2026 sind darin **noch nicht verrechnet** — die Zahlen sind
-gespiegelt, nicht nachgerechnet. **Vorsicht:** §0 nennt sie zweimal verschieden —
-Zahlen-Tabelle gegen Herleitungs-Kasten (Hausaufgaben 6/7, Erledigt 33/32). Übernommen
-ist die Tabelle, weil sie aufgeht (33 + 6 = 39); die Auflösung gehört in die Roadmap.
+**06.08.2026, nach v2-15**: **12 offene Pakete · 38 offen · 35 erledigt**. Der frühere
+Selbstwiderspruch ist aufgelöst: Die Zahlen-Tabelle hatte recht, der
+Herleitungs-Kasten hatte sich zweimal verzählt (§2 trägt 6 Zeilen, nicht 7; `BF-4`
+stand in §4 bereits drin und wurde ein zweites Mal addiert). Eine dritte Zahl stimmte
+allerdings nirgends — in den Paket-Tabellen standen 34 offene Themen, nicht 33.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
 Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 
-**Ohne Entscheidung baubar:** **Paket 3** (Liquiditäts-Vorschau) sowie die vier am
-06.08.2026 entschiedenen Anzeigen — Spezifikation in der Design-Doku v3.3.0, kein
-Datenbank-Eingriff nötig. Weiterhin **offen**: **Paket 4** (Kategorien im Karussell) —
-die Runde vom 06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
+**Paket 3 ist ebenfalls vollständig abgeschlossen.** `LQ-1` und `LQ-2` sind mit
+Sprint v2-15 gebaut. `LQ-3` gehörte nie dazu — es liegt in Paket 9.
+
+**Ohne Entscheidung baubar:** `RM-2` (Schaufenster-Popup) und `PA-1`
+(Konsequenz-Anzeige) — beide am 06.08.2026 entschieden, Spezifikation in der
+Design-Doku v3.3.1, kein Datenbank-Eingriff nötig. Weiterhin **offen**, für eine
+eigene Gestaltungsrunde: **Paket 4** (Kategorien im Karussell) — die Runde vom
+06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
 Aus `sprints/sprint_v2-10_offene_fragen.md` ist §5 (`PA-1`) durch die Runde erledigt;
 **§6 bleibt offener Altbestand:** Das Einkommens-Popup hat als einziges von acht
 Overlays keinen Escape-Handler — Bauauftrag für den Sprint, der das Popup anfasst.
+Das neue „Fällig am …"-Overlay aus v2-15 hat einen Escape-Handler von Anfang an, der
+Rückstand wächst also nicht weiter.
