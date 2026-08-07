@@ -26,25 +26,39 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 05.08.2026 nach Sprint v2-13 zeilengenau nachgezählt.*
+*Alle Zahlen am 06.08.2026 nach Sprint v2-15 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
-|---|---|---|---|---|---|
-| Offene Pakete | **13** | 14 | 14 | 14 | 14 |
-| Themen darin | **33** | 34 | 35 | 36 | 39 |
-| Hausaufgaben ohne eigenen Sprint | **6** | 7 | 7 | 7 | 8 |
-| **Offen gesamt** | **39** | 41 | 42 | 43 | 47 |
-| Erledigt | 33 | 31 | 30 | 29 | 25 |
-| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 |
+| | Anzahl | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
+|---|---|---|---|---|---|---|
+| Offene Pakete | **12** | 13 | 14 | 14 | 14 | 14 |
+| Themen darin | **32** | 34 | 35 | 36 | 37 | 40 |
+| Hausaufgaben ohne eigenen Sprint | **6** | 6 | 7 | 7 | 7 | 8 |
+| **Offen gesamt** | **38** | 40 | 42 | 43 | 44 | 48 |
+| Erledigt | **35** | 33 | 31 | 30 | 29 | 25 |
+| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Korrektur um eine Zeile (05.08.2026, v2-13).** Beim zeilengenauen Nachzählen ergaben
-> sich **33** offene Themen in den Paketen, nicht 34. Die Spalten davor sind entsprechend
-> um eins nach unten korrigiert; die Reihenfolge und alle Aussagen bleiben unberührt.
-> Nachgezählt wurde: 13 Paket-Tabellen (⬜ 30 · 🟡 3), Hausaufgaben (⬜ 6 · 🟡 1) = 7,
-> §4 Erledigt 31 Zeilen + `BF-4` = **32**, §3 Dauerhaft nicht = **4**.
+> **Der Selbstwiderspruch in diesem Abschnitt ist aufgelöst (06.08.2026, v2-15).**
+> Bis hierher nannte die Tabelle *Hausaufgaben 6 · Erledigt 33*, der Kasten darunter
+> zwei Zeilen später *7 · 32* — CLAUDE.md §9 hat den Konflikt seit dem 06.08.
+> ausdrücklich vermerkt und die Tabelle gespiegelt, weil sie aufging.
+>
+> **Nachgezählt, Zeile für Zeile:** Die **Tabelle hatte recht**, der Kasten hatte sich
+> zweimal verzählt. §2 trägt **6** Hausaufgaben (⬜ 5 · 🟡 1 — nicht ⬜ 6 · 🟡 1), §4
+> trug **33** erledigte Zeilen (`BF-4` stand darin bereits und wurde ein zweites Mal
+> addiert). §3 unverändert **4**.
+>
+> **Eine dritte Zahl stimmte allerdings nirgends:** In den Paket-Tabellen standen
+> **34** offene Themen, nicht 33. Die Spalten „vor v2-1x" sind entsprechend um eins
+> angehoben. An der Reihenfolge und an allen inhaltlichen Aussagen ändert das nichts.
+>
+> **Heutiger Stand nach v2-15:** Paket-Tabellen 35 Zeilen, davon 3 ✅ (`BF-4`, `LQ-1`,
+> `LQ-2`) → **32** offen (⬜ 29 · 🟡 3). Hausaufgaben **6**. §4 Erledigt **35**.
 
-> **Paket 1 fällt weg** — es bestand nur noch aus `BF-4`. Damit sinkt die Zahl der
-> offenen Pakete erstmals seit dem Umbau vom 04.08.2026, von 14 auf **13**.
+> **Paket 3 fällt weg (06.08.2026, v2-15)** — es bestand aus `LQ-1` und `LQ-2`, beide
+> sind erledigt. `LQ-3` gehörte nie dazu, es liegt in Paket 9. Offene Pakete: 13 → **12**.
+
+> **Paket 1 fiel weg (05.08.2026, v2-13)** — es bestand nur noch aus `BF-4`. Damit sank
+> die Zahl der offenen Pakete erstmals seit dem Umbau vom 04.08.2026, von 14 auf 13.
 
 > **Sprint v2-13 hat `BF-4` geschlossen — und damit PAKET 1 VOLLSTÄNDIG.** Alle fünf
 > Befunde vom 04.08.2026 sind erledigt. Der Split-Anteil wird jetzt genau **einmal**
@@ -109,13 +123,22 @@ Von den fünf Befunden sind **alle fünf erledigt**: `BF-3` und `BF-1` (v2-10),
 die Voraussetzung für alles, was auf ihnen aufbaut (Treiber, Auswertungen,
 Liquiditäts-Vorschau).
 
-**Frei baubar, ohne jede offene Entscheidung:**
+**Frei baubar, ohne jede offene Entscheidung** *(Stand 06.08.2026, nach v2-15)*:
 
-1. **Paket 3 (Liquiditäts-Vorschau)** — hängt an keinem anderen Paket, liefert sofort
-   Wert.
-2. **Eine Runde `design-direktor`** — entsperrt gleich drei Dinge: `RM-2` (Rangfolge
-   im Schaufenster-Popup), `PA-1` (Rechnung fertig, nur die Darstellung fehlt) und die
-   Schneidbarkeit von **Paket 4**.
+1. **`RM-2`** (Schaufenster-Popup für ein Fragment) — durch die Gestaltungsrunde vom
+   06.08.2026 vollständig entschieden und schneidbar. **Achtung:** ändert §8
+   inhaltlich — zugeordnete Fragmente und Überträge werden **klickbar**,
+   `pointer-events: none` entfällt. Aufgehoben ist ausschließlich die **Klick**-Sperre;
+   die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger, weil sie bisher
+   nebenbei aus `pointer-events` folgte. Merksatz: **klickbar ≠ ziehbar ≠ verlinkbar.**
+2. **`PA-1`** (Konsequenz-Anzeige beim Einkommens-Eintrag) — die Rechnung war schon
+   belegt, seit dem 06.08. sind auch alle fünf Darstellungsfragen entschieden.
+
+> **Die `design-direktor`-Runde hat am 06.08.2026 stattgefunden.** Sie hat `LQ-2`,
+> `LQ-1` (Anzeigeseite), `RM-2` und `PA-1` entschieden — die ersten beiden sind mit
+> v2-15 gebaut. **Paket 4 hat sie ausdrücklich NICHT entsperrt**; dafür braucht es eine
+> eigene Runde, ebenso für `M2` und `M5`. Record:
+> `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
 
 > **✅ Seit 05.08.2026 blockiert KEINE Entscheidung mehr Arbeit.** E1, E2 und E3 sind
 > alle gefallen. `BF-4` ist damit baubar; was er noch braucht, steht am Punkt selbst.
@@ -169,10 +192,19 @@ dieses Paket das **Werkzeug für Paket 6** (Kuratierung 2026).
 **Kein Datenbank-Eingriff, reine Anzeige.** Quelle: Ideen-Runde 04.08.2026.
 
 > **Stand nach v2-10:** `RM-1` ist erledigt — das Paket ist damit **leer bis auf
-> `RM-2`**. Und `RM-2` ist nicht schneidbar, solange die Rangfolge der Angaben im
-> Schaufenster-Popup nicht entschieden ist (`design-direktor` vor dem Bauen). Das
-> Paket besteht also faktisch aus einer einzigen, auf eine Gestaltungsrunde
-> wartenden Zeile.
+> `RM-2`**.
+>
+> **Stand nach der Gestaltungsrunde vom 06.08.2026:** `RM-2` ist **vollständig
+> schneidbar**. Die Rangfolge im Schaufenster-Popup ist entschieden (Empfänger führt,
+> Betrag rechts daneben, Datum in die Kopfzeile, Verwendungszweck ungekürzt darunter;
+> bei DKB Visa entfällt die Zweck-Zeile). Record:
+> `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
+> **Achtung beim Bauen:** Die Entscheidung **ändert §8 inhaltlich** — zugeordnete
+> Fragmente und Überträge werden klickbar, `pointer-events: none` entfällt. Aufgehoben
+> ist ausschließlich die **Klick**-Sperre; die **Drag-Sperre bleibt und braucht ab jetzt
+> einen eigenen Träger**, weil sie bisher nebenbei aus `pointer-events` folgte. Die
+> Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist unberührt. Merksatz:
+> **klickbar ≠ ziehbar ≠ verlinkbar.**
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
@@ -185,24 +217,29 @@ dieses Paket das **Werkzeug für Paket 6** (Kuratierung 2026).
 
 ---
 
-### Paket 3 · Liquiditäts-Vorschau
-**Entsperrt:** die Frage „reicht mein Girokonto bis Monatsende?". Gemessen für August
-2026 stehen **1.814 € feste Abbuchungen** und **590 € Budget** aus; der letzte bekannte
-Kontostand ist **254,97 €**. Die App kann das heute nicht beantworten.
-**Steht bewusst neben der Kette**, nicht darin: Dieses Paket braucht weder Kuratierung
-noch Kategorien noch die Rohmasse. Es ist das Einzige, das sofort Wert liefert — und
-das Einzige, das gebaut werden kann, solange Paket 4 auf seine Gestaltungs-Runde wartet.
-**Quelle und Belege:** `V2/befunde_2026-08-05_liquiditaet.md`
+### Paket 3 · Liquiditäts-Vorschau — ✅ **VOLLSTÄNDIG ERLEDIGT (06.08.2026)**
+**Entsperrt hat es:** die Frage „reicht mein Girokonto bis Monatsende?". Sie steht seit
+v2-15 in der Kopfzeile der Zone „Planung".
+**Stand bewusst neben der Kette**, nicht darin: Dieses Paket brauchte weder Kuratierung
+noch Kategorien noch die Rohmasse — es war das Einzige, das Wert lieferte, **bevor**
+kuratiert ist, und das Einzige, das gebaut werden konnte, solange Paket 4 auf seine
+Gestaltungs-Runde wartet.
+**Quelle und Belege:** `V2/befunde_2026-08-05_liquiditaet.md` ·
+`V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §1–§2 ·
+`sprints/sprint_v2-15_review.md`
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| LQ-1 | Fälligkeitstag je Karte | Feature | **ja** | 🟡 | **Datengrundlage steht seit Sprint v2-14 (06.08.2026).** Neue Spalte `cards.due_day smallint NULL` (CHECK 1..31), Migration nach Freigabe auf Produktion angewendet — alle zwölf Monate um 0,00 € bewegt, B2 12/12, Prüfsummen der Rechenfunktionen unverändert. **17 Werte aus der Buchungshistorie abgeleitet**, nicht geschätzt: sieben Karten zeigen über 19 Monate dasselbe Dauerauftrags-Muster (1.–4., nie früher) → Soll-Tag 1. BUDGET-Karten bleiben `NULL` (Spannen 1.–31., kein Termin — Befund L7), Friseur ebenfalls (0 Belege). **Offen bleibt allein die Oberfläche zum Ändern** — sie sitzt auf der Karte und wartet bewusst auf die `design-direktor`-Runde, zusammen mit LQ-2. Belege: `sprints/sprint_v2-14_review.md`. |
-| LQ-2 | Ausstehend-Anzeige, fest und Budget getrennt | Feature | nein | ⬜ | **Entschieden: zwei Zeilen, nie eine Zahl.** Ein Dauerauftrag ist ein Termin, ein Budget eine Erlaubnis ohne Termin (L7). Rechnet gegen das heutige Datum. **Nutzt dieselben Beträge wie die Sparrate** — keine zweite Rechenart nötig, weil die Daueraufträge exakt auf dem Anteil stehen (L4). Die Aussage ist eine **Vorhersage** („war am 1. fällig"), keine Feststellung („ist bezahlt"); der Wortlaut muss das tragen. **Gestaltungsfrage offen:** Wo steht die Zahl? Eine zweite prominente Zahl neben der Sparrate ist eine Rangfolge-Entscheidung → `design-direktor` vor dem Bauen. |
+| LQ-1 | Fälligkeitstag je Karte | Feature | **ja** | ✅ | **Datengrundlage v2-14, Oberfläche v2-15.** Spalte `cards.due_day smallint NULL` (CHECK 1..31) mit **17 aus der Buchungshistorie abgeleiteten** Werten; Migration auf Produktion angewendet, alle zwölf Monate um 0,00 € bewegt, B2 12/12. Seit v2-15 steht der Tag **rechts in der Statuszeile** (`Offen ····· am 1.`) — keine neue Zeile, keine zusätzliche Kartenhöhe — und lässt sich über den eigenen Menüpunkt **„Fällig am …"** ändern (nicht in „Betrag anpassen": dort hat alles Monats-Semantik, `due_day` gilt immer). BUDGET bleibt `NULL` und zeigt rechts nichts (Befund L7), Friseur ebenso (0 Belege). |
+| LQ-2 | Ausstehend-Anzeige, fest und Budget getrennt | Feature | nein | ✅ | **v2-15.** `[N] € noch fällig · [N] € Budget frei`, rechtsbündig in derselben Zeile wie die Zonen-Überschrift (Muster des Übertrags-Schalters, v2-07 C1). **Nie eine Summe** (L7). Nutzt dieselben Beträge wie die Sparrate — keine zweite Rechenart, weil die Daueraufträge exakt auf dem Anteil stehen (L4). Rechnung server-seitig auf den bereits geladenen Karten, damit die 1000-Zeilen-Grenze strukturell unerreichbar ist (LL-21). **Drei Entscheidungen im Sprint:** ein Posten fällt raus, wenn sein Termin verstrichen ist **oder** eine Zahlung an ihm hängt · außerhalb des laufenden Monats bleibt die Zeile leer (LL-20) · keine Posten-Anzahl. Belege: `sprints/sprint_v2-15_briefing.md`. |
 
-> **Bekannte Lücke, bewusst offen:** Die Kreditkarten-Abrechnung belastet das Girokonto
-> um den 24. (Juli −172,60 €), ist als Übertrag markiert und wird von keiner Karte
-> abgebildet. Die Summe ist dadurch systematisch **leicht zu optimistisch**. Seriös
-> vorhersagbar erst mit unterscheidbaren Konten → `LQ-3` in Paket 9.
+> **Zwei bekannte Lücken, bewusst offen — die Zahl ist dadurch systematisch leicht zu
+> optimistisch.** Erstens die **Kreditkarten-Abrechnung**: Sie belastet das Girokonto um
+> den 24. (Juli −172,60 €), ist als Übertrag markiert und wird von keiner Karte
+> abgebildet; seriös vorhersagbar erst mit unterscheidbaren Konten → `LQ-3` in Paket 9.
+> Zweitens **Karten ohne Termin** — heute allein der Friseur (45,00 €). Sie zählen nicht
+> mit, weil §8 „mit Termin" verlangt; behebbar in zehn Sekunden über das neue Overlay,
+> sobald es stört.
 > **Nicht enthalten:** der Kontostand selbst. Er steht ungenutzt in Zeile 3 jedes
 > DKB-Abzugs (L1), wäre aber nur so frisch wie der letzte Import. Wird interessant,
 > sobald häufiger importiert wird — dann ein kleiner Nachtrag, kein eigenes Thema.
@@ -391,6 +428,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| LQ-1 | Fälligkeitstag je Karte: Spalte + 17 abgeleitete Werte (v2-14), Anzeige rechts in der Statuszeile + Menüpunkt „Fällig am …" (v2-15) | v2-14 / v2-15 |
+| LQ-2 | Ausstehend-Anzeige `[N] € noch fällig · [N] € Budget frei` in der Kopfzeile „Planung"; nie eine Summe, nur im laufenden Monat | v2-15 |
 | TP-1 | Prüfwert im Übungs-DB-Runbook: Anker **ersatzlos entfernt** statt korrigiert — er war zweimal veraltet (4.545,32 → 4.589,53 → tatsächlich 4.208,76 €). Anker werden jetzt nur noch an EINER Stelle gepflegt: `CLAUDE.md` §9 | v2-13 Nachzug |
 | BF-4 | Gemeinsame Karten: Split-Anteil genau **einmal** angewandt; Karte zeigt den eigenen Anteil mit `von [N] €` darunter. Prod alle 12 Monate um 0,00 € bewegt, B2 12/12 | v2-13 |
 | Init-1 | Übungs-Datenbank aufgesetzt, Runbook in `supabase/test_projekt/` | v2-05 |

@@ -1,7 +1,7 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.3.0 (V2 · DD-Runde 06.08.2026 — Liquidität, Schaufenster, Split-Folgen)
-**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-14 eingespielt, dazu die Design-Entscheidungen vom 06.08.2026 (`LQ-2` · `LQ-1` · `RM-2` · `PA-1` — entschieden, Umsetzung steht aus)
+**Version:** 3.3.1 (V2 · Sprint v2-15 — Liquidität: Ausführungsdetails)
+**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-15 eingespielt (`LQ-1` · `LQ-2` gebaut); `RM-2` · `PA-1` weiterhin entschieden, Umsetzung steht aus
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -30,6 +30,8 @@
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
+>
+> **Changelog v3.3.1 (06.08.2026, Sprint v2-15 · `LQ-1` `LQ-2` gebaut):** Ausführungsdetails der DD-Runde nachgezogen — keine neue Spezifikation, keine aufgehobene Regel; die vier Entscheidungen vom 06.08. stehen bereits in v3.3.0. §8 Ausstehend-Anzeige um die vollständige Rechenregel ergänzt: wann ein Posten zählt (Termin nicht vor heute, weder Umsatz noch Häkchen), Klammerung des Fälligkeitstags auf die Monatslänge, Definition „Budget frei", Sichtbarkeit ausschließlich im laufenden Monat inkl. der 0-€-Abgrenzung, bewusster Verzicht auf eine Postenzahl, bekannte Untererfassung, Darstellung ohne Nachkommastellen. §7 Fälligkeitstag-Anzeige um den eigenständigen Ghost-Ton `rgba(255,255,255,.20)` ergänzt sowie um die Begründung der Overlay-Unterzeile `gilt für alle Monate` und den bewussten Verzicht auf Zahlen im Herkunftshinweis. §12.4 um fünf bislang fehlende Copy-Einträge des „Fällig am …"-Overlays ergänzt (Overlay-Titel, Unterzeile, Feld-Label, Bestätigung, Herkunftshinweis). Beleg: `sprints/sprint_v2-15_briefing.md`, `sprints/sprint_v2-15_review.md`. Patch-Bump statt Minor, weil ausschließlich Ausführungsdetails nachgezogen werden.
 >
 > **Datei-Konvention (23.07.2026):** Stabiler Dateiname `antigravity_finance_design_dokument.md` — Version nur noch im Header/Changelog, Datei-Renames pro Patch-Level entfallen.
 
@@ -674,6 +676,8 @@ Die Statuszeile bekommt zwei Enden: **links der Zustand, rechts der Termin** —
 
 **Herkunft:** Die Werte sind aus der Buchungshistorie **abgeleitet** (Sprint v2-14, `LQ-1`), nicht vom Nutzer bestätigt. Genau deshalb sind sie sichtbar: Ein geratener Wert, der eine sichtbare Zahl treibt (§8, `LQ-2`), darf nicht selbst unsichtbar sein.
 
+**Im Ghost-/Forecast-Zustand dimmt der Termin eigenständig auf `rgba(255,255,255,.20)`.** Die Karten-Opacity (`0.65`) allein ließe ihn lauter wirken als das Status-Label daneben, das zusätzlich auf `--text-ghost` (`.22`) fällt. *Anders als bei der Haushaltsbetrag-Zeile oben, wo ausdrücklich **kein** eigener Ghost-Ton vorgesehen ist — dort wäre ein eigener Ton genau die Unsichtbarkeit, die schon gegen die Alternativvariante sprach; hier stellt er das Verhältnis der beiden Zeilen-Enden wieder her, das in allen anderen Zuständen von selbst stimmt. Der Unterschied ist gewollt.* Wert aus der Entwurfsseite, Variante A1.
+
 Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §2.
 
 ### Fixkosten-Karte — 3 Zustände
@@ -799,7 +803,11 @@ Sinne: er behält seine eigene, in §2.4 spezifizierte Position unten Mitte.
 
 **„Fällig am …" (neu mit `LQ-1`, 06.08.2026):** Eigener Menüpunkt, **nicht** Teil von „Betrag anpassen". Das ist keine Platz-, sondern eine Bedeutungsfrage: „Betrag anpassen" hat durchgängig Monats-Semantik (*nur dieser Monat* / *dauerhaft ab diesem Monat*), `cards.due_day` gilt dagegen **immer** und kennt keine Monatsabgrenzung. Ein Feld dazwischen erzeugte die Frage *„gilt der neue Tag nur für diesen Monat?"* — und die Oberfläche beantwortet sie nicht.
 
+**Die Unterzeile `[Kartenname] · gilt für alle Monate` im Overlay trägt genau diese Antwort.** Sie ist die entscheidende Zeile des Overlays: Sie beantwortet die Frage „gilt der neue Tag nur für diesen Monat?", bevor sie entsteht — aus demselben Grund, aus dem der Fälligkeitstag oben nicht in „Betrag anpassen" gehört. Kein Füllwort: Fiele sie einer späteren Straffung zum Opfer, kehrte exakt die Frage zurück, die der eigene Menüpunkt ausschließen sollte.
+
 **Auf Budget-Karten erscheint der Eintrag nicht** (kein Termin — siehe „Fälligkeitstag-Anzeige" oben). Das Overlay trägt ein Zahlenfeld (Tag im Monat), die Option `Kein fester Tag` und einen Satz zur Herkunft des Werts. Copy: §12.4.
+
+**Der Herkunftshinweis nennt bewusst keine Zahlen.** Der Beschluss-Record schlug einen Satz mit der Herleitung vor (*„19 Monate, immer am 1. bis 4."*). Diese Herleitung steht ausschließlich als Kommentar in der Migration `20260806_v2_14_lq1_faelligkeitstag.sql` und ist zur Laufzeit nicht verfügbar — sie zu rekonstruieren hieße, die gesamte Buchungshistorie je Karte zu lesen (LL-21), sie zu speichern wäre eine neue Spalte und damit ein Datenbank-Eingriff außerhalb dieses Sprints. Der gewählte Satz ohne Zahlen bleibt außerdem richtig, nachdem der Tag von Hand gesetzt wurde.
 
 **„Letzte Zahlung in Monat X":** UX-Bezeichnung für das Soft-End einer Karte.
 - Setzt `cards.last_active_month = X` (inklusiv — Monat X selbst ist noch enthalten, X+1 nicht mehr)
@@ -916,6 +924,24 @@ Karten-Kontextmenü.
 **Die verschiedenen Wörter sind Absicht.** Zwei Zahlen nebeneinander mit demselben Wort darüber laden zum Addieren ein; die Trennung hält erst, wenn die beiden Angaben verschieden **heißen**. „fällig" trägt den Termin, „frei" ist bereits die Vokabel der Budget-Karte (`Noch [N] € frei`, §12.3) — es wird kein Begriff erfunden.
 
 **Die Aussage ist eine Vorhersage, keine Feststellung.** Sie entsteht aus dem Fälligkeitstag (§7), nicht aus einem Bezahlt-Häkchen. Eine Karte kann „Offen" sein und trotzdem nicht mehr in „noch fällig" zählen, weil ihr Termin verstrichen ist.
+
+**Wann ein Posten zählt.** Ein fester Posten zählt genau dann, wenn er eine **aktive Fixkosten- oder Einnahmen-Karte des Monats mit Termin** ist, sein Fälligkeitstag **nicht vor dem heutigen Tag** liegt, und **weder ein Umsatz an ihm hängt noch er abgehakt ist**. Beide Ausschluss-Signale wirken einzeln — es genügt eines, damit der Posten aus der Zahl fällt. Einnahmen **mindern** den Betrag, statt ihn zu erhöhen.
+
+**Der Fälligkeitstag wird auf die Monatslänge geklammert** (`min(due_day, Tage im Monat)`) — ein Dauerauftrag zum 31. ist im Februar am 28. fällig. Die Klammerung sitzt in der Anzeige, nicht in der Spalte `cards.due_day` (§7); so ist es bereits in der v2-14-Migration angelegt.
+
+**„Budget frei" ist die Summe** über alle Budget-Karten von `max(0, effektiver Plan − Verbrauch)`. Ein überschrittenes Budget trägt 0 € bei, ein abgeschlossenes ebenso — die Erlaubnis ist dort beendet, nicht negativ.
+
+**Die Zeile erscheint ausschließlich im laufenden Monat.** Im Zukunftsmonat gibt es kein „heute", gegen das gerechnet werden könnte — die Zahl wäre in Wahrheit die Monatslast und damit eine andere Aussage. Im vergangenen Monat sind alle Termine verstrichen; die Zahl wäre dauerhaft 0 €, und ein Referenzwert ohne Daten ist „keine Anzeige", nicht 0 (§7 Regel 17 / LL-20).
+
+**Abgegrenzt davon:** *Innerhalb* des laufenden Monats wird eine **0 gezeigt**, sobald alle Termine durch sind — „es steht nichts mehr aus" ist eine Antwort, kein fehlender Wert. Nur wenn es die jeweilige Kartenart im Monat gar nicht gibt, entfällt ihre Angabe ganz.
+
+**Die Anzahl der Posten steht nicht dabei.** Ausdrücklich entschieden: Die Kopfzeile trüge sonst vier Zahlen, und die Frage, mit der man hinsieht, ist eine Betragsfrage, keine Zählfrage. Nachzählen lässt sich ohnehin an den Karten selbst — seit `LQ-1` trägt jede ihren Termin.
+
+**Bekannte Untererfassung, bewusst in Kauf genommen:** Karten ohne Termin zählen nicht mit (heute der Friseur, 45,00 €). Zusammen mit der fehlenden Kreditkarten-Abrechnung (Befund `L5`) ist die Zahl systematisch leicht zu optimistisch.
+
+**Darstellung:** Beide Beträge **ohne Nachkommastellen**, mit geschütztem Leerzeichen vor dem € (wie im Ring, §5). Die Aussage ist eine Vorhersage — Cent suggerierten eine Genauigkeit, die ein abgeleiteter Fälligkeitstag nicht hergibt.
+
+Beleg: `sprints/sprint_v2-15_briefing.md` (Entscheidungen E-1 bis E-3 mit Begründung und den verworfenen Alternativen).
 
 Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §1.
 
@@ -1430,6 +1456,11 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Betrag anpassen — Option 1 | `Nur dieser Monat` |
 | Betrag anpassen — Option 2 | `Dauerhaft ab diesem Monat` |
 | Fällig am — Overlay-Option | `Kein fester Tag` |
+| Fällig am — Overlay-Titel | `Fällig am` |
+| Fällig am — Unterzeile | `[Kartenname] · gilt für alle Monate` |
+| Fällig am — Feld-Label | `Tag im Monat` |
+| Fällig am — Bestätigung | `Übernehmen` |
+| Fällig am — Herkunftshinweis | `Die Tage stammen aus deiner Buchungshistorie — abgeleitet, nicht bestätigt.` |
 | Neue Karte — Popup-Titel | `Neue Karte erstellen` |
 | Neue Karte — Frequenz-Label | `Wiederholung` |
 | Frequenz Monatlich | `Monatlich` |

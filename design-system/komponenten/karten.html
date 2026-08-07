@@ -89,6 +89,11 @@
   .over .stateLabel { color:rgba(255,69,58,.55); }
   .ghost .stateLabel { color:var(--text-ghost); }
   .stateLabelRed { color:rgba(255,69,58,.55) !important; }
+/* LQ-1 (v2-15): Statuszeile mit zwei Enden — links Zustand, rechts Termin. */
+.stateRow { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+.dueDay { font-size:9px; font-weight:500; letter-spacing:.4px;
+          color:rgba(255,255,255,.30); white-space:nowrap; }
+.ghost .dueDay { color:rgba(255,255,255,.20); }
 
   .restAmount { font-size:11px; font-weight:500; margin-top:3px; }
   .restPos { color:rgba(62,207,175,.40); }
@@ -136,10 +141,10 @@
       <div class="cardName">Strom – Mainova</div>
       <div class="cardAmount">36,04 €</div>
       <div class="householdAmount">von 63,00 €</div>
-      <div class="stateLabel">Offen</div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueDay">am 1.</div></div>
       <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
     </div>
-    <div class="cap"><b>Offen</b>Erwartet, noch nicht abgebucht. Rand und Typ-Label tragen Rot, der Betrag bleibt gedämpft.</div>
+    <div class="cap"><b>Offen</b>Erwartet, noch nicht abgebucht. Rand und Typ-Label tragen Rot, der Betrag bleibt gedämpft. Rechts der Fälligkeitstag — getrennt durch die Position, nicht durch ein Trennzeichen.</div>
   </div>
 
   <div class="slot">
@@ -149,10 +154,10 @@
       <div class="cardName">Strom – Mainova</div>
       <div class="cardAmount">36,04 €</div>
       <div class="householdAmount">von 63,00 €</div>
-      <div class="stateLabel">Bezahlt</div>
+      <div class="stateRow"><div class="stateLabel">Bezahlt</div><div class="dueDay">am 1.</div></div>
       <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
     </div>
-    <div class="cap"><b>Bezahlt</b>Betrag wird voll weiß — hier ist etwas passiert. Kein Unterschied zwischen von Hand getippt und per Kontoumsatz belegt.</div>
+    <div class="cap"><b>Bezahlt</b>Betrag wird voll weiß — hier ist etwas passiert. Kein Unterschied zwischen von Hand getippt und per Kontoumsatz belegt. Der Termin <b>bleibt stehen</b>: Er ist eine Eigenschaft der Karte, kein Zustand.</div>
   </div>
 
   <div class="slot">
@@ -162,10 +167,10 @@
       <div class="cardName">Strom – Mainova</div>
       <div class="cardAmount">36,04 €</div>
       <div class="householdAmount">von 63,00 €</div>
-      <div class="stateLabel">Forecast</div>
+      <div class="stateRow"><div class="stateLabel">Forecast</div><div class="dueDay">am 1.</div></div>
       <div class="cardMeta"><div class="metaDot metaDotGem"></div><div class="metaText">Gemeinsam</div></div>
     </div>
-    <div class="cap"><b>Forecast</b>Zukünftiger Monat. Farblos und nicht antippbar — es gibt noch nichts zu bestätigen. Rand solid, nicht gestrichelt.</div>
+    <div class="cap"><b>Forecast</b>Zukünftiger Monat. Farblos und nicht antippbar — es gibt noch nichts zu bestätigen. Rand solid, nicht gestrichelt. Der Termin dimmt hier eigenständig auf <code>.20</code> mit.</div>
   </div>
 
 </div>
@@ -175,6 +180,12 @@
   Ein Topf für einen Zweck. Budget-Karten sind <b>immer</b> „Ich“ — eine gemeinsame
   Zuordnung ist in der Datenbank ausgeschlossen. Der Fortschrittsbalken sitzt als
   3-px-Kante an der Unterseite.
+  <br><br>
+  <b>Rechts in der Statuszeile steht hier nie ein Termin</b> — und das ist die Aussage,
+  keine Lücke: Ein Dauerauftrag ist ein Termin, ein Budget eine Erlaubnis, die man über
+  den Monat verbraucht und zurückhalten kann. In der Datenbank ist <code>due_day</code>
+  bei Budget-Karten deshalb <code>NULL</code>, und der Menüpunkt „Fällig am …“ erscheint
+  dort gar nicht erst.
 </p>
 <div class="rail">
 
@@ -269,7 +280,7 @@
       <div class="cardName">Nebenjob</div>
       <div class="cardAmount">200,00 €</div>
       <div class="householdAmount"></div>
-      <div class="stateLabel">Erwartet</div>
+      <div class="stateRow"><div class="stateLabel">Erwartet</div><div class="dueDay">am 28.</div></div>
       <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
     </div>
     <div class="cap"><b>Erwartet</b>Offener Kreis statt gefülltem: wartend, nicht problematisch. Eigener Hintergrundton <code>#0D1A16</code>.</div>
@@ -282,7 +293,7 @@
       <div class="cardName">Nebenjob</div>
       <div class="cardAmount">200,00 €</div>
       <div class="householdAmount"></div>
-      <div class="stateLabel">Erhalten</div>
+      <div class="stateRow"><div class="stateLabel">Erhalten</div><div class="dueDay">am 28.</div></div>
       <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
     </div>
     <div class="cap"><b>Erhalten</b>Sobald ein Kontoumsatz zugeordnet ist, ist die Karte nicht mehr antippbar — der Zustand kommt dann aus den Daten, nicht aus einer Geste.</div>

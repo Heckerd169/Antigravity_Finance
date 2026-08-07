@@ -19,6 +19,24 @@ export function getCurrentMonthYM(): string {
   return `${yyyy}-${mm}`;
 }
 
+/** Heutiger Tag im Monat (1–31), Server-Zeit in UTC — wie getCurrentMonthYM().
+ *  v2-15 (LQ-2): Stichtag der Ausstehend-Anzeige. */
+export function getCurrentDayOfMonth(): number {
+  return new Date().getUTCDate();
+}
+
+/** Anzahl Tage eines YYYY-MM-Monats (28–31).
+ *  v2-15 (LQ-2): klammert den Fälligkeitstag — ein Dauerauftrag zum 31. ist im
+ *  Februar am 28. fällig. UTC-Date, das Ergebnis geht nie in die DB. */
+export function getDaysInMonth(ym: string): number {
+  const m = YM_REGEX.exec(ym);
+  if (!m) throw new Error(`getDaysInMonth: invalid input "${ym}"`);
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  // Tag 0 des Folgemonats = letzter Tag dieses Monats.
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
 function isValidYM(s: string): boolean {
   const m = YM_REGEX.exec(s);
   if (!m) return false;

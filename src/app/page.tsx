@@ -125,7 +125,9 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const { data: rawCards } = await supabase
     .from("cards")
-    .select("id, name, type, attribution, frequency, first_active_month, last_active_month")
+    .select(
+      "id, name, type, attribution, frequency, first_active_month, last_active_month, due_day",
+    )
     .is("deleted_at", null)
     .order("type", { ascending: true })
     .order("name", { ascending: true });
@@ -204,6 +206,10 @@ export default async function Home({ searchParams }: HomeProps) {
             c.attribution === "GEMEINSAM" && splitFactor < 1 && effectivePlan > 0
               ? effectivePlan
               : null,
+          // v2-15 (LQ-1): Der Fälligkeitstag wandert unverändert durch — er ist
+          // eine Eigenschaft der Karte, kein Monats-Zustand, und wird deshalb
+          // weder pro Monat aufgelöst noch geklammert (das tut erst LQ-2).
+          dueDay: c.due_day,
           manuallyPaid: stateRow?.manually_paid ?? false,
           adjustedAmount: stateRow?.adjusted_amount ?? null,
           deleteGate: {

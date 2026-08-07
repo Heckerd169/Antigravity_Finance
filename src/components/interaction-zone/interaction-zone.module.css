@@ -436,6 +436,65 @@
   margin-bottom: 0;
 }
 
+/* ── Ausstehend-Anzeige (v2-15, LQ-2) ─────────────────────────────────────────
+ *
+ * Kopfzeile der Zone „Planung", gebaut wie `.fragmentZoneHeader` der Rohmasse:
+ * Überschrift links, Angabe rechtsbündig, gleiche Zeile. So bleiben die
+ * Oberkanten von Portal, Karussell und Stack bündig, und es entsteht kein
+ * vierter waagerechter Bereich auf dem Schirm (§8).
+ *
+ * Werte aus `design-system/entwuerfe/lq2-ausstehend.html`, Variante A.
+ * Die Wörter tragen exakt die Typografie der Zonen-Überschrift (9px/600/1.1px,
+ * Versalien) — sie sind Beschriftung, nicht Inhalt; die Zahl davor ist der
+ * Inhalt und steht deshalb größer und heller. */
+.carouselZoneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-width: 0;
+}
+
+.liquidityLine {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.liquidityGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.liquidityNum {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.liquidityWord {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--zone-label);
+  white-space: nowrap;
+}
+
+/* Trennstrich statt Mittelpunkt: Er trennt, ohne selbst gelesen zu werden —
+   ein „·" zwischen zwei Beträgen liest sich zu leicht als Rechenzeichen. */
+.liquiditySep {
+  width: 1px;
+  height: 9px;
+  background: rgba(255, 255, 255, .10);
+  flex-shrink: 0;
+}
+
 .transferToggle {
   position: relative;
   display: inline-flex;

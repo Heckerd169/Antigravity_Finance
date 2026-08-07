@@ -10,9 +10,10 @@ import {
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
+import { DueDayOverlay } from "./due-day-overlay";
 import { EndCardOverlay } from "./end-card-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
-import type { DeleteGate, LinkedFragmentRef } from "./cards.types";
+import type { CardType, DeleteGate, LinkedFragmentRef } from "./cards.types";
 import styles from "./cards.module.css";
 
 /** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt). */
@@ -42,6 +43,11 @@ type CardInteractiveProps = {
   currentLastMonth: string | null;
   /** v2-05: vorberechnetes Lösch-Tor; die RPC prüft autoritativ erneut. */
   deleteGate: DeleteGate;
+  /** v2-15 (LQ-1): steuert, ob „Fällig am …" im Menü erscheint — auf
+   *  BUDGET-Karten nicht (ein Budget ist eine Erlaubnis ohne Termin, L7). */
+  cardType: CardType;
+  /** v2-15 (LQ-1): aktueller Fälligkeitstag, Vorbelegung des Overlays. */
+  currentDueDay: number | null;
 };
 
 export function CardInteractive({
@@ -56,11 +62,14 @@ export function CardInteractive({
   canEnd,
   currentLastMonth,
   deleteGate,
+  cardType,
+  currentDueDay,
 }: CardInteractiveProps) {
   const effectiveTappable = tappable && !endDeleteOnly;
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [dueDayOverlayOpen, setDueDayOverlayOpen] = useState(false);
   const [endOverlayOpen, setEndOverlayOpen] = useState(false);
   const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
@@ -116,6 +125,12 @@ export function CardInteractive({
     e.stopPropagation();
     setMenuOpen(false);
     setOverlayOpen(true);
+  }
+
+  function handleDueDayClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setDueDayOverlayOpen(true);
   }
 
   function handleLinkedClick(e: React.MouseEvent) {
@@ -216,6 +231,21 @@ export function CardInteractive({
               Betrag anpassen
             </button>
           )}
+          {/* v2-15 (LQ-1): „Fällig am …" — eigener Eintrag, NICHT in „Betrag
+              anpassen". Dort hat alles Monats-Semantik, `cards.due_day` gilt
+              immer (§7). Auf BUDGET-Karten erscheint er nicht: ein Budget ist
+              eine Erlaubnis ohne Termin (Befund L7). Auf Ghost-Karten ebenso
+              wenig — sie zeigen nur die Lebenszyklus-Verben (v2-05). */}
+          {!endDeleteOnly && cardType !== "BUDGET" && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleDueDayClick}
+              role="menuitem"
+            >
+              Fällig am …
+            </button>
+          )}
           {canEnd && (
             <button
               type="button"
@@ -273,6 +303,16 @@ export function CardInteractive({
           month={month}
           currentAmount={currentAmount}
           onClose={() => setOverlayOpen(false)}
+        />
+      )}
+
+      {/* Fällig-am-Overlay (v2-15, LQ-1) */}
+      {dueDayOverlayOpen && (
+        <DueDayOverlay
+          cardId={cardId}
+          cardName={cardName}
+          currentDueDay={currentDueDay}
+          onClose={() => setDueDayOverlayOpen(false)}
         />
       )}
 

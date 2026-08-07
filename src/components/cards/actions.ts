@@ -73,6 +73,44 @@ export async function detachAllCardLinks(cardId: string): Promise<void> {
   revalidatePath("/", "page");
 }
 
+/** v2-15 (LQ-1): Fälligkeitstag setzen (1–31) oder entfernen (`null`).
+ *
+ *  Bewusst KEIN Monats-Parameter. `cards.due_day` gilt **immer** und kennt keine
+ *  Monatsabgrenzung — genau deshalb sitzt die Änderung in einem eigenen
+ *  Menüpunkt und nicht in „Betrag anpassen", wo alles entweder *nur dieser
+ *  Monat* oder *dauerhaft ab diesem Monat* ist (§7 „Fällig am …").
+ *
+ *  Direkter Tabellen-Schreibzugriff wie `detachAllCardLinks`: keine RPC nötig,
+ *  weil nichts zu rechnen ist. RLS greift über `auth.uid()`; ohne Session
+ *  aktualisiert der UPDATE schlicht 0 Zeilen.
+ *
+ *  Die Bereichsprüfung hier ist die erste Verteidigungslinie — der CHECK
+ *  `cards_due_day_range` aus der v2-14-Migration ist die zweite. Die Klammerung
+ *  auf die tatsächliche Monatslänge gehört NICHT hierher: ein Dauerauftrag zum
+ *  31. existiert, und der gespeicherte Wert soll der Soll-Tag bleiben, keine
+ *  Interpretation (so steht es in 20260806_v2_14_lq1_faelligkeitstag.sql). */
+export async function setCardDueDay(
+  cardId: string,
+  dueDay: number | null,
+): Promise<void> {
+  if (
+    dueDay !== null &&
+    (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31)
+  ) {
+    throw new Error(`Ungültiger Fälligkeitstag: ${dueDay}`);
+  }
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("cards")
+    .update({ due_day: dueDay })
+    .eq("id", cardId);
+
+  if (error) throw error;
+
+  revalidatePath("/", "page");
+}
+
 export async function applyAdjustmentThisMonth(formData: FormData) {
   const cardId = formData.get("cardId") as string;
   const month = formData.get("month") as string; // "YYYY-MM-01"

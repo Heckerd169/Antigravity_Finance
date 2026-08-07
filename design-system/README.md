@@ -85,8 +85,8 @@ Die Entwurfsseiten bleiben, bis der jeweilige Bau-Sprint durch ist.
 
 | Thema | Entscheidung | Entwurf |
 |---|---|---|
-| `LQ-2` Ausstehend-Anzeige | Kopfzeile „Planung", rechtsbündig · `noch fällig` / `Budget frei` | `entwuerfe/lq2-ausstehend.html` |
-| `LQ-1` Fälligkeitstag | rechter Anschlag der Statuszeile · Menüpunkt „Fällig am …" | `entwuerfe/lq1-faelligkeitstag.html` |
+| `LQ-2` Ausstehend-Anzeige | Kopfzeile „Planung", rechtsbündig · `noch fällig` / `Budget frei` | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/` |
+| `LQ-1` Fälligkeitstag | rechter Anschlag der Statuszeile · Menüpunkt „Fällig am …" | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/karten.html` |
 | `RM-2` Schaufenster-Popup | Empfänger führt, Betrag rechts daneben | `entwuerfe/rm2-schaufenster.html` |
 | `PA-1` Konsequenz-Anzeige | Popup tauscht Inhalt, Summe als Held, 400 px | `entwuerfe/pa1-konsequenz.html` |
 
@@ -103,7 +103,11 @@ Haushaltsbetrag auf gemeinsamen Karten (v2-13, `BF-4`).
 ## Stand
 
 Erstellt am 04. August 2026, aus `main` @ `41ca3d2` zuzüglich des Struktur-Sprints
-v2-08. Zuletzt nachgezogen am **06. August 2026** (Drei-Varianten-Regel, `entwuerfe/`,
-Rollen-Korrektur, offene Punkte auf den Stand nach v2-14). Wenn sich Tokens oder
-Komponenten ändern, gehören diese Seiten mit nachgezogen — sonst beurteilt der
-Design-Direktor wieder einen veralteten Stand.
+v2-08. Zuletzt nachgezogen am **06. August 2026 nach Sprint v2-15**: Die Karten-Seite
+trägt jetzt die Statuszeile mit Fälligkeitstag, und die beiden gebauten Entwürfe
+(`lq1-faelligkeitstag.html`, `lq2-ausstehend.html`) sind gelöscht — so sieht es die
+Drei-Varianten-Regel vor: Ein Entwurf lebt, bis die Entscheidung gebaut ist; danach ist
+der Beschluss-Record das Gedächtnis, nicht der Ordner. Davor am selben Tag: Einführung
+der Drei-Varianten-Regel und `entwuerfe/`, Rollen-Korrektur, offene Punkte auf den
+Stand nach v2-14. Wenn sich Tokens oder Komponenten ändern, gehören diese Seiten mit
+nachgezogen — sonst beurteilt der Design-Direktor wieder einen veralteten Stand.
