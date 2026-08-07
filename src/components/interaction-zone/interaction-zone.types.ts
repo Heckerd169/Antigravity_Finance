@@ -32,6 +32,18 @@ export type FragmentRow = {
    *  suggested_card_id gesetzt ist. Sonst null → kein Badge. Die Schwellen-
    *  Gating erfolgt server-seitig in page.tsx (app_config-getrieben). */
   suggestedCardName: string | null;
+  /** v2-16 (RM-2): Sicherheit des KI-Vorschlags als Anteil 0…1 — nur gesetzt,
+   *  wenn auch `suggestedCardName` gesetzt ist (dieselbe Schwellen-Prüfung,
+   *  LL-17: die Auswertung bleibt server-seitig). Das Schaufenster-Popup zeigt
+   *  daraus „[Karte] · [N] %"; die Fragment-Karte zeigt ihn NICHT. */
+  suggestionConfidence: number | null;
+  /** v2-16 (RM-2): Name der Karte, auf der dieses Fragment liegt — aufgelöst
+   *  aus `assigned_card_id`. Null, wenn nicht zugeordnet oder die Karte
+   *  gelöscht wurde. Nur im Schaufenster-Popup sichtbar. */
+  assignedCardName: string | null;
+  /** v2-16 (RM-2): Gegenkonto eines Übertrags (`fragments.counterparty_iban`).
+   *  Nur im Schaufenster-Popup und nur bei gesetztem `transfer_type` sichtbar. */
+  counterpartyIban: string | null;
 };
 
 /** v2-07 C1: Beide Übertrags-Typen verhalten sich UI-seitig identisch — sie

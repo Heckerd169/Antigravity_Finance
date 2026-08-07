@@ -282,8 +282,11 @@ export default async function Home({ searchParams }: HomeProps) {
   // strukturell unerreichbar, unabhängig vom Gesamtbestand.
 
   const nextMonthDbDate = ymToDbDate(addMonths(targetMonth, 1));
+  // v2-16 (RM-2): `counterparty_iban` kommt für das Schaufenster-Popup dazu —
+  // es ist die einzige Stelle der App, an der das Gegenkonto eines Übertrags
+  // sichtbar wird (§11). Die Spalte liegt seit Sprint 9 in der View.
   const FRAGMENT_COLS =
-    "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at";
+    "id, amount, description, transaction_date, status, assigned_card_id, assigned_month, confidence, suggested_card_id, imported_at, counterparty_iban";
 
   const [{ data: stackRows }, { data: linkedRows }] = await Promise.all([
     supabase
@@ -343,6 +346,18 @@ export default async function Home({ searchParams }: HomeProps) {
           assigned_card_id: f.assigned_card_id,
           assigned_month: f.assigned_month,
           suggestedCardName,
+          /* v2-16 (RM-2): der Prozentwert hängt an DERSELBEN Schwellen-Prüfung
+             wie der Name — nie ein Wert ohne Karte, nie eine Karte ohne Wert.
+             Die Auswertung der Schwelle bleibt hier server-seitig (LL-17); das
+             Popup bekommt das Ergebnis, nicht die Rohwerte plus Schwelle. */
+          suggestionConfidence: suggestedCardName !== null ? conf : null,
+          /* v2-16 (RM-2): zeigt die Zuordnung ins Leere (Karte gelöscht),
+             bleibt der Name null und das Popup lässt die Zeile weg. */
+          assignedCardName:
+            f.assigned_card_id != null
+              ? cardNameById.get(f.assigned_card_id) ?? null
+              : null,
+          counterpartyIban: f.counterparty_iban,
           importedAt: f.imported_at,
         };
       });
