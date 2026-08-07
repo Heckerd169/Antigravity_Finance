@@ -244,12 +244,31 @@ Forecast lauter wirken als das Status-Label daneben, weil dieses zusätzlich auf
 
 ## 6. Offene Punkte und Fragen
 
-**① Der angemeldete Smoke fehlt strukturell, nicht nur diesmal.**
-`.env.e2e.local` existiert in keiner Arbeitskopie. Damit ist die gesamte Oberfläche
-hinter dem Login automatisiert unprüfbar, und der `smoke-agent` kann seine
-Kernaufgabe — Screenshots des Dashboards gegen die §-Checkliste — grundsätzlich nicht
-erfüllen. Das trifft jeden künftigen UI-Sprint gleichermaßen. **Frage an den User:**
-Sollen wir für die Übungs- oder Produktiv-Datenbank einen Test-Zugang hinterlegen?
+**① Die Zugangsdaten für den angemeldeten Smoke sind verloren gegangen — das ist
+behebbar, kein Dauerzustand.**
+
+Zuerst stand hier, der angemeldete Smoke fehle „strukturell". **Das war falsch, und der
+Beleg dagegen steht im eigenen Haus:** `sprints/sprint_v2-10_review.md` §2 weist
+`pnpm test:e2e` mit **10/10 — setup · visual 3 · unauth 2 · render-smoke 4** aus. Das
+`render-smoke`-Projekt lief also, samt Login-Schritt; die Zugangsdaten waren am
+05.08.2026 vorhanden.
+
+**Heute existieren sie nirgends** — weder `.env.e2e.local` noch ein gespeicherter
+Login-Status unter `playwright/.auth/user.json`, weder im Haupt-Checkout noch in diesem
+Worktree. Beide Pfade sind gitignored (`.gitignore` Z. 52–54). Die naheliegende
+Erklärung: Die Datei lag in einem früheren Sprint-Worktree und ist mit dessen Löschung
+verschwunden. Dasselbe gilt für `.env.local`, die zu Beginn dieses Sprints ebenfalls neu
+angelegt werden musste — sie fehlte im Haupt-Checkout genauso.
+
+**Folge für diesen Sprint:** Die Konfiguration schließt das `render-smoke`-Projekt bei
+fehlenden Zugangsdaten aus der Projektliste aus (`playwright.config.ts` Z. 17–22), also
+lief nur `visual` + `unauth`. Die Oberfläche blieb automatisiert ungeprüft.
+
+**Empfehlung:** Beide Dateien **einmal im Haupt-Checkout** anlegen, nicht im Worktree —
+dort überleben sie jeden Sprint, und ein neuer Worktree kopiert sie sich von da. Genau
+diesen Weg beschreibt die Fähigkeit `sprint-abschluss` bereits für `.env.local`; er
+sollte für `.env.e2e.local` mitgelten. **Ohne das wiederholt sich der Verlust beim
+nächsten aufgeräumten Worktree.**
 
 **② Zwei bekannte Untererfassungen der neuen Zahl.**
 Der Friseur (45,00 €, kein Termin) und die Kreditkarten-Abrechnung (`L5`, um den 24.,
