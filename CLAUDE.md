@@ -359,6 +359,13 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Wer einen neuen Aufrufer baut, darf den Anteil **nicht erneut** anwenden.
     Einzige Ausnahme: `calculate_planned_sparrate_for_month` rechnet auf dem
     Roh-Plan und wendet ihn deshalb weiterhin selbst an. (v2-13, LL-23)
+12. **Ein Beleg, der nur im Migrations-Kommentar steht, ist zur Laufzeit nicht
+    vorhanden.** Die Herleitung der 17 Fälligkeitstage („19 Monate, immer am 1. bis
+    4.") ist sorgfältig dokumentiert — aber ausschließlich als SQL-Kommentar in
+    `20260806_v2_14_lq1_faelligkeitstag.sql`. Ein UI-Vorschlag, der sie anzeigen
+    wollte, war deshalb nicht baubar, ohne entweder die gesamte Historie je Karte zu
+    lesen (LL-21) oder eine Spalte anzulegen. **Wer eine Herleitung später zeigen
+    will, muss sie speichern, nicht kommentieren.** (v2-15)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 

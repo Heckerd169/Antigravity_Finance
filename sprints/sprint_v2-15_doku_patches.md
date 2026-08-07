@@ -488,4 +488,43 @@ gegangen"); Gegenbeleg `sprints/sprint_v2-10_review.md` §2 (`pnpm test:e2e` 10/
 
 ---
 
+## Nachtrag — neue Stolperfalle (07.08.2026, eigene User-Freigabe)
+
+> Der Review hatte sie in §7 als **Vorschlag** formuliert; sie war deshalb bewusst
+> **nicht** Teil des CLAUDE.md-Nachzugs (Patches 8–15). Der User hat sie am 07.08.2026
+> gesondert freigegeben („Ja, die Stolperfalle bitte einbauen").
+
+### Patch 16 — §6, neue Stolperfalle 12
+
+**Ziel-Datei:** `CLAUDE.md`, §6 „Stolperfallen, die wiederholt zugeschlagen haben"
+
+**Anker (exaktes Zitat, Ende der Liste — auf Eindeutigkeit geprüft):**
+```
+    Einzige Ausnahme: `calculate_planned_sparrate_for_month` rechnet auf dem
+    Roh-Plan und wendet ihn deshalb weiterhin selbst an. (v2-13, LL-23)
+```
+
+**Patch (Einfügetext als neuer Listenpunkt 12 direkt danach):**
+```
+12. **Ein Beleg, der nur im Migrations-Kommentar steht, ist zur Laufzeit nicht
+    vorhanden.** Die Herleitung der 17 Fälligkeitstage („19 Monate, immer am 1. bis
+    4.") ist sorgfältig dokumentiert — aber ausschließlich als SQL-Kommentar in
+    `20260806_v2_14_lq1_faelligkeitstag.sql`. Ein UI-Vorschlag, der sie anzeigen
+    wollte, war deshalb nicht baubar, ohne entweder die gesamte Historie je Karte zu
+    lesen (LL-21) oder eine Spalte anzulegen. **Wer eine Herleitung später zeigen
+    will, muss sie speichern, nicht kommentieren.** (v2-15)
+```
+
+**Quelle/Begründung:** `sprints/sprint_v2-15_review.md` §7 Vorschlag ③ sowie §6
+Punkt ④; der konkrete Fall steht in `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`
+§2.3 („Empfehlung an den Bau-Sprint") gegen die tatsächliche Datenlage.
+
+**Warum §6 und nicht §7 oder §8:** Es ist keine Arbeitsregel („so wird gearbeitet"),
+sondern eine Eigenschaft des Datenbestands, über die man beim Bauen stolpert — genau
+die Kategorie von §6. Ein LL-Eintrag entsteht bewusst **nicht**: Die Erkenntnis hat
+keinen Vorfall mit Kosten erzeugt, sie hat einen Vorschlag rechtzeitig als
+unbaubar entlarvt.
+
+---
+
 *Patch-Datei · Antigravity Finance · Sprint v2-15 · 06.–07. August 2026*
