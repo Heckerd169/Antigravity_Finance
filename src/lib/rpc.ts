@@ -381,6 +381,53 @@ export async function restoreCardCategory(
   if (error) throw error;
 }
 
+// ── v2-17 (KAT-3): die Zahl eines Ordners ────────────────────────────────────
+
+/** Ein Ordner der Monats-Aufstellung.
+ *
+ *  `key` unterscheidet die drei Sorten: `CATEGORY` ist ein echter Ordner aus
+ *  `card_categories`, `UNCATEGORIZED` das Sammelbecken „Ohne Kategorie", und
+ *  `INCOME` der Einkommens-Ordner — der ist KEINE Kartensumme, sondern das
+ *  Nettogehalt, das gar keine Karte ist und ohne den die Aufstellung nicht
+ *  aufginge (Record A4). */
+export type CategoryAmount = {
+  key: "INCOME" | "CATEGORY" | "UNCATEGORIZED";
+  category_id: string | null;
+  name: string;
+  sort_order: number;
+  amount: number;
+  posten: number;
+};
+
+/** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate.
+ *
+ *  EIN Aufruf für alle Ordner — nicht einer je Ordner. Der Loader feuert bereits
+ *  drei Aufrufe pro Karte (Befund D14); eine Runde je Ordner obendrauf wüchse
+ *  multiplikativ.
+ *
+ *  Die Summe aller `amount` ergibt EXAKT die Sparrate des Monats — auch auf den
+ *  Cent. Das ist keine Nebenwirkung, sondern in der Funktion erzwungen: Der
+ *  Rundungsrest wandert auf den betragsgrößten Ordner, weil elf einzeln
+ *  gerundete Zahlen die eine Schlussrundung der Sparrate sonst nicht nachbilden
+ *  können (Record C1). Ein Ordner zeigt dadurch bis zu einen Cent neben seinem
+ *  eigenen exakten Wert — im Juli 2026 ist das „Wohnen" mit −1.148,18 € statt
+ *  −1.148,17 €.
+ *
+ *  Leeres Array, wenn kein Gehalt hinterlegt ist: Dann gibt es keine Sparrate,
+ *  und eine Aufstellung, die sich zu nichts summiert, wäre eine Falschaussage
+ *  (LL-20). */
+export async function getCategoryAmountsForMonth(
+  client: AppSupabaseClient,
+  args: { userId: string; month: string },
+): Promise<CategoryAmount[]> {
+  const { data, error } = await client.rpc("get_category_amounts_for_month", {
+    p_user_id: args.userId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return (data as unknown as CategoryAmount[]) ?? [];
+}
+
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────
 
 export type CreateCardDirectArgs = {
