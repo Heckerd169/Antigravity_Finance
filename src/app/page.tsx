@@ -4,9 +4,11 @@ import {
   calculateSparrateForMonth,
   calculateCardAmountForMonth,
   isCardActiveInMonth,
+  getCategoryAmountsForMonth,
   getEffectivePlanForMonth,
   getSplitFactor,
 } from "@/lib/rpc";
+import type { CategoryAmount } from "@/lib/rpc";
 import {
   addMonths,
   getCurrentMonthYM,
@@ -161,6 +163,26 @@ export default async function Home({ searchParams }: HomeProps) {
     name: c.name,
     sortOrder: c.sort_order,
   }));
+
+  // v2-17 (KAT-3): Die Beträge der Ordner. EIN Aufruf für alle — die Zahl darf
+  // nach Arbeitsregel 1 nicht im Browser entstehen, und ein Aufruf je Ordner
+  // wüchse multiplikativ auf den ohnehin schon drei Aufrufen pro Karte
+  // (Befund D14).
+  //
+  // Die Summe dieser Beträge ergibt exakt die Sparrate — dafür sorgt die
+  // Restverteilung in der Funktion (Record C1). Fällt der Aufruf aus, bleiben
+  // die Ordner ohne Betrag; das Karussell rendert dann weiter, nur ohne Zahl
+  // auf der Kachel. Ein Fehler hier darf nicht das ganze Dashboard mitreißen —
+  // dieselbe Haltung wie beim Welle-Loader oben.
+  let categoryAmounts: CategoryAmount[] = [];
+  try {
+    categoryAmounts = await getCategoryAmountsForMonth(supabase, {
+      userId: user!.id,
+      month: targetDbDate,
+    });
+  } catch (err) {
+    console.error("Kategorie-Beträge fehlgeschlagen", err);
+  }
 
 
   // v2-05 Lösch-Tor-Vorberechnung: Links/States über ALLE Monate (zwei kleine
@@ -521,9 +543,21 @@ export default async function Home({ searchParams }: HomeProps) {
           fragments={monthFragments}
           cards={enrichedCards}
           categories={categories}
+          categoryAmounts={categoryAmounts}
           targetMonth={targetMonth}
           targetDbMonth={targetDbDate}
           currentMonth={currentMonth}
+          /* v2-17 (KAT-2): Dieselben Angaben, die auch `IncomeLabel` an den
+             Flanken der Welle bekommt — es ist dasselbe Fenster, nur ein
+             zweiter Auslöser (Record A4). Kein zweites Formular. */
+          incomeSlot={{
+            initialGrossAnnual: ichLatest?.grossAnnual,
+            initialNetMonthly: ichLatest?.netMonthly,
+            counterpartGrossAnnual: partnerLatest?.grossAnnual,
+            activeMonth: targetActiveMonth,
+            taxClass,
+            taxYear,
+          }}
         />
       </CardActionToastProvider>
 

@@ -7,6 +7,8 @@ import {
 } from "@/lib/months";
 import { Portal } from "./portal";
 import { Carousel } from "./carousel";
+import type { CarouselGroup } from "./carousel";
+import { buildCategoryGroups } from "./category-groups";
 import { FragmentStack } from "./fragment-stack";
 import { computeLiquidity } from "./liquidity";
 import type { FragmentRow, InteractionZoneProps } from "./interaction-zone.types";
@@ -19,6 +21,8 @@ export function InteractionZone({
   fragments,
   cards,
   categories,
+  categoryAmounts,
+  incomeSlot,
   targetMonth,
   targetDbMonth,
   currentMonth,
@@ -26,18 +30,37 @@ export function InteractionZone({
   const isFuture = compareMonths(targetMonth, currentMonth) === 1;
   const isPast = compareMonths(targetMonth, currentMonth) === -1;
 
-  const items = cards.map((card: EnrichedCard) => ({
-    id: card.id,
-    node: (
-      <Card
-        key={card.id}
-        card={card}
-        isFuture={isFuture}
-        isPast={isPast}
-        month={targetDbMonth}
-        categories={categories}
-      />
-    ),
+  /* v2-17 (KAT-2): Aus Karten, Ordnern und Beträgen wird die Reihe.
+   *
+   * Die Gruppierung entsteht aus GENAU den Karten, die auch gerendert werden —
+   * deshalb kann eine Kachel nicht behaupten, sie enthalte etwas anderes als
+   * das, was aufgeklappt darunter steht. Die Beträge dagegen kommen fertig aus
+   * der Datenbank (KAT-3) und werden hier nur zugeordnet: Im Browser wäre das
+   * eine zweite Sparraten-Rechnung (Arbeitsregel 1).
+   *
+   * Die Karten-Nodes bleiben Server-Komponenten und werden als opaque
+   * ReactNodes durchgereicht — unverändertes Muster seit Sprint 4. */
+  const groups: CarouselGroup[] = buildCategoryGroups({
+    cards,
+    categories,
+    amounts: categoryAmounts,
+    isFuture,
+    isPast,
+  }).map((group) => ({
+    ...group,
+    items: group.cards.map((card: EnrichedCard) => ({
+      id: card.id,
+      node: (
+        <Card
+          key={card.id}
+          card={card}
+          isFuture={isFuture}
+          isPast={isPast}
+          month={targetDbMonth}
+          categories={categories}
+        />
+      ),
+    })),
   }));
 
   // Fragmente, die im aktuell angezeigten Monat eine Karte zugeordnet haben,
@@ -68,12 +91,13 @@ export function InteractionZone({
     <div className={styles.interactionZone}>
       <Portal targetMonth={targetMonth} />
       <Carousel
-        items={items}
+        groups={groups}
         isFuture={isFuture}
         targetMonth={targetMonth}
         targetDbMonth={targetDbMonth}
         fragments={fragmentsForOverlay}
         liquidity={liquidity}
+        incomeSlot={incomeSlot}
       />
       <FragmentStack fragments={fragments} targetMonth={targetMonth} />
     </div>

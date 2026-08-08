@@ -30,6 +30,29 @@
    * und Status-Farben deutlich abgesetzt). */
   --outline-drop: rgba(255, 255, 255, 0.35);
 
+  /* v2-17 (KAT-2): Kategorie-Kachel, Variante A der Gestaltungsrunde.
+   *
+   * KEINE neue Farbe — das war die Auflage aus dem Grundsatz „Schmale Palette".
+   * Der Ordner ist NEUTRAL getönt; Rot und Türkis bleiben den Karten-Zuständen
+   * vorbehalten und erscheinen am Ordner nur als schmale linke Kante (offen /
+   * erledigt), also in exakt ihrer bisherigen Bedeutung.
+   *
+   * Der Grundton liegt eine Spur kühler und heller als `--bg-card` (#141416).
+   * Genau dieser Unterschied plus das fehlende Status-Icon plus die
+   * Stapelkanten müssen die Unterscheidung zur Karte tragen — über jeder Karte
+   * liegt eine unsichtbare Klickfläche, die „bezahlt" umschaltet (Befund U3). */
+  --bg-category: #131318;
+  --bg-category-stack: #101014;
+  --border-category: rgba(255, 255, 255, 0.13);
+  --border-category-stack: rgba(255, 255, 255, 0.09);
+  --border-category-open: rgba(255, 69, 58, 0.45);
+  --border-category-done: rgba(62, 207, 175, 0.35);
+  --text-category-flag: rgba(255, 99, 88, 0.62);
+
+  /* Die Klammer unter einem aufgeklappten Ordner (Record B5). */
+  --border-bracket: rgba(255, 255, 255, 0.14);
+  --border-bracket-open: rgba(255, 69, 58, 0.32);
+
   /* v2-03 N5 (§3/§8): Gemeinsamer Grau-Grundton ALLER Rohmasse-Fragmente
    * (zugeordnet + beide Transfer-Typen INTERNAL_TRANSFER/ASSET_REALLOCATION,
    * v2-04) als RGB-Triplet für rgba(var(...), a)-Komposition. Zustands-
