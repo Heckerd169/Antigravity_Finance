@@ -455,6 +455,109 @@ als Fehler meldet, findet hier die Begründung.**
 
 ---
 
+# Teil C — entschieden am 08.08.2026, im Bau-Sprint v2-17
+
+Vier Punkte, die beim Schneiden von `KAT-1`/`KAT-2`/`KAT-3` aufliefen. **C1 ist neu und
+war in Teil A/B nicht bekannt** — er widerlegt die Ursachenanalyse unter „Neuer
+Fallstrick" (siehe dort, korrigiert). C2 bis C4 waren unter „Was NICHT entschieden
+wurde" gelistet und sind damit abgeräumt.
+
+## C1 · Der Cent geht **zwischen** den Ordnern verloren, nicht **in** einem
+
+**Gemessen am 08.08.2026 gegen Produktion, nur `SELECT`:** Die Lücke von 0,01 € besteht
+in **allen zwölf Monaten** 2026, nicht nur im Juli.
+
+| | Juli 2026 |
+|---|---|
+| `calculate_sparrate_for_month` | **−322,75 €** |
+| Summe der elf Ordner, jeder für sich exakt gerechnet und gerundet | **−322,74 €** |
+| exakter Kartenwert (ungerundet) | −4.487,8556895729755… |
+
+**Warum die bisherige Anweisung nicht reicht.** „Ordner-Summe aus ungerundeten
+Kartenwerten bilden und erst am Ende runden" ist **notwendig, aber nicht hinreichend**.
+Die Sparrate rundet **einmal ganz zum Schluss über alles**: 4.165,11 − 4.487,85569 =
+−322,74569 → −322,75. Elf einzeln gerundete Ordner werfen die Nachkommastellen vorher
+weg und landen auf −322,74. Das ist mit unabhängiger Rundung **prinzipiell** nicht
+heilbar — es liegt nicht an einer schlecht gewählten Reihenfolge der Operationen.
+
+**Beleg, dass es in Teil A schon drin steckte, aber unbemerkt:** Die Aufstellung in
+**§A4 summiert sich nachgerechnet selbst auf −322,74 €**, obwohl darüber −322,75 €
+steht. Die Zeile „Deckt sich exakt mit `calculate_sparrate_for_month`" war eine
+Zusicherung, keine Prüfung — genau der Fall, den **LL-22** beschreibt.
+
+**Entscheidung: Restverteilung.** Alle Ordner werden exakt gerechnet und gerundet; die
+verbleibende Differenz wandert auf den **betragsgrößten** Ordner. Die Spalte geht damit
+in jedem Monat auf, per Konstruktion und nicht per Zufall.
+
+Formal: Die Kartenordner werden so verteilt, dass ihre Summe exakt
+`Sparrate − Einkommens-Ordner` ergibt. Der Einkommens-Ordner selbst trägt den Netto-Wert
+unverändert; er ist keine Kartensumme und hat keinen Rundungsrest.
+
+**Warum der betragsgrößte Ordner und nicht der mit dem größten Rundungsrest:** Beide
+sind im Controlling üblich. Der betragsgrößte ist **stabiler** — er wechselt selten,
+während der größte Rest praktisch jeden Monat woanders liegt. Und die relative
+Verzerrung ist dort am kleinsten: ein Cent auf 1.148 € ist 0,0009 %.
+
+**Bekannter Preis, benannt:** Ein Ordner zeigt einen Cent neben seinem eigenen exakten
+Wert — im Juli **Wohnen mit −1.148,18 € statt −1.148,17 €**. Wer nur diesen einen Ordner
+gegen seine drei Karten nachrechnet, findet die Abweichung. Das ist der Preis dafür,
+dass die **Spalte** aufgeht, und die Spalte war die ausdrückliche Bedingung.
+
+**Verworfen:**
+- *Zwölfte Zeile „Rundung −0,01 €":* vollkommen ehrlich, erzeugt aber in **jedem** Monat
+  eine Zeile, die kein Lebensbereich ist. Steht gegen „Ruhe vor Betonung", und sie wäre
+  dauerhaft da, nicht nur im Ausnahmefall.
+- *Den Cent hinnehmen:* steht gegen die ausdrückliche Bedingung aus §A4.
+- *Ordner in ganzen Euro zeigen:* macht die Lücke nicht kleiner, sondern größer
+  (bis 0,50 € je Ordner), und bricht die Zahlenform der Karten daneben.
+
+## C2 · Die Reihenfolge der Ordner ist die Liste aus §A3
+
+**Entscheidung:** Einkommen · Wohnen · Lebensmittel · Mobilität · Abos &
+Mitgliedschaften · Versicherungen · Hobby · Urlaub · Geschenke & Anlässe ·
+Persönliches · Rückflüsse · **Ohne Kategorie**.
+
+**Begründung:** Es ist die Reihenfolge, in der der User seine Kategorien selbst
+aufgeschrieben hat, und sie liest sich vom Notwendigen zum Freiwilligen. Vor allem ist
+sie **stabil**: Ein Ordner steht in jedem Monat an derselben Stelle, man findet ihn
+blind. Sie wird als änderbare Sortiernummer (`card_categories.sort_order`) gespeichert,
+nicht in Code einbetoniert — damit hat `M5` später einen Ort, ohne dass eine Migration
+nötig wird.
+
+**Verworfen:** *Nach Betrag absteigend* — zeigt sofort, wo das Geld hingeht, ordnet die
+Reihe aber in jedem Monat neu; das ist Betonung, wo Ruhe hingehört, und es zerstört das
+Muskelgedächtnis. *Alphabetisch* — stabil, aber ohne Aussage.
+
+## C3 · Der Ordner im Zukunftsmonat ist blass und meldet nichts
+
+**Entscheidung:** Sind alle Kinder Forecast, ist der Ordner es auch: grauer Grundton,
+**keine farbige linke Kante**, **kein** `[N] offen` und **kein** `erledigt` — nur
+`[N] Posten`.
+
+**Begründung — und das ist kein Schönheitsargument:** Ohne diese Regel stünde am Ordner
+im Zukunftsmonat **türkis `erledigt`**, weil null Kinder auf „Offen" stehen. Das wäre
+eine Falschaussage über einen Monat, in dem noch gar nichts fällig war. Damit ist `U12`
+vollständig beantwortet: Mischzustände über `[N] offen`, Forecast über diese Regel.
+
+## C4 · Zuschnitt: ein Sprint, vier Phasen
+
+**Entscheidung:** `J1` → `KAT-1` → `KAT-3` → `KAT-2`, ein Commit je Phase.
+
+**Zwei Abweichungen von der ursprünglichen Reihenfolge, beide begründet:**
+
+**`KAT-3` steht vor `KAT-2`, nicht dahinter.** Die Kategorie-Kachel trägt eine Zahl —
+das ist der Kern von Variante A. Diese Zahl darf nach **Arbeitsregel 1** nicht im
+Browser entstehen. `KAT-2` vor `KAT-3` ergäbe also entweder eine Kachel ohne Betrag
+(nutzlos) oder eine verbotene Frontend-Rechnung.
+
+**Ein Sprint statt zwei.** Die Datenbank wird dadurch **einmal** angefasst statt
+zweimal — und damit auch die Übungs-Datenbank nur einmal geholt, was jedes Mal
+bedeutet, ein fremdes, täglich genutztes Projekt zu pausieren. Ein erster Sprint aus
+`J1` + `KAT-1` allein hätte zudem fast nichts Sichtbares für den Browser-Test ergeben:
+einen Menüpunkt, aber keine Ordner.
+
+---
+
 ## Bewusste Abweichungen von den Befunden vom 04.08.2026
 
 | Befund | Dort | Hier | Grund |
@@ -468,18 +571,30 @@ als Fehler meldet, findet hier die Begründung.**
 
 ## Neuer Fallstrick — Rundung mit Anker-Wirkung
 
-**Die Kategorie-Summe muss aus ungerundeten Kartenwerten gebildet und erst am Ende
-gerundet werden.** Andernfalls ergibt die Aufstellung aus A4 **−322,74 €** statt
-−322,75 € — einen Cent daneben.
+> **⚠️ Korrigiert am 08.08.2026 (Teil C1).** Der ursprüngliche Text dieses Abschnitts
+> stand hier bis zum Bau-Sprint v2-17 und lokalisierte die Ursache **falsch**. Er
+> lautete: *„Die Ursache sitzt in Wohnen: Miete, Strom und Internet sind Split-Anteile
+> mit vielen Nachkommastellen (1089,25968… + 36,04168… + 22,87216… = 1148,17353…).
+> Einzeln gerundet fehlt ein halber Cent."* — Nachgemessen stimmt das nicht: Innerhalb
+> von „Wohnen" liefern beide Rundungsreihenfolgen dasselbe Ergebnis (−1.148,17 €). Der
+> Cent geht **zwischen** den Ordnern verloren, nicht in einem. Der Abschnitt bleibt
+> stehen, weil die daraus gezogene Anweisung richtig — nur unvollständig — war.
 
-Die Ursache sitzt in **Wohnen**: Miete, Strom und Internet sind Split-Anteile mit vielen
-Nachkommastellen (1089,25968… + 36,04168… + 22,87216… = 1148,17353…). Einzeln gerundet
-fehlt ein halber Cent.
+**Die Kategorie-Summe muss aus ungerundeten Kartenwerten gebildet und erst am Ende
+gerundet werden.** Das ist **notwendig**. Es ist aber **nicht hinreichend**: Auch dann
+ergibt die Aufstellung aus A4 **−322,74 €** statt −322,75 €.
+
+Die Ursache liegt eine Ebene höher. `calculate_sparrate_for_month` rundet **einmal ganz
+am Schluss über alles** (`round((netto + Σ income) − Σ fixed − Σ budget, 2)`). Elf
+unabhängig gerundete Ordner können diese eine Rundung nicht nachbilden, gleichgültig
+wie sorgfältig jeder einzelne rechnet. **Lösung: Restverteilung, siehe C1.**
 
 Das ist **`LL-24` in freier Wildbahn** („Runden ist eine Entscheidung mit Anker-Wirkung —
-prüfen, ob die Gegenseite genauso rundet"). Besondere Schärfe hier: Der User ist
-Wirtschaftsmathematiker mit Controlling-Hintergrund und hat die aufgehende Summe
-**ausdrücklich zur Bedingung gemacht**. Ein Cent Abweichung ist damit kein Schönheitsfehler.
+prüfen, ob die Gegenseite genauso rundet"), und zwar in einer schärferen Fassung als
+LL-24 sie bisher kannte: Hier rundet die Gegenseite nicht nur **anders**, sondern
+**seltener**. Besondere Schärfe zusätzlich: Der User ist Wirtschaftsmathematiker mit
+Controlling-Hintergrund und hat die aufgehende Summe **ausdrücklich zur Bedingung
+gemacht**. Ein Cent Abweichung ist damit kein Schönheitsfehler.
 
 ---
 
@@ -546,18 +661,32 @@ Aufruf falsch. **Korrektur gehört in CLAUDE.md, mit User-Freigabe (§7 Regel 14
 
 ## Was NICHT entschieden wurde
 
-- **In welcher Reihenfolge die Kategorien untereinander stehen.** Das ist `M5` eine Ebene
-  höher und war nicht Gegenstand dieser Runde. Einzige Festlegung bisher: **Einkommen
-  steht vorn** (A4), **„Ohne Kategorie" steht hinten** (B6) — dazwischen ist es offen.
+> **Drei Punkte dieser Liste sind am 08.08.2026 in Teil C entschieden worden** —
+> Reihenfolge (→ C2), Zukunftsmonat (→ C3) und der Rundungs-Cent, der hier gar nicht
+> stand (→ C1). Sie sind unten durchgestrichen stehen geblieben, damit sichtbar bleibt,
+> was die Runde offen ließ und was der Bau-Sprint nachziehen musste.
+
+- ~~**In welcher Reihenfolge die Kategorien untereinander stehen.**~~ → **C2**: die Liste
+  aus §A3, gespeichert als änderbare Sortiernummer. `M5` bekommt damit einen Ort.
 - **Wie zwei gleichnamige Karten in einem Ordner auseinanderzuhalten sind** —
   „Fahrradzubehör" existiert im Juli zweimal (34,69 € und 305,45 €). Heute trennt sie der
   Abstand in der langen Reihe; in einem Ordner stehen sie nebeneinander.
-- **Wie die Kategorie-Kachel im Zukunftsmonat aussieht.** Sind alle Kinder Ghost, ist es
-  der Ordner vermutlich auch — festgelegt ist es nicht (`U12` ist damit nur teilweise
-  beantwortet: Zustandsmodell für Mischzustände ✓ über `[N] offen`, Forecast offen).
+  **Bleibt offen und wird in v2-17 bewusst nicht gelöst:** Die beiden Beträge liegen eine
+  Größenordnung auseinander und die Statuszeile trägt bereits verschiedene Termine
+  (`am 14.` / `am 21.`). Ein zusätzliches Unterscheidungsmerkmal wäre Lärm; das Umbenennen
+  ist Sache des Users, nicht der App.
+- ~~**Wie die Kategorie-Kachel im Zukunftsmonat aussieht.**~~ → **C3**: blass, ohne Kante,
+  ohne Flagge. `U12` ist damit **vollständig** beantwortet.
 - **Ob eine Kategorie kenntlich macht, dass ihre Zahl abgeleitet ist.** Sie ist immer die
   Summe ihrer Kinder — eine eigene Kennzeichnung wäre vermutlich Lärm, ist aber nicht
-  geprüft.
+  geprüft. **Bleibt offen.**
+- **Wohin die Karte „Deutschlandticket Mama … | Abo 101627874 zum 01.05.2026" gehört.**
+  Beim Abgleich der §A3-Liste gegen den Bestand am 08.08.2026 aufgefallen: Diese Karte
+  (ONCE, Mai 2026) ist in §A3 nicht zugeordnet — „Deutschlandticket" dort meint die
+  eigene Monatskarte. Sie ist **Mobilität** (Verkehrsmittel) und **Geschenke & Anlässe**
+  (für Mama) zugleich plausibel. **Wird nicht geraten:** Sie startet in „Ohne Kategorie"
+  und ist über den Menüpunkt in zwei Klicks zugeordnet — genau der Fall, für den der
+  Behälter da ist (`B6`).
 - **`KAT-4`** (Ausgabenverlauf) bleibt hinter der Datenbasis. Von Januar bis April hängen
   **0 %** der Ausgaben an einer Karte, im Juli 74 % — eine Kurve über 2026 zeigte den
   Kurationsfortschritt, nicht das Ausgabeverhalten (Befund `D4`). Der **Ort** ist mit B3
@@ -583,14 +712,17 @@ es keine versionierte Basis, gegen die ein Eingriff in eine Rechenfunktion diffe
 
 ## Doku-Folge
 
-Patch über den `docs-maintainer` nach §7 Regel 14 (LL-16) mit Versions-Bump. Design-Doku
-steht auf **v3.3.1** → Ziel **v3.4.0**. **Minor-Bump, kein Patch-Bump:** §1 wird
-präzisiert, §8 bekommt eine ganz neue Struktur, §12 einen neuen Block — und §11 benennt
-einen bestehenden Begriff um.
+Patch nach §7 Regel 14 (LL-16) mit Versions-Bump. **Minor-Bump, kein Patch-Bump:** §1
+wird präzisiert, §8 bekommt eine ganz neue Struktur, §12 einen neuen Block — und §11
+benennt einen bestehenden Begriff um.
 
-**Zeitpunkt:** Die Design-Doku gehört bis auf Weiteres der parallel laufenden
-Bau-Sitzung (`RM-2` / `PA-1`). Der Patch läuft deshalb **erst nach deren Merge**, sonst
-kollidieren zwei Sitzungen in derselben Datei.
+> **Ziel korrigiert am 08.08.2026:** Dieser Abschnitt nannte ursprünglich **v3.4.0** als
+> Ziel, ausgehend von v3.3.1. Inzwischen ist **v2-16 gemergt** und hat die Design-Doku
+> selbst auf **v3.4.0** gehoben. Die Nummer ist damit vergeben; der Patch dieses Sprints
+> geht auf **v3.5.0**.
+
+**Zeitpunkt:** Die Design-Doku gehörte zum Zeitpunkt dieser Runde der parallel laufenden
+Bau-Sitzung (`RM-2` / `PA-1`). Deren Merge ist erfolgt — der Patch läuft in v2-17.
 
 | Was | Wohin |
 |---|---|
@@ -611,4 +743,6 @@ kollidieren zwei Sitzungen in derselben Datei.
 *Design-Entscheidung · Antigravity Finance · 07./08. August 2026 · Rolle
 `design-direktor` · sechs Gestaltungsfragen plus vier Detailfragen, alle vom User
 bestätigt · Teil A im Dialog, Teil B nach Ansicht der Entwürfe am Rechner ·
+**Teil C am 08.08.2026 im Bau-Sprint v2-17 nachgezogen** (vier weitere Entscheidungen,
+darunter eine Korrektur an der eigenen Fallstrick-Analyse) ·
 Entwurf: `design-system/entwuerfe/kat-kategorien.html` (lebt, bis gebaut ist)*
