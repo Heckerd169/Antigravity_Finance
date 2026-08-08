@@ -114,6 +114,14 @@ BEGIN
         ('Hotel Konfirmation - Anteil Aline',                'Geschenke & Anlässe'),
         ('Geschenk Parfüm - Mama',                           'Geschenke & Anlässe'),
         ('Aline Geburtstag',                                 'Geschenke & Anlässe'),
+        -- Nachgetragen am 08.08.2026 nach User-Entscheid. §A3 ordnete diese
+        -- Karte nicht zu — „Deutschlandticket" dort meint die eigene
+        -- Monatskarte. Mobilität (Verkehrsmittel) und Geschenke (für Mama)
+        -- waren beide plausibel; der User hat Geschenke gewählt.
+        -- Der Name trägt Leerzeichen und einen Abo-Vermerk aus dem Import,
+        -- deshalb hier vollständig und unverändert.
+        ('Deutschlandticket Mama                                  Europa-Allee 70-76 | Abo 101627874 zum 01.05.2026',
+                                                             'Geschenke & Anlässe'),
 
         ('Privates Budget',                                  'Persönliches'),
         ('Friseur',                                          'Persönliches'),
@@ -156,13 +164,19 @@ $migration$;
 
 -- ───────────────────────────────────────────────────────────────────────────
 -- Erwartung beim Lauf gegen Produktion (Bestand 08.08.2026, 46 Karten):
---   45 Karten zugeordnet, 1 Karte bleibt ohne.
+--   ALLE 46 Karten zugeordnet, keine bleibt ohne.
 --
--- Die eine ist „Deutschlandticket Mama … | Abo 101627874 zum 01.05.2026"
--- (ONCE, Mai 2026). §A3 ordnet sie nicht zu — „Deutschlandticket" dort meint
--- die eigene Monatskarte. Sie ist als Verkehrsmittel (Mobilität) wie als
--- Geschenk (Geschenke & Anlässe) plausibel, und es wird bewusst NICHT geraten
--- (Arbeitsregel 3). Sie erscheint im Mai 2026 unter „Ohne Kategorie" und ist
--- über den Menüpunkt in zwei Klicks eingeräumt — genau der Fall, für den der
--- Behälter da ist (B6).
+-- Der Weg dorthin ist bewusst zweistufig gewesen: Beim ersten Lauf blieb
+-- „Deutschlandticket Mama … | Abo 101627874 zum 01.05.2026" (ONCE, Mai 2026)
+-- offen, weil §A3 sie nicht zuordnet und Mobilität wie Geschenke plausibel
+-- waren — es wurde NICHT geraten (Arbeitsregel 3). Der User hat am 08.08.2026
+-- „Geschenke & Anlässe" entschieden; die Zeile steht seither oben mit drin.
+--
+-- Sichtbare Folge: „Ohne Kategorie" erscheint in KEINEM Monat mehr. Das ist
+-- kein Fehler, sondern die Sichtbarkeits-Regel B6 — der Behälter zeigt sich
+-- genau dann, wenn es etwas zu tun gibt. Der Mai fällt dadurch von zehn auf
+-- neun Ordner.
+--
+-- Anker nach der Zuordnung: alle zwölf Monate um 0,00 € bewegt, die
+-- Ordner-Spalte ergibt in allen zwölf weiterhin exakt die Sparrate.
 -- ───────────────────────────────────────────────────────────────────────────

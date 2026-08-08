@@ -52,7 +52,9 @@ Owner-Policy **von Hand**, fünf RPCs.
 
 **Daten:** Zehn Ordner nach Record §A3 — **nicht elf**. „Einkommen" trägt das
 Nettogehalt, und das ist keine Karte; es ist ein Sammelbecken der Anzeige wie „Ohne
-Kategorie". 45 von 46 Karten zugeordnet.
+Kategorie". Beim ersten Lauf 45 von 46 Karten; die letzte („Deutschlandticket Mama …")
+blieb bewusst offen und wurde am 08.08. vom User nach **Geschenke & Anlässe** gelegt —
+seither **alle 46**.
 
 **Oberfläche:** Menüpunkt `Kategorie ändern …` auf **jeder** Karte, auch Ghost.
 Overlay mit Liste, `Ohne Kategorie` als reguläre Wahl und `Neue Kategorie …`.
@@ -294,10 +296,11 @@ pausieren. Der Rennrad-Trainer war rund zwei Stunden nicht erreichbar und ist au
 1. **CLAUDE.md-Patches freigeben** (§7 Regel 14). Vier Vorschläge in
    `sprints/sprint_v2-17_doku_patches.md` Teil 3 — darunter die **Korrektur von
    Stolperfalle 4**, die heute schlicht falsch ist und einen Aufruf falsch bauen lässt.
-2. **Die eine unzugeordnete Karte.** „Deutschlandticket Mama … | Abo 101627874 zum
-   01.05.2026" (ONCE, Mai 2026) steht unter „Ohne Kategorie". Record §A3 ordnet sie
-   nicht zu; **Mobilität** (Verkehrsmittel) und **Geschenke & Anlässe** (für Mama) sind
-   beide plausibel. Bewusst nicht geraten — zwei Klicks im Mai räumen sie ein.
+2. ~~Die eine unzugeordnete Karte.~~ **Erledigt am 08.08.2026** — „Deutschlandticket
+   Mama …" ist nach **Geschenke & Anlässe** eingeräumt (User-Entscheid). Damit sind
+   **46 von 46** Karten zugeordnet und „Ohne Kategorie" erscheint in **keinem** Monat
+   mehr; der Mai fällt von zehn auf neun Ordner. Anker danach erneut gemessen: alle
+   zwölf Monate 0,00 €, Ordner-Spalte weiterhin 12/12 deckungsgleich.
 3. **Merge-Freigabe** nach dem Browser-Smoke.
 
 ### 6.2 Bewusst offen gelassen

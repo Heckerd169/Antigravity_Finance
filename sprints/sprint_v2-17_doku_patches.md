@@ -195,10 +195,16 @@ Hand in die Migration.
 
 ---
 
-# Teil 3 · Vorschlag für CLAUDE.md — NICHT angewendet
+# Teil 3 · CLAUDE.md — C1 bis C4 ANGEWENDET (Freigabe 08.08.2026)
 
-> §7 Regel 14 verlangt für diese Datei die ausdrückliche Freigabe des Users. Die
-> folgenden vier Patches sind **Vorschläge**.
+> §7 Regel 14 verlangt für diese Datei die ausdrückliche Freigabe des Users. Sie liegt
+> seit dem 08.08.2026 vor („die CLAUDE.md-Patches sind freigegeben") und bezieht sich
+> auf die vier unten stehenden Patches **C1–C4**. Sie sind angewendet.
+>
+> **C5 und C6 sind NICHT angewendet.** Sie sind mir beim Schreiben aufgefallen und
+> standen nicht in dem Satz, den der User freigegeben hat. Eine gegatete Datei
+> stillschweigend über die Freigabe hinaus zu erweitern, hebt das Gate praktisch auf —
+> deshalb stehen sie als eigene Vorschläge am Ende.
 
 ## C1 · §6 Stolperfalle 4 ist FALSCH und gehört korrigiert
 
@@ -261,3 +267,44 @@ Sparraten-Anker stehen.
 rundet. Hier rundet die Gegenseite **seltener** — das ist eine andere Fehlerklasse, und
 sie war in einem Beschluss-Record bereits falsch analysiert worden, ohne dass es jemand
 bemerkte.
+
+---
+
+# Teil 4 · Zwei weitere CLAUDE.md-Vorschläge — NICHT angewendet
+
+> Diese beiden sind mir beim Anwenden von C1–C4 aufgefallen. Sie standen **nicht** in
+> der Freigabe vom 08.08.2026 und sind deshalb **nicht** eingespielt. Ich hatte sie
+> zwischenzeitlich mit hineingeschrieben und wieder entfernt — eine gegatete Datei über
+> die Freigabe hinaus zu erweitern, hebt das Gate praktisch auf.
+>
+> Beide sind kurz und würden als **Stolperfalle 14 und 15** in §6 stehen.
+
+## C5 · §6 — neue Stolperfalle 14: Eine Kategorie ist keine Karte
+
+> 14. **Eine Kategorie ist keine Karte.** `card_categories` steht neben `cards`, hat
+>     **keine** Betrags-Spalte, und `cards.category_id` ist nullable mit
+>     `ON DELETE SET NULL`. Wer eine Kategorie als `cards`-Zeile anlegt, bricht den
+>     Prüfanker sofort: Beide Sparrate-RPCs, `get_year_deviation_drivers` und der
+>     Auto-Absorptions-Loop in `process_csv_import` laufen **ohne Typ-Filter** über
+>     alle Karten des Monats (Befund D1). `category_id IS NULL` ist ein **regulärer**
+>     Zustand („Ohne Kategorie"), kein Fehler — beide Anlage-RPCs kennen keine
+>     Kategorie und liefern laufend kategorielose Karten nach (D12). (v2-17)
+
+**Warum es sich lohnt:** Die Versuchung, „nur schnell eine Kategorie-Karte" anzulegen,
+ist real — das Karussell zeigt heute Ordner und Karten nebeneinander, und beide sehen
+ähnlich aus. Der Fehler wäre still: Die Sparrate wäre falsch, ohne dass etwas kaputt
+aussieht.
+
+## C6 · §6 — neue Stolperfalle 15: Neue Tabelle, keine Policy
+
+> 15. **Eine neue Tabelle bekommt RLS automatisch, aber KEINE Policy.** Der
+>     Event-Trigger `rls_auto_enable` führt nur `enable row level security` aus und
+>     schluckt sein eigenes Scheitern (`EXCEPTION WHEN OTHERS THEN RAISE LOG`).
+>     PostgREST liefert dann ein **stilles `[]`** beim SELECT und `42501` beim INSERT —
+>     beim Testen liest sich das wie „noch keine Daten angelegt". `ENABLE` **und**
+>     Policy gehören von Hand in die Migration. (v2-17, Befund D8)
+
+**Warum es sich lohnt:** Das ist die Fehlerklasse, die eine Stunde Suche an der
+falschen Stelle kostet, weil das Symptom nach „noch nichts angelegt" aussieht. In
+v2-17 war der Befund bekannt und die Falle deshalb umgangen — beim nächsten Mal steht
+er nur noch in einem Befund-Papier vom 04.08.2026.

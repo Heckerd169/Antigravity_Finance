@@ -680,13 +680,16 @@ Aufruf falsch. **Korrektur gehört in CLAUDE.md, mit User-Freigabe (§7 Regel 14
 - **Ob eine Kategorie kenntlich macht, dass ihre Zahl abgeleitet ist.** Sie ist immer die
   Summe ihrer Kinder — eine eigene Kennzeichnung wäre vermutlich Lärm, ist aber nicht
   geprüft. **Bleibt offen.**
-- **Wohin die Karte „Deutschlandticket Mama … | Abo 101627874 zum 01.05.2026" gehört.**
-  Beim Abgleich der §A3-Liste gegen den Bestand am 08.08.2026 aufgefallen: Diese Karte
-  (ONCE, Mai 2026) ist in §A3 nicht zugeordnet — „Deutschlandticket" dort meint die
-  eigene Monatskarte. Sie ist **Mobilität** (Verkehrsmittel) und **Geschenke & Anlässe**
-  (für Mama) zugleich plausibel. **Wird nicht geraten:** Sie startet in „Ohne Kategorie"
-  und ist über den Menüpunkt in zwei Klicks zugeordnet — genau der Fall, für den der
-  Behälter da ist (`B6`).
+- ~~**Wohin die Karte „Deutschlandticket Mama … | Abo 101627874 zum 01.05.2026"
+  gehört.**~~ → **entschieden am 08.08.2026: Geschenke & Anlässe.**
+  Beim Abgleich der §A3-Liste gegen den Bestand aufgefallen: Diese Karte (ONCE, Mai
+  2026) war in §A3 nicht zugeordnet — „Deutschlandticket" dort meint die eigene
+  Monatskarte. **Mobilität** (Verkehrsmittel) und **Geschenke & Anlässe** (für Mama)
+  waren beide plausibel, deshalb wurde nicht geraten (Arbeitsregel 3): Sie startete in
+  „Ohne Kategorie" und wurde vom User zugeordnet — genau der Weg, für den der Behälter
+  da ist (`B6`).
+  **Damit sind alle 46 Karten eingeräumt**, und „Ohne Kategorie" erscheint in keinem
+  Monat mehr. Der Mai fällt von zehn auf neun Ordner.
 - **`KAT-4`** (Ausgabenverlauf) bleibt hinter der Datenbasis. Von Januar bis April hängen
   **0 %** der Ausgaben an einer Karte, im Juli 74 % — eine Kurve über 2026 zeigte den
   Kurationsfortschritt, nicht das Ausgabeverhalten (Befund `D4`). Der **Ort** ist mit B3
