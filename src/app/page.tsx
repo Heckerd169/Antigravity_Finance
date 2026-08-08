@@ -19,7 +19,11 @@ import { loadWelleData } from "@/components/welle/loader";
 import type { WelleData } from "@/components/welle/welle.types";
 import { IncomeLabel } from "@/components/income-labels/income-label";
 import { HeaderTimeline } from "@/components/header-timeline";
-import type { EnrichedCard, LinkedFragmentRef } from "@/components/cards/cards.types";
+import type {
+  CardCategory,
+  EnrichedCard,
+  LinkedFragmentRef,
+} from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
 import { CardActionToastProvider } from "@/components/cards/card-action-toast-provider";
 import type { FragmentRow } from "@/components/interaction-zone/interaction-zone.types";
@@ -123,14 +127,41 @@ export default async function Home({ searchParams }: HomeProps) {
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
 
+  // v2-17 (KAT-1): `category_id` kommt dazu. Eine EINFACHE Spalte, keine
+  // Zeitreihe — die Zuordnung gilt rückwirkend in allen Monaten (Record A6).
   const { data: rawCards } = await supabase
     .from("cards")
     .select(
-      "id, name, type, attribution, frequency, first_active_month, last_active_month, due_day",
+      "id, name, type, attribution, frequency, first_active_month, last_active_month, due_day, category_id",
     )
     .is("deleted_at", null)
     .order("type", { ascending: true })
     .order("name", { ascending: true });
+
+  // v2-17 (KAT-1): Die Ordner selbst. EINE Abfrage für alle Karten, nicht eine
+  // je Karte — der Loader feuert ohnehin schon drei Aufrufe pro Karte
+  // (Befund D14), und die Auswahlliste ist für alle Karten dieselbe.
+  //
+  // Sortiert nach `sort_order`, dann Name: Die Reihenfolge steht in der
+  // Datenbank und nicht im Code, damit `M5` später einen Ort hat, ohne dass
+  // eine Migration nötig wird (Record C2). Der Name ist der Tiebreaker, damit
+  // gleiche Sortiernummern nicht zufällig ausgehen.
+  //
+  // Kein Limit nötig und trotzdem unbedenklich (§7 Regel 18): Die Tabelle
+  // wächst mit der Zahl der Lebensbereiche, nicht mit der Zahl der Buchungen —
+  // sie kann die 1000-Zeilen-Grenze strukturell nicht erreichen.
+  const { data: rawCategories } = await supabase
+    .from("card_categories")
+    .select("id, name, sort_order")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+
+  const categories: CardCategory[] = (rawCategories ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    sortOrder: c.sort_order,
+  }));
+
 
   // v2-05 Lösch-Tor-Vorberechnung: Links/States über ALLE Monate (zwei kleine
   // Selects statt 31 RPC-Calls). Autoritativ prüft delete_card server-seitig.
@@ -210,6 +241,10 @@ export default async function Home({ searchParams }: HomeProps) {
           // eine Eigenschaft der Karte, kein Monats-Zustand, und wird deshalb
           // weder pro Monat aufgelöst noch geklammert (das tut erst LQ-2).
           dueDay: c.due_day,
+          // v2-17 (KAT-1): wandert unverändert durch — eine Eigenschaft der
+          // Karte, kein Monats-Zustand. `null` ist ein regulärer Wert
+          // („Ohne Kategorie"), keine Lücke (Befund D12).
+          categoryId: c.category_id,
           manuallyPaid: stateRow?.manually_paid ?? false,
           adjustedAmount: stateRow?.adjusted_amount ?? null,
           deleteGate: {
@@ -485,6 +520,7 @@ export default async function Home({ searchParams }: HomeProps) {
         <InteractionZone
           fragments={monthFragments}
           cards={enrichedCards}
+          categories={categories}
           targetMonth={targetMonth}
           targetDbMonth={targetDbDate}
           currentMonth={currentMonth}

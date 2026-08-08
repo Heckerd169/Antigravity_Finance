@@ -18,6 +18,7 @@ import styles from "./interaction-zone.module.css";
 export function InteractionZone({
   fragments,
   cards,
+  categories,
   targetMonth,
   targetDbMonth,
   currentMonth,
@@ -34,6 +35,7 @@ export function InteractionZone({
         isFuture={isFuture}
         isPast={isPast}
         month={targetDbMonth}
+        categories={categories}
       />
     ),
   }));

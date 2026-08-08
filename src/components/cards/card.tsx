@@ -1,4 +1,10 @@
-import type { EnrichedCard, FixedCostState, IncomeState, BudgetState } from "./cards.types";
+import type {
+  CardCategory,
+  EnrichedCard,
+  FixedCostState,
+  IncomeState,
+  BudgetState,
+} from "./cards.types";
 import { CardInteractive } from "./card-interactive";
 import { formatEuro } from "@/lib/format";
 import styles from "./cards.module.css";
@@ -210,10 +216,12 @@ function FixedCostCard({
   card,
   state,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: FixedCostState;
   month: string;
+  categories: CardCategory[];
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
@@ -259,6 +267,8 @@ function FixedCostCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
       />
@@ -272,10 +282,12 @@ function IncomeCard({
   card,
   state,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: IncomeState;
   month: string;
+  categories: CardCategory[];
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
@@ -330,6 +342,8 @@ function IncomeCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
       />
@@ -344,11 +358,13 @@ function BudgetCard({
   state,
   fragmentSum,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: BudgetState;
   fragmentSum: number;
   month: string;
+  categories: CardCategory[];
 }) {
   const isGhost = state === "ghost";
   const isDone = state === "done";
@@ -470,6 +486,8 @@ function BudgetCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
       />
@@ -484,21 +502,48 @@ type CardProps = {
   isFuture: boolean;
   isPast: boolean;
   month: string; // "YYYY-MM-01"
+  /** v2-17 (KAT-1): alle Ordner des Nutzers — Auswahlliste für „Kategorie
+   *  ändern …". Einmal geladen und an alle Karten durchgereicht, statt je Karte
+   *  nachzufragen (der Loader feuert ohnehin schon drei Aufrufe pro Karte,
+   *  Befund D14). */
+  categories: CardCategory[];
 };
 
-export function Card({ card, isFuture, isPast, month }: CardProps) {
+export function Card({ card, isFuture, isPast, month, categories }: CardProps) {
   if (card.type === "FIXED_COST") {
     const state = resolveFixedCostState(card, isFuture);
-    return <FixedCostCard card={card} state={state} month={month} />;
+    return (
+      <FixedCostCard
+        card={card}
+        state={state}
+        month={month}
+        categories={categories}
+      />
+    );
   }
 
   if (card.type === "INCOME") {
     const state = resolveIncomeState(card, isFuture);
-    return <IncomeCard card={card} state={state} month={month} />;
+    return (
+      <IncomeCard
+        card={card}
+        state={state}
+        month={month}
+        categories={categories}
+      />
+    );
   }
 
   // BUDGET
   const fragmentSum = sumLinkedFragments(card);
   const state = resolveBudgetState(card, isFuture, isPast, fragmentSum);
-  return <BudgetCard card={card} state={state} fragmentSum={fragmentSum} month={month} />;
+  return (
+    <BudgetCard
+      card={card}
+      state={state}
+      fragmentSum={fragmentSum}
+      month={month}
+      categories={categories}
+    />
+  );
 }

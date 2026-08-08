@@ -1,5 +1,5 @@
 import type { Database } from "@/lib/supabase/types";
-import type { EnrichedCard } from "@/components/cards/cards.types";
+import type { CardCategory, EnrichedCard } from "@/components/cards/cards.types";
 
 export type CardType = Database["public"]["Enums"]["card_type"];
 export type CardAttribution = Database["public"]["Enums"]["card_attribution"];
@@ -112,6 +112,10 @@ export type InteractionZoneProps = {
   fragments: FragmentRow[];
   /** Aktive Karten im targetMonth — gleicher Shape wie Sprint 4. */
   cards: EnrichedCard[];
+  /** v2-17 (KAT-1): alle Ordner des Nutzers, in Anzeige-Reihenfolge (C2).
+   *  Wird an jede Karte durchgereicht — die Auswahlliste für „Kategorie
+   *  ändern …" ist für alle Karten dieselbe. */
+  categories: CardCategory[];
   /** "YYYY-MM" — der aktuell angezeigte Monat. */
   targetMonth: string;
   /** "YYYY-MM-01" — Datenbank-Variante für RPC-Aufrufe / link_month. */

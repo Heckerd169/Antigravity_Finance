@@ -59,4 +59,23 @@ export type EnrichedCard = {
   /** v2-05: vorberechnetes Lösch-Tor (Links/States über ALLE Monate +
    *  Vergangenheits-Plan). */
   deleteGate: DeleteGate;
+  /** v2-17 (KAT-1): Kategorie der Karte, oder `null` für „Ohne Kategorie".
+   *
+   *  Eine EINFACHE Eigenschaft, keine Zeitreihe — die Zuordnung gilt rückwirkend
+   *  in allen Monaten (Record A6, bewusst abweichend von Befund D3). `null` ist
+   *  ein regulärer Zustand und kein Fehler: Beide Karten-Anlage-RPCs kennen
+   *  keine Kategorie, jeder Klick auf den leeren Platz liefert also eine
+   *  kategorielose Karte nach (Befund D12). */
+  categoryId: string | null;
+};
+
+/** v2-17 (KAT-1): Ein Ordner, wie er in der Datenbank steht.
+ *
+ *  Ohne Betrag — die Zahl einer Kategorie ist IMMER die Summe ihrer Kinder und
+ *  wird server-seitig gebildet (KAT-3, Arbeitsregel 1). Was hier fehlt, ist
+ *  Absicht. */
+export type CardCategory = {
+  id: string;
+  name: string;
+  sortOrder: number;
 };

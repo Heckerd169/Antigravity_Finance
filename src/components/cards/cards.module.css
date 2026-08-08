@@ -633,3 +633,80 @@
   line-height: 1.45;
   color: var(--text-tertiary, rgba(255, 255, 255, 0.4));
 }
+
+/* ---------- v2-17 (KAT-1): Kategorie-Auswahl im Overlay ---------- */
+
+/* Scrollt ab etwa acht Einträgen, damit das Modal nicht mit der Zahl der Ordner
+   wächst. Elf Kategorien plus „Ohne Kategorie" sind der heutige Bestand — die
+   Liste ist auf Zuwachs ausgelegt, nicht auf genau diesen Stand. */
+.categoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 232px;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .14) transparent;
+}
+
+.categoryList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categoryList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .14);
+  border-radius: 3px;
+}
+
+.categoryItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, .62);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .13s, color .13s;
+}
+
+.categoryItem:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .9);
+}
+
+.categoryItem:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Die aktuelle Zuordnung ist markiert, nicht hervorgehoben: neutraler Ton,
+   kein Türkis. Türkis und Rot tragen in dieser App Statusbedeutung („bezahlt" /
+   „überschritten") und dürfen hier nicht als bloße Auswahl auftauchen
+   (Grundsatz „Schmale Palette"). */
+.categoryItemActive {
+  background: rgba(255, 255, 255, .05);
+  border-color: rgba(255, 255, 255, .13);
+  color: #ffffff;
+}
+
+.categoryItemName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryItemMark {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .45);
+}

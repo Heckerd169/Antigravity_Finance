@@ -280,6 +280,107 @@ export async function setFragmentAssetReallocation(
   return data as unknown as AssetReallocationResult;
 }
 
+// ── v2-17 (KAT-1): Kategorien ────────────────────────────────────────────────
+//
+// Eine Kategorie ist KEINE Karte. Beide Sparrate-RPCs schleifen ohne Typ-Filter
+// über alle Karten des Monats — eine Kategorie als `cards`-Zeile würde
+// zusätzlich zu ihren Kindern summiert und der Prüfanker bräche sofort
+// (Befund D1). Deshalb eine eigene Tabelle und ein eigener Anlageweg.
+//
+// Es gibt bewusst KEIN `createCardCategory(name)` ohne Karte: Eine Kategorie
+// entsteht dadurch, dass man ihr eine Karte gibt, damit eine leere Kategorie
+// gar nicht erst existieren kann (Record B8).
+
+/** Karte einer bestehenden Kategorie zuordnen — `categoryId: null` löst sie
+ *  heraus (sie landet dann in „Ohne Kategorie"). Throw-on-Error (LL-2). */
+export async function setCardCategory(
+  client: AppSupabaseClient,
+  args: { cardId: string; categoryId: string | null },
+): Promise<void> {
+  const { error } = await client.rpc("set_card_category", {
+    p_card_id: args.cardId,
+    // Generierter Typ ist non-nullable string; NULL (= Zuordnung aufheben) ist
+    // RPC-seitig ausdrücklich erlaubt — daher der Cast, wie bei `endCard`.
+    p_category_id: args.categoryId as unknown as string,
+  });
+  if (error) throw error;
+}
+
+/** Neue Kategorie anlegen UND die Karte hineinlegen, in einem Aufruf.
+ *
+ *  Existiert der Name bereits (ohne Rücksicht auf Groß-/Kleinschreibung), wird
+ *  die bestehende Kategorie verwendet statt eines Fehlers — „Wohnen" und
+ *  „wohnen" meinen denselben Ordner. Returns die Kategorie-ID. */
+export async function createCategoryForCard(
+  client: AppSupabaseClient,
+  args: { cardId: string; name: string },
+): Promise<string> {
+  const { data, error } = await client.rpc("create_category_for_card", {
+    p_card_id: args.cardId,
+    p_name: args.name,
+  });
+  if (error) throw error;
+  if (!data) throw new Error("create_category_for_card returned no category id");
+  return data;
+}
+
+/** Kategorie umbenennen. Wirkt rückwirkend in allen Monaten (A6) — wie eine
+ *  Karten-Umbenennung, und aus demselben Grund unbedenklich: Es ändert sich die
+ *  Gliederung, nie eine Zahl, die rechnet. */
+export async function renameCardCategory(
+  client: AppSupabaseClient,
+  args: { categoryId: string; name: string },
+): Promise<void> {
+  const { error } = await client.rpc("rename_card_category", {
+    p_category_id: args.categoryId,
+    p_name: args.name,
+  });
+  if (error) throw error;
+}
+
+/** Rückgabe von `delete_card_category` — alles, was die Rücknahme braucht. */
+export type DeletedCategoryPayload = {
+  category_id: string;
+  name: string;
+  sort_order: number;
+  card_ids: string[];
+};
+
+/** Kategorie löschen. Die enthaltenen Karten werden NICHT mitgelöscht, sondern
+ *  kategorielos (A7, via `ON DELETE SET NULL`).
+ *
+ *  Löscht HART und gibt den Wiederherstellungs-Bausatz zurück, statt eine Zeile
+ *  in `deleted_entities` anzulegen: Deren Typ-Verzeichnis kennt nur vier Werte,
+ *  `cleanup_expired_card_trash` filtert hart auf 'CARD', und 60 Sekunden
+ *  Aufbewahrung reichen nicht — eine CATEGORY-Zeile würde nie vollzogen und nie
+ *  entfernt (Befund D7). Die Rücknahme läuft deshalb über den bestehenden
+ *  5-Sekunden-Toast, nicht über den Papierkorb. */
+export async function deleteCardCategory(
+  client: AppSupabaseClient,
+  args: { categoryId: string },
+): Promise<DeletedCategoryPayload> {
+  const { data, error } = await client.rpc("delete_card_category", {
+    p_category_id: args.categoryId,
+  });
+  if (error) throw error;
+  return data as unknown as DeletedCategoryPayload;
+}
+
+/** Rücknahme aus dem Toast: legt die Kategorie mit derselben ID wieder an und
+ *  hängt die Karten zurück, die inzwischen nicht anderweitig zugeordnet wurden. */
+export async function restoreCardCategory(
+  client: AppSupabaseClient,
+  args: DeletedCategoryPayload,
+): Promise<void> {
+  const { error } = await client.rpc("restore_card_category", {
+    p_category_id: args.category_id,
+    p_name: args.name,
+    p_sort_order: args.sort_order,
+    p_card_ids: args.card_ids,
+  });
+  if (error) throw error;
+}
+
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────
 
 export type CreateCardDirectArgs = {
