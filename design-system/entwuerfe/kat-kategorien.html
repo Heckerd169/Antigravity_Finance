@@ -218,6 +218,15 @@
   <b>Die Kategorien-Kacheln sind anklickbar</b> — probier das Auf- und Zuklappen aus.
 </p>
 
+<div class="note">
+  <b>Entschieden am 08.08.2026: Variante A.</b> Diese Seite bleibt trotzdem vollständig
+  stehen, bis gebaut ist — B und C belegen, <em>warum</em> A gewonnen hat, und diese
+  Begründung ist beim Bauen mehr wert als die Empfehlung allein. Danach wandert das
+  Ergebnis nach <code>komponenten/</code> und diese Seite wird gelöscht;
+  der Beschluss-Record <code>V2/design_direktor_2026-08-07_kategorien.md</code> ist das
+  Gedächtnis, nicht dieser Ordner.
+</div>
+
 <h2>1 · Der Ausgangspunkt — dein Juli, maßstäblich</h2>
 <p class="sub">
   Der Rahmen unten ist <b>exakt so breit wie das echte Karussell bei 1440 px Fensterbreite</b>:
@@ -279,7 +288,7 @@
   ganz am Ende runden</b> — genau wie die Sparrate es tut (Regel LL-24).
 </div>
 
-<h2>3 · Variante A — Stapel-Kachel im Kartenformat <span class="badgeRec">Empfehlung</span></h2>
+<h2>3 · Variante A — Stapel-Kachel im Kartenformat <span class="badgeRec">Gewählt · 08.08.2026</span></h2>
 <p class="sub">
   Der Ordner behält das Kartenformat (136 px), hebt sich aber in drei Punkten ab:
   <b>neutraler Grundton</b> statt roter oder türkiser Tönung, <b>kein Status-Icon</b>,
@@ -371,6 +380,18 @@
   Ordner eine Karte gehört — „Abos" ist mit zehn Karten fast zwei Bildschirmbreiten lang,
   und die Ordner-Kachel ist dann längst aus dem Bild.
 </div>
+
+<h2>7 · Vier Detailfragen, entschieden am 08.08.2026</h2>
+<p class="sub">
+  Diese vier haben sich erst im Verlauf der Runde ergeben. Sie sind auf dieser Seite
+  <b>nicht dargestellt</b> — die Begründungen stehen im Beschluss-Record.
+</p>
+<dl class="kv">
+  <dt>Unsortiert</dt><dd><b>„Ohne Kategorie" steht als letzter Ordner</b>, unmittelbar vor dem leeren Platz, und erscheint nur, wenn er nicht leer ist. Er soll keine dauerhafte Mängelliste sein — und er steht dort, wo kategorielose Karten entstehen.</dd>
+  <dt>Monatswechsel</dt><dd><b>Aufgeklappte Ordner bleiben aufgeklappt</b>, wie der Übertrags-Schalter (v2-07). Beim Laden der Seite ist alles zu — der Startzustand ist das Versprechen. Keine Persistierung.</dd>
+  <dt>Umsortieren</dt><dd><b>Über das ⋯-Menü der Karte</b> (<code>Kategorie ändern …</code>), <b>nicht durch Ziehen</b> — Ziehen kollidiert mit dem Tap-Catcher, und ein missratener Zug bewegte stumm die Sparrate. Im selben Overlay entstehen auch <b>neue</b> Kategorien: Eine Kategorie entsteht dadurch, dass man ihr eine Karte gibt.</dd>
+  <dt>Kopfzeile</dt><dd><b>„noch fällig" bleibt unverändert</b> und der Ordner zeigt keinen Termin. Die Zahl gilt dem Monat, nicht der Ansicht. Bewusst hingenommen: <code>[N] offen</code> zählt den Zustand, die Kopfzeile macht eine Vorhersage — beide können auseinanderlaufen.</dd>
+</dl>
 
 <script>
 /* Echte Juli-Werte aus calculate_card_amount_for_month (Prod, 07.08.2026).

@@ -1,11 +1,19 @@
-# Design-Entscheidung — Kategorien im Karussell (Paket 4) · 07. August 2026
+# Design-Entscheidung — Kategorien im Karussell (Paket 4) · 07./08. August 2026
 
-> **Status: Zwischenstand.** Teil A ist im Dialog entschieden und vom User bestätigt.
-> Teil B **wartet auf die Ansicht am Rechner** — der User war während der Runde
-> unterwegs und konnte die maßstäblichen Entwürfe nicht beurteilen. Vorgabe des Users:
-> *„Bitte keine Entscheidung als gefallen protokollieren, die ich nur beschrieben und
-> nicht gesehen habe."* Diese Trennung ist deshalb **verbindlich** und darf nicht
-> stillschweigend aufgehoben werden.
+> **Status: vollständig.** Alle sechs Gestaltungsfragen aus
+> `V2/befunde_2026-08-04_kategorien.md` §6 sind entschieden, dazu vier Detailfragen, die
+> sich in der Runde neu ergeben haben.
+>
+> **Der Ablauf war zweistufig — und das war eine Auflage des Users.** Teil A wurde am
+> 07.08. im Dialog geklärt, während der User unterwegs war und nur ein Handy hatte. Teil B
+> hing an den maßstäblichen Entwürfen und wurde **erst am 08.08. entschieden, nachdem der
+> User sie am Rechner gesehen hatte.** Wörtliche Vorgabe: *„Bitte keine Entscheidung als
+> gefallen protokollieren, die ich nur beschrieben und nicht gesehen habe."* Die
+> Gliederung dieses Records hält diese Trennung fest, weil sie erklärt, worauf welche
+> Entscheidung beruht — auf einem Gespräch oder auf einem Bild.
+>
+> **Gewählt wurde Variante A** (Stapel-Kachel im Kartenformat), nach Ansicht aller drei
+> Varianten.
 
 **Anlass:** Paket 4 ist der Engpass der Roadmap. Die Kette lautet Rohmasse lesbar →
 Kategorien → automatische Zuordnung → Kuratierung; die automatische Zuordnung ist der
@@ -266,18 +274,20 @@ Kartenmenü, und im Behälter für alles Unsortierte.
 
 ---
 
-# Teil B — **noch nicht entschieden**, wartet auf die Ansicht am Rechner
+# Teil B — entschieden am 08.08.2026, nach Ansicht der Entwürfe
 
-Alles Folgende ist **Empfehlung der Rolle**, belegt durch die Entwurfsseite
-`design-system/entwuerfe/kat-kategorien.html`. Der User hat es **nicht gesehen**.
+Alles Folgende beruht auf der Entwurfsseite
+`design-system/entwuerfe/kat-kategorien.html` — drei Varianten, maßstäblich auf 876 px,
+mit den gemessenen Juli-Beträgen und anklickbaren Kategorien. **Der User hat sie am
+Rechner gesehen und danach entschieden.**
 
-## B1 · Die Verfassungsfrage — Präzisierung statt Änderung *(Empfehlung)*
+## B1 · Die Verfassungsfrage — Präzisierung statt Änderung
 
 Befund `U2` führt als BLOCKER, dass eine zweite Ebene drei Stellen der Verfassung
 **wörtlich** widerspricht: §1 („Keine Tab-Navigation, keine separaten Screens"), §7
 („Ein gemeinsames Karussell, keine getrennten Reihen"), §8 („Keine zwei Karussell-Reihen").
 
-**Empfehlung:** Die Verfassung wird **nicht geändert, sondern präzisiert.** Alle drei
+**Entscheidung:** Die Verfassung wird **nicht geändert, sondern präzisiert.** Alle drei
 Verbote treffen einen **zweiten Ort** oder eine **zweite Reihe**. Keines trifft eine
 Gliederung innerhalb der einen Reihe. Bleibt eine Kategorie an ihrem Platz und
 **breitet sich beim Aufklappen dort aus**, entsteht weder das eine noch das andere: Man
@@ -288,18 +298,18 @@ Reiter — bei Reitern sieht man immer nur einen Inhalt und hat einen „aktuell
 nur stumm und ohne Beschriftung. Kategorien sind dieselbe Sache mit anderer Regel und
 mit Namen.
 
-## B2 · Das Aussehen — drei Varianten
+## B2 · Das Aussehen — **Variante A gewählt**
 
 | | Variante | Bringt | Kostet |
 |---|---|---|---|
-| **A** | **Stapel-Kachel im Kartenformat** *(Empfehlung)* — 136 px, neutraler Grundton statt roter/türkiser Tönung, **kein Status-Icon**, gestapelte Kanten darunter, farbige linke Kante | Die Reihe bleibt **eine** homogene Reihe. Vollwertiges Ablageziel. Zahl an derselben Stelle wie bei Karten | Sieht einer Karte **ähnlich** — und über jeder echten Karte liegt eine unsichtbare Klickfläche, die „bezahlt" umschaltet und die Sparrate bewegt |
+| **A** | ✅ **Stapel-Kachel im Kartenformat — GEWÄHLT.** 136 px, neutraler Grundton statt roter/türkiser Tönung, **kein Status-Icon**, gestapelte Kanten darunter, farbige linke Kante (rot = drinnen ist etwas offen, türkis = alles erledigt) | Die Reihe bleibt **eine** homogene Reihe. Vollwertiges Ablageziel. Zahl an derselben Stelle wie bei Karten | Sieht einer Karte **ähnlich** — und über jeder echten Karte liegt eine unsichtbare Klickfläche, die „bezahlt" umschaltet und die Sparrate bewegt. Die Unterscheidung muss durch Ton, fehlendes Icon und Stapelkante wirklich tragen |
 | **B** | **Flache Klammer**, 172 px, vertikal zentriert | Verwechslung ausgeschlossen | **Am Entwurf sichtbar geworden:** aufgeklappt springt die Oberkante massiv — flache Klammern in der Mitte, hohe Karten oben. Gegen „Ruhe vor Betonung". Breiterer Slot: 7 statt 5 Pfeilklicks |
 | **C** | **Nur Trennung, kein Zuklappen** | Kein Regelkonflikt, keine neue Geste, kein Fehlklick-Risiko | **Löst das Hauptproblem nicht.** 32 Karten + 10 Trenner = **36** Pfeilklicks — der Weg wird länger. Bewusst als Beleg dabei |
 
 **Die Rolle hat die drei Varianten gerendert und angesehen** (Playwright, 1440 px,
 `@2x`). Der Nachteil von B ist dabei nicht vermutet, sondern beobachtet worden.
 
-## B3 · Die Geste — die „Sackgasse" ist auflösbar *(Empfehlung)*
+## B3 · Die Geste — die „Sackgasse" ist auflösbar
 
 Befund `U15` sagt, es sei **keine freie Geste übrig**: Klick ist durch den Tap-Catcher
 belegt, Hover durch das ⋯-Icon, Hover-Aufklappen ist das `LL-6`-Anti-Muster, Touch ist
@@ -315,22 +325,22 @@ derselben Reihe Verschiedenes tun? Antwort: ja — wenn die beiden Orte **sichtb
 verschieden** sind, wie Ordner und Datei. Das verlagert die Last aufs Aussehen (B2) und
 macht sie dort entscheidbar, statt sie als Sackgasse stehen zu lassen.
 
-**Empfehlung:** Klick klappt auf. **Der Verlauf liegt im ⋯-Menü**, nicht auf dem Klick —
+**Entscheidung:** Klick klappt auf. **Der Verlauf liegt im ⋯-Menü**, nicht auf dem Klick —
 Aufklappen ist die häufige Handlung, der Verlauf die seltene, und die direkte Geste
 gehört der häufigen. Karte und Kategorie bekommen denselben Menüpunkt auf zwei Ebenen
 (deckt sich mit `M7`).
 
-## B4 · Drop auf eine zugeklappte Kategorie *(Empfehlung)*
+## B4 · Drop auf eine zugeklappte Kategorie
 
 Befund `U1` (BLOCKER): Ein Drop braucht heute eine Karten-ID, eine zugeklappte Kategorie
 hat keine.
 
-**Empfehlung:** **Beim Anfassen einer Zahlung öffnen sich alle Kategorien**, beim
+**Entscheidung:** **Beim Anfassen einer Zahlung öffnen sich alle Kategorien**, beim
 Loslassen kehren sie in den vorherigen Zustand zurück. Beim Arbeiten ist alles offen,
 beim Ansehen ist es aufgeräumt. Die Kategorie-Kachel selbst bleibt daneben ein gültiges
 Ziel — dort greift die Anlege-Geste aus **A2**.
 
-## B5 · Drei Detail-Empfehlungen, die sich erst am Entwurf gezeigt haben
+## B5 · Drei Details, die sich erst am Entwurf gezeigt haben
 
 **Der Ordner trägt ein Vorzeichen, die Karte nicht.** Auf einer Karte transportiert der
 Typ die Richtung („Fixkosten" = Abgang). Ein Ordner hat keinen Typ und mischt beides —
@@ -346,6 +356,102 @@ Karten fast zwei Bildschirmbreiten lang, die Kachel ist dann längst aus dem Bil
 kosten einen Klick — aber sie sind der Ort für den Verlauf und für neue Karten, und im
 nächsten Monat können zwei darin liegen. Eine Sonderregel „ab zwei Kindern ein Ordner"
 ließe die Reihe bei jedem Monatswechsel die Form wechseln.
+
+## B6 · „Ohne Kategorie" steht hinten und erscheint nur, wenn er nicht leer ist
+
+**Entscheidung:** Letzter Ordner der Reihe, unmittelbar vor dem leeren Platz. Auf ihn
+wirkt dieselbe Regel wie auf alle anderen (**A8**): Ohne Karten wird er im Monat **nicht
+angezeigt**. Der Name bleibt **„Ohne Kategorie"**.
+
+**Begründung:** Befund `D12` nennt den kategorielosen Zustand einen **Zufluss**, keinen
+Restbestand — beide Anlage-RPCs kennen keine Kategorie, jeder Klick auf den leeren Platz
+erzeugt eine kategorielose Karte. Ein Behälter dafür ist also dauerhaft nötig, aber er
+soll keine dauerhafte Mängelliste sein. Die Sichtbarkeits-Regel löst beides: Er ist genau
+dann da, wenn es etwas zu tun gibt.
+
+**Begründung für hinten statt vorn:** Er soll nicht das Erste sein, was man sieht. Und er
+steht so unmittelbar neben dem leeren Platz — also dort, wo kategorielose Karten
+überhaupt entstehen. Die Zuordnung entsteht durch Nähe, wie schon bei `von X €` auf der
+gemeinsamen Karte und bei der Ausstehend-Anzeige über den Karten.
+
+**Verworfen:**
+- *Vorn in der Reihe:* zeigt die Arbeit sofort, macht aber jeden Blick aufs Dashboard mit
+  einer Mängelliste auf. Das ist Betonung, wo Ruhe hingehört.
+- *Kein Behälter, lose Karten am Ende:* Drei stumme Karten ohne Klammer wären
+  uneindeutig — man sähe nicht, ob sie zu nichts gehören oder ob nur die Kachel aus dem
+  Bild gescrollt ist.
+- *Der Name „Sonstiges":* freundlicher, aber er klingt nach einer echten Kategorie, in
+  der Dinge liegen bleiben dürfen. Genau diese Einladung soll der Behälter nicht
+  aussprechen.
+
+## B7 · Der Aufklapp-Zustand überlebt den Monatswechsel
+
+**Entscheidung:** Aufgeklappte Ordner bleiben beim Monatswechsel aufgeklappt. Beim Laden
+der Seite ist **alles zu**; es findet keine Persistierung statt.
+
+**Begründung:** Befund `U10` hält fest, dass es für beide Lesarten einen Präzedenzfall
+gibt — Overlays werden per `useEffect` auf `targetMonth` zurückgesetzt (LL-5), der
+Übertrags-Schalter überlebt bewusst, weil er eine **Ansichts-Vorliebe** ist. Der
+Aufklapp-Zustand gehört in die zweite Klasse: Wer an „Abos" arbeitet und Januar bis Juli
+durchgeht, will nicht siebenmal neu aufklappen.
+
+**Die Sorge aus `U10` entschärft sich von selbst:** Eine im August geöffnete Kategorie
+kann im September leer sein — dann wird sie nach **A8** gar nicht angezeigt, und der
+Zustand läuft ins Leere, ohne etwas anzurichten.
+
+**Der Startzustand ist das Versprechen:** elf Ordner statt 32 Karten. Deshalb beim Laden
+alles zu.
+
+## B8 · Umsortiert wird über das Kontextmenü — und dort entstehen auch neue Kategorien
+
+**Entscheidung:** Neuer Eintrag `Kategorie ändern …` im ⋯-Menü **der Karte**. Er öffnet
+ein Overlay mit der Liste der bestehenden Kategorien plus `Neue Kategorie …`.
+**Karten werden nicht ziehbar.**
+
+**Begründung gegen das Ziehen:** Es wäre die natürlichere Geste, kollidiert aber hart mit
+dem Tap-Catcher. Die App müsste zwischen „kurz klicken = bezahlt" und „ziehen =
+umsortieren" auf derselben Fläche unterscheiden; ein missratener Zug schriebe stumm
+`manually_paid` und bewegte die Sparrate. Das ist dieselbe Doppelbelegung, die bei der
+Aufklapp-Geste vermieden wurde (`U3`). Zwei Klicks sind leicht genug für etwas, das man
+pro Karte einmal tut — und *leicht* muss es sein, weil manche Karte in zwei Kategorien
+passt (Fitnessstudio ist Sport **und** kündbares Abo).
+
+**Damit ist auch Gestaltungsfrage 3 der Befunde beantwortet** („Wo wird eine Kategorie
+angelegt?"): **ausschließlich hier.** Kein Einstellungs-Bereich — §10 schließt einen
+separaten Screen aus, und `U14` zeigt, dass er der erste Ort der App wäre, der nicht das
+Dashboard ist.
+
+**Revision gegenüber dem ersten Vorschlag der Runde:** Im Dialog war zunächst der leere
+Platz als Anlage-Ort genannt worden. Der Menüpunkt ist besser, weil es dann **einen** Ort
+gibt statt zwei — und weil daraus eine stärkere Eigenschaft folgt: **Eine Kategorie
+entsteht dadurch, dass man ihr eine Karte gibt.** Eine leere Kategorie kann so gar nicht
+erst entstehen.
+
+**Folge für den Lebenszyklus:** Nimmt man die letzte Karte heraus, verschwindet die
+Kategorie aus der Anzeige, bleibt aber in der Auswahlliste und lässt sich jederzeit wieder
+befüllen. Endgültig entfernt wird sie über das ⋯-Menü ihrer Kachel (**A7**).
+
+## B9 · Die Kopfzeile „noch fällig" bleibt unberührt
+
+**Entscheidung:** Die Ausstehend-Anzeige aus `LQ-2` ändert sich **nicht**, und die
+Kategorie-Kachel zeigt **keinen** Termin.
+
+**Begründung:** Die Zahl summiert über alle aktiven Karten des Monats — ob eine Karte
+sichtbar ist oder in einem zugeklappten Ordner steckt, spielt keine Rolle. Sie ist eine
+Aussage über den **Monat**, nicht über die **Ansicht**.
+
+**Warum kein Termin auf der Kachel:** Rechts in der Statuszeile steht dort bereits
+`[N] offen`, und das ist die wichtigere Angabe — sie beantwortet *muss ich hier ran*, also
+die oberste Priorität des Users. Der Termin beantwortet *wann* und steht als Summe schon
+in der Kopfzeile. Wer den einzelnen Tag braucht, klappt auf.
+
+**Bekannte Doppeldeutigkeit, bewusst in Kauf genommen:** `[N] offen` auf dem Ordner und
+die Kopfzeile folgen **verschiedenen Regeln**. Der Ordner zählt den **Zustand** (Karten
+auf „Offen"), die Kopfzeile macht eine **Vorhersage** und lässt Posten weg, deren Termin
+verstrichen ist (§8). Am 6. August kann „Wohnen" also `3 offen` zeigen, während die Miete
+in der Kopfzeile nicht mehr mitzählt. Das ist bestehendes Verhalten seit v2-15 und dort
+ausdrücklich festgeschrieben — die Kategorien machen es nur sichtbarer. **Wer es später
+als Fehler meldet, findet hier die Begründung.**
 
 ---
 
@@ -440,23 +546,22 @@ Aufruf falsch. **Korrektur gehört in CLAUDE.md, mit User-Freigabe (§7 Regel 14
 
 ## Was NICHT entschieden wurde
 
-- **Alles aus Teil B** — es wartet auf die Ansicht am Rechner.
-- **Wo „Ohne Kategorie" steht.** Vorn zeigt es die Arbeit, hinten stört es nicht.
-  Befund `D12`: Es ist ein **Zufluss**, kein Restbestand — jede neu angelegte Karte
-  startet dort.
 - **In welcher Reihenfolge die Kategorien untereinander stehen.** Das ist `M5` eine Ebene
-  höher und war nicht Gegenstand dieser Runde.
-- **Ob der Aufklapp-Zustand den Monatswechsel überlebt** (`U10`). Beide Präzedenzfälle
-  existieren: Overlays werden zurückgesetzt, der Übertrags-Schalter überlebt.
-- **Was die Kopfzeile „noch fällig" zeigt, wenn alles zugeklappt ist** (Fallstrick ⑦ der
-  Dialogliste — die Fälligkeitstage der Karten sind dann nicht mehr zuzuordnen).
+  höher und war nicht Gegenstand dieser Runde. Einzige Festlegung bisher: **Einkommen
+  steht vorn** (A4), **„Ohne Kategorie" steht hinten** (B6) — dazwischen ist es offen.
 - **Wie zwei gleichnamige Karten in einem Ordner auseinanderzuhalten sind** —
-  „Fahrradzubehör" existiert im Juli zweimal (34,69 € und 305,45 €).
-- **Wie eine Karte umsortiert wird** (ziehen oder Kontextmenü). Karten sind heute keine
-  Drag-Quellen; das wäre neu.
+  „Fahrradzubehör" existiert im Juli zweimal (34,69 € und 305,45 €). Heute trennt sie der
+  Abstand in der langen Reihe; in einem Ordner stehen sie nebeneinander.
+- **Wie die Kategorie-Kachel im Zukunftsmonat aussieht.** Sind alle Kinder Ghost, ist es
+  der Ordner vermutlich auch — festgelegt ist es nicht (`U12` ist damit nur teilweise
+  beantwortet: Zustandsmodell für Mischzustände ✓ über `[N] offen`, Forecast offen).
+- **Ob eine Kategorie kenntlich macht, dass ihre Zahl abgeleitet ist.** Sie ist immer die
+  Summe ihrer Kinder — eine eigene Kennzeichnung wäre vermutlich Lärm, ist aber nicht
+  geprüft.
 - **`KAT-4`** (Ausgabenverlauf) bleibt hinter der Datenbasis. Von Januar bis April hängen
   **0 %** der Ausgaben an einer Karte, im Juli 74 % — eine Kurve über 2026 zeigte den
-  Kurationsfortschritt, nicht das Ausgabeverhalten (Befund `D4`).
+  Kurationsfortschritt, nicht das Ausgabeverhalten (Befund `D4`). Der **Ort** ist mit B3
+  entschieden (⋯-Menü, zusammen mit `M7`), der **Inhalt** nicht.
 - **`M2`** (Verben und Gesten des Karten-Lebenszyklus) und **`B2-F`** — nicht Gegenstand.
 
 ---
@@ -478,23 +583,32 @@ es keine versionierte Basis, gegen die ein Eingriff in eine Rechenfunktion diffe
 
 ## Doku-Folge
 
-**Erst nach Abschluss von Teil B**, dann Patch über den `docs-maintainer` nach §7 Regel 14
-(LL-16) mit Versions-Bump. Design-Doku steht auf **v3.3.1** → Ziel **v3.4.0**
-(Minor-Bump: §1 wird präzisiert, §8 bekommt eine neue Struktur, §12 einen neuen Block).
+Patch über den `docs-maintainer` nach §7 Regel 14 (LL-16) mit Versions-Bump. Design-Doku
+steht auf **v3.3.1** → Ziel **v3.4.0**. **Minor-Bump, kein Patch-Bump:** §1 wird
+präzisiert, §8 bekommt eine ganz neue Struktur, §12 einen neuen Block — und §11 benennt
+einen bestehenden Begriff um.
+
+**Zeitpunkt:** Die Design-Doku gehört bis auf Weiteres der parallel laufenden
+Bau-Sitzung (`RM-2` / `PA-1`). Der Patch läuft deshalb **erst nach deren Merge**, sonst
+kollidieren zwei Sitzungen in derselben Datei.
 
 | Was | Wohin |
 |---|---|
-| Präzisierung „zweiter Ort ≠ Faltung" | Design-Doku **§1** |
-| Kategorie als Ordner: Definition, Zahl, Saldo, Vorzeichen, Klammer | Design-Doku **§8** (Karussell) |
-| Aussehen, Zustände, Ablageziel, Anlege-Geste | Design-Doku **§7** + **§8** |
-| Verlauf im ⋯-Menü, gemeinsam mit `M7` | Design-Doku **§7** (Kontextmenü) |
-| Vollständige neue Copy (Kategorie-Label, Anlegen, Löschen, „Ohne Kategorie") | Design-Doku **§12** — neuer Block, heute existiert **keine einzige** Zeile |
+| Präzisierung „zweiter Ort ≠ Faltung"; Akkordeon ist kein Reiter | Design-Doku **§1** |
+| Kategorie als Ordner: Definition, Zahl als Saldo, Vorzeichen, Klammer, Sichtbarkeits-Regel | Design-Doku **§8** (Karussell) |
+| Aussehen (Variante A), Ablageziel, Anlege-Geste beim Drop, Aufklapp-Zustand | Design-Doku **§7** + **§8** |
+| Reihenfolge: Einkommen vorn, „Ohne Kategorie" hinten | Design-Doku **§8** |
+| Menüpunkt `Kategorie ändern …`; Verlauf im ⋯-Menü, gemeinsam mit `M7` | Design-Doku **§7** (Kontextmenü) |
+| Karten bleiben **keine** Drag-Quellen — ausdrücklich festhalten, damit es nicht später „nachgerüstet" wird | Design-Doku **§7** |
+| Vollständige neue Copy: Kategorie-Label, `Kategorie ändern …`, `Neue Kategorie …`, `Ohne Kategorie`, `[N] Posten`, `[N] offen`, `erledigt`, Lösch-Toast | Design-Doku **§12** — neuer Block, heute existiert **keine einzige** Zeile |
 | „Kategorie-Badge" → **„Vorschlag"** umbenennen | Design-Doku **§11** |
-| Kategorie-Summe ungerundet bilden | Schema-Doku **§3/§4** bei `KAT-3` |
+| Kopfzeile `LQ-2` bleibt unberührt; Doppeldeutigkeit `[N] offen` ↔ „noch fällig" benennen | Design-Doku **§8** |
+| Kategorie-Summe **ungerundet** bilden, erst am Ende runden | Schema-Doku **§3/§4** bei `KAT-3` |
 | Stolperfalle 4 korrigieren (`p_user_id`) | **CLAUDE.md §6** — eigener Patch, User-Freigabe |
 
 ---
 
-*Design-Entscheidung (Zwischenstand) · Antigravity Finance · 07. August 2026 ·
-Rolle `design-direktor` · Teil A vom User bestätigt, Teil B wartet auf die Ansicht ·
-Entwurf: `design-system/entwuerfe/kat-kategorien.html`*
+*Design-Entscheidung · Antigravity Finance · 07./08. August 2026 · Rolle
+`design-direktor` · sechs Gestaltungsfragen plus vier Detailfragen, alle vom User
+bestätigt · Teil A im Dialog, Teil B nach Ansicht der Entwürfe am Rechner ·
+Entwurf: `design-system/entwuerfe/kat-kategorien.html` (lebt, bis gebaut ist)*
