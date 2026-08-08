@@ -1,7 +1,7 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.4.0 (V2 · Sprint v2-16 — Schaufenster-Popup und Konsequenz-Anzeige)
-**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-16 eingespielt (`LQ-1` · `LQ-2` · `RM-2` · `PA-1` gebaut). Aus der Runde vom 06.08.2026 ist damit **alles umgesetzt**.
+**Version:** 3.5.0 (V2 · Sprint v2-17 — Kategorien im Karussell)
+**Status:** Freigegeben — Schema-Doku v3.5.0; V2-Patches bis Sprint v2-17 eingespielt (`LQ-1` · `LQ-2` · `RM-2` · `PA-1` · `KAT-1` · `KAT-2` · `KAT-3` gebaut). Aus den Runden vom 06.08. und 07./08.08.2026 ist damit **alles umgesetzt**.
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -30,6 +30,35 @@
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
+>
+> **Changelog v3.5.0 (08.08.2026, Sprint v2-17 · `KAT-1` `KAT-2` `KAT-3`):**
+> Kategorien im Karussell — die erste Gliederung, die die App je hatte.
+> §1 **präzisiert** (nicht geändert): Die drei Verbote „kein zweiter Ort", „keine
+> getrennten Reihen", „keine zwei Karussell-Reihen" treffen einen zweiten **Ort**
+> oder eine zweite **Reihe** — keines trifft eine Faltung innerhalb der einen
+> Reihe. §7 — Karussell-Sortierung gilt ab jetzt **innerhalb** eines Ordners;
+> Karten sind ausdrücklich **keine Drag-Quellen**; neuer Menüpunkt
+> `Kategorie ändern …`. §8 — **neuer Block „Kategorien"**: Ordner-Kachel
+> (Variante A), Vorzeichen am Ordner, Klammer unter offenen Ordnern,
+> Sichtbarkeits-Regel, Reihenfolge, Einkommens- und Unsortiert-Behälter,
+> Aufklapp-Zustand über den Monatswechsel, Öffnen aller Ordner beim Ziehen.
+> §11 — „Kategorie-Badge" heißt jetzt **„Vorschlag-Badge"**, weil das Wort
+> „Kategorie" ab sofort die Gliederung meint. §12 — **neuer Block §12.11** mit
+> der vollständigen Copy; §12 kannte bis heute **keine einzige** Kategorie-Zeile.
+> §3 — sieben neue Tokens für die Ordner-Kachel, **keine neue Farbe**.
+>
+> **Eine Zusicherung wurde dabei widerlegt und ist korrigiert:** Der
+> Beschluss-Record verlangte, die Ordner-Summe „aus ungerundeten Kartenwerten zu
+> bilden und erst am Ende zu runden". Nachgemessen ist das **notwendig, aber
+> nicht hinreichend** — `calculate_sparrate_for_month` rundet einmal ganz zum
+> Schluss über alles, und elf unabhängig gerundete Ordner können das nicht
+> nachbilden. Die Lücke betrug **0,01 € in allen zwölf Monaten**. Gelöst per
+> Restverteilung auf den betragsgrößten Ordner (§8, Record Teil C1).
+>
+> **Minor-Bump statt Patch-Bump**, weil §8 eine ganz neue Struktur bekommt, §12
+> einen neuen Block, §11 einen bestehenden Begriff umbenennt und §1 präzisiert
+> wird. Belege: `V2/design_direktor_2026-08-07_kategorien.md`,
+> `sprints/sprint_v2-17_review.md`.
 >
 > **Changelog v3.4.0 (07.08.2026, Sprint v2-16 · `RM-2` + `PA-1`):** §8 — die
 > Klick-Sperre auf zugeordneten Fragmenten und Überträgen ist **gebaut**, nicht mehr
@@ -69,6 +98,22 @@
 ## 1. Globale Design-Prinzipien
 
 **Single Surface.** Ein Screen, ein Monat, eine primäre Zahl. Keine Tab-Navigation, keine separaten Screens.
+
+> **Präzisierung (08.08.2026, `KAT-2`) — keine Änderung dieses Grundsatzes.**
+> Dieser Satz und seine beiden Geschwister in §7 („Ein gemeinsames Karussell, keine
+> getrennten Reihen") und §8 („Keine zwei Karussell-Reihen") treffen einen zweiten
+> **Ort** oder eine zweite **Reihe**. **Keiner von ihnen trifft eine Gliederung
+> innerhalb der einen Reihe.**
+>
+> Bleibt ein Ordner an seinem Platz und breitet sich beim Aufklappen **dort** aus,
+> entsteht weder das eine noch das andere: Man wechselt nirgendwohin, man macht etwas
+> auf. Genau das unterscheidet ein **Akkordeon** von einem **Reiter** — bei Reitern
+> sieht man immer nur einen Inhalt und hat einen „aktuellen Ort".
+>
+> **Kein Winkelzug:** Die App gruppiert seit Sprint 4 ohnehin (Fixkosten → Einnahmen
+> → Budget), nur stumm und ohne Beschriftung. Kategorien sind dieselbe Sache mit
+> anderer Regel und mit Namen. Herleitung: `V2/befunde_2026-08-04_kategorien.md` `U2`
+> (dort als BLOCKER geführt) und `V2/design_direktor_2026-08-07_kategorien.md` §B1.
 
 **Apple-Ästhetik.** Ultra-light Typographie, minimale Farbe, maximale Reduktion. Glassmorphism nur wenn konsistent eingesetzt — kein Stil-Experiment.
 
@@ -258,6 +303,19 @@ Claude Code soll dieses Feld in V1 ignorieren.
 | `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
 | `--fragment-hue` | gemeinsamer Grau-Grundton | Rohmasse-Fragmente §8 (N5) — Unterscheidung nur via Opacity/Badge |
 | `--badge-hue-1` … `--badge-hue-6` | Gold `255,200,60` · Orange `255,150,90` · Oliv `170,200,110` · Blau `100,168,240` · Violett `170,130,255` · Magenta `240,120,190` | KI-Vorschlag-Badge §11 (A1) — der Kartenname wählt den Ton deterministisch; Deckkraft unverändert `.08` Fläche / `.5` Text / `.15` Rahmen. Türkis und Rot bewusst ausgespart (Statusfarben). |
+| `--bg-category` | `#131318` | Grundton der Ordner-Kachel §8 (`KAT-2`) — eine Spur kühler und heller als `--bg-card` |
+| `--bg-category-stack` | `#101014` | Gestapelte Kanten unter der Ordner-Kachel |
+| `--border-category` | `rgba(255,255,255,.13)` | Rahmen der Ordner-Kachel |
+| `--border-category-stack` | `rgba(255,255,255,.09)` | Rahmen der zweiten Stapelkante |
+| `--border-category-open` | `rgba(255,69,58,.45)` | Linke Kante: drinnen ist etwas offen |
+| `--border-category-done` | `rgba(62,207,175,.35)` | Linke Kante: alles erledigt |
+| `--text-category-flag` | `rgba(255,99,88,.62)` | `[N] offen` auf der Ordner-Kachel |
+| `--border-bracket` / `--border-bracket-open` | `rgba(255,255,255,.14)` / `rgba(255,69,58,.32)` | Klammer unter einem aufgeklappten Ordner §8 |
+
+> **Die Kategorie-Tokens bringen KEINE neue Farbe** — das war die Auflage aus dem
+> Grundsatz „Schmale Palette". Der Ordner ist **neutral** getönt; Rot und Türkis bleiben
+> den Karten-Zuständen vorbehalten und erscheinen am Ordner nur als schmale linke Kante
+> (offen / erledigt), also in exakt ihrer bisherigen Bedeutung.
 
 ### Typographie
 
@@ -631,6 +689,25 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 
 **Karussell-Sortierung:** Fixkosten-Karten zuerst, dann Einnahmen-Karten, dann Budget-Karten. Ein gemeinsames Karussell, keine getrennten Reihen.
 
+> **Seit `KAT-2` (08.08.2026) gilt diese Sortierung INNERHALB eines Ordners.** Die
+> Reihenfolge der Ordner untereinander steht in `card_categories.sort_order` (§8).
+> „Ein gemeinsames Karussell, keine getrennten Reihen" bleibt unverändert gültig —
+> siehe die Präzisierung in §1: Ein Ordner ist keine zweite Reihe.
+
+**Karten sind KEINE Drag-Quellen** (festgeschrieben mit `KAT-2`, 08.08.2026). Eine
+Karte wird nicht gezogen — weder um sie umzusortieren noch um sie in einen Ordner zu
+legen. Das ist eine **bewusste** Festlegung und kein Umsetzungsrest:
+
+Über jeder tappbaren Karte liegt eine unsichtbare Vollflächen-Klickfläche, die
+`manually_paid` umschaltet (§7 „Interaktion", Befund `U3`). Ein Drag von derselben
+Fläche zwänge die App, zwischen „kurz klicken = bezahlt" und „ziehen = umsortieren"
+zu unterscheiden; ein missratener Zug schriebe stumm `manually_paid` und **bewegte die
+Sparrate** — ohne Toast, ohne Bestätigung. Umsortiert wird deshalb über den
+Menüpunkt `Kategorie ändern …` (unten). Zwei Klicks sind leicht genug für etwas, das
+man pro Karte einmal tut.
+
+*Wer das später „nachrüsten" will, liest zuerst `U3` und `B8` im Record.*
+
 **Attribution (Meta-Zeile):**
 - Dot ICH: `rgba(255,255,255,.22)`
 - Dot GEMEINSAM: `rgba(100,168,240,.38)`
@@ -804,9 +881,42 @@ Sinne: er behält seine eigene, in §2.4 spezifizierte Position unten Mitte.
 
 | Karten-Typ | Optionen |
 |---|---|
-| Fixkosten / Einnahmen | `Betrag anpassen` / `Fällig am …` / `Letzte Zahlung in Monat X` |
-| Budget | `Betrag anpassen` / `Letzte Zahlung in Monat X` — **kein** `Fällig am …` |
+| Fixkosten / Einnahmen | `Betrag anpassen` / `Fällig am …` / `Kategorie ändern …` / `Letzte Zahlung in Monat X` |
+| Budget | `Betrag anpassen` / `Kategorie ändern …` / `Letzte Zahlung in Monat X` — **kein** `Fällig am …` |
 | Karte nie genutzt (kein State, keine Fragmente) | zusätzlich `Karte löschen` (Hard-Delete) |
+
+**„Kategorie ändern …" (neu mit `KAT-1`, 08.08.2026):** Der **einzige** Ort, an dem
+eine Karte ihren Ordner wechselt — und an dem neue Ordner entstehen.
+
+| Eigenschaft | Regel |
+|---|---|
+| Erscheint auf | **allen** Karten, auch Ghost-/Forecast-Karten |
+| Overlay-Inhalt | Liste der bestehenden Ordner · `Ohne Kategorie` als reguläre Wahl · `Neue Kategorie …` |
+| Unterzeile | `[Kartenname] · gilt für alle Monate` |
+| Wirkung | rückwirkend in **allen** Monaten (§2.1 unberührt, siehe unten) |
+
+**Warum auch auf Ghost-Karten** — anders als `Betrag anpassen` und `Fällig am …`: Die
+Kategorie ist eine Eigenschaft der Karte, kein Monats-Zustand. Man ordnet eine künftige
+Karte genauso ein wie eine laufende, und im Zukunftsmonat ist die Kartenmenge oft die
+vollständigste.
+
+**Warum die Zuordnung rückwirkend gilt.** Sie ist eine **einfache Eigenschaft**, keine
+Zeitreihe — bewusst abweichend von der Empfehlung in `V2/befunde_2026-08-04_kategorien.md`
+`D3`. Eine ab-heute-Zuordnung zerschnitte jede Kategorie-Kurve an jeder Umsortierung:
+Netflix stünde bis Juli unter „Abos" und ab August unter „Unterhaltung", und beide Linien
+hätten dort einen Bruch, der nichts über Ausgaben aussagt. Umsortieren ist fast immer
+eine **Korrektur der Ordnung**, keine Änderung der Wirklichkeit.
+
+**Die Snapshot-Integrität ist nicht berührt.** §2.1 garantiert sie auf fünf Ebenen —
+Gehalt, Karten-Plan, Karten-Lebensdauer, Fragmente, Sparrate. Die Kategorie ist keine
+davon; die Sparrate bleibt bitgenau gleich. Der Präzedenzfall ist `cards.name`: Auch
+eine Umbenennung wirkt rückwirkend, und das stört niemanden. Was sich ändert, ist
+ausschließlich die **Gliederung**, nie eine Zahl, die rechnet.
+
+**Eine Kategorie entsteht dadurch, dass man ihr eine Karte gibt.** Deshalb gibt es
+keinen Weg, eine leere Kategorie anzulegen — `Neue Kategorie …` legt an **und** räumt
+die Karte ein, in einem Schritt. Ein separater Einstellungs-Bereich ist ausgeschlossen
+(§10, Befund `U14`: Er wäre der erste Ort der App, der nicht das Dashboard ist).
 
 **„Betrag anpassen":** Overlay mit zwei Optionen
 - **Nur dieser Monat** → UPSERT `card_monthly_states.adjusted_amount` (einmalig, vergangene/zukünftige Monate unberührt)
@@ -904,9 +1014,195 @@ Drei Zonen nebeneinander: **Portal (links) · Karussell (Mitte) · Fragment-Stac
 
 ### Karussell (Mitte)
 
-- Sortierung: Fixkosten → Einnahmen → Budget
+- Gliederung nach **Kategorien** (seit `KAT-2`, 08.08.2026 — siehe unten)
+- Sortierung **innerhalb** eines Ordners: Fixkosten → Einnahmen → Budget
 - Navigation via Chevron-Klick
 - Leerer Slot am Ende als Einstiegspunkt für neue Karten
+
+### Kategorien (seit `KAT-2`, 08.08.2026)
+
+**Eine Kategorie ist ein Ordner, kein Sammelposten.** Sie enthält ausschließlich
+**Karten**. Sie hat keine eigene Zahl außer der vorzeichenrichtigen Summe ihres
+Inhalts, und die Sparrate rechnet weiterhin **kategorie-blind** über alle Karten.
+
+Ein Sammelposten könnte eine Zahlung direkt aufnehmen und müsste dann selbst rechnen —
+womit seine Kinder es nicht mehr dürften, sonst zählt alles doppelt. Ein Behälter, der
+*mal* selbst zählt und *mal* seine Kinder zählen lässt, ist von außen nicht mehr lesbar:
+„Wohnen 1.148 €" ließe offen, ob das drei Posten sind oder drei Posten plus eine lose
+Zahlung. Wird eine Zahlung auf einen Ordner gezogen, öffnet sich deshalb **dasselbe
+Fenster wie beim leeren Platz**, nur mit vorausgewählter Kategorie.
+
+#### Die Kachel
+
+| Eigenschaft | Wert |
+|---|---|
+| Breite / Höhe | `136px` / `min-height: 170px` — **identisch mit einer Karte** |
+| Grundton | `--bg-category` (`#131318`) — **neutral**, nicht rot oder türkis getönt |
+| Rahmen | `1px solid --border-category` |
+| Status-Icon | **keines** |
+| Stapelkanten | zwei versetzte Kopien der Form via `box-shadow`; entfallen im aufgeklappten Zustand |
+| Linke Kante | `2px` rot (`--border-category-open`), solange drinnen etwas offen ist · `2px` türkis (`--border-category-done`), wenn alles erledigt ist |
+| Zeilen | `KATEGORIE` → Name → **Betrag mit Vorzeichen** → *(leere Zeile)* → `[N] Posten` / `[N] offen` bzw. `erledigt` → `Ordner` |
+| Geste | **Klick klappt auf.** Kein Tap-Catcher, kein `manually_paid` |
+
+**Die leere Zeile ist Absicht**, nicht ein Versehen: Sie steht an der Stelle, an der
+eine Karte `von X €` trägt (§7). Ohne sie wären Kachel und Karte verschieden hoch und
+die Reihe bekäme eine wandernde Unterkante.
+
+**Warum kein Tap-Catcher (Befund `U3`).** Über jeder tappbaren Karte liegt eine
+unsichtbare Vollflächen-Klickfläche, die „bezahlt" umschaltet und die Sparrate bewegt —
+ohne Toast, ohne Bestätigung. Der Klick auf eine Ordner-Kachel klappt auf und tut sonst
+**nichts**. Der benannte Preis von Variante A: Die Kachel sieht einer Karte *ähnlich*,
+und die Unterscheidung muss durch Ton, fehlendes Icon und Stapelkante wirklich tragen.
+
+#### Der Ordner trägt ein Vorzeichen, die Karte nicht
+
+Auf einer Karte transportiert der **Typ** die Richtung — „Fixkosten" heißt Abgang,
+„Einnahmen" heißt Zugang. Ein Ordner hat keinen Typ und kann beides mischen: In
+„Abos & Mitgliedschaften" liegen acht Ausgaben und zwei Erstattungen. Ohne Vorzeichen
+wäre nicht lesbar, wohin die 374,02 € wirken. Deshalb `−374,02 €` und `+69,51 €`,
+mit typografischem Minus (U+2212). Positive Summen stehen in `--color-teal`.
+
+#### Ein offener Ordner steht in einer Klammer
+
+Die aufgeklappten Karten bekommen eine **durchgehende Grundlinie** (`--border-bracket`,
+rot bei Offenem). Ohne sie verliert man beim Weiterscrollen die Zuordnung — „Abos &
+Mitgliedschaften" ist mit zehn Karten fast zwei Bildschirmbreiten lang, die Kachel ist
+dann längst aus dem Bild.
+
+#### Sichtbarkeit und Reihenfolge
+
+| Regel | Verhalten |
+|---|---|
+| Ein Ordner erscheint | nur in Monaten, in denen mindestens eine seiner Karten aktiv ist |
+| Kategorien gelten | in **allen** Monaten, vorwärts wie rückwärts — sie sind nicht monatsgebunden |
+| Reihenfolge | `card_categories.sort_order`, dann Name (de-DE) |
+| `Einkommen` | **immer vorn** (Sortiernummer −1000) |
+| `Ohne Kategorie` | **immer hinten** (32000), unmittelbar vor dem leeren Platz |
+| Ordner mit einem einzigen Kind | bleibt ein normaler Ordner |
+
+**Der Schnitt atmet mit dem Jahr.** „Urlaub" existiert in elf von zwölf Monaten nicht
+und erscheint nur, wenn Urlaub ansteht. Ohne diese Regel stünden im Januar zehn
+Behälter, von denen vier leer sind.
+
+**Warum ein Ordner mit einem Kind trotzdem ein Ordner bleibt:** Er spart zugeklappt
+keinen Platz und kostet einen Klick — aber er ist der Ort für neue Karten, und im
+nächsten Monat können zwei darin liegen. Eine Sonderregel „ab zwei Kindern ein Ordner"
+ließe die Reihe bei jedem Monatswechsel die Form wechseln.
+
+**Die Reihenfolge steht in der Datenbank, nicht im Code** — damit `M5` später einen Ort
+hat, ohne dass eine Migration nötig wird.
+
+#### Die beiden Sammelbecken
+
+**`Einkommen`** trägt das **Nettogehalt** und ist keine Zeile in `card_categories`.
+Nach §4.2 ist `Sparrate = Netto + Einnahmen − Fixkosten − Budgets`; die Kategorien
+decken ausschließlich Karten ab, und das Netto ist **keine Karte**. Ohne diesen Ordner
+fehlte in der Aufstellung genau dieser Betrag und die Rechnung ginge nicht auf.
+Aufgeklappt enthält er ein einziges Element — das Netto als Kachel; ein Klick darauf
+öffnet das **bestehende** Einkommens-Fenster (§10), kein zweites Formular. Nebeneffekt:
+Das Gehalt wird zum ersten Mal überhaupt im Karussell sichtbar.
+
+**`Ohne Kategorie`** ist ebenfalls keine Tabellenzeile, sondern die Menge der Karten
+ohne Zuordnung. Er ist ein **vollwertiger Behälter, kein Fehlerzustand**: Beide
+Karten-Anlage-RPCs kennen keine Kategorie, jeder Klick auf den leeren Platz erzeugt
+also eine kategorielose Karte (Befund `D12` — ein *Zufluss*, kein Restbestand). Er
+erscheint nur, wenn er nicht leer ist, und steht hinten: Er soll keine dauerhafte
+Mängelliste sein, und er steht dort, wo kategorielose Karten entstehen. Der Name bleibt
+**„Ohne Kategorie"** — „Sonstiges" klänge nach einer echten Kategorie, in der Dinge
+liegen bleiben dürfen.
+
+#### Zustände über die Zeit
+
+| Monat | Kachel |
+|---|---|
+| Laufend / vergangen | normaler Ton, farbige linke Kante, `[N] offen` bzw. `erledigt` |
+| **Zukunft** | **blass** (`--bg-card-ghost`), **keine** farbige Kante, **weder** `[N] offen` **noch** `erledigt` — nur `[N] Posten` |
+
+**Die Zukunfts-Regel ist kein Schönheitsargument.** Ohne sie stünde dort türkis
+`erledigt`, weil null Kinder auf „Offen" stehen — eine Falschaussage über einen Monat,
+in dem noch gar nichts fällig war.
+
+**`[N] offen` zählt den Zustand, die Kopfzeile macht eine Vorhersage.** Beide dürfen
+auseinanderlaufen: Am 6. August kann „Wohnen" `3 offen` zeigen, während die Miete in
+der Ausstehend-Anzeige nicht mehr mitzählt, weil ihr Termin verstrichen ist. Das ist
+bestehendes Verhalten seit v2-15 und hier ausdrücklich **in Kauf genommen** — wer es
+später als Fehler meldet, findet an dieser Stelle die Begründung.
+
+#### Aufklappen
+
+| Regel | Verhalten |
+|---|---|
+| Beim Laden der Seite | **alles zu** — der Startzustand ist das Versprechen |
+| Beim Monatswechsel | aufgeklappte Ordner **bleiben** aufgeklappt |
+| Persistierung | **keine** |
+| Beim Anfassen einer Zahlung | **alle** Ordner öffnen sich; beim Loslassen kehren sie in den vorherigen Zustand zurück |
+
+**Warum der Zustand den Monatswechsel überlebt** — bewusste Gegenentscheidung zu LL-5:
+Overlays werden auf `targetMonth` zurückgesetzt, weil sie Daten eines bestimmten Monats
+zeigen. Der Aufklapp-Zustand zeigt keine Daten; er ist eine **Ansichts-Vorliebe** wie
+der Übertrags-Schalter (v2-07 C1). Wer an „Abos" arbeitet und Januar bis Juli durchgeht,
+will nicht siebenmal neu aufklappen. Eine im August geöffnete Kategorie, die im
+September leer ist, wird nach der Sichtbarkeits-Regel gar nicht angezeigt — der Zustand
+läuft ins Leere, ohne etwas anzurichten.
+
+**Warum sich beim Ziehen alles öffnet:** Ein Drop braucht eine Karten-ID, eine
+zugeklappte Kategorie hat keine (Befund `U1`, dort als BLOCKER geführt). HTML5-Drag
+kennt keinen Zustandswechsel während des Ziehens — außer man macht ihn selbst. **Beim
+Arbeiten ist alles offen, beim Ansehen ist es aufgeräumt.**
+
+#### Die Zahl eines Ordners
+
+Der **vorzeichenrichtige Beitrag der enthaltenen Karten zur Sparrate des Monats** —
+dieselbe Summierung wie im Ring, nur gefiltert. **Kein eigener Plan.** Dadurch erbt der
+Ordner Vorzeichen, Partner-Anteil und alle §4.3-Sonderfälle, statt sie nachzubauen.
+
+**Server-seitig** (`get_category_amounts_for_month`, Schema-Doku §4). Im Browser wäre
+es eine zweite Sparraten-Rechnung (Arbeitsregel 1).
+
+> **⚠️ Die Spalte geht auf — und zwar erzwungen, nicht zufällig.**
+>
+> `calculate_sparrate_for_month` rundet **einmal ganz am Schluss über alles**. Elf
+> einzeln gerundete Ordner können das nicht nachbilden. Gemessen am 08.08.2026 gegen
+> Produktion: Juli 2026 exakter Kartenwert −4.487,8556895729755…, Sparrate
+> **−322,75 €**, Summe der gerundeten Ordner **−322,74 €**. Die Lücke bestand in
+> **allen zwölf Monaten**.
+>
+> Die naheliegende Abhilfe („ungerundet summieren, erst am Ende runden") ist
+> **notwendig, aber nicht hinreichend** — sie behebt die Rundung *innerhalb* eines
+> Ordners; der Cent geht *zwischen* den Ordnern verloren.
+>
+> **Regel:** Die Kartenordner werden so bemessen, dass ihre Summe exakt
+> `Sparrate − Einkommens-Ordner` ergibt; der verbleibende Rest wandert auf den
+> **betragsgrößten** Ordner (stabil, und die relative Verzerrung ist dort am
+> kleinsten). Der Einkommens-Ordner trägt das Netto unverändert und hat keinen Rest.
+>
+> **Bekannter Preis, benannt:** Ein Ordner zeigt bis zu einen Cent neben seinem eigenen
+> exakten Wert — im Juli 2026 ist das „Wohnen" mit `−1.148,18 €` statt `−1.148,17 €`.
+> Wer nur diesen einen Ordner gegen seine drei Karten nachrechnet, findet die
+> Abweichung. Das ist der Preis dafür, dass die **Spalte** aufgeht.
+
+#### Löschen — und was es NICHT gibt
+
+Es gibt **kein** „Kategorie beenden". Bei einer Karte heißt „beenden": dieser Betrag
+fällt künftig weg. Eine Kategorie hat keinen eigenen Betrag — sie wird nicht beendet,
+sie wird **leer**, und eine leere Kategorie wird im betreffenden Monat einfach nicht
+angezeigt.
+
+`Kategorie löschen` im ⋯-Menü der Kachel entfernt **nur den Ordner**; die enthaltenen
+Karten werden **kategorielos**, nicht gelöscht. Eine Kaskade wäre eine undo-lose
+Massenaktion — dasselbe Muster, das `U9` für „Alle Verknüpfungen lösen" beschreibt.
+
+**Kein Papierkorb, aber eine Rücknahme.** Der Papierkorb (§2.4) kann eine Kategorie
+nicht tragen: `deleted_entity_type` kennt vier Werte, das Aufräumen filtert hart auf
+`CARD`, und 60 Sekunden Aufbewahrung reichen nicht (Befund `D7`). Gelöscht wird deshalb
+**hart**, und der 5-Sekunden-Toast hält den Wiederherstellungs-Bausatz (Name,
+Sortiernummer, Karten-IDs) so lange, wie er sichtbar ist. Danach ist der Ordner
+endgültig weg — die Karten sind es nie.
+
+**Es gibt kein Lösch-Tor.** Eine Kategorie hat keine verknüpften Fragmente und keine
+Monats-Zustände, und ihre Karten überleben — es gibt also keinen Grund, der das
+Löschen verbieten würde.
 
 **Leerer Slot — Weg 1 (Fragment-Drop):**
 → Recurrence-Popup: Beschreibung + Betrag + Datum (vorausgefüllt) + Karten-Typ-Auswahl + Frequenz (Monatlich / Quartalsweise / Halbjährlich / Jährlich / Einmalig) + Attribution (ICH / GEMEINSAM, falls Fixkosten oder Einnahme) + Abbrechen-Button
@@ -991,7 +1287,17 @@ Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_f
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
-- Keine zwei Karussell-Reihen
+- Keine zwei Karussell-Reihen — **präzisiert seit `KAT-2`:** gemeint ist eine zweite,
+  eigenständige Reihe. Ein Ordner, der sich an seinem Platz ausbreitet, ist keine
+  (§1 Präzisierung)
+- **Keine Kategorie als `cards`-Zeile.** Beide Sparrate-RPCs schleifen ohne Typ-Filter
+  über alle Karten des Monats; eine Kategorie-Karte würde zusätzlich zu ihren Kindern
+  summiert und der Prüfanker bräche sofort (Befund `D1`). Dieselbe ungefilterte Menge
+  nutzen `get_year_deviation_drivers` und der Auto-Absorptions-Loop in
+  `process_csv_import` — Fragmente würden also auch auf Kategorien absorbiert
+- **Keine Kategorie-Ebene unter der Kategorie.** Es gibt Ordner und Karten, sonst
+  nichts. `card_fragment_links` trägt `UNIQUE (fragment_id)`; eine zweite Ebene könnte
+  ihre Realität nicht aus Links beziehen, sondern nur ableiten (Befund `D13`)
 - Kein „Drop & Distill"-Header
 - Kein zweiter CSV-Import-Bereich
 - Keine Chevrons im Fragment-Stack
@@ -1334,7 +1640,7 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Betrag | `16px`, `font-weight: 200`, `tabular-nums` | Negativ: `#FF453A` · Positiv: `#3ECFAF` |
 | Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
 | Datum | `9px` | `rgba(255,255,255,.15)` |
-| Kategorie-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen |
+| Vorschlag-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen |
 
 **Badge-Farbe (v2-07, A1):** Welchen der sechs Töne ein Badge trägt, bestimmt allein der **Kartenname** — über eine deterministische Funktion, nicht über eine Datenbank-Spalte. Damit ist die Farbe stabil über Renders, Sitzungen und Geräte hinweg und unabhängig von Anzahl, Reihenfolge oder Anlage-Zeitpunkt der Karten; eine Karte behält ihre Farbe, wenn andere Karten angelegt oder gelöscht werden. Groß-/Kleinschreibung und Randleerzeichen im Namen ändern den Ton nicht. Bei mehr Karten als Tönen teilen sich Karten einen Ton — die Farbe ist ein **Gruppierungs-Hinweis, kein Identitätsmerkmal**; der Kartenname steht daneben. Deckkraft, Typografie und Geometrie des Badges sind unverändert; variabel ist ausschließlich der Farbton. Das **TRANSFER-Badge ist vom Mapping ausgenommen** und behält den neutralen Grau-Soft-Ton auf `--fragment-hue` (AD5, Sprint 9: Transfer ist Fakt, kein Vorschlag).
 
@@ -1411,8 +1717,23 @@ Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.
 - Kein Ladebalken
 - Keine Bestätigungsmeldung nach Import
 - Kein automatisches Clustering
-- Keine interaktiven Kategorie-Badges (nur informativ)
-- Keine Kategorie-Vorhersage in V1 (Karten-Zuordnung reicht)
+- Keine interaktiven Vorschlag-Badges (nur informativ)
+- Keine Vorschlags-Vorhersage pro Nutzer in V1 (Karten-Zuordnung reicht)
+
+> **Begriffs-Umbenennung (08.08.2026, `KAT-1`).** Was hier bis v2-16
+> „Kategorie-Badge" und „Kategorie-Vorhersage" hieß, heißt ab sofort
+> **„Vorschlag-Badge"** und **„Vorschlags-Vorhersage"**. Das Wort **Kategorie**
+> bezeichnet in dieser App ab jetzt ausschließlich die Gliederung des Karussells (§8).
+>
+> Die Kollision war kleiner, als Befund `U6` sie darstellte: Das Badge ist seit `BF-1`
+> (v2-10) **aus der Anzeige verschwunden**, und §12 enthielt **keine einzige** Zeile
+> mit dem Wort. Es war ein Feldname in zwei Absätzen, kein sichtbares Wort. Der User
+> sagt durchgehend „Kategorie" für die Gliederung — ein Kunstwort zu erfinden, damit
+> ein unsichtbarer Feldname ungestört bleibt, wäre die falsche Rangfolge gewesen.
+>
+> **Achtung bei älteren Papieren:** Die Roadmap führt unter `M6` ein Thema
+> „F2 Kategorie-Vorhersage pro Nutzer" — das meint **dieses** Badge, nicht die
+> Karten-Kategorien aus Paket 4.
 
 ### Behandlung von Erstattungen — Kurations-Leitfaden (Beschluss 24.07.2026)
 
@@ -1643,6 +1964,96 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Hinweis — Übertrag | `Eigenes Konto — zählt nicht in die Sparrate` |
 | Hinweis — Umschichtung | `Von dir als Umschichtung markiert — zählt nicht in die Sparrate` |
 | Zeile — KI-Vorschlag | `Vorschlag` / `[Karten-Name] · [N] %` |
+
+### 12.11 Kategorien (seit `KAT-1` / `KAT-2`, 08.08.2026)
+
+> Bis zu diesem Sprint enthielt §12 **keine einzige** Zeile mit dem Wort Kategorie.
+> Der Block ist deshalb vollständig neu.
+
+**Die Ordner-Kachel im Karussell**
+
+| Element | Text |
+|---|---|
+| Kicker (oben links) | `KATEGORIE` |
+| Name | `[Name der Kategorie]` |
+| Betrag | `−[N] €` bzw. `+[N] €` — **immer mit Vorzeichen**, typografisches Minus |
+| Postenzahl (links unten) | `1 Posten` / `[N] Posten` |
+| Offen-Flagge (rechts unten) | `[N] offen` |
+| Alles erledigt | `erledigt` |
+| Zukunftsmonat | **keine** Flagge — nur die Postenzahl |
+| Meta-Zeile | `Ordner` |
+
+**Der Einkommens-Ordner und sein Inhalt**
+
+| Element | Text |
+|---|---|
+| Ordner-Name | `Einkommen` |
+| Netto-Kachel — Typ-Label | `Einkommen` |
+| Netto-Kachel — Name | `Nettogehalt` |
+| Netto-Kachel — Statuszeile | `Monatlich` · im Zukunftsmonat `Forecast` |
+| Netto-Kachel — Meta | `Ich` |
+
+**Der Unsortiert-Behälter**
+
+| Element | Text |
+|---|---|
+| Ordner-Name | `Ohne Kategorie` |
+
+**Kontextmenü der Karte**
+
+| Element | Text |
+|---|---|
+| Menüpunkt | `Kategorie ändern …` |
+
+**Overlay „Kategorie ändern"**
+
+| Element | Text |
+|---|---|
+| Titel | `Kategorie ändern` |
+| Unterzeile | `[Kartenname] · gilt für alle Monate` |
+| Listeneintrag | `[Name der Kategorie]` |
+| Listeneintrag — kategorielos | `Ohne Kategorie` |
+| Knopf — neu anlegen | `Neue Kategorie …` |
+| Feld-Label nach dem Aufklappen | `Name der neuen Kategorie` |
+| Platzhalter im Feld | `Unterhaltung` |
+| Knopf — bestätigen | `Anlegen und einräumen` |
+| Fehlertext bei leerem Feld | `Bitte einen Namen eingeben` |
+| Abbrechen | `Abbrechen` |
+
+**Kontextmenü der Ordner-Kachel**
+
+| Element | Text |
+|---|---|
+| Menüpunkt 1 | `Kategorie umbenennen …` |
+| Menüpunkt 2 | `Kategorie löschen` |
+
+**Overlay „Kategorie umbenennen"**
+
+| Element | Text |
+|---|---|
+| Titel | `Kategorie umbenennen` |
+| Unterzeile | `[aktueller Name] · wirkt in allen Monaten` |
+| Feld-Label | `Neuer Name` |
+| Knopf | `Übernehmen` |
+| Fehlertext bei leerem Feld | `Bitte einen Namen eingeben` |
+| Abbrechen | `Abbrechen` |
+
+**Lösch-Toast**
+
+| Fall | Text |
+|---|---|
+| Eine Karte betroffen | `Kategorie »[Name]« gelöscht · 1 Karte ist jetzt ohne Kategorie` |
+| Mehrere Karten | `Kategorie »[Name]« gelöscht · [N] Karten sind jetzt ohne Kategorie` |
+| Rückgängig-Knopf | `Rückgängig` *(unverändert aus §12.5)* |
+
+**Der Toast nennt die Folge, nicht nur die Aktion.** „Kategorie gelöscht" allein ließe
+offen, was mit den Karten passiert ist — und genau das ist die Frage, die man in
+diesem Moment hat. Die Antwort steht deshalb im selben Satz.
+
+**Die beiden Unterzeilen (`gilt für alle Monate`, `wirkt in allen Monaten`) sind keine
+Füllwörter.** Sie beantworten die Frage „gilt das nur für diesen Monat?", bevor sie
+entsteht — dasselbe Muster wie im „Fällig am …"-Overlay (§12.4). Fielen sie einer
+späteren Straffung zum Opfer, kehrte genau diese Frage zurück.
 
 ---
 

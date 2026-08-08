@@ -2,8 +2,9 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 07. August 2026 (nach v2-16 — `RM-2` und `PA-1` gebaut, **Paket 2
-> abgeschlossen**) · **Vorgänger-Struktur:** bis zum
+> **Stand:** 08. August 2026 (nach v2-17 — `KAT-1`, `KAT-2`, `KAT-3` gebaut und
+> die Hausaufgabe `J1` erledigt, **Paket 4 abgeschlossen**) ·
+> **Vorgänger-Struktur:** bis zum
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
@@ -27,16 +28,33 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 07.08.2026 nach Sprint v2-16 zeilengenau nachgezählt.*
+*Alle Zahlen am 08.08.2026 nach Sprint v2-17 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
-|---|---|---|---|---|---|---|---|
-| Offene Pakete | **11** | 12 | 13 | 14 | 14 | 14 | 14 |
-| Themen darin | **31** | 32 | 34 | 35 | 36 | 37 | 40 |
-| Hausaufgaben ohne eigenen Sprint | **5** | 6 | 6 | 7 | 7 | 7 | 8 |
-| **Offen gesamt** | **36** | 38 | 40 | 42 | 43 | 44 | 48 |
-| Erledigt | **37** | 35 | 33 | 31 | 30 | 29 | 25 |
-| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+| | Anzahl | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
+|---|---|---|---|---|---|---|---|---|
+| Offene Pakete | **10** | 11 | 12 | 13 | 14 | 14 | 14 | 14 |
+| Themen darin | **28** | 31 | 32 | 34 | 35 | 36 | 37 | 40 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 5 | 6 | 6 | 7 | 7 | 7 | 8 |
+| **Offen gesamt** | **32** | 36 | 38 | 40 | 42 | 43 | 44 | 48 |
+| Erledigt | **41** | 37 | 35 | 33 | 31 | 30 | 29 | 25 |
+| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+
+> **Stand nach v2-17 (08.08.2026), zeilengenau nachgezählt** — nicht geschätzt,
+> sondern per `grep` über die Datei ausgezählt. Paket-Tabellen **35** Zeilen,
+> davon **7 ✅** (`BF-4`, `LQ-1`, `LQ-2`, `RM-2` plus neu `KAT-1`, `KAT-2`,
+> `KAT-3`) → **28** offen (⬜ 25 · 🟡 3). Hausaufgaben **4**, alle ⬜ — `J1` ist
+> raus und war die einzige 🟡. §4 Erledigt **41** Zeilen. §3 unverändert **4**.
+>
+> **Paket 4 fällt weg** — es bestand aus `KAT-1`, `KAT-2` und `KAT-3`, alle drei
+> sind mit v2-17 gebaut. `KAT-4` gehörte nie dazu, es liegt in Paket 10 (mit
+> `M7`). Offene Pakete: 11 → **10**.
+>
+> **Damit sind vier der fünf Kettenglieder fertig** — Paket 1 (Fehler), Paket 2
+> (Rohmasse), Paket 4 (Kategorien) und, daneben stehend, Paket 3 (Liquidität).
+> Das nächste ist **Paket 5**: die bessere automatische Zuordnung, der einzige
+> Punkt der Roadmap, der Aufwand **wegnimmt** — und laut dem Nebenbefund der
+> Kategorien-Runde dringender als angenommen (von 76 gemeinsamen
+> Monatszahlungen sind heute **zwei** zugeordnet).
 
 > **Stand nach v2-16 (07.08.2026), zeilengenau nachgezählt.** Paket-Tabellen **35**
 > Zeilen, davon **4 ✅** (`BF-4`, `LQ-1`, `LQ-2`, `RM-2`) → **31** offen (⬜ 28 · 🟡 3).
@@ -120,10 +138,11 @@ für das nächste:
 > einzige Punkt der Roadmap, der Aufwand **wegnimmt** — alle anderen vergrößern die
 > Oberfläche. Begründung und Messung stehen am Paket.
 
-**Paket 3 steht bewusst daneben, nicht darin.** Die Liquiditäts-Vorschau hängt an
-keinem anderen Paket und liefert als Einziges Wert, **bevor** kuratiert ist. Sie steht
-an dieser Stelle, weil Paket 4 noch nicht schneidbar ist — sie füllt die Wartezeit,
-statt sie zu verlängern.
+**Paket 3 stand bewusst daneben, nicht darin.** Die Liquiditäts-Vorschau hing an
+keinem anderen Paket und lieferte als Einziges Wert, **bevor** kuratiert ist. Sie stand
+an dieser Stelle, weil Paket 4 damals noch nicht schneidbar war — sie füllte die
+Wartezeit, statt sie zu verlängern. *(Beide sind seit v2-15 bzw. v2-17 erledigt; der
+Absatz bleibt als Begründung der damaligen Reihenfolge stehen.)*
 
 **Was als Nächstes dran ist — Stand 05.08.2026 nach Sprint v2-13.**
 Von den fünf Befunden sind **alle fünf erledigt**: `BF-3` und `BF-1` (v2-10),
@@ -138,10 +157,18 @@ erledigt; damit ist auch **Paket 2 vollständig abgeschlossen**. Was in der Rohm
 steht, ist jetzt lesbar: die Karte zeigt den Verwendungszweck (`RM-1`), das Popup den
 Empfänger und alles Übrige (`RM-2`).
 
-> **Was das für die Kette bedeutet:** Von den fünf Kettengliedern sind **Paket 1 und
-> Paket 2 fertig**. Das nächste ist **Paket 4** (Kategorien) — und das ist der
-> Engpass: Es braucht eine eigene `design-direktor`-Runde und ist der Riegel vor
-> Paket 5, dem einzigen Punkt der Roadmap, der Aufwand **wegnimmt**.
+> **Was das für die Kette bedeutet — Stand 08.08.2026 nach v2-17:** Von den fünf
+> Kettengliedern sind **Paket 1, Paket 2 und Paket 4 fertig**. Der Riegel vor
+> Paket 5 ist gefallen.
+>
+> **Das nächste ist Paket 5** (bessere automatische Zuordnung) — und die
+> Kategorien-Runde hat nebenbei belegt, wie dringend es ist: Von **76 gemeinsamen
+> Monatszahlungen sind zwei zugeordnet**, bei 19 Monaten identischem Text,
+> identischem Betrag und identischem Tag. Ursache ist die Split-Systematik — die
+> Karte „Miete" plant 1.904 € (Haushalt), überwiesen werden 1.089,26 € (der
+> Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
+> 43 % Abweichung reichen nie für die 95-%-Schwelle. Kategorien **erben** die
+> automatische Zuordnung korrekt — es gibt heute nur fast nichts zu erben.
 
 *Die frühere Fassung dieses Abschnitts, zur Nachvollziehbarkeit:*
 
@@ -284,31 +311,34 @@ Gestaltungs-Runde wartet.
 
 ---
 
-### Paket 4 · Kategorien im Karussell
-**Entsperrt:** eine Fläche, auf der man kuratieren kann. Gemessen am 04.08.2026 stehen
-**19–32 Karten** in einem Monat im Karussell (Grundrauschen ~20, Spitzen 31 im Mai und
-32 im Juli). Beim Zuordnen sucht man das Ziel unter genau diesen Karten — deshalb steht
-dieses Paket **vor** der Kuratierung, nicht danach.
-**Quelle und Belege:** `V2/befunde_2026-08-04_kategorien.md` (30 Befunde aus zwei
-parallelen Analysen plus eigene Messungen)
-**⚠️ Noch nicht schneidbar** — es hängen sechs Gestaltungsfragen daran (Befunde §6).
-**Erst `design-direktor`, dann schneiden.**
+### Paket 4 · Kategorien im Karussell — ✅ **VOLLSTÄNDIG ERLEDIGT (08.08.2026)**
+**Entsperrt hat es:** eine Fläche, auf der man kuratieren kann. Gemessen am 04.08.2026
+standen **19–32 Karten** in einem Monat im Karussell; im Juli sah man 18 % seines Monats
+auf einmal und brauchte 27 Pfeilklicks von einem Ende zum anderen. Seit v2-17 sind es
+**11 Ordner und 5 Klicks**.
+**Quelle und Belege:** `V2/befunde_2026-08-04_kategorien.md` (30 Befunde) ·
+`V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C) ·
+`sprints/sprint_v2-17_review.md`
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| KAT-1 | Kategorien und Unterkategorien als eigene Struktur | Feature | **ja** | ⬜ | Eigene Tabelle, eigener Anlageweg, Anlegen/Ändern/Beenden/Löschen. **Ausdrücklich keine `cards`-Zeile** — beide Sparrate-RPCs laufen ohne Typ-Filter über alle Karten, eine Kategorie-Karte würde doppelt gezählt und der Prüfanker bräche (Befund D1). Der Papierkorb kann eine Kategorie heute nicht tragen: sein Typ-Verzeichnis kennt nur vier Werte, das Aufräumen filtert hart auf `CARD`, und 60 s Aufbewahrung reichen für eine Kaskade nicht (D7). **„Ohne Kategorie" muss ein vollwertiger Eimer sein**, kein Fehlerzustand — beide Anlage-RPCs kennen keine Kategorie und liefern laufend welche nach (D12). |
-| KAT-2 | Karussell gruppiert nach Kategorien | Feature | nein | ⬜ | Klapp-Verhalten, Drop-Ziele, Gesten. **Muss das Zuordnen für die Hierarchie lösen** — ein Drop braucht heute eine Karten-ID, eine zugeklappte Kategorie hat keine (Befund U1, BLOCKER). Eine beendete Kategorie muss in vergangenen Monaten sichtbar bleiben, sonst verliert die Vergangenheit ihre Struktur (U13). |
-| KAT-3 | Kategorie-Zahl = Beitrag zur Sparrate | Feature | **ja** | ⬜ | **Entschieden:** die Zahl ist der **vorzeichenrichtige Beitrag der enthaltenen Karten zur Sparrate des Monats** — dieselbe Summierung wie im Ring, nur gefiltert. Nicht ein eigener Plan. Erbt Vorzeichen, Partner-Anteil und die Typ-Sonderregeln, statt sie nachzubauen; schließt damit die Befunde D2 und D5 strukturell aus. **Server-seitig** — im Browser wäre es eine eigene Sparrate-Rechnung (Arbeitsregel 1). Räumt zugleich den heutigen N+1-Ladeweg auf (46 Karten × 3 Einzelabfragen, im Code für „<20 Karten" begründet — D14). Fähigkeit `db-eingriff`, Anker vorher/nachher. |
+| KAT-1 | Kategorien als eigene Struktur | Feature | **ja** | ✅ | **v2-17.** Tabelle `card_categories` + Spalte `cards.category_id`, fünf RPCs, Menüpunkt „Kategorie ändern …". **Keine `cards`-Zeile** (D1). Der Papierkorb kann eine Kategorie nicht tragen (D7) — deshalb löscht `delete_card_category` **hart** und gibt den Wiederherstellungs-Bausatz zurück; die Rücknahme läuft über den bestehenden 5-Sekunden-Toast. Kein neuer Enum-Wert, keine längere Aufbewahrung. RLS-Policy von Hand (D8). Zuordnung nach Record §A3: **zehn** Ordner (nicht elf — „Einkommen" trägt das Netto und ist keine Karte), **alle 46 Karten** eingeräumt. Statt „Beenden" nur „Löschen", die Karten werden kategorielos (A7). |
+| KAT-2 | Karussell gruppiert nach Kategorien | Feature | nein | ✅ | **v2-17.** Variante A: Stapel-Kachel im Kartenformat, neutraler Ton, kein Status-Icon, linke Kante rot/türkis. **Kein Tap-Catcher** (U3). Beim Ziehen öffnen sich alle Ordner — damit ist `U1` (BLOCKER) gelöst, ohne dass eine zugeklappte Kategorie je ein Drop-Ziel braucht. Aufklapp-Zustand überlebt den Monatswechsel, beim Laden ist alles zu (B7). Einkommens-Ordner mit Netto-Kachel (A4), „Ohne Kategorie" hinten und nur wenn belegt (B6). Zukunftsmonat blass ohne Flagge (C3). |
+| KAT-3 | Kategorie-Zahl = Beitrag zur Sparrate | Feature | **ja** | ✅ | **v2-17.** `get_category_amounts_for_month` — alle Ordner in EINEM Aufruf, vorzeichenrichtig, server-seitig. **Der Cent war der eigentliche Inhalt:** Die Runde hatte „ungerundet summieren, am Ende runden" verordnet; nachgemessen ist das notwendig, aber **nicht hinreichend** — die Lücke von 0,01 € bestand in **allen zwölf Monaten**, und die Aufstellung im Record §A4 summierte sich selbst auf −322,74 € statt −322,75 €. Gelöst per **Restverteilung** auf den betragsgrößten Ordner, Ziel aus `calculate_sparrate_for_month` geholt statt hergeleitet (LL-22). Bewiesen auf der Übungs-DB mit einem erzwungenen Fall, auf Produktion in 12/12 Monaten. |
 
-> **Reihenfolge:** KAT-1 zuerst, dann KAT-2 und KAT-3 — drei Phasen, ein Commit je
-> Phase (Arbeitsregel 11).
-> **Zieht mit:** `M5` aus Paket 7 wird **Voraussetzung statt hinfällig** — eine Kategorie
-> mischt erstmals verschiedene Kartentypen, deren Zustands-Farben nie nebeneinanderstanden
-> (U11). Die Klick-Geste kollidiert mit `M2`: über jeder Karte liegt eine unsichtbare
-> Klickfläche für „bezahlt", ein Fehlklick bewegt die Sparrate (U3).
-> **Nicht enthalten:** der Ausgabenverlauf — der ist `KAT-4` in Paket 10 und wäre vor der
-> Kuratierung wertlos (D4: 0 % Abdeckung in vier von sieben Monaten 2026, ganz 2025 ohne
-> Karten).
+> **Was NICHT enthalten war:** der Ausgabenverlauf — das ist `KAT-4` in Paket 10 und
+> wäre vor der Kuratierung wertlos (D4). Der **Ort** dafür ist entschieden (⋯-Menü,
+> zusammen mit `M7`), der Inhalt nicht.
+>
+> **`M5` hat einen Ort bekommen, statt hinfällig zu werden:** Die Reihenfolge der Ordner
+> steht als `card_categories.sort_order` in der Datenbank und lässt sich ohne Migration
+> ändern. Innerhalb eines Ordners gilt weiterhin die Loader-Sortierung
+> (Fixkosten → Einnahmen → Budget, dann Name).
+>
+> **Zwei Punkte aus der Runde blieben bewusst offen:** wie zwei gleichnamige Karten in
+> einem Ordner auseinanderzuhalten sind („Fahrradzubehör" existiert im Juli zweimal —
+> Beträge und Termine unterscheiden sie heute ausreichend), und ob eine Kategorie
+> kenntlich macht, dass ihre Zahl abgeleitet ist.
 
 ---
 
@@ -442,8 +472,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Stand | Bemerkung |
 |---|---|---|---|
-| J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. **Dringlicher geworden:** `supabase/migrations/` enthält nur zwei Patch-Dateien, der Übungs-DB-Seed ist reine Daten ohne Schema. Es gibt damit **keine versionierte Basis**, gegen die ein Eingriff in eine Rechenfunktion diffen könnte, und die Übungs-Datenbank ist aus dem Repo nicht rekonstruierbar. Spätestens vor `KAT-3` mitnehmen (Befund D15). |
-| TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
+| TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. **Seit v2-17 präziser fassbar:** Die Baseline-Datei lässt die Tabelle bewusst leer, weil ihr Inhalt Steuerdaten sind und nur in Produktion liegt — die Struktur ist jetzt aber versioniert. |
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
@@ -465,6 +494,10 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| KAT-1 | Kategorien als eigene Struktur: `card_categories` + `cards.category_id`, fünf RPCs, Menüpunkt „Kategorie ändern …". Keine `cards`-Zeile (D1), kein Papierkorb-Eintrag (D7 — Rücknahme über den Toast), RLS-Policy von Hand (D8). Zehn Ordner, **alle 46 Karten** zugeordnet — „Ohne Kategorie" erscheint dadurch in keinem Monat | v2-17 |
+| KAT-2 | Karussell gruppiert: Variante A, kein Tap-Catcher, beim Ziehen öffnen sich alle Ordner (löst `U1`), Aufklapp-Zustand überlebt den Monatswechsel, Einkommens-Ordner mit Netto-Kachel, „Ohne Kategorie" hinten. Juli: 32 Karten → 11 Ordner, 27 → 5 Pfeilklicks | v2-17 |
+| KAT-3 | Kategorie-Zahl server-seitig, **restverteilt**: Die Ordner-Spalte ergibt in allen zwölf Monaten exakt die Sparrate. Ohne die Restverteilung wäre sie in **jedem** Monat einen Cent daneben — die Anweisung aus der Gestaltungsrunde war notwendig, aber nicht hinreichend | v2-17 |
+| J1 | Datenbank-Grundstand als versionierte Basis: 1.984 Zeilen aus dem `pg_catalog` von Produktion nach v2-16 — 5 Erweiterungen, 6 Aufzählungstypen, 10 Tabellen, 56 Constraints, 14 Indizes, 31 Funktionen, 1 View, 5 Trigger, RLS + 10 Policies, `app_config`-Seed. Damit ist die Übungs-DB erstmals aus dem Repo rekonstruierbar (Befund D15) | v2-17 |
 | LQ-1 | Fälligkeitstag je Karte: Spalte + 17 abgeleitete Werte (v2-14), Anzeige rechts in der Statuszeile + Menüpunkt „Fällig am …" (v2-15) | v2-14 / v2-15 |
 | LQ-2 | Ausstehend-Anzeige `[N] € noch fällig · [N] € Budget frei` in der Kopfzeile „Planung"; nie eine Summe, nur im laufenden Monat | v2-15 |
 | RM-2 | Schaufenster-Popup für ein Fragment: Empfänger führt, Betrag rechts, Datum in der Kopfzeile, Zweck ungekürzt; ohne Trennzeichen entfällt die Zweck-Zeile. Alle Fragmente klickbar — `pointer-events: none` aufgehoben, Drag-Sperre mit eigenem Träger. Escape-Handler. Damit ist **Paket 2 leer** | v2-16 |
@@ -520,7 +553,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | F4, F6, F7 | Paket 12 |
 | F5 | Paket 9 (mit M9) |
 | G1, G2 | Paket 13 |
-| H1, I1, J1, M4 | §2 Hausaufgaben |
+| H1, I1, M4 | §2 Hausaufgaben |
+| J1 | §4 Erledigt (v2-17) |
 | M2, M5 | Paket 7 |
 | M6 | Paket 5 |
 | M7 | Paket 10 |
@@ -531,7 +565,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | RM-4, PA-1 | §2 Hausaufgaben (beide an BF-3 anhängen) |
 | LQ-1, LQ-2 | Paket 3 |
 | LQ-3 | Paket 9 (Folgepunkt zu LQ-2) |
-| KAT-1, KAT-2, KAT-3 | Paket 4 |
+| KAT-1, KAT-2, KAT-3 | §4 Erledigt (v2-17) — Paket 4 ist damit weggefallen |
 | KAT-4 | Paket 10 (mit M7) |
 
 > **Achtung bei älteren Papieren:** Die Paket-Nummern 2–11 aus Fassungen vor der
@@ -575,4 +609,7 @@ Idee 3 → Paket 3 und LQ-3, Idee 4 → PA-1; zusätzlich M6 vor die Kuratierung
 Migration angewendet und verifiziert, Juli +900,00 €) · nach **Sprint v2-12** (`BF-2`
 erledigt, Entscheidung `E3`) · **zuletzt nach der Entscheidung E1** (05.08.2026) —
 **Paket 1 besteht nur noch aus `BF-4`, und der ist seit E1 baubar. Es blockiert keine
-Entscheidung mehr Arbeit.***
+Entscheidung mehr Arbeit.*** · fortgeschrieben am 07. August 2026 nach **Sprint v2-16**
+(`RM-2`, `PA-1`; Paket 2 leer) · **zuletzt am 08. August 2026 nach Sprint v2-17**
+(`KAT-1`, `KAT-2`, `KAT-3` und die Hausaufgabe `J1`; **Paket 4 weggefallen**, damit sind
+vier der fünf Kettenglieder fertig und der Riegel vor Paket 5 ist gefallen)*

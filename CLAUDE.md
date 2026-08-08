@@ -8,12 +8,22 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 07. August 2026 · **nach:** Sprint **v2-15**
-> (`LQ-1`-Anzeigeseite + `LQ-2` gebaut, Design-Doku **v3.3.1**, PR **#17** offen, noch
-> nicht gemerged). §9 ist auf Sprint-Stand, Doku-Versionen und Roadmap-Lage
-> nachgezogen; die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind
-> unverändert gültig — in v2-15 vor und nach dem Sprint erneut bestätigt, weil keine
-> Rechenfunktion berührt wurde.
+> **Letzte Aktualisierung:** 08. August 2026 · **nach:** Sprint **v2-17**
+> (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die Hausaufgabe `J1`;
+> Design-Doku **v3.5.0**, Schema-Doku **v3.5.0**, PR **#23** offen, noch nicht
+> gemerged). **Paket 4 ist damit vollständig**, und der Riegel vor Paket 5 ist gefallen.
+>
+> Vier Patches in dieser Runde, alle nach ausdrücklicher Freigabe:
+> **§6 Stolperfalle 4 war FALSCH** und ist korrigiert (die Regel lautet umgekehrt: wer
+> über den Nutzer aggregiert, nimmt `p_user_id`) · **neue Stolperfalle 13**
+> (Aggregation über Teilmengen) · **neuer Eintrag LL-25** · §9 auf Sprint-Stand.
+>
+> Die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind unverändert
+> gültig — in v2-17 vor und nach beiden Migrationen erneut gemessen, Abweichung überall
+> 0,00 €, zusätzlich über byte-identische Prüfsummen der vier Rechenfunktionen belegt.
+> **Neu hinzugekommen ist ein zweiter Anker:** die Ordner-Spalte (§9).
+>
+> Davor Sprint v2-16 (`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite + `LQ-2`).
 > Davor die Design-Direktor-Runde vom 06.08.2026 (`LQ-2` `LQ-1` `RM-2` `PA-1`
 > entschieden, Design-Doku v3.3.0) und Sprint v2-14 (`LQ-1`, `cards.due_day`). Davor
 > v2-13 (`BF-4` — der
@@ -342,9 +352,31 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
    `(user_id, person, effective_month)`.
 3. **Feld leeren heißt `UPDATE … SET x = NULL`, niemals `DELETE`** — sonst geht
    `manually_paid` in derselben Zeile mit verloren.
-4. **Hot-Path-RPCs nehmen kein `p_user_id`** (RLS über `auth.uid()`). Ohne Session
-   liefern sie still `NULL`/`false`/`0` statt eines Fehlers — defensiver
-   Wrapper-Check ist Pflicht. Einzige Ausnahme mit `p_user_id`: `get_split_factor`.
+4. **Wer über den Nutzer aggregiert, nimmt `p_user_id`. Wer eine einzelne Karte
+   auflöst, nicht.** Das ist die Regel — und sie stand hier bis zum 08.08.2026
+   **falsch herum** („Hot-Path-RPCs nehmen kein `p_user_id`, einzige Ausnahme
+   `get_split_factor`"). Gemessen gegen `pg_proc`:
+
+   | Mit `p_user_id` | Ohne |
+   |---|---|
+   | `calculate_sparrate_for_month` | `calculate_card_amount_for_month` |
+   | `calculate_planned_sparrate_for_month` | `is_card_active_in_month` |
+   | `get_split_factor` | `get_planned_amount_for_month` |
+   | `get_net_monthly_for_month` | `get_effective_plan_for_month` |
+   | `get_category_amounts_for_month` (v2-17) | |
+
+   `get_year_deviation_drivers` ist die Ausnahme in der anderen Richtung: Sie
+   aggregiert über den Nutzer, nimmt aber **kein** `p_user_id`, sondern liest
+   `auth.uid()` selbst — und **wirft `28000` ohne Session**. Ein Aufruf über MCP
+   scheitert deshalb, wenn nicht vorher `request.jwt.claims` gesetzt ist.
+
+   **Wo die alte Fassung stimmt und weiter gilt:** RPCs, die `auth.uid()` lesen,
+   liefern ohne Session still `NULL`/`false`/`0` statt eines Fehlers — ein
+   defensiver Wrapper-Check bleibt Pflicht.
+
+   *Gefunden in der Gestaltungsrunde vom 07./08.08.2026 (Nebenbefund ⑤), in v2-17
+   unabhängig bestätigt. Wer nach der alten Fassung arbeitete, baute den Aufruf
+   falsch.*
 5. **Karten-Anlage nur über die atomaren RPCs** `create_card_direct` /
    `create_card_from_fragment`. Der DEFERRED-Constraint `cards_assert_initial_plan`
    verlangt Karte und Plan-Zeile in **einer** Transaktion; zwei sequentielle INSERTs
@@ -375,6 +407,18 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     wollte, war deshalb nicht baubar, ohne entweder die gesamte Historie je Karte zu
     lesen (LL-21) oder eine Spalte anzulegen. **Wer eine Herleitung später zeigen
     will, muss sie speichern, nicht kommentieren.** (v2-15)
+13. **Eine Aggregation über Teilmengen kann die Schlussrundung der Sparrate nicht
+    nachbilden.** `calculate_sparrate_for_month` rundet **einmal ganz am Ende über
+    alles**. Wer dieselbe Kartenmenge in Gruppen zerlegt und jede Gruppe rundet,
+    landet daneben — gemessen **0,01 € in allen zwölf Monaten** 2026, unabhängig
+    davon, wie sorgfältig innerhalb einer Gruppe gerechnet wird.
+    **„Ungerundet summieren, erst am Ende runden" ist notwendig, aber NICHT
+    hinreichend** — es behebt die Rundung *innerhalb* einer Gruppe; der Cent geht
+    *zwischen* den Gruppen verloren.
+    **Regel:** Ziel aus der Rechenfunktion **holen**, nicht herleiten, und den
+    Rest auf die betragsgrößte Gruppe verteilen. Prüfung in einem Aufruf:
+    `Σ Gruppen == calculate_sparrate_for_month(...)`, in allen zwölf Monaten.
+    (v2-17, LL-25)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -580,25 +624,46 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-22 | Eine Doku-Zusage über Rechenverhalten ist keine Prüfung — gegen die Funktion belegen, nicht aus dem Zweck erschließen | §7 Regel 22 | v2-11 (BF-5) |
 | LL-23 | Wandert ein Faktor in eine Basis-Funktion, wird aus `f × (a − b)` ein `(a − b × f)` — gemischte Klammer, B2 in allen zwölf Monaten prüfen | §7 Regel 23 · §6 Stolperfalle 11 | v2-13 (BF-4) |
 | LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
+| LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
+
+> **Warum LL-25 neben LL-24 steht und nicht darin aufgeht.** LL-24 warnt, dass die
+> Gegenseite **anders** rundet. Bei LL-25 rundet sie **seltener** — einmal am Ende
+> statt einmal je Gruppe. Das ist eine andere Fehlerklasse, und sie ist teurer: Sie
+> war in einem Beschluss-Record bereits **falsch analysiert** worden („die Ursache
+> sitzt in Wohnen"), ohne dass es jemandem auffiel, und die dort verordnete Abhilfe
+> hätte den Fehler nicht behoben. Wer LL-24 kennt und LL-25 nicht, hält die Sache
+> für erledigt, sobald er innerhalb der Gruppe sauber rechnet.
 
 ---
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-15 (`LQ-1`-Anzeigeseite + `LQ-2` Ausstehend-Anzeige,
-07.08.2026, PR **#17** offen, noch nicht gemerged) · **davor:** v2-14 (`LQ-1`
-Datengrundlage, `cards.due_day`) und v2-13 (`BF-4`, Split-Anteil genau einmal).
+**Letzter Sprint:** v2-17 (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die
+Hausaufgabe `J1`, 08.08.2026, PR **#23** offen, noch nicht gemerged) · **davor:** v2-16
+(`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite, `LQ-2`).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-**Zuletzt entschieden, noch nicht gebaut:** aus der Design-Direktor-Runde vom
-06.08.2026 sind `LQ-2` (Ausstehend-Anzeige) und die `LQ-1`-Anzeigeseite
-(Fälligkeitstag auf der Karte) mit Sprint v2-15 gebaut. Offen bleiben `RM-2`
-(Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige) — beide vollständig entschieden
-und ohne Datenbank-Eingriff baubar. Record:
-`V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`; Spezifikation in der
-Design-Doku v3.3.1.
+**Paket 4 ist vollständig abgeschlossen.** Das Karussell zeigt im Juli **elf Ordner
+statt 32 Karten**. Damit sind **vier der fünf Kettenglieder fertig** (Pakete 1, 2, 4
+plus das danebenstehende 3), und der Riegel vor **Paket 5** — der besseren
+automatischen Zuordnung, dem einzigen Punkt der Roadmap, der Aufwand **wegnimmt** — ist
+gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 
-**Doku-Versionen:** Design-Doku **v3.3.1** · Schema-Doku **v3.4.4**.
+**Nichts ist entschieden und ungebaut.** Alle Beschlüsse der Runden vom 06.08. und
+07./08.08.2026 sind umgesetzt.
+
+**Doku-Versionen:** Design-Doku **v3.5.0** · Schema-Doku **v3.5.0**.
+
+**Zweiter Prüfanker seit v2-17 — die Ordner-Spalte.** Sie ergibt in **allen zwölf
+Monaten exakt** die Sparrate, und das ist erzwungen, nicht zufällig (Stolperfalle 13 /
+LL-25). Sie schlägt an, sobald jemand an der Rundung dreht, und ist in einem Aufruf
+messbar:
+
+```sql
+SELECT sum((e->>'amount')::numeric)
+  FROM jsonb_array_elements(get_category_amounts_for_month('<user_id>', '<monat>')) e;
+-- muss exakt calculate_sparrate_for_month('<user_id>', '<monat>') ergeben
+```
 
 **Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
 `calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
@@ -638,31 +703,42 @@ Rechenfunktion berührt wurde):
 > **Was sich als Nächstes planmäßig bewegen wird:** der erste Monat, in dem eine
 > gemeinsame Karte eine zugeordnete Zahlung bekommt. Dann greift `BF-4` — bewusst
 > und richtig.
+>
+> **v2-17 (Kategorien) hat die Tabelle ebenfalls NICHT bewegt.** Alle zwölf Monate
+> vor und nach beiden Migrationen gemessen, Abweichung überall 0,00 €, B2-Invariante
+> 12/12. Zusätzlich belegt über **byte-identische Prüfsummen**
+> (`md5(pg_get_functiondef(...))`) der vier Rechenfunktionen gegen Übungs- **und**
+> Produktiv-Datenbank — der Sprint hat sie nachweislich nicht angefasst.
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**06.08.2026, nach v2-15**: **12 offene Pakete · 38 offen · 35 erledigt**. Der frühere
-Selbstwiderspruch ist aufgelöst: Die Zahlen-Tabelle hatte recht, der
-Herleitungs-Kasten hatte sich zweimal verzählt (§2 trägt 6 Zeilen, nicht 7; `BF-4`
-stand in §4 bereits drin und wurde ein zweites Mal addiert). Eine dritte Zahl stimmte
-allerdings nirgends — in den Paket-Tabellen standen 34 offene Themen, nicht 33.
+**08.08.2026, nach v2-17**: **10 offene Pakete · 28 Themen · 4 Hausaufgaben ·
+32 offen gesamt · 41 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+geschätzt — das ist dort schon zweimal schiefgegangen.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
 Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 
-**Paket 3 ist ebenfalls vollständig abgeschlossen.** `LQ-1` und `LQ-2` sind mit
-Sprint v2-15 gebaut. `LQ-3` gehörte nie dazu — es liegt in Paket 9.
+**Die Pakete 2, 3 und 4 sind ebenfalls vollständig abgeschlossen.** `RM-1`/`RM-2`
+(v2-10/v2-16), `LQ-1`/`LQ-2` (v2-14/v2-15) und `KAT-1`/`KAT-2`/`KAT-3` (v2-17).
+`LQ-3` und `RM-3` gehörten nie dazu — beide liegen in Paket 9, `KAT-4` in Paket 10.
 
-**Ohne Entscheidung baubar:** `RM-2` (Schaufenster-Popup) und `PA-1`
-(Konsequenz-Anzeige) — beide am 06.08.2026 entschieden, Spezifikation in der
-Design-Doku v3.3.1, kein Datenbank-Eingriff nötig. Weiterhin **offen**, für eine
-eigene Gestaltungsrunde: **Paket 4** (Kategorien im Karussell) — die Runde vom
-06.08. hat es ausdrücklich **nicht** entsperrt —, dazu `M2` und `M5`.
-Aus `sprints/sprint_v2-10_offene_fragen.md` ist §5 (`PA-1`) durch die Runde erledigt;
-**§6 bleibt offener Altbestand:** Das Einkommens-Popup hat als einziges von acht
-Overlays keinen Escape-Handler — Bauauftrag für den Sprint, der das Popup anfasst.
-Das neue „Fällig am …"-Overlay aus v2-15 hat einen Escape-Handler von Anfang an, der
-Rückstand wächst also nicht weiter.
+**Als Nächstes dran: Paket 5** (bessere automatische Zuordnung). Es ist der einzige
+Punkt der Roadmap, der Aufwand **wegnimmt**, und die Kategorien-Runde hat nebenbei
+belegt, wie dringend es ist: Von **76 gemeinsamen Monatszahlungen sind zwei
+zugeordnet**, bei 19 Monaten identischem Text, Betrag und Tag. Ursache ist die
+Split-Systematik — „Miete" plant 1.904 € (Haushalt), überwiesen werden 1.089,26 €
+(der Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
+43 % Abweichung reichen nie für die 95-%-Schwelle.
+
+**Weiterhin offen, für eine eigene Gestaltungsrunde:** `M2` (Verben und Gesten des
+Karten-Lebenszyklus) und `M5` (Reihenfolge). **`M5` hat seit v2-17 einen Ort** —
+`card_categories.sort_order` ist änderbar, ohne dass eine Migration nötig wird.
+
+**Der Escape-Handler-Rückstand aus `sprints/sprint_v2-10_offene_fragen.md` §6 ist
+geschlossen.** Das Einkommens-Popup hat seit v2-16 einen (`income-split/index.tsx`);
+in v2-17 nachgeprüft, weil dieser Sprint dasselbe Popup an einer **zweiten** Stelle
+öffnet (Netto-Kachel im Einkommens-Ordner). Alle Overlays haben jetzt einen.

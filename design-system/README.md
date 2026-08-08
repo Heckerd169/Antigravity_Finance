@@ -87,14 +87,32 @@ Die Entwurfsseiten bleiben, bis der jeweilige Bau-Sprint durch ist.
 |---|---|---|
 | `LQ-2` Ausstehend-Anzeige | Kopfzeile „Planung", rechtsbündig · `noch fällig` / `Budget frei` | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/` |
 | `LQ-1` Fälligkeitstag | rechter Anschlag der Statuszeile · Menüpunkt „Fällig am …" | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/karten.html` |
-| `RM-2` Schaufenster-Popup | Empfänger führt, Betrag rechts daneben | `entwuerfe/rm2-schaufenster.html` |
-| `PA-1` Konsequenz-Anzeige | Popup tauscht Inhalt, Summe als Held, 400 px | `entwuerfe/pa1-konsequenz.html` |
+| `RM-2` Schaufenster-Popup | Empfänger führt, Betrag rechts daneben | ✅ **gebaut (v2-16)** — Entwurf gelöscht (v2-17) |
+| `PA-1` Konsequenz-Anzeige | Popup tauscht Inhalt, Summe als Held, 400 px | ✅ **gebaut (v2-16)** — Entwurf gelöscht (v2-17) |
+
+### Entschieden in der Runde vom 07./08.08.2026
+
+Beschluss-Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
+
+| Thema | Entscheidung | Entwurf |
+|---|---|---|
+| **Paket 4** Kategorien im Karussell | **Variante A** — Stapel-Kachel im Kartenformat, neutraler Ton, kein Status-Icon, linke Kante rot/türkis; Klick klappt auf; beim Ziehen öffnet sich alles | ✅ **gebaut (v2-17)** — Entwurf gelöscht, Ergebnis in `komponenten/kategorien.html` |
+
+> **Der Ordner ist die erste Komponente, die eine Karte NACHAHMT, ohne eine zu sein.**
+> Wer sie anfasst, liest vorher den Kasten „Was die Kachel bewusst NICHT hat" auf der
+> Komponenten-Seite: Über jeder tappbaren Karte liegt eine unsichtbare Klickfläche, die
+> „bezahlt" umschaltet und die Sparrate bewegt. Die Kachel hat sie nicht — und der Ton,
+> das fehlende Icon und die Stapelkante sind das Einzige, was das sichtbar macht.
 
 ### Noch offen
 
 1. **`M2`** — Verben und Gesten des Karten-Lebenszyklus (Beenden, Löschen, Lösen)
-2. **`M5`** — Kartenreihenfolge im Karussell (heute Fixkosten → Einnahmen → Budget)
-3. **Paket 4** — Kategorien im Karussell; die größere Frage, eigene Runde
+2. **`M5`** — Reihenfolge der Ordner untereinander. **Seit v2-17 hat die Frage einen
+   Ort:** `card_categories.sort_order` ist änderbar, ohne dass eine Migration nötig
+   wird. Innerhalb eines Ordners gilt weiterhin Fixkosten → Einnahmen → Budget
+3. **Zwei Reste aus der Kategorien-Runde:** wie zwei gleichnamige Karten in einem
+   Ordner auseinanderzuhalten sind, und ob ein Ordner kenntlich macht, dass seine Zahl
+   abgeleitet ist
 
 Erledigt und deshalb nicht mehr aufgeführt: Ring-Unterzeile bei kleinem Plan (v2-12,
 `BF-2`/`E3`) · Vorschlags-Kästchen auf Fragment-Karten (v2-10, `BF-1`) ·
