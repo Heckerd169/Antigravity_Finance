@@ -1,7 +1,7 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.3.1 (V2 · Sprint v2-15 — Liquidität: Ausführungsdetails)
-**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-15 eingespielt (`LQ-1` · `LQ-2` gebaut); `RM-2` · `PA-1` weiterhin entschieden, Umsetzung steht aus
+**Version:** 3.4.0 (V2 · Sprint v2-16 — Schaufenster-Popup und Konsequenz-Anzeige)
+**Status:** Freigegeben — Schema-Doku v3.4.4; V2-Patches bis Sprint v2-16 eingespielt (`LQ-1` · `LQ-2` · `RM-2` · `PA-1` gebaut). Aus der Runde vom 06.08.2026 ist damit **alles umgesetzt**.
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -30,6 +30,17 @@
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
+>
+> **Changelog v3.4.0 (07.08.2026, Sprint v2-16 · `RM-2` + `PA-1`):** §8 — die
+> Klick-Sperre auf zugeordneten Fragmenten und Überträgen ist **gebaut**, nicht mehr
+> nur entschieden; ergänzt um die *dritte* Wirkung derselben CSS-Zeile (Hover). §11 —
+> Schaufenster-Popup um vier im Record offen gebliebene Punkte vervollständigt
+> (IBAN **verkürzt** · KI-Vorschlag **mit** Prozentwert · „Umschichtung" als eigenes
+> Wort · „automatisch erkannt" bei `AUTO_ABSORBED`). §10 — Konsequenz-Anzeige um den
+> **umgekehrten** Fall (Anteil sinkt) und die **Rundungs-Regel** ergänzt; Anmerkung zur
+> Breite. §12 — neuer Block **§12.10** (Copy des Schaufenster-Popups), §12.7 um die
+> gespiegelten Zeilen erweitert. Belege: `sprints/sprint_v2-16_review.md`,
+> `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3/§4.
 >
 > **Changelog v3.3.1 (06.08.2026, Sprint v2-15 · `LQ-1` `LQ-2` gebaut):** Ausführungsdetails der DD-Runde nachgezogen — keine neue Spezifikation, keine aufgehobene Regel; die vier Entscheidungen vom 06.08. stehen bereits in v3.3.0. §8 Ausstehend-Anzeige um die vollständige Rechenregel ergänzt: wann ein Posten zählt (Termin nicht vor heute, weder Umsatz noch Häkchen), Klammerung des Fälligkeitstags auf die Monatslänge, Definition „Budget frei", Sichtbarkeit ausschließlich im laufenden Monat inkl. der 0-€-Abgrenzung, bewusster Verzicht auf eine Postenzahl, bekannte Untererfassung, Darstellung ohne Nachkommastellen. §7 Fälligkeitstag-Anzeige um den eigenständigen Ghost-Ton `rgba(255,255,255,.20)` ergänzt sowie um die Begründung der Overlay-Unterzeile `gilt für alle Monate` und den bewussten Verzicht auf Zahlen im Herkunftshinweis. §12.4 um fünf bislang fehlende Copy-Einträge des „Fällig am …"-Overlays ergänzt (Overlay-Titel, Unterzeile, Feld-Label, Bestätigung, Herkunftshinweis). Beleg: `sprints/sprint_v2-15_briefing.md`, `sprints/sprint_v2-15_review.md`. Patch-Bump statt Minor, weil ausschließlich Ausführungsdetails nachgezogen werden.
 >
@@ -951,12 +962,12 @@ Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_f
 - Keine Chevrons
 - Fragmente sind Drag-Quellen
 - **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7). **Umsetzungs-Nachtrag (v2-07, P0):** Der Monats-Scope wird seit v2-07 **server-seitig** abgefragt statt nachträglich in der Anwendung gefiltert. Bis dahin holte die App alle Fragmente aller Monate und filterte anschließend — was ab einem Gesamtbestand von 1000 Fragmenten stillschweigend abschnitt (Befund und Messung: `sprints/sprint_v2-07_review.md` §3). Zusätzlich zum Monats-Scope läuft eine zweite, link-orientierte Abfrage (`assigned_month` = angezeigter Monat), damit ein Fragment aus einem anderen Monat weiterhin als *verknüpftes Fragment auf der Karte* erscheint. An der sichtbaren Regel ändert sich nichts.
-- Zugeordnete Fragmente: `opacity: 0.22` · ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`)**, siehe „Klickbarkeit des Stacks" unten. Die Deckkraft bleibt unverändert.
+- Zugeordnete Fragmente: `opacity: 0.22` · ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`; gebaut v2-16)**, siehe „Klickbarkeit des Stacks" unten. Die Deckkraft bleibt unverändert — auch im Hover.
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
 - **Angezeigte Beschreibung (v2-10, RM-1):** Die Fragment-Karte zeigt **den letzten durch `|` getrennten Teil** der gespeicherten Beschreibung; ist dieser leer, fällt sie auf den **ersten** Teil zurück. Damit steht der Verwendungszweck vorn statt des Empfängers, ohne dass die Anzeige die Herkunft des Fragments kennen muss: DKB Visa liefert ein Feld ohne Trennzeichen (unverändert), DKB Giro `Empfänger | Zweck`, Cortal `Sender | Buchungstext | Zweck`. **Ausschließlich Anzeige.** Der gespeicherte Text bleibt unverändert — er ist Bestandteil des Duplikat-Hashes, des Trigram-Index der Zuordnung und des Beschreibungs-Tiebreakers der Sortierung unten. Das `title`-Attribut trägt weiterhin den **vollständigen** Text; das Abschneiden mit „…" bleibt reines CSS (`text-overflow: ellipsis`).
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
-- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment ist **keine Drag-Quelle** und lässt sich keiner Karte zuordnen; ~~`pointer-events: none`~~ ist mit `RM-2` **aufgehoben** (06.08.2026, siehe „Klickbarkeit des Stacks" unten). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
+- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment ist **keine Drag-Quelle** und lässt sich keiner Karte zuordnen; ~~`pointer-events: none`~~ ist mit `RM-2` **aufgehoben** (06.08.2026, gebaut v2-16 — siehe „Klickbarkeit des Stacks" unten). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
 - **Übertrags-Schalter (v2-07, C1):** Fragmente mit gesetztem `transfer_type` (`INTERNAL_TRANSFER` **oder** `ASSET_REALLOCATION`) sind aus der Arbeitsfläche ausgeblendet. Sie erscheinen nur, wenn der Schalter **„Überträge anzeigen"** eingeschaltet ist; **Standard ist „aus"**. Begründung: ein Fragment mit gesetztem `transfer_type` kann per Daten-Invariante nie einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`) und gehört deshalb nicht auf die Fläche, auf der kuratiert wird.
   **Ort und Form:** rechtsbündig in derselben Zeile wie die Zonen-Überschrift „ROHMASSE" — bewusst nicht in einer eigenen Zeile, damit die Oberkanten von Portal, Karussell und Stack bündig bleiben. Beschriftung `Überträge anzeigen (N)`, wobei **N die Anzahl der Übertrags-Fragmente des angezeigten Monats** ist (beide Typen zusammen, unabhängig von der Schalterstellung). Enthält der Monat keine Überträge, wird der Schalter **nicht gerendert**.
   **Invarianten:** Der Schalter filtert ausschließlich die Stack-Darstellung. Die Sortierregel ist unberührt — bei eingeschaltetem Schalter steht die Liste exakt so da wie vor v2-07. Ebenso unberührt: die Darstellung eines sichtbaren Übertrags (Opacity `0.45`, Badge „TRANSFER", kein Drag/Tap), die Status-Hierarchie aus Sprint 9, die Drop-Ziele des Karussells und die „N Fragmente offen"-Zählung der Header-Flanke (die zählt `UNASSIGNED` und hat Überträge nie enthalten).
@@ -968,8 +979,15 @@ Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_f
   - Die **Daten-Invariante**: Ein Fragment mit gesetztem `transfer_type` kann weiterhin **nie** einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`, RPC-Filter, Link-Auflösung beim Import). **Klickbar ≠ verlinkbar** — aus dieser Änderung folgt an keiner Stelle, dass Überträge wieder zuordenbar wären.
   - Die **Drag-Sperre**: Weder zugeordnete Fragmente noch Überträge sind Drag-Quellen.
   - Die **Deckkraft-Werte** `0.22` (zugeordnet) und `0.45` (Übertrag) sowie das TRANSFER-Badge und die Status-Hierarchie aus Sprint 9.
+  - Die **Hover- und Active-Rückmeldung**: Sie folgte bis v2-16 ebenfalls aus
+    `pointer-events: none` und braucht seither eine eigene Regel. Ohne sie spränge die
+    Deckkraft beim Überfahren auf `0.92` — die beiden Werte oben wären damit faktisch
+    aufgehoben, obwohl sie hier als unberührt festgeschrieben sind. Die einzige neue
+    Rückmeldung ist der **Zeiger-Cursor**.
 
-  Entscheidung vom 06.08.2026, **Umsetzung steht aus**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
+  Entschieden am 06.08.2026, **gebaut in Sprint v2-16 (07.08.2026)**. Belege:
+  `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3 und
+  `sprints/sprint_v2-16_review.md` §1/§5.1.
 
 ### Was explizit NICHT
 - Kein Swipe, kein Long-Press
@@ -1116,9 +1134,36 @@ Wenn der User das Onboarding (Schritt 2) abbricht, bleibt `onboarded_at = NULL` 
 
 **Tabelle darunter**, eine Zeile je gemeinsamem Posten, Spalten `Bisher` / `Künftig` / `Diff.`, dazu eine Summenzeile. **Alle drei Zahlen erscheinen** (Entscheidung des Users, 06.08.2026): Eine Änderungs-Anzeige ohne den Ausgangswert verlangt, dass man ihn im Kopf behält — *nachschlagen* auf der Karte ist nicht dasselbe wie *vergleichen*.
 
-**Breite 400 px in beiden Zuständen** — auch im Eingabe-Zustand, damit das Overlay beim Übernehmen nicht unter der Hand wächst. Das ist ausdrücklich zulässig: §7 (`RM-4`) schreibt für Overlays den **Ort** fest, nicht die Größe — wörtlich *„sie unterscheiden sich in der Größe, nie im Ort"*.
+**Breite 400 px in beiden Zuständen** — auch im Eingabe-Zustand, damit das Overlay beim Übernehmen nicht unter der Hand wächst. Das ist ausdrücklich zulässig: §7 (`RM-4`) schreibt für Overlays den **Ort** fest, nicht die Größe — wörtlich *„sie unterscheiden sich in der Größe, nie im Ort"*. **Anmerkung zur Herkunft der Zahl (v2-16):** Der Entscheidungs-Record beschreibt den Schritt als *„340 → 400 px, das Popup wird breiter"*. Der echte Ausgangswert war jedoch **480 px** — das Popup wird durch die Festlegung also **schmaler**. An der Entscheidung ändert das nichts (400 px sind normativ), wohl aber an ihrer Begründung: Die Breite ist hier kein Dichte-Zuwachs, sondern eine Verengung.
 
 **Ein Knopf: `Schließen`.** „Abbrechen" wäre sinnlos — es gibt nichts mehr abzubrechen; „Übernehmen" ist bereits geschehen.
+
+**Der umgekehrte Fall — der Anteil sinkt (07.08.2026).** Sinkt das eigene Brutto oder
+steigt das des Partners stärker, wird der eigene Anteil kleiner. Die Anzeige ist dann
+**gespiegelt**: gleicher Aufbau, drei Richtungswörter drehen — `Dein Anteil sinkt` ·
+*„**weniger** pro Monat …"* · *„Die Sparrate **steigt** um denselben Betrag."* Die
+Zahl wird **türkis** statt rot. Das ist keine neue Farbe: Rot heißt hier wie überall
+Belastung, Türkis Entlastung.
+
+**Rundung — die Entscheidung ist zweigeteilt (LL-24).** Die drei Spalten lassen sich
+nicht gleichzeitig zum Aufgehen bringen, weil die Differenz zweier gerundeter Zahlen
+nicht die gerundete Differenz ist. Verbindlich:
+
+- **`Bisher` und `Künftig`** summieren die **gerundeten** Zeilenwerte. Wer die Spalte
+  nachaddiert, bekommt die Summe heraus, die darunter steht (`1.163,62`, nicht
+  `1.163,63`).
+- Die **Held-Zahl** summiert **ungerundet** und rundet erst am Ende: `+18,98 €` — und
+  ist zugleich die Differenz der beiden Spaltensummen, die Summenzeile bleibt also in
+  sich stimmig.
+
+Übrig bleibt, dass die **Diff.-Spalte** sich fürs Auge auf `18,97` addiert. Das ist die
+unauffälligste der drei möglichen Abweichungen und bewusst gewählt. Anker-Wirkung hat
+das keine — hier wird nichts persistiert, und die Sparrate kommt unverändert aus
+`calculate_sparrate_for_month`.
+
+**Der `Schließen`-Knopf ist neutral gestaltet**, wie „Abbrechen". Das Entwurfsbild
+zeichnete ihn gold; Gold ist in der schmalen Palette der **Vorjahres-Linie**
+vorbehalten (§9 `B6`).
 
 **Der leere Fall — gar nichts.** Ändert sich der Split-Faktor nicht (etwa weil nur das Netto angepasst wurde) oder gibt es keine gemeinsamen Posten, **speichert das Popup und schließt wie bisher**. Kein Zwischenbildschirm, keine Null-Zeile, kein „Keine Änderungen" (CLAUDE.md §7 Regel 17 / LL-20: *ein Referenzwert ohne Daten ist „keine Anzeige", nicht 0*). Das Netto ändert die Sparrate trotzdem — diese Anzeige handelt aber vom **Split**, und die Sparrate steht ohnehin im Ring, sobald das Popup zu ist.
 
@@ -1306,7 +1351,7 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Drag-Start | `opacity: 0.35`, `scale(.97)`, cursor: `grabbing` |
 | Zugeordnet | `opacity: 0.22` · **kein Drag** · ~~`pointer-events: none`~~ — aufgehoben, siehe unter der Tabelle |
 
-**Zur Zeile „Zugeordnet" (06.08.2026, `RM-2`):** `pointer-events: none` sperrte bisher **Klick und Drag in einem**. Aufgehoben ist **ausschließlich die Klick-Sperre** — ein zugeordnetes Fragment öffnet jetzt das Schaufenster-Popup (nächster Abschnitt; Stack-Regel: §8). **Die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger:** Sie folgt nicht mehr nebenbei aus `pointer-events`, sondern muss eigenständig gesetzt werden. Dasselbe gilt für Fragmente mit gesetztem `transfer_type` (§8). Kurzform: **klickbar ≠ ziehbar ≠ verlinkbar** — die Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist davon ohnehin unberührt.
+**Zur Zeile „Zugeordnet" (06.08.2026, `RM-2`; gebaut in v2-16):** `pointer-events: none` sperrte **dreierlei in einem** — Klick, Drag und die Hover-Rückmeldung. Aufgehoben ist **ausschließlich die Klick-Sperre** — ein zugeordnetes Fragment öffnet jetzt das Schaufenster-Popup (nächster Abschnitt; Stack-Regel: §8). **Die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger:** Sie folgt nicht mehr nebenbei aus `pointer-events`, sondern muss eigenständig gesetzt werden. Dasselbe gilt für Fragmente mit gesetztem `transfer_type` (§8). Kurzform: **klickbar ≠ ziehbar ≠ verlinkbar** — die Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist davon ohnehin unberührt. Und die **Hover-/Active-Rückmeldung** braucht seit v2-16 ebenfalls eine eigene Regel, damit `0.22` und `0.45` auch beim Überfahren gelten.
 
 ### Schaufenster-Popup (06.08.2026, `RM-2`)
 
@@ -1327,7 +1372,37 @@ Ein Klick auf ein Fragment im Stack (§8) öffnet ein **reines Anzeige-Popup —
 
 **Nicht im Popup:** Duplikat-Hash und Import-Zeitpunkt. Beides ist Maschinerie und beantwortet keine Frage, die man beim Klicken hatte.
 
-**Ort und Schließen:** Das Popup öffnet **zentriert per React-Portal** (§7, `RM-4`) und hat einen **Escape-Handler**.
+**Die vier Randfälle (07.08.2026, Rolle `design-direktor`).** Der Record vom 06.08.
+führte sie unter „Was NICHT entschieden wurde"; sie sind vor dem Bau in v2-16 geklärt
+worden.
+
+| Frage | Entscheidung | Grund |
+|---|---|---|
+| **IBAN** des Gegenkontos | **verkürzt**: `DE02 1203 ···· 7291` — Anfang und letzte vier Stellen | Die Frage beim Klick lautet „welches meiner Konten war das?", nicht „wie lautet die Nummer?". Die vollen 22 Zeichen wären der längste Eintrag eines Popups, das sonst aus ganzen Sätzen besteht. Werte unter zwölf Zeichen bleiben unverändert stehen. |
+| **KI-Vorschlag** | **mit** Prozentwert: `Miete · 91 %` | Das Popup ist der Ort für Details — es ist die Gegenleistung dafür, dass die Karte nichts mehr zeigt. Die Kästchen mussten wegen eines **Umbruch**-Problems von der Karte (`BF-1`), nicht wegen der Zahl. Und ein Vorschlag ohne Sicherheitsangabe wirkt bestimmter, als er ist. |
+| **`ASSET_REALLOCATION`** | eigene Kopfzeile **`Umschichtung`** statt `Übertrag`, dazu der Hinweis `Von dir als Umschichtung markiert — zählt nicht in die Sparrate` | Eine Umschichtung hat der User **selbst** markiert, ein `INTERNAL_TRANSFER` wurde beim Import erkannt. Zwei verschiedene Sachverhalte bekommen zwei verschiedene Wörter. |
+| **`AUTO_ABSORBED`** | dieselbe Zeile wie bei `ASSIGNED`, darunter **`automatisch erkannt`** | Diese Zuordnung ab 95 % Konfidenz hat der User nie getroffen — das Popup ist der einzige Ort, an dem er davon erfährt (Ehrlichkeit vor Beruhigung). |
+
+**Fehlt die IBAN** (im Bestand 109 von 378 Überträgen), entfällt nur die
+Gegenkonto-Zeile — der Hinweissatz bleibt. Er trägt die eigentliche Aussage, nicht die
+Nummer (LL-20 sinngemäß: der fehlende **Wert** entfällt, die Aussage nicht).
+
+**Zur Hauptzeile bei drei Teilen** (Cortal: `Sender | Buchungstext | Zweck`): Teil 1
+führt als Empfänger, der **Rest bleibt zusammen** und wird mit einem Mittelpunkt
+verbunden — §11 verlangt den Zweck *ungekürzt*, es darf also nichts wegfallen. Ist der
+erste Teil leer, fällt die Hauptzeile auf den Rohtext zurück; eine leere Hauptzeile
+machte das Popup kopflos.
+
+**Ort und Schließen:** Das Popup öffnet **zentriert per React-Portal** (§7, `RM-4`) und hat einen **Escape-Handler** — anders als das Einkommens-Popup, das seinen erst mit v2-16 bekommen hat.
+
+> **Falle beim Portal (v2-16):** Über `createPortal` nach `document.body` vererben nur
+> Custom-Properties von `:root` (`tokens.css`). Alles, was auf einer Komponente
+> definiert ist — etwa `--frag-amount-pos` auf `.interactionZone` —, kommt dort
+> **nicht** an: Die Farbe fehlt einfach, ohne Fehler und ohne Warnung. Overlay-Styles
+> lesen deshalb `:root`-Tokens oder kodieren den Wert hart (so lösen es
+> `.overlayBackdrop` und `.overlayModal` seit Sprint 5). Das berührt sich mit LL-6, ist
+> aber ein anderer Mechanismus: LL-6 handelt vom **Bezugsrahmen** und der **DOM-Nähe**,
+> dies von der **Vererbung**.
 
 Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
 
@@ -1521,9 +1596,18 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Vergangener Monat — Warnung | `Vergangener Monat — Werte sind eingefroren.` |
 | Illustrativ-Hinweis Split-Vorschau | `(nur illustrativ)` |
 | Confirm-Button | `Übernehmen` |
+| Konsequenz-Anzeige — Titel | `Dein Anteil steigt` bzw. `Dein Anteil sinkt` |
+| Konsequenz-Anzeige — Untertitel | `Split [N] % → [N] % · ab [Monat] [Jahr]` |
 | Konsequenz-Anzeige — Held-Zeile | `+[N] € mehr pro Monat für [N] gemeinsame Posten` |
+| Konsequenz-Anzeige — Held-Zeile, umgekehrt | `−[N] € weniger pro Monat für [N] gemeinsame Posten` |
+| Konsequenz-Anzeige — Folgesatz | `Die Sparrate sinkt um denselben Betrag.` bzw. `… steigt …` |
+| Konsequenz-Anzeige — Summenzeile | `Zusammen` |
 | Konsequenz-Anzeige — Spaltenköpfe | `Bisher` / `Künftig` / `Diff.` |
 | Konsequenz-Anzeige — Abschluss-Button | `Schließen` |
+
+> **Zur Postenzahl im Fließsatz:** Sie steht als **Zahlwort** („vier gemeinsame
+> Posten"), ab dreizehn als Ziffer. Bei genau einem Posten lautet die Wendung
+> `für einen gemeinsamen Posten`.
 
 ### 12.8 Jahres-Welle + Popup
 
@@ -1543,6 +1627,22 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 |---|---|
 | Kopfzeile „Planung" — feste Posten | `[N] € noch fällig` |
 | Kopfzeile „Planung" — Budgets | `[N] € Budget frei` |
+
+### 12.10 Schaufenster-Popup (Fragment)
+
+| Kontext | Text |
+|---|---|
+| Kopfzeile — normale Buchung | `Buchung · [Datum]` |
+| Kopfzeile — Übertrag | `Übertrag · [Datum]` |
+| Kopfzeile — Umschichtung | `Umschichtung · [Datum]` |
+| Zeile — unzugeordnet | `Status` / `Nicht zugeordnet` |
+| Zeile — zugeordnet | `Zugeordnet` / `[Karten-Name]` |
+| Zusatz — automatisch zugeordnet | `automatisch erkannt` |
+| Zeile — Zuordnungs-Monat | `Im Monat` / `[Monat] [Jahr]` |
+| Zeile — Gegenkonto | `Gegenkonto` / `[IBAN verkürzt]` |
+| Hinweis — Übertrag | `Eigenes Konto — zählt nicht in die Sparrate` |
+| Hinweis — Umschichtung | `Von dir als Umschichtung markiert — zählt nicht in die Sparrate` |
+| Zeile — KI-Vorschlag | `Vorschlag` / `[Karten-Name] · [N] %` |
 
 ---
 

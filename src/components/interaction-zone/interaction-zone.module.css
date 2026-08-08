@@ -607,18 +607,52 @@
   transform: scale(.97);
 }
 
+/* v2-16 (RM-2): `pointer-events: none` ist auf beiden Zuständen AUFGEHOBEN —
+   jedes Fragment öffnet jetzt das Schaufenster-Popup (§8 „Klickbarkeit des
+   Stacks", §11). Die eine Zeile trug bisher dreierlei zugleich: Klick-Sperre,
+   Drag-Sperre und die Unterdrückung der Hover-/Active-Rückmeldung. Aufgehoben
+   ist ausschließlich das Erste.
+
+   · Die DRAG-Sperre hängt weiter an `draggable={false}` (fragment-card.tsx)
+     plus dem Sicherheits-Check in `handleDragStart` — sie folgt seit v2-16
+     nicht mehr nebenbei aus `pointer-events`, sondern steht eigenständig.
+   · Die HOVER-/ACTIVE-Rückmeldung wird unten ausdrücklich ausgeschlossen.
+     Ohne das spränge die Deckkraft beim Überfahren von .22 bzw. .45 auf .92 —
+     genau die beiden Werte, die §8 als unberührt festschreibt.
+   · Die DATEN-Invariante (Trigger `trg_oqb_no_transfer_links`) ist hiervon
+     ohnehin unberührt: klickbar ≠ ziehbar ≠ verlinkbar.
+
+   Der Zeiger-Cursor ist die einzige neue Rückmeldung — er zeigt, dass es hier
+   etwas zu sehen gibt, ohne einen festgeschriebenen Deckkraft-Wert anzufassen. */
 .fragmentCardLocked {
   opacity: .22;
-  cursor: default;
-  pointer-events: none;
+  cursor: pointer;
 }
 
 /* Sprint 9 §6.1: Cross-Account-Transfer — gedimmt (0.45, heller als locked),
-   kein Drag/Tap. pointer-events:none unterdrückt jeden Hover-/Tap-Effekt. */
+   kein Drag. Seit v2-16 (RM-2) anklickbar, siehe Block oben. */
 .fragmentCardTransfer {
   opacity: .45;
-  cursor: default;
-  pointer-events: none;
+  cursor: pointer;
+}
+
+/* Hover und Active bleiben der Arbeitsfläche vorbehalten. Beide Regeln stehen
+   NACH `.fragmentCard:hover` und haben dieselbe Spezifität (0,2,0) — die
+   spätere gewinnt. */
+.fragmentCardLocked:hover,
+.fragmentCardLocked:active {
+  opacity: .22;
+  transform: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.fragmentCardTransfer:hover,
+.fragmentCardTransfer:active {
+  opacity: .45;
+  transform: none;
+  box-shadow: none;
+  cursor: pointer;
 }
 
 .fragmentTop {
@@ -708,8 +742,12 @@
 }
 
 /* v2-04 ② — Interim-Auslösung Umschichtungs-Markierung (finale Geste = DD).
-   pointer-events:auto reaktiviert den Button innerhalb von
-   .fragmentCardTransfer (Eltern hat pointer-events:none). */
+   `pointer-events: auto` reaktivierte den Button bis v2-15 innerhalb von
+   .fragmentCardTransfer, dessen Eltern `pointer-events: none` trug. Seit v2-16
+   (RM-2) ist diese Sperre weg; die Zeile bleibt als Defense-in-Depth stehen und
+   kostet nichts. Der Klick auf den Button darf NICHT zusätzlich das
+   Schaufenster-Popup öffnen — das verhindert der `closest("button")`-Check in
+   fragment-stack.tsx, nicht diese Zeile. */
 .arToggle {
   display: block;
   margin-top: 6px;
@@ -773,6 +811,153 @@
 
 .overlayWide {
   width: 360px;
+}
+
+/* ============================================================
+   SCHAUFENSTER-POPUP — v2-16 (RM-2), Design-Doku §11
+   Reines Anzeigen, keine Knöpfe. Teilt sich .overlayBackdrop mit den übrigen
+   Overlays (gleicher Ort, §7 RM-4), bringt aber einen eigenen Rahmen mit:
+   .overlayModal setzt `gap: 14px` auf alle Kinder, was hier die Kopfzeile von
+   der Hauptzeile und diese vom Zweck abtrennen würde. Das Popup lebt aber von
+   der engen Kopplung dieser drei Zeilen — sie sind EIN Block, kein Formular.
+   ============================================================ */
+
+.showcaseModal {
+  background: rgba(28, 28, 30, .96);
+  border: .5px solid rgba(255, 255, 255, .1);
+  border-radius: 16px;
+  padding: 22px 22px 20px;
+  width: 330px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.showcaseKicker {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .22);
+  margin-bottom: 12px;
+}
+
+/* Empfänger links, Betrag rechts — `baseline` statt `center`, damit die beiden
+   unterschiedlich großen Schriften auf einer Linie sitzen. */
+.showcaseHeroRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.showcaseWho {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -.2px;
+  line-height: 1.3;
+  color: #fff;
+  /* Der Held ist Text und damit unterschiedlich lang (§11, verworfene
+     Variante A nennt genau das als Preis). Er darf umbrechen; der Betrag
+     rechts darf es nicht. */
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.showcaseAmount {
+  font-size: 19px;
+  font-weight: 200;
+  letter-spacing: -.8px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  /* v2-10 P2 (BF-1) sinngemäß: der Betrag wird nie zusammengedrückt, sonst
+     rutscht das €-Zeichen in die zweite Zeile. */
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* K2.1-Falle: NICHT `.fragmentAmountPos/Neg` wiederverwenden. Die lesen
+   `--frag-amount-pos/neg`, und die sind auf `.interactionZone` definiert —
+   über den Portal-Hop nach document.body vererben sie nicht, der Betrag bliebe
+   farblos. `--color-teal` / `--color-red` stehen dagegen auf `:root` in
+   tokens.css und vererben über document.body weiter (dasselbe Argument wie im
+   Portal-Kommentar von income-split/index.tsx). Es sind exakt dieselben
+   Farbwerte, nur aus der richtigen Quelle. */
+.showcaseAmountPos {
+  color: var(--color-teal);
+}
+
+.showcaseAmountNeg {
+  color: var(--color-red);
+}
+
+.showcasePurpose {
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, .45);
+  margin-top: 8px;
+  /* §11 verlangt den Verwendungszweck UNGEKÜRZT — hier also ausdrücklich kein
+     `text-overflow: ellipsis` wie auf der Fragment-Karte. */
+  overflow-wrap: anywhere;
+}
+
+.showcaseRule {
+  height: 1px;
+  background: rgba(255, 255, 255, .06);
+  margin: 16px 0 8px;
+}
+
+.showcaseRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.showcaseRowKey {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .22);
+  white-space: nowrap;
+}
+
+.showcaseRowValueGroup {
+  text-align: right;
+  min-width: 0;
+}
+
+.showcaseRowValue {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, .45);
+  overflow-wrap: anywhere;
+}
+
+.showcaseRowValueOn {
+  color: #fff;
+}
+
+.showcaseRowValueTeal {
+  color: var(--color-teal);
+}
+
+.showcaseRowHint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, .22);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.showcaseNote {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, .22);
+  line-height: 1.5;
+  text-align: right;
+  margin-top: 1px;
 }
 
 .overlayTitle {

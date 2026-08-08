@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FragmentCard } from "./fragment-card";
+import { FragmentShowcaseOverlay } from "./fragment-showcase-overlay";
 import {
   DRAG_MIME,
   isTransferFragment,
@@ -26,10 +27,15 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
      Ein Neuladen der Seite setzt auf „aus" zurück. Keine localStorage-
      Persistierung (CLAUDE.md §7 „Was Claude Code NIE macht"). */
   const [showTransfers, setShowTransfers] = useState(false);
+  /* v2-16 (RM-2): id des Fragments, dessen Schaufenster-Popup offen ist. */
+  const [showcaseId, setShowcaseId] = useState<string | null>(null);
 
-  // LL-5: bei Soft-Navigation State zurücksetzen.
+  // LL-5: bei Soft-Navigation State zurücksetzen. Der Monatswechsel tauscht die
+  // Fragment-Liste komplett aus — ein offenes Popup zeigte danach eine Buchung,
+  // die im neuen Monat gar nicht mehr im Stack steht.
   useEffect(() => {
     setDraggingId(null);
+    setShowcaseId(null);
   }, [targetMonth]);
 
   /* Zähler beschreibt den Übertrags-Bestand des angezeigten Monats und ist
@@ -63,6 +69,33 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
     setDraggingId(null);
   }
 
+  /* v2-16 (RM-2): Klick auf ein Fragment öffnet das Schaufenster-Popup — für
+     JEDES Fragment, auch für zugeordnete und Überträge. Bis v2-16 waren die
+     beiden per `pointer-events: none` tot gestellt; diese Sperre ist aufgehoben
+     (§8 „Klickbarkeit des Stacks", §11).
+     Aufgehoben ist AUSSCHLIESSLICH die Klick-Sperre. Die Drag-Sperre hängt
+     unverändert an `draggable={false}` in fragment-card.tsx plus dem
+     Sicherheits-Check in handleDragStart, die Daten-Invariante am Trigger
+     `trg_oqb_no_transfer_links`. Klickbar ≠ ziehbar ≠ verlinkbar.
+     Delegation wie beim Drag-Start, damit FragmentCard eine Server-Component
+     ohne eigene Handler bleiben kann. */
+  function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    const target = e.target as HTMLElement;
+    /* Der Umschichtungs-Knopf trägt einen eigenen Handler und liegt INNERHALB
+       der Karte — ohne diese Ausnahme öffnete jedes Markieren zusätzlich das
+       Popup. */
+    if (target.closest("button")) return;
+    const card = target.closest<HTMLElement>("[data-fragment-id]");
+    if (!card) return;
+    const id = card.getAttribute("data-fragment-id");
+    if (id) setShowcaseId(id);
+  }
+
+  const showcaseFragment =
+    showcaseId !== null
+      ? visibleFragments.find((f) => f.id === showcaseId) ?? null
+      : null;
+
   return (
     <div className={styles.fragmentColumn}>
       {/* v2-07 C1: Schalter sitzt in derselben Zeile wie die Zonen-Überschrift,
@@ -90,6 +123,7 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
         className={styles.fragmentStack}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onClick={handleClick}
       >
         {visibleFragments.map((f) => (
           <div
@@ -102,6 +136,13 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
           </div>
         ))}
       </div>
+
+      {showcaseFragment !== null && (
+        <FragmentShowcaseOverlay
+          fragment={showcaseFragment}
+          onClose={() => setShowcaseId(null)}
+        />
+      )}
     </div>
   );
 }

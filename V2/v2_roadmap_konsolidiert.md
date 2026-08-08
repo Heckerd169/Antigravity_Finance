@@ -2,7 +2,8 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 06. August 2026 (nach v2-13 und dem Nachzug A–E) · **Vorgänger-Struktur:** bis zum
+> **Stand:** 07. August 2026 (nach v2-16 — `RM-2` und `PA-1` gebaut, **Paket 2
+> abgeschlossen**) · **Vorgänger-Struktur:** bis zum
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
@@ -26,16 +27,25 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 06.08.2026 nach Sprint v2-15 zeilengenau nachgezählt.*
+*Alle Zahlen am 07.08.2026 nach Sprint v2-16 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
-|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 13 | 14 | 14 | 14 | 14 |
-| Themen darin | **32** | 34 | 35 | 36 | 37 | 40 |
-| Hausaufgaben ohne eigenen Sprint | **6** | 6 | 7 | 7 | 7 | 8 |
-| **Offen gesamt** | **38** | 40 | 42 | 43 | 44 | 48 |
-| Erledigt | **35** | 33 | 31 | 30 | 29 | 25 |
-| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 |
+| | Anzahl | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
+|---|---|---|---|---|---|---|---|
+| Offene Pakete | **11** | 12 | 13 | 14 | 14 | 14 | 14 |
+| Themen darin | **31** | 32 | 34 | 35 | 36 | 37 | 40 |
+| Hausaufgaben ohne eigenen Sprint | **5** | 6 | 6 | 7 | 7 | 7 | 8 |
+| **Offen gesamt** | **36** | 38 | 40 | 42 | 43 | 44 | 48 |
+| Erledigt | **37** | 35 | 33 | 31 | 30 | 29 | 25 |
+| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+
+> **Stand nach v2-16 (07.08.2026), zeilengenau nachgezählt.** Paket-Tabellen **35**
+> Zeilen, davon **4 ✅** (`BF-4`, `LQ-1`, `LQ-2`, `RM-2`) → **31** offen (⬜ 28 · 🟡 3).
+> Hausaufgaben **5** (⬜ 4 · 🟡 1 — `PA-1` ist raus). §4 Erledigt **37** Zeilen.
+> §3 unverändert **4**.
+>
+> **Paket 2 fällt weg** — es bestand nach `RM-1` (v2-10) nur noch aus `RM-2`, und der
+> ist mit v2-16 gebaut. `RM-3` gehörte nie dazu, es liegt in Paket 9 (Folgepunkt zu
+> `F5`). Offene Pakete: 12 → **11**.
 
 > **Der Selbstwiderspruch in diesem Abschnitt ist aufgelöst (06.08.2026, v2-15).**
 > Bis hierher nannte die Tabelle *Hausaufgaben 6 · Erledigt 33*, der Kasten darunter
@@ -123,7 +133,17 @@ Von den fünf Befunden sind **alle fünf erledigt**: `BF-3` und `BF-1` (v2-10),
 die Voraussetzung für alles, was auf ihnen aufbaut (Treiber, Auswertungen,
 Liquiditäts-Vorschau).
 
-**Frei baubar, ohne jede offene Entscheidung** *(Stand 06.08.2026, nach v2-15)*:
+**Beide sind gebaut — Stand 07.08.2026 nach Sprint v2-16.** `RM-2` und `PA-1` sind
+erledigt; damit ist auch **Paket 2 vollständig abgeschlossen**. Was in der Rohmasse
+steht, ist jetzt lesbar: die Karte zeigt den Verwendungszweck (`RM-1`), das Popup den
+Empfänger und alles Übrige (`RM-2`).
+
+> **Was das für die Kette bedeutet:** Von den fünf Kettengliedern sind **Paket 1 und
+> Paket 2 fertig**. Das nächste ist **Paket 4** (Kategorien) — und das ist der
+> Engpass: Es braucht eine eigene `design-direktor`-Runde und ist der Riegel vor
+> Paket 5, dem einzigen Punkt der Roadmap, der Aufwand **wegnimmt**.
+
+*Die frühere Fassung dieses Abschnitts, zur Nachvollziehbarkeit:*
 
 1. **`RM-2`** (Schaufenster-Popup für ein Fragment) — durch die Gestaltungsrunde vom
    06.08.2026 vollständig entschieden und schneidbar. **Achtung:** ändert §8
@@ -131,8 +151,15 @@ Liquiditäts-Vorschau).
    `pointer-events: none` entfällt. Aufgehoben ist ausschließlich die **Klick**-Sperre;
    die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger, weil sie bisher
    nebenbei aus `pointer-events` folgte. Merksatz: **klickbar ≠ ziehbar ≠ verlinkbar.**
+   → **✅ gebaut in v2-16.** Die Drag-Sperre hat ihren Träger bekommen; hinzu kam eine
+   dritte, im Briefing nicht vorhergesehene Wirkung derselben CSS-Zeile — sie
+   unterdrückte auch die **Hover-Rückmeldung** (Review §5.1).
 2. **`PA-1`** (Konsequenz-Anzeige beim Einkommens-Eintrag) — die Rechnung war schon
    belegt, seit dem 06.08. sind auch alle fünf Darstellungsfragen entschieden.
+   → **✅ gebaut in v2-16.** Nebenbei erledigt: das Einkommens-Popup hat endlich einen
+   **Escape-Handler** (`sprint_v2-10_offene_fragen.md` §6, offen seit Sprint 1).
+   Offen geblieben war der Wortlaut für den **umgekehrten** Fall (Anteil sinkt) — am
+   07.08. in der Rolle `design-direktor` entschieden (Review §6.2).
 
 > **Die `design-direktor`-Runde hat am 06.08.2026 stattgefunden.** Sie hat `LQ-2`,
 > `LQ-1` (Anzeigeseite), `RM-2` und `PA-1` entschieden — die ersten beiden sind mit
@@ -184,7 +211,7 @@ Prüfanker je Fehler benannt)
 
 ---
 
-### Paket 2 · Rohmasse lesbar machen
+### Paket 2 · Rohmasse lesbar machen — ✅ **VOLLSTÄNDIG ERLEDIGT (07.08.2026)**
 **Entsperrt:** Kuratieren von Hand ohne Reibung. Die Beschreibung auf einem
 Rohmasse-Fragment wird heute vom Empfänger gefüllt, der Verwendungszweck fällt dem
 „…" zum Opfer — genau die Information, die man beim Zuordnen braucht. Damit ist
@@ -199,16 +226,27 @@ dieses Paket das **Werkzeug für Paket 6** (Kuratierung 2026).
 > Betrag rechts daneben, Datum in die Kopfzeile, Verwendungszweck ungekürzt darunter;
 > bei DKB Visa entfällt die Zweck-Zeile). Record:
 > `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3.
-> **Achtung beim Bauen:** Die Entscheidung **ändert §8 inhaltlich** — zugeordnete
-> Fragmente und Überträge werden klickbar, `pointer-events: none` entfällt. Aufgehoben
-> ist ausschließlich die **Klick**-Sperre; die **Drag-Sperre bleibt und braucht ab jetzt
-> einen eigenen Träger**, weil sie bisher nebenbei aus `pointer-events` folgte. Die
+>
+> **✅ Gebaut mit v2-16 (07.08.2026).** Damit ist dieses Paket **leer** — `RM-1` und
+> `RM-2` sind beide erledigt, `RM-3` gehört zu Paket 9 (es hängt an `F5`). Offene
+> Pakete: 12 → **11**.
+>
+> Die angekündigte **inhaltliche Änderung an §8 ist vollzogen**: Zugeordnete Fragmente
+> und Überträge sind klickbar, `pointer-events: none` ist entfallen. Aufgehoben wurde
+> ausschließlich die **Klick**-Sperre. Die **Drag-Sperre hat ihren eigenen Träger
+> bekommen** (`draggable={false}` plus der Check in `handleDragStart`), die
 > Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist unberührt. Merksatz:
 > **klickbar ≠ ziehbar ≠ verlinkbar.**
+>
+> **Dritte Wirkung derselben Zeile, im Briefing nicht vorhergesehen:**
+> `pointer-events: none` unterdrückte auch die **Hover-Rückmeldung**. Ohne eigene
+> Regel spränge die Deckkraft beim Überfahren von 0.22 bzw. 0.45 auf 0.92 — genau die
+> Werte, die §8 als unberührt festschreibt. Nachzulesen in
+> `sprints/sprint_v2-16_review.md` §5.1.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| RM-2 | Schaufenster-Popup für ein Fragment | Feature | nein | ⬜ | **Entschieden: reines Anzeigen, keine Knöpfe** — die Gegenleistung dafür, dass RM-1 Information von der Karte nimmt. Zeigt den vollständigen Text sowie Betrag, Datum, Status und bei Überträgen das **Gegenkonto mit „eigenes Konto"-Hinweis** (`counterparty_iban`, heute schon vorhanden). **Klickbar werden alle Fragmente**, auch zugeordnete und Überträge — beide sind heute per `pointer-events: none` tot gestellt, das ändert Design-Doku §8. Natürlicher Ort für den KI-Vorschlag, den BF-1 von der Karte nimmt. **Gestaltungsfrage offen:** Rangfolge der Angaben und Hauptzeile → `design-direktor` vor dem Bauen. |
+| RM-2 | Schaufenster-Popup für ein Fragment | Feature | nein | ✅ | **Gebaut in v2-16 (07.08.2026).** Reines Anzeigen, keine Knöpfe — die Gegenleistung dafür, dass `RM-1` Information von der Karte nimmt. Empfänger als Hauptzeile, Betrag rechts daneben, Datum in der Kopfzeile, Verwendungszweck ungekürzt darunter; ohne Trennzeichen (DKB Visa) entfällt die Zweck-Zeile. Unter dem Strich: Status bzw. zugeordnete Karte → Gegenkonto (nur Übertrag, IBAN **verkürzt**) → KI-Vorschlag (nur unzugeordnet, **mit** Prozentwert). **Alle Fragmente sind klickbar**, auch zugeordnete und Überträge — `pointer-events: none` ist entfallen, die Drag-Sperre hat einen eigenen Träger bekommen. Escape-Handler von Anfang an. Vier im Record offen gebliebene Fragen wurden am 07.08. in der Rolle `design-direktor` entschieden (`sprints/sprint_v2-16_review.md` §6.2). |
 
 > Bewusst **nicht** enthalten: Handlungen im Popup (Zuordnen, Lösen, Umschichten
 > markieren). Das ist `M2` in Paket 7 und wird als Ganzes entschieden, nicht in
@@ -404,7 +442,6 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Stand | Bemerkung |
 |---|---|---|---|
-| PA-1 | Konsequenz-Anzeige beim Einkommens-Eintrag | ⬜ | **An BF-3 anhängen** (Paket 1) — zweite Sache, die am selben Popup andockt. Nach dem Eintragen eines neuen Einkommens zeigt die App unmittelbar, welche Daueraufträge sich dadurch ändern: je gemeinsamem Posten **alt → neu → Differenz**. Symmetrisch, greift bei jeder Einkommensänderung auf beiden Seiten. **Kein Häkchen „umgestellt"** — Handpflege hat in dieser App eine Erfolgsbilanz von null. Rechenweg existiert bereits: `get_split_factor` liest den jüngsten Einkommens-Eintrag ≤ Monat, Vorausdatieren funktioniert also ohne neue Logik. **Achtung:** Der Faktor rechnet mit `gross_annual`, nicht mit dem Netto. **⚠️ Größte Hausaufgabe der Liste** — eine kleine Rechnung plus Anzeige, keine Notiz. Wächst sie im Sprint, herausschneiden und zu einem eigenen Thema machen. **In v2-10 angefasst und bewusst nicht gebaut** (Abbruch-Klausel des Arbeitsauftrags): Die **Rechnung ist fertig und gegen Produktion belegt** — Faktor 92.400 / (92.400 + 69.113) = 0,5721, vier gemeinsame Posten, Summe 2.033,99 € Plan → 1.163,62 € ICH-Anteil; durchgerechnetes Beispiel in `sprints/sprint_v2-10_offene_fragen.md` §5. Offen ist ausschließlich die **Darstellung**: Design-Doku §10 und §12.7 kennen keinen Zustand nach dem Speichern, und §12.7 ist die vollständige Textreferenz. Es fehlen fünf Entscheidungen (was nach dem Speichern passiert · wie man schließt, inkl. neuer UI-Copy · Spaltenköpfe · leerer Fall · ob Einnahmen-Karten mitzählen) → **eine Runde `design-direktor`**, danach ist es ein kleiner Sprint. |
 | J1 | Migrationen der Sprints 5–8 als Datei nachziehen | 🟡 | Seit v2-04 werden neue Migrationen als Datei abgelegt. Die Altbestände liegen weiterhin nur in Supabase. **Dringlicher geworden:** `supabase/migrations/` enthält nur zwei Patch-Dateien, der Übungs-DB-Seed ist reine Daten ohne Schema. Es gibt damit **keine versionierte Basis**, gegen die ein Eingriff in eine Rechenfunktion diffen könnte, und die Übungs-Datenbank ist aus dem Repo nicht rekonstruierbar. Spätestens vor `KAT-3` mitnehmen (Befund D15). |
 | TP-2 | `net_estimation_brackets` der Übungs-DB befüllen | ⬜ | Seed ist dort bislang leer. Nur nötig, wenn ein Sprint die Netto-Schätzung berührt. |
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
@@ -430,6 +467,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|---|
 | LQ-1 | Fälligkeitstag je Karte: Spalte + 17 abgeleitete Werte (v2-14), Anzeige rechts in der Statuszeile + Menüpunkt „Fällig am …" (v2-15) | v2-14 / v2-15 |
 | LQ-2 | Ausstehend-Anzeige `[N] € noch fällig · [N] € Budget frei` in der Kopfzeile „Planung"; nie eine Summe, nur im laufenden Monat | v2-15 |
+| RM-2 | Schaufenster-Popup für ein Fragment: Empfänger führt, Betrag rechts, Datum in der Kopfzeile, Zweck ungekürzt; ohne Trennzeichen entfällt die Zweck-Zeile. Alle Fragmente klickbar — `pointer-events: none` aufgehoben, Drag-Sperre mit eigenem Träger. Escape-Handler. Damit ist **Paket 2 leer** | v2-16 |
+| PA-1 | Konsequenz-Anzeige beim Einkommens-Eintrag: das Popup tauscht nach dem Speichern seinen Inhalt, Held ist die Summe (`+18,98 €`), Spalten `Bisher / Künftig / Diff.`, ein Knopf `Schließen`. Leerer Fall zeigt gar nichts (LL-20). Nebenbei: das Einkommens-Popup hat endlich einen **Escape-Handler** (Altbestand seit Sprint 1) | v2-16 |
 | TP-1 | Prüfwert im Übungs-DB-Runbook: Anker **ersatzlos entfernt** statt korrigiert — er war zweimal veraltet (4.545,32 → 4.589,53 → tatsächlich 4.208,76 €). Anker werden jetzt nur noch an EINER Stelle gepflegt: `CLAUDE.md` §9 | v2-13 Nachzug |
 | BF-4 | Gemeinsame Karten: Split-Anteil genau **einmal** angewandt; Karte zeigt den eigenen Anteil mit `von [N] €` darunter. Prod alle 12 Monate um 0,00 € bewegt, B2 12/12 | v2-13 |
 | Init-1 | Übungs-Datenbank aufgesetzt, Runbook in `supabase/test_projekt/` | v2-05 |

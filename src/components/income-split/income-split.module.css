@@ -8,9 +8,18 @@
   z-index: 100;
 }
 
+/* v2-16 (PA-1): 400 px in BEIDEN Zuständen (Design-Doku §10). Ein Overlay, das
+   beim Übernehmen unter der Hand wächst, wäre unruhig — deshalb bekommt auch
+   der Eingabe-Zustand den Wert.
+   ANMERKUNG zur Herkunft der Zahl: Der Entscheidungs-Record vom 06.08.2026
+   beschreibt den Schritt als „340 → 400 px, das Popup wird breiter". Der echte
+   Ausgangswert war aber 480 px — das Popup wird durch diese Änderung also
+   SCHMALER. Die Entscheidung „400 px" ist normativ und bleibt gültig; nur ihre
+   Herleitung ging von einem falschen Ist-Wert aus. Zulässig ist die Größe
+   ohnehin: §7 (RM-4) schreibt für Overlays den Ort fest, nicht die Größe. */
 .dialog {
   width: 100%;
-  max-width: 480px;
+  max-width: 400px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
@@ -208,6 +217,122 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 4px;
+}
+
+/* ============================================================
+   KONSEQUENZ-ANZEIGE — v2-16 (PA-1), Design-Doku §10
+   Der zweite Zustand desselben Popups. Held ist die SUMME, nicht die Liste;
+   die Zeilen darunter belegen sie nur.
+   Der äußere Rahmen (.dialog) ist derselbe — nur der Inhalt tauscht. Sein
+   `gap: 18px` ist für ein Formular gedacht und hier zu weit, deshalb ziehen
+   die Blöcke unten mit negativen bzw. kleinen Abständen wieder zusammen.
+   ============================================================ */
+
+.consequenceSubtitle {
+  color: var(--text-ghost);
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-top: -12px;
+}
+
+.consequenceHero {
+  font-size: 30px;
+  font-weight: 200;
+  letter-spacing: -1.4px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: -10px;
+}
+
+/* Keine neue Farbe: Rot heißt hier wie überall Belastung (die Sparrate sinkt),
+   Türkis Entlastung. Die Palette bleibt unangetastet. */
+.consequenceHeroUp {
+  color: var(--color-red);
+}
+
+.consequenceHeroDown {
+  color: var(--color-teal);
+}
+
+.consequenceCaption {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.consequenceCaption b {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.consequenceTable {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.consequenceHead {
+  display: flex;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--text-ghost);
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 2px;
+}
+
+.consequenceRow {
+  display: flex;
+  font-size: 11.5px;
+  padding: 6px 0;
+  align-items: baseline;
+}
+
+.consequenceName {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+
+.consequenceCol {
+  width: 68px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.consequenceOld {
+  color: var(--text-ghost);
+}
+
+.consequenceNew {
+  color: var(--text-primary);
+}
+
+.consequenceDiffUp {
+  color: var(--color-red);
+}
+
+.consequenceDiffDown {
+  color: var(--color-teal);
+}
+
+.consequenceSum {
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 6px;
+  padding-top: 9px;
+  font-weight: 500;
+}
+
+.consequenceSum .consequenceName {
+  color: var(--text-primary);
 }
 
 .buttonPrimary {

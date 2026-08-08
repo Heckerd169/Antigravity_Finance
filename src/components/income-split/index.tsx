@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { estimateNetMonthly } from "@/lib/rpc";
+import { formatAmount } from "@/lib/format";
 import { saveIncomeChange } from "./actions";
-import type { IncomeSplitProps } from "./income-split.types";
+import type { IncomeSplitProps, SplitConsequence } from "./income-split.types";
 import styles from "./income-split.module.css";
 
 const TAX_CLASSES = [1, 2, 3, 4, 5, 6] as const;
@@ -51,6 +52,22 @@ function PopupBody({
 
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  /* v2-16 (PA-1): Ist das gesetzt, zeigt DASSELBE Popup seinen zweiten Zustand —
+     die Konsequenz-Anzeige statt der Eingabefelder (§10). */
+  const [consequence, setConsequence] = useState<SplitConsequence | null>(null);
+
+  /* v2-16: Escape-Handler — bis hierher war dieses Popup als EINZIGES von acht
+     Overlays ohne (sprints/sprint_v2-10_offene_fragen.md §6, Altbestand seit
+     Sprint 1). Muster identisch zu den sieben anderen. Gilt in beiden
+     Zuständen: im Ergebnis-Zustand ist Schließen die einzige Handlung, die
+     überhaupt noch offensteht. */
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const isPastMonth = useMemo(() => isPast(activeMonth), [activeMonth]);
 
@@ -149,7 +166,16 @@ function PopupBody({
           isFirstIncomeEntry && person === "ICH" ? taxYear : undefined,
       });
       if (res.ok) {
-        onClose();
+        /* v2-16 (PA-1): Ändert die Gehaltsänderung den Split, tauscht das Popup
+           seinen Inhalt statt zu schließen — Ursache und Wirkung an einem Ort.
+           Im leeren Fall (nur das Netto angepasst, oder keine gemeinsamen
+           Posten) liefert die Action `null` und es bleibt beim bisherigen
+           Verhalten: speichern und schließen, ohne Zwischenbildschirm (LL-20). */
+        if (res.consequence !== null) {
+          setConsequence(res.consequence);
+        } else {
+          onClose();
+        }
       } else {
         setFormError(res.error);
       }
@@ -192,6 +218,9 @@ function PopupBody({
       aria-modal="true"
       data-wave-block
     >
+      {consequence !== null ? (
+        <ConsequenceView consequence={consequence} onClose={onClose} />
+      ) : (
       <form className={styles.dialog} onSubmit={handleSubmit}>
         <div className={styles.header}>
           <h2 className={styles.title}>
@@ -296,9 +325,166 @@ function PopupBody({
           </button>
         </div>
       </form>
+      )}
     </div>,
     document.body,
   );
+}
+
+/* ── v2-16 (PA-1): der zweite Zustand des Popups ─────────────────────────────
+ *
+ * Design-Doku §10 „Konsequenz-Anzeige nach dem Speichern". Held ist NICHT die
+ * Liste, sondern die Summe: was die Gehaltsänderung pro Monat kostet. Die
+ * Zeilen darunter belegen sie nur — die Summe beantwortet die Frage sofort,
+ * die Liste die Rückfrage „bei welchen?".
+ *
+ * §4.5-Rahmung: Was hier steht, ist der künftige PLAN-Anteil, also praktisch
+ * die Antwort auf „auf welchen Betrag stelle ich den Dauerauftrag um?". Es ist
+ * keine Buchhaltungs-Quittung, sondern eine Handlungsliste.
+ */
+function ConsequenceView({
+  consequence,
+  onClose,
+}: {
+  consequence: SplitConsequence;
+  onClose: () => void;
+}) {
+  const { totalImpact, factorBefore, factorAfter, effectiveMonth } = consequence;
+  /* Steigt der eigene Anteil, wird es teurer und die Sparrate sinkt — die Zahl
+     ist dann ROT. Sinkt er, ist sie türkis. Das ist exakt die bestehende
+     Palette-Bedeutung (Rot = Belastung, Türkis = positiv); es kommt keine Farbe
+     hinzu. Den Gegenfall hat der Entwurf bereits als Klassen-Variante angelegt,
+     nur seine Worte waren offen — sie sind am 07.08.2026 entschieden worden
+     (Rolle design-direktor): gleicher Aufbau, drei Wörter drehen. */
+  const isMore = totalImpact > 0;
+  const abs = Math.abs(totalImpact);
+
+  /* Nach Wirkung absteigend — der Posten, der am meisten ausmacht, zuerst. */
+  const rows = [...consequence.items].sort(
+    (a, b) => Math.abs(b.impact) - Math.abs(a.impact),
+  );
+
+  return (
+    <div className={styles.dialog}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>
+          Dein Anteil {isMore ? "steigt" : "sinkt"}
+        </h2>
+      </div>
+      <span className={styles.consequenceSubtitle}>
+        Split {formatPercent(factorBefore)} → {formatPercent(factorAfter)} · ab{" "}
+        {monthLabelFromIso(effectiveMonth)}
+      </span>
+
+      <div
+        className={`${styles.consequenceHero} ${
+          isMore ? styles.consequenceHeroUp : styles.consequenceHeroDown
+        }`}
+      >
+        {isMore ? "+" : "−"}
+        {formatAmount(abs)} €
+      </div>
+      <p className={styles.consequenceCaption}>
+        {isMore ? "mehr" : "weniger"} pro Monat für{" "}
+        <b>{postenPhrase(rows.length)}</b>. Die Sparrate{" "}
+        {isMore ? "sinkt" : "steigt"} um denselben Betrag.
+      </p>
+
+      <div className={styles.consequenceTable}>
+        <div className={styles.consequenceHead}>
+          <div className={styles.consequenceName}>Posten</div>
+          <div className={styles.consequenceCol}>Bisher</div>
+          <div className={styles.consequenceCol}>Künftig</div>
+          <div className={styles.consequenceCol}>Diff.</div>
+        </div>
+        {rows.map((item) => (
+          <div key={item.cardId} className={styles.consequenceRow}>
+            <div className={styles.consequenceName} title={item.name}>
+              {item.name}
+            </div>
+            <div className={`${styles.consequenceCol} ${styles.consequenceOld}`}>
+              {formatAmount(item.before)}
+            </div>
+            <div className={`${styles.consequenceCol} ${styles.consequenceNew}`}>
+              {formatAmount(item.after)}
+            </div>
+            {/* Die Diff.-Spalte zeigt die WIRKUNG auf dich, nicht die nackte
+                Differenz der beiden Spalten daneben. Bei einer gemeinsamen
+                Einnahme sind das verschiedene Vorzeichen (§10) — nur so
+                summiert sich die Spalte sichtbar zur Held-Zahl. */}
+            <div
+              className={`${styles.consequenceCol} ${
+                item.impact > 0 ? styles.consequenceDiffUp : styles.consequenceDiffDown
+              }`}
+            >
+              {item.impact > 0 ? "+" : "−"}
+              {formatAmount(Math.abs(item.impact))}
+            </div>
+          </div>
+        ))}
+        <div className={`${styles.consequenceRow} ${styles.consequenceSum}`}>
+          <div className={styles.consequenceName}>Zusammen</div>
+          <div className={`${styles.consequenceCol} ${styles.consequenceOld}`}>
+            {formatAmount(consequence.totalBefore)}
+          </div>
+          <div className={`${styles.consequenceCol} ${styles.consequenceNew}`}>
+            {formatAmount(consequence.totalAfter)}
+          </div>
+          <div
+            className={`${styles.consequenceCol} ${
+              isMore ? styles.consequenceDiffUp : styles.consequenceDiffDown
+            }`}
+          >
+            {isMore ? "+" : "−"}
+            {formatAmount(abs)}
+          </div>
+        </div>
+      </div>
+
+      {/* §10: EIN Knopf. „Abbrechen" wäre sinnlos — es gibt nichts mehr
+          abzubrechen; „Übernehmen" ist bereits geschehen.
+          Bewusst `buttonSecondary` und nicht die Gold-Variante aus dem
+          Entwurfsbild: Gold ist in der schmalen Palette der Vorjahres-Linie
+          vorbehalten (§9 B6), und der Record vom 06.08. hält ausdrücklich
+          fest, dass keine Farbe ihre Bedeutung ändert. */}
+      <div className={styles.actions}>
+        <button type="button" className={styles.buttonSecondary} onClick={onClose}>
+          Schließen
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Split-Faktor als Prozent mit einer Nachkommastelle: `0.572090` → `57,2 %`.
+ *  Eine Stelle reicht, um die Bewegung zu zeigen, ohne eine Genauigkeit zu
+ *  behaupten, die für die Aussage keine Rolle spielt. */
+function formatPercent(factor: number): string {
+  return `${(factor * 100).toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })} %`;
+}
+
+/** „vier gemeinsame Posten" — im Fließsatz wird das Zahlwort ausgeschrieben
+ *  (so auch im Entscheidungs-Record und im Entwurf). Ab dreizehn wird es
+ *  unhandlich, dort steht die Ziffer. */
+const ZAHLWORT = [
+  "null", "ein", "zwei", "drei", "vier", "fünf", "sechs",
+  "sieben", "acht", "neun", "zehn", "elf", "zwölf",
+];
+
+function postenPhrase(n: number): string {
+  if (n === 1) return "einen gemeinsamen Posten";
+  const wort = n < ZAHLWORT.length ? ZAHLWORT[n] : String(n);
+  return `${wort} gemeinsame Posten`;
+}
+
+/** "2026-08-01" → "August 2026". */
+function monthLabelFromIso(iso: string): string {
+  const m = /^(\d{4})-(\d{2})/.exec(iso);
+  if (!m) return iso;
+  return monthLabel(Number(m[1]), Number(m[2]));
 }
 
 function NetHint({ state, taxClass }: { state: NetState; taxClass: number }) {
