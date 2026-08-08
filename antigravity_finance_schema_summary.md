@@ -1,8 +1,40 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.4.4
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur)
-**Datum:** 05. August 2026
+**Version:** 3.5.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien)
+**Datum:** 08. August 2026
+
+> **Changelog v3.5.0 (08.08.2026, Sprint v2-17 · `KAT-1` + `KAT-3`):** **Neue Tabelle
+> `card_categories`** (`id`, `user_id`, `name`, `sort_order smallint`, Zeitstempel) mit
+> UNIQUE-Index auf `(user_id, lower(name))` und eigener Owner-Policy — **von Hand
+> angelegt**, denn der Event-Trigger `rls_auto_enable` schaltet RLS ein, legt aber
+> **keine** Policy an und schluckt sein eigenes Scheitern (Befund `D8`). `cards`
+> bekommt **`category_id uuid NULL`** mit `ON DELETE SET NULL`: Eine gelöschte
+> Kategorie nimmt ihre Karten **nicht** mit, sie werden kategorielos.
+>
+> **Fünf neue Lebenszyklus-RPCs** (`set_card_category`, `create_category_for_card`,
+> `rename_card_category`, `delete_card_category`, `restore_card_category`) und **eine
+> neue Lese-RPC** `get_category_amounts_for_month(p_user_id, p_month)`.
+>
+> **Kein Papierkorb-Eintrag für Kategorien.** `deleted_entity_type` hat vier Werte,
+> `cleanup_expired_card_trash` filtert hart auf `'CARD'`, und 60 s Aufbewahrung reichen
+> nicht — eine CATEGORY-Zeile in `deleted_entities` wäre nie vollzogen und nie entfernt
+> worden (Befund `D7`). `delete_card_category` löscht deshalb **hart** und gibt den
+> Wiederherstellungs-Bausatz zurück; die Rücknahme läuft über den 5-Sekunden-Toast.
+> Damit war weder ein neuer Enum-Wert noch eine längere Retention nötig.
+>
+> **KEINE Rechenfunktion berührt.** `calculate_card_amount_for_month`,
+> `calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month` und
+> `get_year_deviation_drivers` tragen nach der Migration **byte-identische
+> Prüfsummen** wie vorher (`md5(pg_get_functiondef(...))`, gegen Übungs- und
+> Produktiv-Datenbank verglichen). Alle zwölf Monate 2026 um **0,00 €** bewegt,
+> B2-Invariante 12/12.
+>
+> **Zusätzlich: erstmals eine versionierte Schema-Basis** unter
+> `supabase/migrations/00000000000000_baseline_stand_v2_16.sql` — der vollständige
+> Struktur-Stand aus dem `pg_catalog` von Produktion (Hausaufgabe `J1`, Befund `D15`).
+> Bis dahin existierten die Basistabellen und die Sprints 5–8 nur in den beiden
+> lebenden Datenbanken.
 
 > **Changelog v3.4.4 (06.08.2026, Sprint v2-14 · `LQ-1`):** `cards` bekommt **`due_day smallint NULL`** (CHECK `1..31`) — den Tag im Monat, an dem die Karte fällig ist. Damit wird die Frage „was steht bis zum Stichtag noch aus?“ überhaupt formulierbar; bis dahin legten Frequenz und erster aktiver Monat nur den *Monat* fest (Befund `L2`). `NULL` bedeutet „kein Termin“ und ist der richtige Wert für **BUDGET**-Karten (Befund `L7`) und für Karten ohne Historie. Gespeichert wird der **Soll-Tag**, nicht der reale Buchungstag — Daueraufträge zum Ersten rutschen auf den nächsten Bankarbeitstag. Die 17 Startwerte sind aus `fragments` abgeleitet, nicht geschätzt. Migration: `supabase/migrations/20260806_v2_14_lq1_faelligkeitstag.sql`. **Keine Rechenfunktion berührt** — alle zwölf Monate 2026 vor und nach der Anwendung identisch, B2-Invariante 12/12.
 
@@ -93,7 +125,10 @@
 
 ## 1. Was gebaut wurde
 
-10 Tabellen, 1 View, **26 App-RPCs** (+ 6 Trigger-Funktionen; v2-05: +5 Lebenszyklus-RPCs, −`toggle_card_hidden`), **6 Trigger** (+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale Konstanten.
+**11 Tabellen**, 1 View, **32 App-RPCs** (+ 6 Trigger-Funktionen; v2-05: +5
+Lebenszyklus-RPCs, −`toggle_card_hidden`; v2-17: +6 Kategorie-RPCs), **7 Trigger**
+(+ 1 Event-Trigger), vollständige RLS, Seed-Daten für Steuerklassen 1–6 und globale
+Konstanten.
 
 ```
    IDENTITÄT          EINKOMMEN              KARTEN                   FRAGMENTE
@@ -101,12 +136,22 @@
    profiles           income_timeline        cards                    fragments
                       net_estimation_        card_planned_timeline    card_fragment_links
                       brackets               card_monthly_states      fragments_with_status (View)
+                                             card_categories  (v2-17)
 
    INFRASTRUKTUR
    ─────────────
    app_config          → globale Konstanten (Schwellen, Gewichte, Retention)
-   deleted_entities    → Trash für Rückgängig-Pattern
+   deleted_entities    → Trash für Rückgängig-Pattern (trägt KEINE Kategorien, D7)
 ```
+
+> **`card_categories` steht bewusst NEBEN `cards`, nicht darin.** Beide Sparrate-RPCs
+> schleifen ohne Typ-Filter über alle Karten des Monats; eine Kategorie als
+> `cards`-Zeile würde zusätzlich zu ihren Kindern summiert und der Prüfanker bräche
+> sofort (Befund `D1`, dort als BLOCKER geführt). Dieselbe ungefilterte Menge nutzen
+> `get_year_deviation_drivers` und der Auto-Absorptions-Loop in `process_csv_import`.
+>
+> Die Tabelle hat **keine Betrags-Spalte**. Die Zahl einer Kategorie ist immer
+> abgeleitet und wird server-seitig gebildet (§4, `get_category_amounts_for_month`).
 
 ---
 
@@ -159,12 +204,18 @@ app_config              (global, read-only für User)
 - `card_fragment_links` hat den `UNIQUE(fragment_id)`-Constraint → ein Fragment kann maximal einer Karte zugewiesen sein → keine Doppelverbuchung möglich
 - `fragments.suggested_card_id` → `cards` ist eine **schwache** Referenz (`ON DELETE SET NULL`): wenn die vorgeschlagene Karte gelöscht wird, verliert das Fragment nur den Vorschlag, nicht sich selbst
 - Cascading: Karte gelöscht → States + Links weg, Fragmente bleiben (sie sind unabhängig)
+- `cards.category_id` → `card_categories` ist ebenfalls eine **schwache** Referenz (`ON DELETE SET NULL`): wird der Ordner gelöscht, verliert die Karte nur ihre Zuordnung, nicht sich selbst. `NULL` ist dort ein **regulärer** Wert („Ohne Kategorie"), kein Fehlerzustand — beide Anlage-RPCs kennen keine Kategorie und liefern laufend kategorielose Karten nach (Befund `D12`)
 
 ---
 
 ## 3. Datenbasis der Sparrate — die Wahrheits-Quellen
 
 Die Sparrate ist nirgends gespeichert. Sie wird zur Laufzeit aus diesen vier Quellen berechnet:
+
+> **`card_categories` ist KEINE fünfte Quelle** (seit v2-17). Die Sparrate rechnet
+> **kategorie-blind** über alle Karten des Monats; die Zuordnung bewegt keine Zahl.
+> Genau deshalb darf sie eine einfache Spalte sein und rückwirkend gelten, ohne die
+> Snapshot-Integrität (§7) zu verletzen — der Präzedenzfall ist `cards.name`.
 
 | Quelle | Was sie liefert | Forward-Inheritance? |
 |---|---|---|
@@ -243,6 +294,40 @@ delta := round( vorzeichen × ( calculate_card_amount_for_month(karte, M)
 | `delete_card(p_card_id uuid)` | Prüft `card_delete_gate` (Verstoß → 23514 mit Gründen), setzt `deleted_at = now()`, legt via bestehendem `schedule_deletion('CARD', id, row-snapshot)` den `deleted_entities`-Eintrag an (`expires_at = now() + trash.retention_seconds`) | `jsonb` (`{card_id, trash_id, expires_at}`) |
 | `restore_card(p_card_id uuid)` | Findet den jüngsten offenen Trash-Eintrag der Karte, validiert über bestehendes `restore_deletion` (Ablauf/Row-Lock), setzt `deleted_at = NULL` | `boolean` |
 | `cleanup_expired_card_trash()` | Opportunistischer Hard-Delete-Vollzug (Beschluss E3 Option b), vom Frontend vor jeder Lebenszyklus-Aktion aufgerufen: löscht abgelaufene, nicht wiederhergestellte eigene Trash-Karten hart (DB-Kaskade entfernt `card_planned_timeline`/`card_monthly_states`/`card_fragment_links`; Fragmente bleiben, `suggested_card_id` → `NULL`) und entfernt die vollzogenen Trash-Zeilen; wiederhergestellte Trash-Zeilen bleiben dauerhaft (§2.4) | `integer` (Anzahl hart gelöschter Karten) |
+
+### Bei den Kategorien (Sprint v2-17 · `KAT-1` + `KAT-3`)
+
+Alle sechs `SECURITY INVOKER`, `SET search_path TO 'public'`, mit explizitem
+`auth.uid()`-Guard (28000) und Eigentums-Prüfung (42704). **Der Guard ist nicht
+redundant:** Über MCP läuft die Verbindung als Service-Rolle **an RLS vorbei** — im
+Trockenlauf ist er die einzige Absicherung.
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `set_card_category(p_card_id uuid, p_category_id uuid DEFAULT NULL)` | Ordnet eine Karte einem bestehenden Ordner zu. `NULL` löst sie heraus (sie landet in „Ohne Kategorie"). Fremde Kategorie → 42704 | `void` |
+| `create_category_for_card(p_card_id uuid, p_name text)` | Legt einen Ordner an **und** räumt die Karte ein, in einem Aufruf. Existiert der Name bereits (ohne Rücksicht auf Groß-/Kleinschreibung), wird der bestehende verwendet statt eines Fehlers. `sort_order` = größter vorhandener Wert + 10. Leerer Name → 22023 | `uuid` |
+| `rename_card_category(p_category_id uuid, p_name text)` | Umbenennen. Wirkt rückwirkend in allen Monaten — die Zuordnung ist eine einfache Eigenschaft, keine Zeitreihe | `void` |
+| `delete_card_category(p_category_id uuid)` | **Harter** DELETE. Die Karten werden über `ON DELETE SET NULL` kategorielos, nicht gelöscht. Gibt alles zurück, was die Rücknahme braucht — inklusive der Karten-IDs, denn die stehen danach nirgends mehr | `jsonb` (`{category_id, name, sort_order, card_ids[]}`) |
+| `restore_card_category(p_category_id uuid, p_name text, p_sort_order smallint, p_card_ids uuid[])` | Rücknahme aus dem 5-Sekunden-Toast: legt den Ordner mit **derselben id** wieder an und hängt nur die Karten zurück, die inzwischen **nicht** anderweitig zugeordnet wurden | `uuid` |
+| `get_category_amounts_for_month(p_user_id uuid, p_month date)` | **STABLE.** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate, in EINEM Aufruf. Leeres Array, wenn kein Gehalt hinterlegt ist | `jsonb` (Array aus `{key, category_id, name, sort_order, amount, posten}`) |
+
+**Signatur mit `p_user_id`**, wie die beiden Sparrate-RPCs — nicht `auth.uid()`-basiert.
+
+> **⚠️ `get_category_amounts_for_month` rundet NICHT je Ordner naiv.**
+>
+> `calculate_sparrate_for_month` rundet **einmal ganz am Schluss über alles**. Elf
+> einzeln gerundete Ordner können das nicht nachbilden: Gemessen am 08.08.2026 gegen
+> Produktion war die Summe der gerundeten Ordner in **allen zwölf Monaten** genau
+> 0,01 € neben der Sparrate (Juli: −322,74 € statt −322,75 €, exakter Kartenwert
+> −4.487,8556895729755…).
+>
+> Die Funktion holt deshalb ihr Ziel aus `calculate_sparrate_for_month` — **geholt,
+> nicht hergeleitet** (LL-22) — bildet `Ziel = Sparrate − Netto` und verteilt den
+> verbleibenden Rundungsrest auf den **betragsgrößten** Ordner. Die Spalte geht damit
+> per Konstruktion auf.
+>
+> **Wer diese Funktion anfasst, prüft danach in allen zwölf Monaten:**
+> `Σ amount == calculate_sparrate_for_month(user, monat)`.
 
 ### Beim Karten-CRUD (Sprint 5)
 
@@ -333,8 +418,22 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 | **card_monthly_states** | Cascade-Delete bei Karten-Hard-Delete. State-Reset (= DELETE) nach UI-Logik möglich |
 | **card_fragment_links** | DELETE bei Eject. Cascade bei Karten- oder Fragment-Hard-Delete |
 | **fragments** | Hard-Delete erlaubt. Cascade entfernt Links automatisch. `suggested_card_id` ist `ON DELETE SET NULL` |
-| **deleted_entities** | Cleanup-Job nach `expires_at`. Restored-Zeilen bleiben dauerhaft |
+| **deleted_entities** | Cleanup-Job nach `expires_at`. Restored-Zeilen bleiben dauerhaft. **Trägt KEINE Kategorien** — siehe unten |
+| **card_categories** (v2-17) | **Harter** DELETE über `delete_card_category`, **kein** Papierkorb-Eintrag. Die enthaltenen Karten werden über `ON DELETE SET NULL` kategorielos, nicht gelöscht — eine Kaskade wäre eine undo-lose Massenaktion. Die Rücknahme läuft über den 5-Sekunden-Toast, der den Bausatz aus der RPC-Antwort hält (`restore_card_category` legt mit **derselben id** wieder an). Es gibt **kein Lösch-Tor**: Eine Kategorie hat keine Links und keine Monats-Zustände, und ihre Karten überleben |
 | **app_config / net_estimation_brackets** | Nur über Service-Role änderbar |
+
+> **Warum Kategorien nicht in den Papierkorb gehen (Befund `D7`).**
+> `deleted_entity_type` hat genau vier Werte `{CARD_END, CARD, CARD_FRAGMENT_LINK,
+> FRAGMENT}`, und `schedule_deletion` ist darauf typisiert.
+> `cleanup_expired_card_trash` filtert im WITH-Block **hart** `AND de.entity_type =
+> 'CARD'` — eine CATEGORY-Trash-Zeile würde nie vollzogen und nie entfernt;
+> `restore_deletion` verweigert sie nach `expires_at`. Ergebnis wäre eine unsterbliche
+> Waisenzeile. Hinzu kommt: **60 Sekunden Aufbewahrung** (`app_config
+> trash.retention_seconds`) reichen für eine Kaskaden-Entscheidung nicht.
+>
+> v2-17 löst das **ohne** neuen Enum-Wert und **ohne** längere Retention. Wer später
+> `G1` (Papierkorb für die übrigen Entitäten) angeht, findet hier den Grund, warum
+> Kategorien dort nicht auftauchen.
 
 ---
 
@@ -370,6 +469,7 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 | `card_monthly_states` | Owner | Owner |
 | `fragments` | Owner | Owner |
 | `card_fragment_links` | Owner | Owner |
+| `card_categories` (v2-17) | Owner | Owner |
 | `deleted_entities` | Owner | Owner |
 | `fragments_with_status` (View) | Erbt von `fragments` + `card_fragment_links` | (View, nicht beschreibbar) |
 | `app_config` | Alle authentifizierten | Nur Service-Role |
@@ -378,6 +478,21 @@ Das Architekten-Kernprinzip „Daten sind unveränderlich, Ereignisse nicht" wir
 **Owner = `auth.uid() = user_id`**. Keine Cross-User-Sichtbarkeit. Service-Role (Migrations, Admin-Tools) umgeht RLS.
 
 **Event-Trigger `rls_auto_enable`:** stellt sicher, dass jede neue public-Tabelle automatisch RLS aktiviert bekommt — Sicherheitsnetz gegen vergessene RLS-Aktivierungen bei zukünftigen Migrationen.
+
+> **⚠️ Er legt KEINE Policy an — und er schluckt sein eigenes Scheitern** (Befund
+> `D8`, bestätigt beim Anlegen von `card_categories` in v2-17). Der Trigger führt
+> ausschließlich `alter table … enable row level security` aus, gekapselt in
+> `EXCEPTION WHEN OTHERS THEN RAISE LOG`.
+>
+> **Die Folge ist heimtückisch:** Eine neue Tabelle ohne explizite Owner-Policy liefert
+> über PostgREST ein **stilles `[]`** beim SELECT (kein Fehler) und **42501** beim
+> INSERT. Beim Testen liest sich das wie „noch keine Daten angelegt" — und kostet eine
+> Stunde Suche an der falschen Stelle.
+>
+> **Regel: Wer eine Tabelle hinzufügt, schreibt `ENABLE ROW LEVEL SECURITY` und die
+> Policy von Hand in die Migration.** Sich auf einen Trigger zu verlassen, der Fehler
+> verschluckt, ist keine Absicherung. So gebaut in
+> `supabase/migrations/20260808_v2_17_kat1_kategorien.sql`.
 
 ---
 
