@@ -21,6 +21,25 @@ export function formatEuro(amount: number): string {
   return EUR_FMT_2.format(amount) + " €";
 }
 
+/** v2-17 (KAT-2): Geldbetrag MIT Vorzeichen, 2 Dezimalen, typografisches Minus.
+ *  Beispiel: `formatEuroSigned(-374.02)` → `"−374,02 €"`,
+ *            `formatEuroSigned(69.51)`   → `"+69,51 €"`.
+ *
+ *  Nur für Kategorie-Kacheln. Eine KARTE trägt kein Vorzeichen, weil ihr Typ die
+ *  Richtung transportiert — „Fixkosten" heißt Abgang, „Einnahmen" heißt Zugang.
+ *  Ein ORDNER hat keinen Typ und kann beides mischen: In „Abos &
+ *  Mitgliedschaften" liegen acht Ausgaben und zwei Erstattungen. Ohne Vorzeichen
+ *  wäre nicht lesbar, wohin die 374,02 € wirken (Record B5).
+ *
+ *  Bei exakt 0 steht kein Vorzeichen: „+0,00 €" behauptete eine Richtung, die es
+ *  nicht gibt. Das typografische Minus (U+2212) statt des Bindestrichs ist
+ *  dieselbe Wahl wie in `formatEuroRounded` und im Ring. */
+export function formatEuroSigned(amount: number): string {
+  if (amount === 0) return "0,00 €";
+  const sign = amount > 0 ? "+" : "−";
+  return `${sign}${EUR_FMT_2.format(Math.abs(amount))} €`;
+}
+
 const NBSP = " ";
 
 /** Geldbetrag auf ganze Euro gerundet, mit geschütztem Leerzeichen vor dem €.

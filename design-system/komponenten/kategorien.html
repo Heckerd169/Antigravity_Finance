@@ -1,0 +1,283 @@
+<!-- @dsCard group="Komponenten" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Kategorien — Antigravity Finance</title>
+<style>
+  :root {
+    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
+    --bg-card-paid:#0A140E; --bg-card-ghost:#181818;
+    --color-teal:#3ECFAF; --color-red:#FF453A;
+    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
+    --border-red:rgba(255,69,58,.18);
+    /* v2-17 — die sieben neuen Tokens, 1:1 aus src/styles/tokens.css */
+    --bg-category:#131318; --bg-category-stack:#101014;
+    --border-category:rgba(255,255,255,.13); --border-category-stack:rgba(255,255,255,.09);
+    --border-category-open:rgba(255,69,58,.45); --border-category-done:rgba(62,207,175,.35);
+    --text-category-flag:rgba(255,99,88,.62);
+    --border-bracket:rgba(255,255,255,.14); --border-bracket-open:rgba(255,69,58,.32);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:44px 40px 96px; background:var(--bg-primary); color:var(--text-primary);
+         font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+         font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased; }
+  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
+  .lede { color:var(--text-muted); font-size:13px; max-width:78ch; line-height:1.65; margin:0 0 8px; }
+  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 34px; line-height:1.6; }
+  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+       color:var(--text-ghost); margin:52px 0 6px; padding-bottom:8px;
+       border-bottom:1px solid var(--border-subtle); }
+  .sub { font-size:12px; color:var(--text-muted); margin:0 0 22px; max-width:80ch; line-height:1.65; }
+  .row { display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+  .cap { margin-top:11px; font-size:10px; color:var(--text-ghost); line-height:1.55; max-width:420px; }
+  .cap b { display:block; color:var(--text-muted); font-weight:600; font-size:9px;
+           letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  code { font-size:.92em; color:rgba(255,255,255,.6); }
+  .note { margin-top:22px; padding:14px 16px; border-left:2px solid var(--border-teal);
+          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
+          font-size:11.5px; color:var(--text-muted); line-height:1.7; max-width:86ch; }
+  .note b { color:var(--text-primary); font-weight:500; }
+  .note.warn { border-left-color:rgba(255,69,58,.35); background:rgba(255,69,58,.04); }
+
+  /* ── Karten-Basis (Auszug aus komponenten/karten.html) ── */
+  .card { width:136px; flex:0 0 136px; min-height:170px; border-radius:14px;
+          padding:14px 13px 12px; border:1px solid var(--border-subtle);
+          background:var(--bg-card); position:relative; opacity:.75; }
+  .open{background:var(--bg-card-open);border-color:var(--border-red);}
+  .paid{background:var(--bg-card-paid);border-color:var(--border-teal);}
+  .expected{background:#0D1A16;border-color:rgba(62,207,175,.18);}
+  .ghost{background:var(--bg-card-ghost);border-color:var(--border-subtle);opacity:.5;}
+  .cardTop { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+  .cardLabel { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+  .open .cardLabel { color:rgba(255,99,88,.45); }
+  .paid .cardLabel,.expected .cardLabel { color:rgba(62,207,175,.45); }
+  .ghost .cardLabel { color:rgba(255,255,255,.22); }
+  .icon { width:18px; height:18px; border-radius:50%; flex-shrink:0; }
+  .iconOpen{background:rgba(255,69,58,.1);border:1px solid rgba(255,69,58,.2);}
+  .iconPaid{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.28);}
+  .iconExpected{background:rgba(62,207,175,.1);border:1px solid rgba(62,207,175,.25);}
+  .cardName { font-size:13px; font-weight:500; letter-spacing:-.2px; margin-bottom:2px;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); }
+  .paid .cardName { color:var(--text-primary); }
+  .cardAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px; line-height:1;
+                margin-bottom:2px; color:var(--text-muted); }
+  .paid .cardAmount { color:var(--text-primary); }
+  .householdAmount { font-size:10px; line-height:12px; min-height:12px; white-space:nowrap;
+                     color:var(--text-muted); margin-bottom:5px; }
+  .stateRow { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+  .stateLabel { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
+                color:rgba(255,99,88,.38); }
+  .paid .stateLabel,.expected .stateLabel { color:rgba(62,207,175,.45); }
+  .ghost .stateLabel { color:rgba(255,255,255,.20); }
+  .dueDay { font-size:9px; font-weight:500; letter-spacing:.4px; color:rgba(255,255,255,.30); }
+  .cardMeta { display:flex; align-items:center; gap:5px; margin-top:8px; }
+  .metaDot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.22); }
+  .metaText { font-size:10px; font-weight:500; color:rgba(255,255,255,.20); letter-spacing:.2px; }
+
+  /* ── Ordner-Kachel — 1:1 aus interaction-zone.module.css ── */
+  .catTile { width:136px; flex:0 0 136px; min-height:170px; border-radius:14px;
+             padding:14px 13px 12px; border:1px solid var(--border-category);
+             background:var(--bg-category); opacity:.82; display:flex; flex-direction:column;
+             box-shadow:
+               0 5px 0 -1px var(--bg-category-stack), 0 5px 0 0 var(--border-category),
+               0 10px 0 -2px var(--bg-category-stack), 0 10px 0 -1px var(--border-category-stack); }
+  .catTile.isOpen { box-shadow:none; }
+  .catTile.ghostTile { background:var(--bg-card-ghost); opacity:.5; }
+  .catTile.hasOpen { border-left:2px solid var(--border-category-open); padding-left:12px; }
+  .catTile.allDone { border-left:2px solid var(--border-category-done); padding-left:12px; }
+  .catKicker { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+               color:rgba(255,255,255,.30); }
+  .catChev { font-size:10px; line-height:1; color:rgba(255,255,255,.30); }
+  .catTile.isOpen .catChev { transform:rotate(90deg); display:inline-block; }
+  .catName { font-size:13px; font-weight:500; letter-spacing:-.2px; color:#fff; margin-bottom:2px;
+             white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .catAmount { font-size:22px; font-weight:200; letter-spacing:-1.2px; line-height:1;
+               margin-bottom:2px; color:#fff; white-space:nowrap; }
+  .catAmount.pos { color:var(--color-teal); }
+  .catCount { font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase;
+              color:rgba(255,255,255,.28); }
+  .catOpenFlag { font-size:9px; font-weight:600; letter-spacing:.6px; text-transform:uppercase;
+                 color:var(--text-category-flag); white-space:nowrap; }
+  .childGroup { display:flex; gap:10px; flex:0 0 auto; padding:0 4px 7px;
+                border-bottom:1px solid var(--border-bracket); border-radius:0 0 3px 3px; }
+  .childGroup.openFlag { border-bottom-color:var(--border-bracket-open); }
+</style>
+</head>
+<body>
+
+<h1>Kategorien im Karussell</h1>
+<p class="lede">
+  <b>Ist-Zustand seit Sprint v2-17 (08.08.2026).</b> Eine Kategorie ist ein <b>Ordner</b>:
+  Sie enthält ausschließlich Karten, hat keine eigene Zahl außer der vorzeichenrichtigen
+  Summe ihres Inhalts, und die Sparrate rechnet weiterhin kategorie-blind. Die Kachel
+  behält das Kartenformat (136 px), hebt sich aber durch <b>neutralen Grundton</b>,
+  <b>fehlendes Status-Icon</b> und <b>gestapelte Kanten</b> ab.
+</p>
+<p class="src">
+  Quelle: <code>antigravity_finance_design_dokument.md</code> §8 „Kategorien" ·
+  <code>V2/design_direktor_2026-08-07_kategorien.md</code> (Variante A) ·
+  Maße 1:1 aus <code>src/components/interaction-zone/interaction-zone.module.css</code>.<br>
+  Löst die Entwurfsseite <code>entwuerfe/kat-kategorien.html</code> ab, die mit dem Bau
+  gelöscht wurde.
+</p>
+
+<h2>1 · Die vier Zustände der Kachel</h2>
+<p class="sub">
+  Der Unterschied zwischen „offen" und „erledigt" liegt <b>ausschließlich</b> in der
+  linken Kante und in der Flagge rechts unten. Kein Status-Icon, kein getönter Grund —
+  Rot und Türkis bleiben den Karten-Zuständen vorbehalten.
+</p>
+<div class="row">
+  <div>
+    <div class="catTile hasOpen">
+      <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+      <div class="catName">Wohnen</div>
+      <div class="catAmount">−1.148,18 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><span class="catCount">3 Posten</span>
+        <span class="catOpenFlag">3 offen</span></div>
+      <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+    </div>
+    <div class="cap"><b>Offen</b>Linke Kante rot. Die Zahl trägt ein Vorzeichen, weil
+      ein Ordner keinen Typ hat, der die Richtung transportieren könnte.</div>
+  </div>
+  <div>
+    <div class="catTile allDone">
+      <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+      <div class="catName">Hobby</div>
+      <div class="catAmount">−369,14 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><span class="catCount">3 Posten</span>
+        <span class="catCount">erledigt</span></div>
+      <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+    </div>
+    <div class="cap"><b>Erledigt</b>Linke Kante türkis, Flagge neutral. Kein Häkchen —
+      das gehört den Karten.</div>
+  </div>
+  <div>
+    <div class="catTile">
+      <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+      <div class="catName">Einkommen</div>
+      <div class="catAmount pos">+4.165,11 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><span class="catCount">1 Posten</span></div>
+      <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+    </div>
+    <div class="cap"><b>Einkommen</b>Keine Kante, keine Flagge: Das Nettogehalt ist weder
+      offen noch erledigt. Positive Summen stehen in Türkis.</div>
+  </div>
+  <div>
+    <div class="catTile ghostTile">
+      <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+      <div class="catName">Versicherungen</div>
+      <div class="catAmount">−232,83 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><span class="catCount">3 Posten</span></div>
+      <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+    </div>
+    <div class="cap"><b>Zukunftsmonat</b>Blass, ohne Kante, <b>ohne Flagge</b>. Ohne diese
+      Regel stünde dort „erledigt", weil null Kinder offen sind — falsch für einen Monat,
+      in dem noch nichts fällig war.</div>
+  </div>
+</div>
+
+<h2>2 · Aufgeklappt — die Klammer</h2>
+<p class="sub">
+  Der Stapel verschwindet, das Chevron dreht sich, und die Karten bekommen eine
+  <b>durchgehende Grundlinie</b>. Ohne sie verliert man beim Weiterscrollen die
+  Zuordnung — „Abos &amp; Mitgliedschaften" ist mit zehn Karten fast zwei
+  Bildschirmbreiten lang.
+</p>
+<div class="row">
+  <div class="catTile isOpen hasOpen">
+    <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+    <div class="catName">Wohnen</div>
+    <div class="catAmount">−1.148,18 €</div>
+    <div class="householdAmount"></div>
+    <div class="stateRow"><span class="catCount">3 Posten</span>
+      <span class="catOpenFlag">3 offen</span></div>
+    <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+  </div>
+  <div class="childGroup openFlag">
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div><div class="icon iconOpen"></div></div>
+      <div class="cardName">Miete</div>
+      <div class="cardAmount">1.089,26 €</div>
+      <div class="householdAmount">von 1.904,00 €</div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueDay">am 1.</div></div>
+      <div class="cardMeta"><div class="metaDot" style="background:rgba(100,168,240,.38)"></div>
+        <div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div><div class="icon iconOpen"></div></div>
+      <div class="cardName">Strom - Mainova</div>
+      <div class="cardAmount">36,04 €</div>
+      <div class="householdAmount">von 63,00 €</div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueDay">am 1.</div></div>
+      <div class="cardMeta"><div class="metaDot" style="background:rgba(100,168,240,.38)"></div>
+        <div class="metaText">Gemeinsam</div></div>
+    </div>
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div><div class="icon iconOpen"></div></div>
+      <div class="cardName">Internet - Vodaf…</div>
+      <div class="cardAmount">22,87 €</div>
+      <div class="householdAmount">von 39,98 €</div>
+      <div class="stateRow"><div class="stateLabel">Offen</div><div class="dueDay">am 1.</div></div>
+      <div class="cardMeta"><div class="metaDot" style="background:rgba(100,168,240,.38)"></div>
+        <div class="metaText">Gemeinsam</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="note warn">
+  <b>Die 18 statt 17 am Ende von „Wohnen" ist kein Tippfehler.</b>
+  Die drei Karten zeigen 1.089,26 + 36,04 + 22,87 = 1.148,17 €, der Ordner zeigt
+  <b>−1.148,18 €</b>. Grund: <code>calculate_sparrate_for_month</code> rundet
+  <b>einmal ganz am Schluss über alles</b>. Elf einzeln gerundete Ordner können das
+  nicht nachbilden — die Summe läge in <b>jedem</b> Monat einen Cent neben der Sparrate.
+  Der Rundungsrest wandert deshalb auf den betragsgrößten Ordner, damit die
+  <b>Spalte</b> aufgeht. Das war die ausdrückliche Bedingung des Users.
+  Herleitung: Design-Doku §8 „Die Zahl eines Ordners", Record Teil C1.
+</div>
+
+<h2>3 · Der Ordner „Einkommen" und seine Kachel</h2>
+<p class="sub">
+  Das Nettogehalt ist <b>keine Karte</b> und stand bis v2-17 gar nicht im Karussell.
+  Ohne diesen Ordner fehlte in der Aufstellung genau dieser Betrag. Ein Klick auf die
+  Kachel öffnet das <b>bestehende</b> Einkommens-Fenster — kein zweites Formular.
+</p>
+<div class="row">
+  <div class="catTile isOpen">
+    <div class="cardTop"><span class="catKicker">Kategorie</span><span class="catChev">›</span></div>
+    <div class="catName">Einkommen</div>
+    <div class="catAmount pos">+4.165,11 €</div>
+    <div class="householdAmount"></div>
+    <div class="stateRow"><span class="catCount">1 Posten</span></div>
+    <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+  </div>
+  <div class="childGroup">
+    <div class="card expected">
+      <div class="cardTop"><div class="cardLabel">Einkommen</div></div>
+      <div class="cardName">Nettogehalt</div>
+      <div class="cardAmount">4.165,11 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="stateLabel">Monatlich</div></div>
+      <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ich</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>Was die Kachel bewusst NICHT hat.</b>
+  Keinen Tap-Catcher. Über jeder tappbaren <em>Karte</em> liegt eine unsichtbare
+  Vollflächen-Klickfläche, die „bezahlt" umschaltet und die Sparrate bewegt — ohne
+  Toast, ohne Bestätigung. Der Klick auf eine Ordner-Kachel klappt auf und tut sonst
+  nichts. Genau deshalb ist sie neutral getönt und ohne Status-Icon: Die Unterscheidung
+  muss durch Ton, fehlendes Icon und Stapelkante wirklich tragen. Das war der benannte
+  Preis von Variante A (Befund <code>U3</code>).
+</div>
+
+</body>
+</html>

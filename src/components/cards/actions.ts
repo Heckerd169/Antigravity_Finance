@@ -4,11 +4,17 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   cleanupExpiredCardTrash,
+  createCategoryForCard,
   deleteCard,
+  deleteCardCategory,
   endCard,
+  renameCardCategory,
   restoreCard,
+  restoreCardCategory,
+  setCardCategory,
   toggleCardManuallyPaid,
 } from "@/lib/rpc";
+import type { DeletedCategoryPayload } from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
@@ -108,6 +114,73 @@ export async function setCardDueDay(
 
   if (error) throw error;
 
+  revalidatePath("/", "page");
+}
+
+/* ── v2-17 (KAT-1): Kategorien ──────────────────────────────────────────────
+ *
+ * Alle vier Aktionen berühren ausschließlich `cards.category_id` und
+ * `card_categories`. Keine davon bewegt eine Zahl, die rechnet: Die Sparrate
+ * aggregiert kategorie-blind über alle Karten des Monats, und die Kategorie ist
+ * keine der fünf von §2.1 geschützten Ebenen (Gehalt, Karten-Plan,
+ * Karten-Lebensdauer, Fragmente, Sparrate). Deshalb darf die Zuordnung auch
+ * rückwirkend gelten (Record A6). */
+
+/** Karte in eine bestehende Kategorie legen — oder mit `null` herauslösen. */
+export async function setCardCategoryAction(
+  cardId: string,
+  categoryId: string | null,
+): Promise<void> {
+  const supabase = createClient();
+  await setCardCategory(supabase, { cardId, categoryId });
+  revalidatePath("/", "page");
+}
+
+/** Neue Kategorie anlegen und die Karte hineinlegen — ein Aufruf, eine
+ *  Transaktion. Getrennte Schritte („erst anlegen, dann zuordnen") könnten bei
+ *  einem Abbruch dazwischen eine leere Kategorie hinterlassen, und genau die
+ *  soll es nicht geben (B8). */
+export async function createCategoryForCardAction(
+  cardId: string,
+  name: string,
+): Promise<void> {
+  const supabase = createClient();
+  await createCategoryForCard(supabase, { cardId, name });
+  revalidatePath("/", "page");
+}
+
+/** Kategorie umbenennen (aus dem ⋯-Menü der Kategorie-Kachel). */
+export async function renameCardCategoryAction(
+  categoryId: string,
+  name: string,
+): Promise<void> {
+  const supabase = createClient();
+  await renameCardCategory(supabase, { categoryId, name });
+  revalidatePath("/", "page");
+}
+
+/** Kategorie löschen. Gibt den Wiederherstellungs-Bausatz zurück, damit der
+ *  Toast ihn fünf Sekunden lang festhalten kann.
+ *
+ *  Anders als beim Karten-Löschen gibt es hier KEINEN Papierkorb — der kann
+ *  eine Kategorie nicht tragen (Befund D7). Der Bausatz IST die Rücknahme, und
+ *  er lebt nur im Browser, bis der Toast verschwindet. Danach ist die Kategorie
+ *  endgültig weg; die Karten sind es nie (sie werden nur kategorielos). */
+export async function deleteCardCategoryAction(
+  categoryId: string,
+): Promise<DeletedCategoryPayload> {
+  const supabase = createClient();
+  const payload = await deleteCardCategory(supabase, { categoryId });
+  revalidatePath("/", "page");
+  return payload;
+}
+
+/** Rücknahme aus dem Toast. */
+export async function restoreCardCategoryAction(
+  payload: DeletedCategoryPayload,
+): Promise<void> {
+  const supabase = createClient();
+  await restoreCardCategory(supabase, payload);
   revalidatePath("/", "page");
 }
 

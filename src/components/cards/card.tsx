@@ -1,4 +1,20 @@
-import type { EnrichedCard, FixedCostState, IncomeState, BudgetState } from "./cards.types";
+import type {
+  CardCategory,
+  EnrichedCard,
+  FixedCostState,
+  IncomeState,
+  BudgetState,
+} from "./cards.types";
+/* v2-17 (KAT-2): Die Zustands-Auflösung liegt seit diesem Sprint in
+ * `card-state.ts` — die Kategorie-Kachel braucht dieselben Regeln, um zu
+ * zählen, wie viele ihrer Karten offen sind. Unverändert herausgelöst, nicht
+ * neu geschrieben. */
+import {
+  resolveBudgetState,
+  resolveFixedCostState,
+  resolveIncomeState,
+  sumLinkedFragments,
+} from "./card-state";
 import { CardInteractive } from "./card-interactive";
 import { formatEuro } from "@/lib/format";
 import styles from "./cards.module.css";
@@ -81,58 +97,6 @@ function IconOverExclamation() {
   );
 }
 
-// ── State-Resolution ─────────────────────────────────────────────────────────
-
-function resolveFixedCostState(card: EnrichedCard, isFuture: boolean): FixedCostState {
-  if (isFuture) return "ghost";
-  // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
-  // entweder reicht für Bezahlt-Status (Sprint 6 K1).
-  const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
-  return card.manuallyPaid || hasFragment ? "paid" : "open";
-}
-
-function resolveIncomeState(card: EnrichedCard, isFuture: boolean): IncomeState {
-  if (isFuture) return "ghost";
-  // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
-  // entweder reicht für Erhalten-Status (Sprint 6 K1).
-  const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
-  return card.manuallyPaid || hasFragment ? "received" : "expected";
-}
-
-function resolveBudgetState(
-  card: EnrichedCard,
-  isFuture: boolean,
-  isPast: boolean,
-  fragmentSum: number,
-): BudgetState {
-  if (isFuture) return "ghost";
-  // §3.4.4 Sprint-7-Spec (Briefing): vollständige State-Maschine
-  if (isPast && !card.manuallyPaid && fragmentSum === 0) return "ghost";
-  if (card.manuallyPaid) return "done";
-  if (fragmentSum > card.effectivePlan) return "over";
-  return "running";
-}
-
-/** K1.2/K1.4: „Spent" = Summe der Fragmentwerte (Realität). Getrennt von
- *  `card.amount`, das per §4.3.3 Priorisierung (Realität → Anpassung → Plan)
- *  auch Adjustment oder Plan zurückgeben kann.
- *
- *  v2-11 (BF-5): Netto-ABFLUSS statt Summe der Betragshöhen. Vorher stand hier
- *  `Math.abs(f.amount)` — dieselbe Fehlerklasse wie in der Rechenfunktion, nur
- *  im Frontend. Solange die Datenbank ebenfalls mit ABS summierte, waren beide
- *  gleich falsch und damit wenigstens konsistent. Nach der Migration liefert die
- *  Datenbank den verrechneten Wert; bliebe es hier bei ABS, zeigte die Karte für
- *  „Aline Geburtstag" oben 168,11 € und darunter „918,11 € über Plan".
- *
- *  Wird ausschliesslich fuer BUDGET-Karten aufgerufen, deshalb genügt die eine
- *  Richtung (Ausgaben sind negative Fragmente → Verbrauch positiv). Das Ergebnis
- *  entspricht damit exakt dem, was `calculate_card_amount_for_month` intern
- *  bildet — die Karte rechnet §4.3 weiterhin NICHT nach (§7 Regel 1), sie
- *  braucht den Wert nur fuer Balken und Restbudget-Text. */
-function sumLinkedFragments(card: EnrichedCard): number {
-  return -(card.linkedFragments ?? []).reduce((acc, f) => acc + f.amount, 0);
-}
-
 // ── Sub-Components ───────────────────────────────────────────────────────────
 
 /** v2-13 (BF-4/E1): Der Haushaltsbetrag unter dem eigenen Anteil — `von 1.904,00 €`.
@@ -210,10 +174,12 @@ function FixedCostCard({
   card,
   state,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: FixedCostState;
   month: string;
+  categories: CardCategory[];
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
@@ -259,6 +225,8 @@ function FixedCostCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
       />
@@ -272,10 +240,12 @@ function IncomeCard({
   card,
   state,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: IncomeState;
   month: string;
+  categories: CardCategory[];
 }) {
   const stateClass = styles[state];
   const isGhost = state === "ghost";
@@ -330,6 +300,8 @@ function IncomeCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
       />
@@ -344,11 +316,13 @@ function BudgetCard({
   state,
   fragmentSum,
   month,
+  categories,
 }: {
   card: EnrichedCard;
   state: BudgetState;
   fragmentSum: number;
   month: string;
+  categories: CardCategory[];
 }) {
   const isGhost = state === "ghost";
   const isDone = state === "done";
@@ -470,6 +444,8 @@ function BudgetCard({
         deleteGate={card.deleteGate}
         cardType={card.type}
         currentDueDay={card.dueDay}
+        currentCategoryId={card.categoryId}
+        categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}
       />
@@ -484,21 +460,48 @@ type CardProps = {
   isFuture: boolean;
   isPast: boolean;
   month: string; // "YYYY-MM-01"
+  /** v2-17 (KAT-1): alle Ordner des Nutzers — Auswahlliste für „Kategorie
+   *  ändern …". Einmal geladen und an alle Karten durchgereicht, statt je Karte
+   *  nachzufragen (der Loader feuert ohnehin schon drei Aufrufe pro Karte,
+   *  Befund D14). */
+  categories: CardCategory[];
 };
 
-export function Card({ card, isFuture, isPast, month }: CardProps) {
+export function Card({ card, isFuture, isPast, month, categories }: CardProps) {
   if (card.type === "FIXED_COST") {
     const state = resolveFixedCostState(card, isFuture);
-    return <FixedCostCard card={card} state={state} month={month} />;
+    return (
+      <FixedCostCard
+        card={card}
+        state={state}
+        month={month}
+        categories={categories}
+      />
+    );
   }
 
   if (card.type === "INCOME") {
     const state = resolveIncomeState(card, isFuture);
-    return <IncomeCard card={card} state={state} month={month} />;
+    return (
+      <IncomeCard
+        card={card}
+        state={state}
+        month={month}
+        categories={categories}
+      />
+    );
   }
 
   // BUDGET
   const fragmentSum = sumLinkedFragments(card);
   const state = resolveBudgetState(card, isFuture, isPast, fragmentSum);
-  return <BudgetCard card={card} state={state} fragmentSum={fragmentSum} month={month} />;
+  return (
+    <BudgetCard
+      card={card}
+      state={state}
+      fragmentSum={fragmentSum}
+      month={month}
+      categories={categories}
+    />
+  );
 }

@@ -10,10 +10,16 @@ import {
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
+import { CategoryOverlay } from "./category-overlay";
 import { DueDayOverlay } from "./due-day-overlay";
 import { EndCardOverlay } from "./end-card-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
-import type { CardType, DeleteGate, LinkedFragmentRef } from "./cards.types";
+import type {
+  CardCategory,
+  CardType,
+  DeleteGate,
+  LinkedFragmentRef,
+} from "./cards.types";
 import styles from "./cards.module.css";
 
 /** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt). */
@@ -48,6 +54,10 @@ type CardInteractiveProps = {
   cardType: CardType;
   /** v2-15 (LQ-1): aktueller Fälligkeitstag, Vorbelegung des Overlays. */
   currentDueDay: number | null;
+  /** v2-17 (KAT-1): aktuelle Kategorie der Karte, `null` = „Ohne Kategorie". */
+  currentCategoryId: string | null;
+  /** v2-17 (KAT-1): alle Ordner des Nutzers, in Anzeige-Reihenfolge (C2). */
+  categories: CardCategory[];
 };
 
 export function CardInteractive({
@@ -64,12 +74,15 @@ export function CardInteractive({
   deleteGate,
   cardType,
   currentDueDay,
+  currentCategoryId,
+  categories,
 }: CardInteractiveProps) {
   const effectiveTappable = tappable && !endDeleteOnly;
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [dueDayOverlayOpen, setDueDayOverlayOpen] = useState(false);
+  const [categoryOverlayOpen, setCategoryOverlayOpen] = useState(false);
   const [endOverlayOpen, setEndOverlayOpen] = useState(false);
   const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
@@ -131,6 +144,12 @@ export function CardInteractive({
     e.stopPropagation();
     setMenuOpen(false);
     setDueDayOverlayOpen(true);
+  }
+
+  function handleCategoryClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setCategoryOverlayOpen(true);
   }
 
   function handleLinkedClick(e: React.MouseEvent) {
@@ -246,6 +265,24 @@ export function CardInteractive({
               Fällig am …
             </button>
           )}
+          {/* v2-17 (KAT-1): „Kategorie ändern …" — der einzige Ort, an dem eine
+              Karte ihren Ordner wechselt und an dem neue Ordner entstehen
+              (Record B8). Bewusst NICHT durch Ziehen: Das kollidierte mit dem
+              Tap-Catcher, und ein missratener Zug schriebe stumm
+              `manually_paid` (Befund U3).
+              Auch auf Ghost-Karten sichtbar, anders als „Betrag anpassen" und
+              „Fällig am …": Die Kategorie ist eine Eigenschaft der Karte, kein
+              Monats-Zustand — man ordnet eine künftige Karte genauso ein wie
+              eine laufende, und im Zukunftsmonat ist die Kartenmenge oft die
+              vollständigste. */}
+          <button
+            type="button"
+            className={styles.contextMenuItem}
+            onClick={handleCategoryClick}
+            role="menuitem"
+          >
+            Kategorie ändern …
+          </button>
           {canEnd && (
             <button
               type="button"
@@ -313,6 +350,17 @@ export function CardInteractive({
           cardName={cardName}
           currentDueDay={currentDueDay}
           onClose={() => setDueDayOverlayOpen(false)}
+        />
+      )}
+
+      {/* Kategorie-Overlay (v2-17, KAT-1) */}
+      {categoryOverlayOpen && (
+        <CategoryOverlay
+          cardId={cardId}
+          cardName={cardName}
+          currentCategoryId={currentCategoryId}
+          categories={categories}
+          onClose={() => setCategoryOverlayOpen(false)}
         />
       )}
 

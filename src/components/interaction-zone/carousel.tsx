@@ -5,8 +5,15 @@ import { DropTargetWrapper } from "./drop-target-wrapper";
 import { EmptySlot } from "./empty-slot";
 import { RecurrencePopup } from "./recurrence-popup";
 import { DirectCreateOverlay } from "./direct-create-overlay";
+import { CategoryTile } from "./category-tile";
+import { NettoTile } from "./netto-tile";
+import type { CategoryGroup } from "./category-groups";
 import type { Liquidity } from "./liquidity";
-import type { FragmentRow } from "./interaction-zone.types";
+import {
+  DRAG_MIME,
+  type FragmentRow,
+  type IncomeSlotProps,
+} from "./interaction-zone.types";
 import { formatEuroRounded } from "@/lib/format";
 import styles from "./interaction-zone.module.css";
 
@@ -15,8 +22,15 @@ type CarouselCardItem = {
   node: React.ReactNode;
 };
 
-type CarouselProps = {
+/** Ein Ordner samt seiner fertig gerenderten Karten-Nodes. Die Karten selbst
+ *  sind Server-Komponenten und werden hier nur durchgereicht (unverändertes
+ *  Muster seit Sprint 4). */
+export type CarouselGroup = CategoryGroup & {
   items: CarouselCardItem[];
+};
+
+type CarouselProps = {
+  groups: CarouselGroup[];
   /** Wenn true, sind alle Karten Ghost-Cards (Forecast) — Drop-Target deaktiviert. */
   isFuture: boolean;
   targetMonth: string; // "YYYY-MM"
@@ -27,17 +41,20 @@ type CarouselProps = {
   /** v2-15 (LQ-2): Ausstehend-Anzeige der Kopfzeile. `null` außerhalb des
    *  laufenden Monats — dort wird die Zeile gar nicht gerendert. */
   liquidity: Liquidity | null;
+  /** v2-17 (KAT-2): für die Netto-Kachel im Ordner „Einkommen". */
+  incomeSlot: IncomeSlotProps;
 };
 
 const SCROLL_STEP = 146; // 136 Karten-Breite + 10 Gap
 
 export function Carousel({
-  items,
+  groups,
   isFuture,
   targetMonth,
   targetDbMonth,
   fragments,
   liquidity,
+  incomeSlot,
 }: CarouselProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scrollState, setScrollState] = useState({
@@ -49,11 +66,75 @@ export function Carousel({
   );
   const [directCreateOpen, setDirectCreateOpen] = useState(false);
 
-  // LL-5: Overlays bei Monatswechsel schließen.
+  /* v2-17 (KAT-2), Record B7: Der Aufklapp-Zustand ÜBERLEBT den Monatswechsel.
+   *
+   * Das ist die bewusste Gegenentscheidung zu LL-5: Overlays werden per
+   * `useEffect` auf `targetMonth` zurückgesetzt, weil sie Daten eines bestimmten
+   * Monats zeigen. Der Aufklapp-Zustand zeigt keine Daten — er ist eine
+   * Ansichts-Vorliebe, wie der Übertrags-Schalter (v2-07 C1), und der überlebt
+   * ebenfalls. Wer an „Abos" arbeitet und Januar bis Juli durchgeht, will nicht
+   * siebenmal neu aufklappen.
+   *
+   * Beim LADEN der Seite ist alles zu — der Startzustand ist das Versprechen:
+   * elf Ordner statt 32 Karten. Deshalb keine Persistierung.
+   *
+   * Die Sorge aus Befund U10 („eine im August geöffnete Kategorie kann im
+   * September leer sein") entschärft sich von selbst: Ein leerer Ordner wird
+   * nach A8 gar nicht angezeigt, der Schlüssel läuft ins Leere und richtet
+   * nichts an. */
+  const [openKeys, setOpenKeys] = useState<ReadonlySet<string>>(
+    () => new Set<string>(),
+  );
+
+  /* Record B4: Beim Anfassen einer Zahlung öffnen sich ALLE Ordner, beim
+   * Loslassen kehren sie in den vorherigen Zustand zurück.
+   *
+   * Das löst Befund U1 (BLOCKER): Ein Drop braucht eine Karten-ID, eine
+   * zugeklappte Kategorie hat keine. HTML5-Drag kennt keinen Zustandswechsel
+   * während des Ziehens — außer man macht ihn selbst, und genau das passiert
+   * hier. `openKeys` bleibt dabei unangetastet, deshalb ist die Rückkehr
+   * automatisch und braucht kein Gedächtnis.
+   *
+   * Beim Arbeiten ist alles offen, beim Ansehen ist es aufgeräumt. */
+  const [dragActive, setDragActive] = useState(false);
+
+  // LL-5: Overlays bei Monatswechsel schließen. `openKeys` bleibt bewusst
+  // stehen (B7), `dragActive` wird zurückgesetzt — ein Zug kann einen
+  // Monatswechsel nicht überdauern.
   useEffect(() => {
     setRecurrenceFragment(null);
     setDirectCreateOpen(false);
+    setDragActive(false);
   }, [targetMonth]);
+
+  useEffect(() => {
+    function isFragmentDrag(e: DragEvent): boolean {
+      const types = e.dataTransfer?.types;
+      if (!types) return false;
+      for (let i = 0; i < types.length; i += 1) {
+        if (types[i] === DRAG_MIME) return true;
+      }
+      return false;
+    }
+    function handleDragStart(e: DragEvent) {
+      // Der Handler der Fragment-Karte hat die Daten beim Hochblubbern schon
+      // gesetzt — hier ist der MIME-Typ also bereits lesbar.
+      if (isFragmentDrag(e)) setDragActive(true);
+    }
+    function handleDragEnd() {
+      setDragActive(false);
+    }
+    document.addEventListener("dragstart", handleDragStart);
+    // `dragend` feuert an der Quelle, `drop` am Ziel — beide werden gebraucht:
+    // Ein Drop außerhalb eines gültigen Ziels löst nur `dragend` aus.
+    document.addEventListener("dragend", handleDragEnd);
+    document.addEventListener("drop", handleDragEnd);
+    return () => {
+      document.removeEventListener("dragstart", handleDragStart);
+      document.removeEventListener("dragend", handleDragEnd);
+      document.removeEventListener("drop", handleDragEnd);
+    };
+  }, []);
 
   const recomputeScrollState = useCallback(() => {
     const vp = viewportRef.current;
@@ -79,11 +160,21 @@ export function Carousel({
       vp.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
-    // items.length triggert Re-Compute, falls neue Karte hinzukommt
-  }, [recomputeScrollState, items.length]);
+    // Auf- und Zuklappen ändert die Gesamtbreite genauso wie eine neue Karte —
+    // sonst blieben die Pfeile fälschlich deaktiviert.
+  }, [recomputeScrollState, groups.length, openKeys, dragActive]);
 
   function scrollByStep(delta: number) {
     viewportRef.current?.scrollBy({ left: delta, behavior: "smooth" });
+  }
+
+  function toggleGroup(key: string) {
+    setOpenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }
 
   function handleEmptySlotDrop(fragmentId: string) {
@@ -101,7 +192,12 @@ export function Carousel({
           Nie eine Summe: Der eine Betrag sind Termine, der andere ist eine
           Erlaubnis (Befund L7). Deshalb auch zwei verschiedene Wörter — mit
           demselben Wort darüber lüden zwei Zahlen nebeneinander zum Addieren
-          ein. */}
+          ein.
+
+          v2-17 (Record B9): Diese Zeile bleibt von den Kategorien UNBERÜHRT.
+          Sie summiert über alle aktiven Karten des Monats — ob eine Karte
+          sichtbar ist oder in einem zugeklappten Ordner steckt, spielt keine
+          Rolle. Sie ist eine Aussage über den MONAT, nicht über die ANSICHT. */}
       <div className={styles.carouselZoneHeader}>
         <div className={`${styles.zoneLabel} ${styles.zoneLabelInline}`}>
           Planung
@@ -144,17 +240,53 @@ export function Carousel({
         </button>
 
         <div ref={viewportRef} className={styles.cardsViewport}>
-          {items.map((item) => (
-            <DropTargetWrapper
-              key={item.id}
-              cardId={item.id}
-              active={!isFuture}
-              targetDbMonth={targetDbMonth}
-              targetMonth={targetMonth}
-            >
-              {item.node}
-            </DropTargetWrapper>
-          ))}
+          {groups.map((group) => {
+            const isOpen = dragActive || openKeys.has(group.key);
+            return (
+              <div key={group.key} className={styles.catBlock}>
+                <CategoryTile
+                  group={group}
+                  isOpen={isOpen}
+                  onToggle={() => toggleGroup(group.key)}
+                />
+
+                {/* Record B5: Ein offener Ordner steht in einer KLAMMER — eine
+                    durchgehende Grundlinie unter seinen Karten. Ohne sie
+                    verliert man beim Weiterscrollen die Zuordnung: „Abos" ist
+                    mit zehn Karten fast zwei Bildschirmbreiten lang, die Kachel
+                    ist dann längst aus dem Bild. */}
+                {isOpen && (
+                  <div
+                    className={`${styles.childGroup}${
+                      group.offen !== null && group.offen > 0
+                        ? ` ${styles.childGroupOpen}`
+                        : ""
+                    }`}
+                  >
+                    {group.kind === "INCOME" ? (
+                      <NettoTile
+                        amount={group.amount ?? 0}
+                        isGhost={group.isGhost}
+                        income={incomeSlot}
+                      />
+                    ) : (
+                      group.items.map((item) => (
+                        <DropTargetWrapper
+                          key={item.id}
+                          cardId={item.id}
+                          active={!isFuture}
+                          targetDbMonth={targetDbMonth}
+                          targetMonth={targetMonth}
+                        >
+                          {item.node}
+                        </DropTargetWrapper>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <EmptySlot
             targetMonth={targetMonth}
             onClick={() => setDirectCreateOpen(true)}

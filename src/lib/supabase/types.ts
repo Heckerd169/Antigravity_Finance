@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      card_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       card_fragment_links: {
         Row: {
           card_id: string
@@ -172,6 +199,7 @@ export type Database = {
       cards: {
         Row: {
           attribution: Database["public"]["Enums"]["card_attribution"]
+          category_id: string | null
           created_at: string
           deleted_at: string | null
           due_day: number | null
@@ -186,6 +214,7 @@ export type Database = {
         }
         Insert: {
           attribution: Database["public"]["Enums"]["card_attribution"]
+          category_id?: string | null
           created_at?: string
           deleted_at?: string | null
           due_day?: number | null
@@ -200,6 +229,7 @@ export type Database = {
         }
         Update: {
           attribution?: Database["public"]["Enums"]["card_attribution"]
+          category_id?: string | null
           created_at?: string
           deleted_at?: string | null
           due_day?: number | null
@@ -212,7 +242,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cards_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "card_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       deleted_entities: {
         Row: {
@@ -486,7 +524,12 @@ export type Database = {
         }
         Returns: string
       }
+      create_category_for_card: {
+        Args: { p_card_id: string; p_name: string }
+        Returns: string
+      }
       delete_card: { Args: { p_card_id: string }; Returns: Json }
+      delete_card_category: { Args: { p_category_id: string }; Returns: Json }
       end_card: {
         Args: { p_card_id: string; p_last_month: string }
         Returns: Json
@@ -502,6 +545,10 @@ export type Database = {
       frequency_match: {
         Args: { p_card_id: string; p_transaction_date: string }
         Returns: number
+      }
+      get_category_amounts_for_month: {
+        Args: { p_month: string; p_user_id: string }
+        Returns: Json
       }
       get_effective_plan_for_month: {
         Args: { p_card_id: string; p_month: string }
@@ -539,7 +586,20 @@ export type Database = {
         Args: { p_format_hint?: string; p_rows: Json }
         Returns: Json
       }
+      rename_card_category: {
+        Args: { p_category_id: string; p_name: string }
+        Returns: undefined
+      }
       restore_card: { Args: { p_card_id: string }; Returns: boolean }
+      restore_card_category: {
+        Args: {
+          p_card_ids: string[]
+          p_category_id: string
+          p_name: string
+          p_sort_order: number
+        }
+        Returns: string
+      }
       restore_deletion: { Args: { p_id: string }; Returns: boolean }
       schedule_deletion: {
         Args: {
@@ -548,6 +608,10 @@ export type Database = {
           p_payload: Json
         }
         Returns: string
+      }
+      set_card_category: {
+        Args: { p_card_id: string; p_category_id?: string }
+        Returns: undefined
       }
       set_fragment_asset_reallocation: {
         Args: { p_fragment_id: string; p_set?: boolean }

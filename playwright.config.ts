@@ -54,7 +54,11 @@ export default defineConfig({
     // Schicht-1-Pixel-Checks: rendern draw.ts in einer leeren Seite —
     // brauchen weder Creds noch den dev-Server (der startet config-global mit,
     // bleibt hier aber ungenutzt).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence)\.spec\.ts/, use: DESKTOP },
+    // ⚠️ FESTE DATEILISTE. Eine neue *.spec.ts läuft NICHT von allein mit — sie
+    // muss hier eingetragen werden, sonst bleibt sie unbemerkt liegen und die
+    // Gesamtzahl der Prüfungen verrät den Unterschied nicht.
+    // v2-17: `kategorien` kommt dazu (Gruppierungs-Regeln aus KAT-2).
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

@@ -1200,3 +1200,193 @@
   opacity: .4;
   cursor: not-allowed;
 }
+
+/* ═══ v2-17 (KAT-2): Kategorien im Karussell — Variante A ═══════════════════
+   Maße 1:1 aus `design-system/entwuerfe/kat-kategorien.html` §3, das seinerseits
+   die Werte dieser Datei gespiegelt hat (Slot 136 + gap 10).
+
+   Die Reihe bleibt EINE Reihe. Das ist keine Formalie, sondern der Grund, warum
+   Variante A gewonnen hat: §1 verbietet einen zweiten Ort, §7 und §8 verbieten
+   eine zweite Karussell-Reihe. Ein Ordner, der an seinem Platz bleibt und sich
+   dort ausbreitet, ist weder das eine noch das andere — man wechselt nirgendwo
+   hin, man macht etwas auf (Record B1). */
+
+/* Ordner-Kachel und ihre aufgeklappten Karten bilden EINEN Block, damit die
+   Klammer nicht von einem Umbruch getrennt werden kann. `align-items:
+   flex-start`, weil die Klammer unter den KARTEN sitzt, nicht unter der Kachel. */
+.catBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+/* Wrapper, damit das ⋯-Icon ein GESCHWISTER der Kachel sein kann und nicht ihr
+   Kind: Ein Knopf im Knopf wäre ungültiges HTML und für die Tastatur eine
+   Sackgasse. */
+.catWrap {
+  position: relative;
+  flex: 0 0 136px;
+}
+
+.catTile {
+  width: 136px;
+  min-height: 170px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  padding: 14px 13px 12px;
+  border: 1px solid var(--border-category);
+  background: var(--bg-category);
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  opacity: .82;
+  transition: opacity .13s, transform .13s;
+  /* Gestapelte Kanten: zwei versetzte Kopien der Form via box-shadow —
+     zuverlässiger als Pseudo-Elemente mit negativem z-index, und sie zeigen auf
+     einen Blick, dass hinter der Kachel mehr liegt. */
+  box-shadow:
+    0 5px 0 -1px var(--bg-category-stack),
+    0 5px 0 0 var(--border-category),
+    0 10px 0 -2px var(--bg-category-stack),
+    0 10px 0 -1px var(--border-category-stack);
+}
+
+.catTile:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* Aufgeklappt liegt nichts mehr dahinter — also auch kein Stapel. */
+.catTileOpen {
+  box-shadow: none;
+}
+
+.catTileOpen .catChev {
+  transform: rotate(90deg);
+}
+
+/* Record C3: Im Zukunftsmonat sind alle Kinder Forecast, also ist es der Ordner
+   auch. Ohne farbige Kante und ohne Flagge — sonst stünde dort türkis
+   „erledigt", weil null Kinder offen sind, und das wäre eine Falschaussage über
+   einen Monat, in dem noch gar nichts fällig war. */
+.catTileGhost {
+  background: var(--bg-card-ghost);
+  opacity: .5;
+}
+
+.catTileGhost:hover {
+  opacity: .62;
+}
+
+/* Die linke Kante ist der einzige Ort, an dem Rot und Türkis am Ordner
+   auftauchen — in exakt ihrer bisherigen Bedeutung. `padding-left` wird um die
+   Kantenbreite reduziert, damit der Inhalt nicht springt. */
+.catTileHasOpen {
+  border-left: 2px solid var(--border-category-open);
+  padding-left: 12px;
+}
+
+.catTileAllDone {
+  border-left: 2px solid var(--border-category-done);
+  padding-left: 12px;
+}
+
+.catTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Steht an der Stelle, an der die Karte ihren Typ nennt („Fixkosten"). Der
+   Ordner hat keinen Typ — er sagt, was er ist. */
+.catKicker {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .30);
+}
+
+.catChev {
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(255, 255, 255, .30);
+  transition: transform .15s;
+}
+
+.catName {
+  font-size: var(--typo-card-name-size);
+  font-weight: var(--typo-card-name-weight);
+  letter-spacing: var(--typo-card-name-tracking);
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Gleiche Größe und gleiche Zeile wie der Kartenbetrag — das hält die Reihe
+   homogen. Positive Summen türkis: „Rückflüsse" und „Einkommen" sind Zuflüsse,
+   und das ist dieselbe Bedeutung, die Türkis in dieser App überall hat. */
+.catAmount {
+  font-size: var(--typo-card-amount-size);
+  font-weight: var(--typo-card-amount-weight);
+  letter-spacing: var(--typo-card-amount-tracking);
+  line-height: 1;
+  margin-bottom: 2px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.catAmountPos {
+  color: var(--color-teal);
+}
+
+.catCount {
+  font-size: var(--typo-label-small-size);
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .28);
+}
+
+.catOpenFlag {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--text-category-flag);
+  white-space: nowrap;
+}
+
+/* Record B5: Die Klammer. Eine durchgehende Grundlinie unter den Karten eines
+   offenen Ordners — ohne sie verliert man beim Weiterscrollen die Zuordnung.
+   „Abos & Mitgliedschaften" ist mit zehn Karten fast zwei Bildschirmbreiten
+   lang; die Kachel ist dann längst aus dem Bild. */
+.childGroup {
+  display: flex;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 0 4px 7px;
+  border-bottom: 1px solid var(--border-bracket);
+  border-radius: 0 0 3px 3px;
+}
+
+.childGroupOpen {
+  border-bottom-color: var(--border-bracket-open);
+}
+
+/* Die Netto-Kachel benutzt die Karten-Optik, ist aber ein Knopf — die
+   Browser-Vorgaben für <button> müssen zurückgenommen werden. */
+.nettoTile {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text-primary);
+}

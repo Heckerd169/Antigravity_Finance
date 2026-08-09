@@ -1,5 +1,18 @@
 import type { Database } from "@/lib/supabase/types";
-import type { EnrichedCard } from "@/components/cards/cards.types";
+import type { CardCategory, EnrichedCard } from "@/components/cards/cards.types";
+import type { CategoryAmount } from "@/lib/rpc";
+
+/** v2-17 (KAT-2): Die Angaben, die das bestehende Einkommens-Fenster braucht.
+ *  Identisch mit dem, was `IncomeLabel` an den Flanken der Welle übergibt — es
+ *  ist dasselbe Fenster, nur ein zweiter Auslöser (Record A4). */
+export type IncomeSlotProps = {
+  initialGrossAnnual: number | undefined;
+  initialNetMonthly: number | undefined;
+  counterpartGrossAnnual: number | undefined;
+  activeMonth: { year: number; month: number };
+  taxClass: number;
+  taxYear: number;
+};
 
 export type CardType = Database["public"]["Enums"]["card_type"];
 export type CardAttribution = Database["public"]["Enums"]["card_attribution"];
@@ -112,6 +125,16 @@ export type InteractionZoneProps = {
   fragments: FragmentRow[];
   /** Aktive Karten im targetMonth — gleicher Shape wie Sprint 4. */
   cards: EnrichedCard[];
+  /** v2-17 (KAT-1): alle Ordner des Nutzers, in Anzeige-Reihenfolge (C2).
+   *  Wird an jede Karte durchgereicht — die Auswahlliste für „Kategorie
+   *  ändern …" ist für alle Karten dieselbe. */
+  categories: CardCategory[];
+  /** v2-17 (KAT-3): die Beträge der Ordner, server-seitig gebildet. Ihre Summe
+   *  ergibt exakt die Sparrate des Monats (Record C1). */
+  categoryAmounts: CategoryAmount[];
+  /** v2-17 (KAT-2): was die Netto-Kachel im Ordner „Einkommen" braucht, um das
+   *  bestehende Einkommens-Fenster zu öffnen. */
+  incomeSlot: IncomeSlotProps;
   /** "YYYY-MM" — der aktuell angezeigte Monat. */
   targetMonth: string;
   /** "YYYY-MM-01" — Datenbank-Variante für RPC-Aufrufe / link_month. */
