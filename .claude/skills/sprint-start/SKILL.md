@@ -16,6 +16,29 @@ Der häufigste Fehler ist, ① zu überspringen, weil der Auftrag klar *klingt*.
 klingt fast immer klar. Die Annahmen, die auseinandergehen, zeigen sich erst beim
 Nachfragen — oder eben im Review.
 
+> ### ⚠️ Ein detaillierter Eröffnungsprompt ersetzt Phase ③ NICHT
+>
+> **Er ist der Auftrag; der Plan ist die Antwort darauf.** Der Wert des Plans liegt
+> nicht darin, das Gelesene zu wiederholen, sondern darin zu zeigen, **was davon
+> angekommen ist** — und zwar bevor gebaut wird, nicht danach.
+>
+> **Der Fall ist eingetreten (v2-17, 08.08.2026).** Der Eröffnungsprompt war
+> ungewöhnlich vollständig: Ziel, Nicht-Ziel, alle zwölf Prüfanker, vier benannte
+> Fallen, Datenbank-Berührung, Phasen-Reihenfolge, Aufräum-Auftrag, Stopp-Bedingung.
+> Fünf der sechs Pflichtfragen aus ① standen wörtlich darin. Daraus wurde geschlossen,
+> Phase ① sei erledigt — **und dann auch ③ und die Briefing-Datei mit weggelassen.**
+>
+> Für ① war das halbwegs vertretbar (Regel ③ verbietet, Nachschlagbares abzufragen).
+> Für ③ nicht. **Die Folge:** Die Prüfschritte `S1…Sn` wurden nie aufgeschrieben; die
+> Liste, was der User beim Browser-Smoke anklicken soll, entstand erst ganz am Ende im
+> Pull Request. Wären die Vorstellungen von „fertig" auseinandergegangen, hätte sich
+> das nach dem Bauen gezeigt statt davor.
+>
+> **Je vollständiger der Auftrag, desto kürzer darf der Plan sein — aber nicht
+> ausfallen.** Bei einem lückenlosen Briefing genügen wenige Zeilen: Ziel, Phasen,
+> Prüfschritte, offene Fragen. Das ist Minuten Arbeit und der einzige Ort, an dem ein
+> Missverständnis noch billig ist.
+
 ---
 
 ## Phase ① · Nachbohren
@@ -195,6 +218,16 @@ Eine eigene Datei `sprints/sprint_v2-NN_briefing.md` entsteht, wenn **eines** zu
 Der Grund für die Ausnahme: Was über eine Sitzung hinausreicht, muss in einer Datei
 stehen — ein Chat-Verlauf wird von der nächsten Sitzung nicht gelesen.
 
+> **Diese vier Kriterien werden AUSGESPROCHEN, nicht stillschweigend geprüft.**
+> Im Plan steht eine Zeile: *„Briefing-Datei: ja, weil [Kriterium]"* oder
+> *„Briefing-Datei: nein, keines der vier Kriterien trifft zu."*
+>
+> **Warum ausgesprochen:** Eine stillschweigende Prüfung ist von einer vergessenen
+> Prüfung nicht unterscheidbar — weder für den User noch für die nächste Sitzung.
+> In v2-17 trafen **zwei** Kriterien zu (Datenbank berührt, vier Phasen), und es
+> entstand trotzdem keine Datei; aufgefallen ist das erst Tage später bei einer
+> Rückfrage. Ein Satz im Plan hätte gereicht.
+
 ---
 
 ## Phase ④ · Freigabe
@@ -220,6 +253,12 @@ Danach beginnt Phase 2 des Sprints. Am Ende: Fähigkeit **`sprint-abschluss`**.
 - [ ] Blockierende Entscheidungen geprüft
 - [ ] Phasen gebildet, jede einzeln zurücknehmbar
 - [ ] Die vier Prüfungen durchgegangen (LL-12, LL-15, LL-19, LL-20)
-- [ ] Plan über den Planungsmodus vorgelegt
+- [ ] **Plan über den Planungsmodus vorgelegt — auch bei einem lückenlosen
+      Eröffnungsprompt.** Er ersetzt den Plan nicht
+- [ ] **Briefing-Kriterien laut benannt** — welches zutrifft oder dass keines zutrifft
 - [ ] Briefing-Datei angelegt, falls eines der vier Kriterien zutrifft
 - [ ] **Freigabe eingeholt** — vorher wird nichts gebaut
+
+> **Die drei fett markierten Zeilen sind die, die in v2-17 gerissen sind** — alle
+> drei aus demselben Grund: Der Auftrag war so vollständig, dass der Plan überflüssig
+> *schien*. Er ist es nie.
