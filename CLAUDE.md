@@ -15,8 +15,13 @@
 >
 > Vier Patches in dieser Runde, alle nach ausdrücklicher Freigabe:
 > **§6 Stolperfalle 4 war FALSCH** und ist korrigiert (die Regel lautet umgekehrt: wer
-> über den Nutzer aggregiert, nimmt `p_user_id`) · **neue Stolperfalle 13**
-> (Aggregation über Teilmengen) · **neuer Eintrag LL-25** · §9 auf Sprint-Stand.
+> über den Nutzer aggregiert, nimmt `p_user_id`) · **neue Stolperfallen 13, 14 und 15**
+> (Aggregation über Teilmengen · Kategorie ist keine Karte · neue Tabelle bekommt keine
+> Policy) · **neuer Eintrag LL-25** · §9 auf Sprint-Stand.
+>
+> Die Freigabe kam in zwei Schritten: zuerst C1–C4, dann auf Nachfrage C5/C6 (die
+> Stolperfallen 14 und 15). Sie waren mir beim Schreiben dazugekommen und standen nicht
+> im ersten Satz — deshalb erst herausgenommen und einzeln vorgelegt.
 >
 > Die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind unverändert
 > gültig — in v2-17 vor und nach beiden Migrationen erneut gemessen, Abweichung überall
@@ -419,6 +424,20 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Rest auf die betragsgrößte Gruppe verteilen. Prüfung in einem Aufruf:
     `Σ Gruppen == calculate_sparrate_for_month(...)`, in allen zwölf Monaten.
     (v2-17, LL-25)
+14. **Eine Kategorie ist keine Karte.** `card_categories` steht neben `cards`, hat
+    **keine** Betrags-Spalte, und `cards.category_id` ist nullable mit
+    `ON DELETE SET NULL`. Wer eine Kategorie als `cards`-Zeile anlegt, bricht den
+    Prüfanker sofort: Beide Sparrate-RPCs, `get_year_deviation_drivers` und der
+    Auto-Absorptions-Loop in `process_csv_import` laufen **ohne Typ-Filter** über
+    alle Karten des Monats (Befund D1). `category_id IS NULL` ist ein **regulärer**
+    Zustand („Ohne Kategorie"), kein Fehler — beide Anlage-RPCs kennen keine
+    Kategorie und liefern laufend kategorielose Karten nach (D12). (v2-17)
+15. **Eine neue Tabelle bekommt RLS automatisch, aber KEINE Policy.** Der
+    Event-Trigger `rls_auto_enable` führt nur `enable row level security` aus und
+    schluckt sein eigenes Scheitern (`EXCEPTION WHEN OTHERS THEN RAISE LOG`).
+    PostgREST liefert dann ein **stilles `[]`** beim SELECT und `42501` beim INSERT —
+    beim Testen liest sich das wie „noch keine Daten angelegt". `ENABLE` **und**
+    Policy gehören von Hand in die Migration. (v2-17, Befund D8)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 

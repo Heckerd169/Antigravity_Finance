@@ -293,9 +293,11 @@ pausieren. Der Rennrad-Trainer war rund zwei Stunden nicht erreichbar und ist au
 
 ### 6.1 Was der User entscheiden muss
 
-1. **CLAUDE.md-Patches freigeben** (§7 Regel 14). Vier Vorschläge in
-   `sprints/sprint_v2-17_doku_patches.md` Teil 3 — darunter die **Korrektur von
-   Stolperfalle 4**, die heute schlicht falsch ist und einen Aufruf falsch bauen lässt.
+1. ~~CLAUDE.md-Patches freigeben.~~ **Erledigt am 08.08.2026, in zwei Schritten:**
+   zuerst C1–C4, dann C5/C6 (die Stolperfallen 14 und 15). Damit ist §6 Stolperfalle 4
+   korrigiert — sie stand falsch herum und ließ einen Aufruf falsch bauen —, §9 auf
+   Sprint-Stand, und drei neue Stolperfallen plus LL-25 sind in Kraft.
+   Verfahren und Volltext: `sprints/sprint_v2-17_doku_patches.md` Teil 3 und 4.
 2. ~~Die eine unzugeordnete Karte.~~ **Erledigt am 08.08.2026** — „Deutschlandticket
    Mama …" ist nach **Geschenke & Anlässe** eingeräumt (User-Entscheid). Damit sind
    **46 von 46** Karten zugeordnet und „Ohne Kategorie" erscheint in **keinem** Monat

@@ -270,14 +270,15 @@ bemerkte.
 
 ---
 
-# Teil 4 · Zwei weitere CLAUDE.md-Vorschläge — NICHT angewendet
+# Teil 4 · C5 und C6 — ANGEWENDET (zweite Freigabe)
 
 > Diese beiden sind mir beim Anwenden von C1–C4 aufgefallen. Sie standen **nicht** in
-> der Freigabe vom 08.08.2026 und sind deshalb **nicht** eingespielt. Ich hatte sie
-> zwischenzeitlich mit hineingeschrieben und wieder entfernt — eine gegatete Datei über
-> die Freigabe hinaus zu erweitern, hebt das Gate praktisch auf.
+> der ersten Freigabe, deshalb hatte ich sie wieder entfernt und einzeln vorgelegt —
+> eine gegatete Datei über die Freigabe hinaus zu erweitern, hebt das Gate praktisch
+> auf.
 >
-> Beide sind kurz und würden als **Stolperfalle 14 und 15** in §6 stehen.
+> **Der User hat sie daraufhin ausdrücklich freigegeben** („C5 und C6 auch rein"). Sie
+> stehen jetzt als **Stolperfalle 14 und 15** in §6.
 
 ## C5 · §6 — neue Stolperfalle 14: Eine Kategorie ist keine Karte
 
