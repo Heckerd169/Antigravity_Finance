@@ -187,7 +187,16 @@ export function CategoryTile({ group, isOpen, onToggle }: CategoryTileProps) {
         <button
           ref={iconRef}
           type="button"
-          className={cardStyles.contextIcon}
+          /* ⚠️ NICHT `cardStyles.contextIcon` — das war der Fehler in v2-17.
+             Jene Klasse steht auf `opacity: 0` und wird von genau EINER Regel
+             sichtbar gemacht: `.card:hover .contextIcon`. Die Ordner-Kachel
+             liegt aber in `.catWrap`, nicht in `.card` — der Selektor griff nie,
+             und Umbenennen wie Löschen waren unerreichbar.
+             Das ist LL-6 („Sichtbarkeit nie an einen Eltern-Hover koppeln, den
+             es an dieser Stelle nicht gibt"). Die eigene Klasse hat ihren
+             Eltern-Hover im selben Modul und kann deshalb nicht auseinander-
+             laufen. */
+          className={styles.catContextIcon}
           onClick={handleIconClick}
           aria-label={`Optionen für ${group.name}`}
           aria-expanded={menuOpen}

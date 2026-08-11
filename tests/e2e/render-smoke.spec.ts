@@ -85,6 +85,43 @@ test("einkommens-popup: klick darin öffnet nicht die jahres-welle", async ({ pa
   await expect(wellePopupClose).toBeVisible();
 });
 
+// Regressions-Wächter für einen Fehler, der durch die GESAMTE Prüfstrecke von
+// v2-17 gerutscht ist (gemeldet 11.08.2026).
+//
+// Das ⋯-Icon der Ordner-Kachel benutzte die Klasse aus `cards.module.css`. Die
+// steht auf `opacity: 0` und wird von genau EINER Regel sichtbar gemacht:
+// `.card:hover .contextIcon`. Die Kachel liegt aber in `.catWrap` — der Selektor
+// griff nie, der Knopf blieb dauerhaft unsichtbar, und „Kategorie umbenennen …"
+// wie „Kategorie löschen" waren nicht erreichbar (LL-6, Phantom-Sichtbarkeit).
+//
+// WARUM NICHTS DAVON AUFFIEL: tsc, ESLint und Build sehen CSS-Selektoren nicht.
+// Die 21 neuen Prüfungen testen `category-groups.ts` — reine Logik, kein DOM.
+// Und die Screenshots beim Bauen zeigten die Kachel zwar, aber niemand ist mit
+// der Maus darübergefahren. Ein unsichtbarer Knopf sieht auf einem Standbild
+// exakt aus wie eine Kachel ohne Knopf.
+//
+// Deshalb prüft dieser Test die EINE Eigenschaft, die gekippt war: Wird das Icon
+// beim Überfahren der Kachel sichtbar? Read-only — es wird gehovert, nicht
+// geklickt; das Menü bleibt zu, keine Server Action läuft.
+test("kategorie-kachel: das ⋯-menü wird beim überfahren sichtbar", async ({ page }) => {
+  await page.goto("/");
+
+  // Bewusst NICHT „die erste Kachel": Das ist „Einkommen", und die hat gar kein
+  // Menü — sie ist ein Sammelbecken der Anzeige, keine Zeile in der Datenbank.
+  // Deshalb vom Menü-Knopf aus rückwärts auf seine Kachel schließen.
+  const menueKnopf = page.getByRole("button", { name: /^Optionen für / }).first();
+  await expect(menueKnopf).toBeAttached();
+
+  // Vor dem Hover unsichtbar — das ist der beabsichtigte Ruhezustand.
+  await expect(menueKnopf).toHaveCSS("opacity", "0");
+
+  // Der Wrapper `.catWrap` ist der Eltern-Knoten, an dem der Hover hängt.
+  // Genau diese Beziehung war gebrochen, deshalb wird sie hier geprüft.
+  await menueKnopf.locator("xpath=..").hover();
+
+  await expect(menueKnopf).toHaveCSS("opacity", "1");
+});
+
 test("monatsnavigation: vor und zurück über die header-flanken", async ({ page }) => {
   const now = new Date();
   const current = ymOf(now);
