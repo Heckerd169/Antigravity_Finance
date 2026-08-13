@@ -8,22 +8,35 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-18**
-> (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den bereits offenen Ordner,
-> die Ansicht springt beim Monatswechsel nicht mehr; Design-Doku **v3.6.0**,
-> Schema-Doku **v3.5.0**, PR **#26** offen).
+> **Letzte Aktualisierung:** 13. August 2026 · **nach:** dem Doku-Nachzug
+> *„der Anker wird invariantenbasiert"* (`sprints/doku_patch_2026-08-13_anker-invarianten.md`),
+> davor Sprint **v2-18**.
 >
-> Diese Runde berührt **nur §9**, dafür an vier Stellen — alle nach ausdrücklicher
-> Freigabe: **Der Juli-Anker steht jetzt auf −322,74 €** (`BF-4` hat zum ersten Mal in
-> Produktion gegriffen, ohne Eingriff — allein durch die Zuordnung dreier Zahlungen am
-> 13.08.) · **Sprint-Stand und Roadmap-Zahlen** auf v2-18 · und zwei Sätze, die der
-> Freigabe sonst offen widersprochen hätten: **„nichts ist entschieden und ungebaut"
-> war seit v2-17 falsch** (`KAT-5` / Record `A2`), und die Kopfzeile trug noch v2-17.
+> **Die eingefrorene Zwölf-Monats-Tabelle in §9 ist RAUS.** Sie war am 13.08.2026
+> zweimal innerhalb weniger Stunden überholt, ohne dass irgendetwas kaputt war — der
+> Nutzer hat Zahlungen zugeordnet und Budget-Karten abgeschlossen, beides normale
+> Benutzung. An ihre Stelle treten **zwei datenunabhängige Invarianten**
+> (Ordner-Spalte == Sparrate · `Σ delta = Ist − Plan`) und die Messregel *vor und nach,
+> in derselben Sitzung*. Wer nach einem Sollwert für einen bestimmten Monat sucht:
+> Es gibt keinen mehr, und das ist Absicht. Die Momentaufnahme in §9 ist Orientierung,
+> **kein** Alarmgeber. Der Anker der **Übungs-Datenbank** (2.200,00 €) bleibt dagegen
+> ein echter Sollwert — dort kuratiert niemand.
 >
-> **Der Prüfanker ist damit zum ersten Mal seit dem 05.08.2026 nicht mehr flächendeckend
-> von diesem Datum** — elf Monate ja, der Juli nicht. Warum das kein Alarm ist und wann
-> er sich erneut bewegen darf, steht bei der Tabelle in §9. Der **zweite** Anker, die
-> Ordner-Spalte, geht weiterhin in allen zwölf Monaten exakt auf.
+> Dokumentiert ist in derselben Datei auch der **Schreibzugriff auf Produktion** vom
+> 13.08.2026 (Karte `Rundfunkbeitrag`, gemeinsam, vierteljährlich ab Januar 2026).
+>
+> ---
+>
+> Davor Sprint **v2-18** (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
+> bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr;
+> Design-Doku **v3.6.0**, Schema-Doku **v3.5.0**).
+>
+> Jene Runde berührte **nur §9**, dafür an vier Stellen — alle nach ausdrücklicher
+> Freigabe: Juli-Anker auf −322,74 € · **Sprint-Stand und Roadmap-Zahlen** auf v2-18 ·
+> und zwei Sätze, die der Freigabe sonst offen widersprochen hätten: **„nichts ist
+> entschieden und ungebaut" war seit v2-17 falsch** (`KAT-5` / Record `A2`), und die
+> Kopfzeile trug noch v2-17. Der Juli-Wert von damals ist **noch am selben Tag**
+> überholt worden — was den Umbau darüber ausgelöst hat.
 >
 > Davor Sprint v2-17 (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die
 > Hausaufgabe `J1`; **Paket 4 damit vollständig**, der Riegel vor Paket 5 gefallen;
@@ -527,8 +540,11 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Freigabe abwarten.
 20. **Kein Eingriff in eine Rechenfunktion ohne Probe auf der Übungs-Datenbank** und
     ohne Prüfanker vorher/nachher. Fähigkeit: `db-eingriff`.
-21. **Vor und nach jedem Eingriff die Sparrate messen.** Der Anker ist der schärfste
-    Regressions-Wächter des Projekts. Aktuelle Werte: §9.
+21. **Vor und nach jedem Eingriff die Sparrate messen — alle zwölf Monate, Ist und
+    Plan, in DERSELBEN Sitzung.** Verglichen wird gegen den eigenen Vorher-Wert, nicht
+    gegen eine Tabelle in einer Datei: Die Zahlen des Nutzers bewegen sich durch
+    normale Benutzung, seit dem 13.08.2026 gibt es deshalb **keine eingefrorene
+    Sollwert-Tabelle mehr**. Dazu die beiden datenunabhängigen Invarianten. Alles in §9.
 22. **Eine Doku-Zusage über Rechenverhalten ist keine Prüfung.** Wo ein Papier
     beschreibt, *was* eine Rechenfunktion tut, gehört die Aussage **gegen die
     Funktion belegt** — nicht aus ihrem Zweck erschlossen. Und eine
@@ -660,7 +676,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 **Letzter Sprint:** v2-18 (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
 bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr, 13.08.2026,
-PR **#26** offen) · **davor:** v2-17 (Kategorien im Karussell, `KAT-1` `KAT-2` `KAT-3`
+PR **#26** gemerged) · **davor:** v2-17 (Kategorien im Karussell, `KAT-1` `KAT-2` `KAT-3`
 plus die Hausaufgabe `J1`) und v2-16 (`RM-2`, `PA-1`).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
@@ -683,10 +699,21 @@ v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind u
 
 **Doku-Versionen:** Design-Doku **v3.6.0** · Schema-Doku **v3.5.0**.
 
-**Zweiter Prüfanker seit v2-17 — die Ordner-Spalte.** Sie ergibt in **allen zwölf
-Monaten exakt** die Sparrate, und das ist erzwungen, nicht zufällig (Stolperfalle 13 /
-LL-25). Sie schlägt an, sobald jemand an der Rundung dreht, und ist in einem Aufruf
-messbar:
+### Die Prüfanker
+
+**Wozu sie da sind:** Ein Anker soll merken, wenn **ein Eingriff** eine Zahl bewegt,
+die sich nicht bewegen durfte. Er soll **nicht** die Zahlen des Nutzers kennen.
+
+Bis zum 13.08.2026 stand hier eine eingefrorene Zwölf-Monats-Tabelle. **Sie ist raus**
+— sie verwechselte beides und war an einem einzigen Tag zweimal überholt, ohne dass
+irgendetwas kaputt war (Begründung unten). An ihre Stelle treten zwei Wächter, die vom
+Datenstand **unabhängig** sind, plus die Messregel, die ohnehin schon galt.
+
+#### Anker 1 — die Ordner-Spalte ergibt die Sparrate *(seit v2-17)*
+
+Sie stimmt in **allen zwölf Monaten exakt**, und das ist erzwungen, nicht zufällig
+(Stolperfalle 13 / LL-25). Sie schlägt an, sobald jemand an der Rundung dreht — **egal,
+wie die Daten gerade aussehen.** In einem Aufruf messbar:
 
 ```sql
 SELECT sum((e->>'amount')::numeric)
@@ -694,70 +721,71 @@ SELECT sum((e->>'amount')::numeric)
 -- muss exakt calculate_sparrate_for_month('<user_id>', '<monat>') ergeben
 ```
 
-**Prüfanker Produktion** (gemessen **05.08.2026** gegen `nflkobdfdhncrtjncpmq`,
-`calculate_sparrate_for_month`, nur `SELECT`; in v2-13 vor **und** nach der
-`BF-4`-Migration bestätigt; in v2-15 vor **und** nach dem Sprint erneut gemessen —
-`calculate_sparrate_for_month` **und** `calculate_planned_sparrate_for_month`, alle
-zwölf Monate, Ist **und** Plan, Abweichung überall 0,00 €, erwartet, weil keine
-Rechenfunktion berührt wurde):
+#### Anker 2 — `Σ delta = Ist-Sparrate − Plan-Sparrate` *(B2)*
 
-| Monat 2026 | Ist-Sparrate |
-|---|---|
-| Januar–April | 1.931,18 € |
-| Mai | −86,77 € |
-| Juni | 4.208,76 € |
-| **Juli** | **−322,74 €** *(seit 13.08.2026, siehe unten)* |
-| August | 1.761,08 € |
-| September–Dezember | 1.824,08 € |
-| 2025 (alle Monate) | 4.037,11 € → Vorjahres-Goldlinie **48.445,32 €** |
+Pro Monat, in **allen zwölf**, nicht stichprobenartig (§6 Stolperfalle 9, Regel 23).
+Ebenfalls datenunabhängig: Die Gleichung muss gelten, wie viel auch immer zugeordnet
+ist.
 
-> **Warum die alte, flache Tabelle weg ist.** Bis zum 25.07.2026 stand hier 2026
-> durchgehend 1.931,18 €. Mit der Juli-Kuratierung ist das überholt — die Werte oben
-> decken sich exakt mit `V2/befunde_2026-08-04_fehler_und_entscheidungen.md` §1. Eine
-> Anker-Tabelle mit falschen Sollwerten ist schlimmer als keine: Sie schlägt entweder
-> falsch an oder wird gewohnheitsmäßig ignoriert.
->
-> **Der Juli-Wert stammt aus v2-11.** `BF-5` (Fragmente wurden ohne Vorzeichen
-> addiert) ist am 05.08.2026 behoben: Juli-Ist **−1.222,75 → −322,75 €**, exakt die
-> vorab festgelegten +900,00 €, alle übrigen elf Monate um 0,00 € bewegt.
->
-> **v2-13 (`BF-4`) hat die Tabelle NICHT bewegt** — und das war die Erwartung. Der
-> Eingriff verlagert die Split-Anwendung, wirkt aber erst, sobald eine gemeinsame
-> Karte ein verknüpftes Fragment hat; heute hat das keine. Alle zwölf Monate wurden
-> vorher und nachher gemessen, Ist **und** Plan, Abweichung überall 0,00 €; die
-> B2-Invariante hielt in allen zwölf Monaten mit identischen Summen.
-> **Ein grüner Anker beweist in so einem Fall wenig** — der Nachweis kam aus der
-> Übungs-Datenbank (Ist-Sparrate dort 1.840,00 → 1.600,00 €).
->
-> **v2-17 (Kategorien) hat die Tabelle ebenfalls NICHT bewegt.** Alle zwölf Monate
-> vor und nach beiden Migrationen gemessen, Abweichung überall 0,00 €, B2-Invariante
-> 12/12. Zusätzlich belegt über **byte-identische Prüfsummen**
-> (`md5(pg_get_functiondef(...))`) der vier Rechenfunktionen gegen Übungs- **und**
-> Produktiv-Datenbank — der Sprint hat sie nachweislich nicht angefasst.
->
-> ---
->
-> **Was hier als Nächstes erwartet wurde, ist am 13.08.2026 eingetreten** — und zwar
-> **ohne jeden Eingriff.** Der Satz an dieser Stelle lautete: „der erste Monat, in dem
-> eine gemeinsame Karte eine zugeordnete Zahlung bekommt — dann greift `BF-4`, bewusst
-> und richtig." Genau das ist passiert. Um 06:05 wurden drei echte Zahlungen den
-> gemeinsamen Juli-Karten zugeordnet: Miete 1.089,26 €, Strom 36,04 €, Internet
-> 22,87 €. Vorher rechnete die Karte `Plan × Anteil` = 1.904 × 0,57209… =
-> **1.089,25968…**; jetzt nimmt sie die **echte Überweisung**, glatt auf zwei Stellen.
-> Die Nachkommastellen, die den Juli auf −322,745**69** und damit knapp über die
-> Rundungsgrenze hoben, sind weg — **Juli-Ist −322,75 → −322,74 €**.
->
-> **Damit hat `BF-4` aus v2-13 zum ersten Mal in Produktion gegriffen.** Keine
-> Migration, kein Sprint, keine Codeänderung: allein die Zuordnung einer Zahlung durch
-> den Nutzer. Die übrigen elf Monate stehen unverändert, und die Ordner-Spalte ergibt
-> weiterhin in **allen zwölf** Monaten exakt die Sparrate.
->
-> **Der Rest steht noch aus.** Rechtsschutz ist die vierte gemeinsame Karte und noch
-> **nicht** zugeordnet — sobald sie es ist, kann der Juli erneut um einen Cent wandern.
-> Ein Cent Abweichung **im Juli** ist deshalb kein Alarm, solange er sich über eine
-> neue Zuordnung erklären lässt; **jede andere Zeile** der Tabelle ist es sehr wohl.
+#### Die Messregel — und sie ist der eigentliche Wächter
 
-**Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
+**Vor und nach jedem Eingriff alle zwölf Monate messen, Ist *und* Plan, in DERSELBEN
+Sitzung.** Verglichen wird gegen den eigenen Vorher-Wert von vor zehn Minuten, nicht
+gegen eine Tabelle von letzter Woche. Verfahren: Fähigkeit `db-eingriff`, Schritte 1
+und 6. Bewegt sich etwas, das sich nicht bewegen sollte → **zurückrollen, nicht
+erklären**. Soll sich etwas bewegen, wird der erwartete Wert **vorher** aufgeschrieben.
+
+> **Warum die Werte-Tabelle raus ist.** Am 13.08.2026 war der Juli-Anker **zweimal
+> innerhalb weniger Stunden** überholt — durch nichts als normale Benutzung:
+> −322,75 € → −322,74 € (drei Zahlungen zugeordnet, `BF-4` greift) → **+38,24 €**
+> (sechs Budget-Karten auf „abgeschlossen" gesetzt, **+360,98 €**). Beide Male hat die
+> App exakt richtig gerechnet. Zugeordnet wurde die zweite Bewegung, indem die
+> Änderungen in einem zurückgerollten Trockenlauf einzeln rückgängig gemacht wurden
+> (LL-18) — nicht durch Nachdenken.
+>
+> Der Nutzer kuratiert weiter, auch rückwirkend. Eine eingefrorene Tabelle schlägt
+> dabei bei **jeder** normalen Benutzung an und wird nach dem dritten Fehlalarm nicht
+> mehr gelesen. §9 sagte das seit dem 25.07.2026 selbst — der Satz stand nur direkt
+> neben einer Tabelle, die genau das tat: *„Eine Anker-Tabelle mit falschen Sollwerten
+> ist schlimmer als keine."*
+>
+> **Wann sie zurückkommt:** wenn die Kuratierung durch ist. Dann wird eine frische
+> Tabelle eingefroren — mit Datum daneben und dem Satz, dass sie nur gilt, solange
+> nicht kuratiert wird.
+
+**Momentaufnahme 13.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
+Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein** Alarm.
+
+| Monat 2026 | Ist-Sparrate | | Monat 2026 | Ist-Sparrate |
+|---|---|---|---|---|
+| Januar | 1.899,67 € | | August | 1.761,08 € |
+| Februar–März | 1.931,18 € | | September | 1.824,08 € |
+| April | 1.899,67 € | | Oktober | 1.792,57 € |
+| Mai | −86,77 € | | November–Dezember | 1.824,08 € |
+| Juni | 4.208,76 € | | 2025 (alle Monate) | 4.037,11 € |
+| Juli | 6,73 € | | → Goldlinie 2025 | 48.445,32 € |
+
+> Januar, April, Juli und Oktober tragen die am 13.08.2026 angelegte Karte
+> `Rundfunkbeitrag` (−31,51 €/Quartal). Beleg und Begründung:
+> `sprints/doku_patch_2026-08-13_anker-invarianten.md`.
+
+**Was die alte Tabelle an Wissen trug — komprimiert, weil es nicht an ihr hängt:**
+
+- **`BF-5`** (v2-11, 05.08.2026): Fragmente wurden ohne Vorzeichen addiert. Juli-Ist
+  −1.222,75 → −322,75 €, exakt die vorab festgelegten +900,00 €, elf Monate um 0,00 €.
+- **`BF-4`** (v2-13) bewegte die Tabelle **nicht** — und das war die Erwartung: Der
+  Eingriff wirkt erst, sobald eine gemeinsame Karte ein verknüpftes Fragment hat.
+  **Ein grüner Anker beweist in so einem Fall wenig**; der Nachweis kam aus der
+  Übungs-Datenbank (1.840,00 → 1.600,00 €). **Am 13.08.2026 hat `BF-4` dann zum ersten
+  Mal in Produktion gegriffen** — ohne Migration, ohne Sprint, allein durch die
+  Zuordnung dreier Zahlungen.
+- **v2-17** (Kategorien) bewegte sie ebenfalls nicht, zusätzlich belegt über
+  **byte-identische Prüfsummen** (`md5(pg_get_functiondef(...))`) der vier
+  Rechenfunktionen gegen Übungs- **und** Produktiv-Datenbank.
+
+**Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch). **Dieser Wert bleibt
+ein echter Sollwert** — dort kuratiert niemand, die Daten stehen still. Weicht er ab,
+ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren.
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
