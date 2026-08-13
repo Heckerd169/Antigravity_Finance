@@ -252,8 +252,75 @@ und das Monats-Netto fiele auf einen negativen Betrag.
 
 ---
 
+---
+
+# CLAUDE.md
+
+> **Freigabe des Users erteilt am 13.08.2026** („Hiermit hast du meine Freigabe für die
+> CLAUDE.md Datei"), auf die Vorschläge in §7 des Reviews hin. §7 Regel 14 verlangt für
+> diese Datei zusätzlich zur Patch-Form eine ausdrückliche Freigabe — sie liegt vor.
+>
+> **Umfang genau wie vorgelegt: vier Stellen, keine mehr.** Beim Anwenden fällt fast
+> zwangsläufig Weiteres auf; das gehört einzeln vorgelegt, sonst ist das Gate praktisch
+> aufgehoben. Was mir aufgefallen ist, steht unten unter „Nicht angewendet".
+
+## C1 · Kopfzeile — Stand auf v2-19
+
+**Anker:** `> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-18**`
+
+**Patch:** Der Kopfblock bis einschließlich des Absatzes über die Ordner-Spalte wird
+durch eine v2-19-Fassung ersetzt. Kern: Sprint v2-19, PR #29, Design-Doku **3.7.0**,
+Schema-Doku **3.6.0**, und der Hinweis, dass die Migrationen **auf Produktion liegen,
+der Browser-Smoke aber noch aussteht**.
+
+## C2 · §6 — neue Stolperfalle 16
+
+**Anker:** das Ende von Stolperfalle 15
+(`Policy gehören von Hand in die Migration. (v2-17, Befund D8)`)
+
+**Patch:** danach als Punkt 16 einfügen — „Ein Frontend-Limit kann eine
+Datenbank-Entscheidung stillschweigend aufheben."
+
+## C3 · §8 — neuer Eintrag LL-26
+
+**Anker:** die Registerzeile `| LL-25 | Eine Aggregation über Teilmengen …`
+
+**Patch:** danach eine Zeile LL-26 einfügen, plus einen kurzen Kasten, warum sie neben
+LL-21 steht und nicht darin aufgeht.
+
+## C4 · §9 — Sprint-Stand
+
+**Anker:** `**Letzter Sprint:** v2-18 (zwei Befunde aus der Nutzung …`
+
+**Patch:** Kopf von §9 auf v2-19 nachziehen; Paket 15 als abgeschlossen vermerken;
+Doku-Versionen aktualisieren; Roadmap-Zahlen auf **10 · 30 · 5 · 35 · 45**; die neue
+Hausaufgabe `B2-R` benennen.
+
+**Die Momentaufnahme bleibt unverändert** — der Sprint hat keine Zahl bewegt. Erst wenn
+der User das Juli-Gehalt zuordnet, steht dort −8,84 € statt 6,73 €. Das ist ausdrücklich
+**keine** Patch-Stelle.
+
+---
+
+## Nicht angewendet — einzeln vorgelegt
+
+Beim Anwenden aufgefallen, aber **nicht** von der Freigabe gedeckt:
+
+1. **§4 „Verfügbare Fähigkeiten"** nennt `sprint-abschluss` mit der Erwartung
+   `test:visual` **25/25**; tatsächlich sind es inzwischen **75**. Die Zahl steht in der
+   Fähigkeitsdatei, nicht in CLAUDE.md — dort müsste sie ebenfalls nachgezogen werden.
+2. **§2 Tech-Stack** führt Playwright als „Render-Smoke + §9-Pixel-Checks". Seit v2-19
+   laufen dort auch reine Logik-Wächter ohne Browser (`gehalt.spec.ts`,
+   `ring-subline.spec.ts`, `kategorien.spec.ts`). Die Beschreibung ist zu eng.
+
+Beides sind Genauigkeits-Korrekturen ohne Verhaltensänderung. Sie warten auf eine
+eigene Freigabe.
+
+---
+
 ## Anwendung
 
 Alle Anker wurden vor dem Schreiben dieser Datei per Suche auf **Eindeutigkeit**
-geprüft. Nach der Anwendung: Versions-Bump in beiden Headern kontrollieren — er ist
-eine **eigene** Patch-Stelle (D1/S1), keine Nebensache.
+geprüft. Nach der Anwendung: Versions-Bump in beiden Bibel-Headern kontrollieren — er
+ist eine **eigene** Patch-Stelle (D1/S1), keine Nebensache. CLAUDE.md trägt keine
+Versionsnummer, dort ist die Kopfzeile das Äquivalent (C1).
