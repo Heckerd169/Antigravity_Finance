@@ -1,6 +1,6 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.5.0
+**Version:** 3.6.0
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien)
 **Datum:** 08. August 2026
 
@@ -202,6 +202,9 @@ app_config              (global, read-only für User)
 
 - Jede Tabelle mit Owner kaskadiert auf `auth.users`-Löschung (DSGVO-Konformität)
 - `card_fragment_links` hat den `UNIQUE(fragment_id)`-Constraint → ein Fragment kann maximal einer Karte zugewiesen sein → keine Doppelverbuchung möglich
+- `income_fragment_links` (v2-19) bildet dasselbe für das **Netto** ab: `UNIQUE(fragment_id)`, `month` auf den Monatsersten festgenagelt, RLS-Policy `income_fragment_links_owner`. **Sie speichert den Link, nicht den Betrag** — die Summe entsteht aus `fragments.amount`, dadurch können Betrag und Zuordnung nicht auseinanderlaufen, und „mehrere Zahlungen in einem Monat summieren sich" ergibt sich von selbst statt als Sonderregel
+- **Ein Fragment hängt entweder an einer Karte ODER am Netto, nie an beidem.** Zwei Trigger erzwingen das gegenseitig (`trg_ifl_drop_card_link`, `trg_cfl_drop_income_link`); ein neuer Link löscht den jeweils anderen. Bewusst als Trigger und nicht im Schreibpfad, damit auch `process_csv_import` (Auto-Absorption), `create_card_from_fragment` und der direkte UPSERT aus dem Frontend abgedeckt sind — ohne diesen Schutz zählte dasselbe Fragment zweimal in die Sparrate
+- `income_fragment_links` trägt denselben Transfer-Wächter wie `card_fragment_links` — dieselbe Trigger-Funktion `enforce_no_transfer_fragment_links()`, unverändert wiederverwendet (§6 Stolperfalle 7)
 - `fragments.suggested_card_id` → `cards` ist eine **schwache** Referenz (`ON DELETE SET NULL`): wenn die vorgeschlagene Karte gelöscht wird, verliert das Fragment nur den Vorschlag, nicht sich selbst
 - Cascading: Karte gelöscht → States + Links weg, Fragmente bleiben (sie sind unabhängig)
 - `cards.category_id` → `card_categories` ist ebenfalls eine **schwache** Referenz (`ON DELETE SET NULL`): wird der Ordner gelöscht, verliert die Karte nur ihre Zuordnung, nicht sich selbst. `NULL` ist dort ein **regulärer** Wert („Ohne Kategorie"), kein Fehlerzustand — beide Anlage-RPCs kennen keine Kategorie und liefern laufend kategorielose Karten nach (Befund `D12`)
@@ -242,8 +245,8 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) — **seit v2-13 ohne eigene Split-Anwendung**: der Anteil steckt bereits im Rückgabewert von `calculate_card_amount_for_month` |
-| `calculate_planned_sparrate_for_month(user_id, month)` | Plan-Sparrate (ohne Realität) | `numeric` |
+| `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) — **seit v2-13 ohne eigene Split-Anwendung**: der Anteil steckt bereits im Rückgabewert von `calculate_card_amount_for_month`. **Seit v2-19 (`GE-1`) bevorzugt sie das tatsächlich überwiesene Netto**: `COALESCE(get_actual_net_for_month(…), get_net_monthly_for_month(…))`; der NULL-Fall wird **vorher** abgefangen, damit „Onboarding offen" weiterhin NULL liefert. ⚠️ Der Eingriff sitzt **hier** und NICHT in `get_net_monthly_for_month` — jene liest auch die Plan-Funktion; beide Seiten der Differenz verschöben sich gleich weit und die Abweichung wäre danach unsichtbarer als vorher (LL-23) |
+| `calculate_planned_sparrate_for_month(user_id, month)` | Plan-Sparrate (ohne Realität) | `numeric` — liest **weiterhin ausschließlich** `income_timeline`. In v2-19 nachweislich unberührt geblieben: Prüfsumme `md5(pg_get_functiondef(...))` vor und nach der Migration identisch (`e80bf401…`) |
 | `calculate_card_amount_for_month(card_id, month)` | Wert auf Karte (Realität → Anpassung → Plan) | `numeric` — **seit v2-11 auch negativ möglich** (BF-5/E2: übersteigen die Gutschriften die Ausgaben, ist der Netto-Verbrauch negativ; keine Kappung bei 0). **Seit v2-13 (BF-4) trägt sie die Split-Logik**: bei `attribution = 'GEMEINSAM'` wird `get_split_factor(cards.user_id, month)` auf **Plan/Anpassung** angewandt, **nicht** auf Fragment-Summen — die sind bereits der überwiesene Anteil. Der Rückgabewert ist damit stets die **eigene** Zahl; Aufrufer dürfen den Anteil nicht erneut anwenden |
 | `get_effective_plan_for_month(card_id, month)` | „Soll-Wert" für UI-Vergleiche (`adjusted ∨ plan`) | `numeric` |
 | `is_card_active_in_month(card_id, month)` | Karte rendern oder nicht? | `boolean` |
@@ -255,7 +258,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023 | `jsonb` |
+| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023. **Seit v2-19 kann ein Treiber `card_id: null` tragen** — die Zeile `Gehalt` (`card_type` und `attribution` ebenfalls `null`). `p_limit` begrenzt die **Karten**-Treiber; die Gehalts-Zeile wird **danach** angehängt und deshalb nie abgeschnitten. Aufrufer müssen `card_id: null` vertragen — auch beim Kürzen: Ein Frontend-Limit von 3 schnitte im Juli 2026 genau diese Zeile ab | `jsonb` |
 
 **Return-Form** — immer genau 12 Einträge (auch ohne Treiber), aufsteigend nach Monat:
 
@@ -309,9 +312,26 @@ Trockenlauf ist er die einzige Absicherung.
 | `rename_card_category(p_category_id uuid, p_name text)` | Umbenennen. Wirkt rückwirkend in allen Monaten — die Zuordnung ist eine einfache Eigenschaft, keine Zeitreihe | `void` |
 | `delete_card_category(p_category_id uuid)` | **Harter** DELETE. Die Karten werden über `ON DELETE SET NULL` kategorielos, nicht gelöscht. Gibt alles zurück, was die Rücknahme braucht — inklusive der Karten-IDs, denn die stehen danach nirgends mehr | `jsonb` (`{category_id, name, sort_order, card_ids[]}`) |
 | `restore_card_category(p_category_id uuid, p_name text, p_sort_order smallint, p_card_ids uuid[])` | Rücknahme aus dem 5-Sekunden-Toast: legt den Ordner mit **derselben id** wieder an und hängt nur die Karten zurück, die inzwischen **nicht** anderweitig zugeordnet wurden | `uuid` |
-| `get_category_amounts_for_month(p_user_id uuid, p_month date)` | **STABLE.** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate, in EINEM Aufruf. Leeres Array, wenn kein Gehalt hinterlegt ist | `jsonb` (Array aus `{key, category_id, name, sort_order, amount, posten}`) |
+| `get_category_amounts_for_month(p_user_id uuid, p_month date)` | **STABLE.** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate, in EINEM Aufruf. Leeres Array, wenn kein Gehalt hinterlegt ist. **Seit v2-19** benutzt sie denselben Ist-Netto-Wert wie `calculate_sparrate_for_month`; liefe hier der Plan und dort die Wirklichkeit, bräche Prüfanker 1 sofort | `jsonb` (Array aus `{key, category_id, name, sort_order, amount, posten, planned}`) — **`planned` neu in v2-19**: der Planwert des Monats, nur beim `INCOME`-Eintrag gesetzt, sonst `null` |
 
 **Signatur mit `p_user_id`**, wie die beiden Sparrate-RPCs — nicht `auth.uid()`-basiert.
+
+### Netto-Zuordnung (v2-19, `GE-1`)
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `get_actual_net_for_month(p_user_id uuid, p_person person_role, p_month date)` | **STABLE.** Summe der dem Netto zugeordneten Zahlungen eines Monats | `numeric` — **NULL, wenn nichts zugeordnet ist**; genau das ist das Signal für „nimm den Plan". Kein `round()`: Die Aufrufer runden am Ende über alles (LL-24) |
+| `link_fragment_to_income(p_fragment_id uuid, p_month date)` | **VOLATILE.** Zahlung dem Netto zuordnen (UPSERT auf `fragment_id`) | `jsonb {fragment_id, month, actual_net}` · `28000` ohne Session, `42501` bei fremdem/unbekanntem Fragment, `23514` bei Transfer, **`22023` bei nicht-positivem Betrag** |
+| `unlink_fragment_from_income(p_fragment_id uuid)` | **VOLATILE.** Zuordnung lösen — danach gilt wieder der Plan | `jsonb {fragment_id, month, actual_net}` · `28000`, `42501` |
+
+**Warum eine RPC und kein UPSERT wie bei `linkFragmentToCard`:** Das **Vorzeichen** muss
+geprüft werden. Ohne diese Prüfung ließe sich eine Ausgabe auf die Netto-Kachel ziehen
+und das Monats-Netto fiele auf einen negativen Betrag. Die Prüfung gehört in die
+Datenbank, nicht ins Frontend — sonst gäbe es zwei Wahrheiten.
+
+**Der Monat ist der ANGEZEIGTE, nicht das Buchungsdatum** — dieselbe Periodenabgrenzung
+wie beim Karten-Drop (§6 Stolperfalle 6). Ein Gehalt, das am 30.06. für Juli kommt,
+gehört damit in den Juli.
 
 > **⚠️ `get_category_amounts_for_month` rundet NICHT je Ordner naiv.**
 >
@@ -389,6 +409,8 @@ Die kompakte Referenz für die Frontend-Implementierung — aktualisiert für Sp
 | **Karte anlegen (Fragment-Drop)** | RPC `create_card_from_fragment(...)` |
 | **Karte als „bezahlt" tappen / Tap zurücknehmen** | RPC `toggle_card_manually_paid(card_id, month)` |
 | **Fragment auf Karte droppen** | INSERT `card_fragment_links` mit `origin='MANUAL_DROP'` |
+| **Fragment auf Netto-Kachel droppen** (v2-19) | `link_fragment_to_income(fragment_id, angezeigter Monat)` — ein etwaiger Karten-Link wird per Trigger gelöst |
+| **Netto-Zuordnung lösen** (v2-19) | `unlink_fragment_from_income(fragment_id)` aus dem Einkommens-Fenster (§10) |
 | **Fragment ejecten** | DELETE FROM `card_fragment_links WHERE fragment_id=$1` |
 | **Betrag anpassen, nur dieser Monat** | UPSERT `card_monthly_states (adjusted_amount, adjustment_scope='THIS_MONTH')` |
 | **Betrag anpassen, dauerhaft ab Monat X** | INSERT neue Zeile in `card_planned_timeline` mit `effective_month=X` |

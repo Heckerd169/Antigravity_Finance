@@ -1,6 +1,6 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.6.0 (V2 · Sprint v2-18 — zwei Befunde aus der Nutzung)
+**Version:** 3.7.0 (V2 · Sprint v2-19 — „Realität gewinnt" auch für das Netto)
 **Status:** Freigegeben — Schema-Doku v3.5.0; V2-Patches bis Sprint v2-18 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8).
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
@@ -30,6 +30,23 @@
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
+>
+> **Changelog v3.7.0 (13.08.2026, Sprint v2-19 — „Realität gewinnt" auch für das
+> Netto):** Das Netto war bis hierhin **geplant, nicht gemessen** — Juli 2026 geplant
+> 4.165,11 €, überwiesen 4.149,54 €, und die App sah die 15,57 € nicht.
+>
+> §8 Die **Netto-Kachel ist Ablageziel** (`GE-1`): Eine Zahlung darauf zu ziehen lässt
+> diesen Monat mit dem tatsächlich überwiesenen Betrag rechnen. Sie zeigt dann den
+> Ist-Betrag und darunter `geplant …`. Die Kachel wird dadurch **keine** Karte.
+> §9 Die Treiber-Liste kann eine Zeile **ohne Karte** enthalten — `Gehalt`, nicht
+> anklickbar, und sie verdrängt keinen Karten-Treiber (`GE-2`). Weil es damit zeitweise
+> **vier** Zeilen sind, nennt die Unterzeile keine Zahl mehr: „die drei Treiber" →
+> **„die größten Treiber"**.
+> §10 Das Einkommens-Fenster trägt den Block **„Zugeordnete Zahlung"** samt `Lösen` —
+> die Kachel bekommt bewusst kein Kontextmenü, also gibt es genau einen Ort dafür.
+> §12-Copy entsprechend.
+>
+> Record: `V2/design_direktor_2026-08-13_gehalt.md` (Entscheidungen A–G).
 >
 > **Changelog v3.6.0 (13.08.2026, Sprint v2-18 — zwei Befunde aus der Nutzung):**
 > Beide Punkte stammen aus der **ersten echten Benutzung** der Kategorien und waren
@@ -1125,6 +1142,37 @@ Aufgeklappt enthält er ein einziges Element — das Netto als Kachel; ein Klick
 öffnet das **bestehende** Einkommens-Fenster (§10), kein zweites Formular. Nebeneffekt:
 Das Gehalt wird zum ersten Mal überhaupt im Karussell sichtbar.
 
+**Seit v2-19 ist die Netto-Kachel ein Ablageziel (`GE-1`).** Zieht man die
+Gehaltszahlung aus der Rohmasse darauf, rechnet **dieser Monat** mit dem tatsächlich
+überwiesenen Betrag statt mit dem geplanten — dieselbe Regel „Realität gewinnt", die
+für Fixkosten und Einnahmen längst gilt (§4.3). Die Hervorhebung beim Drüberziehen ist
+**identisch** mit der einer Karte; es ist dieselbe Komponente.
+
+> **Der Anlass ist ein gescheiterter Bedienversuch, kein Konzept.** Fünf Tage nachdem
+> der Ordner das Gehalt zum ersten Mal sichtbar machte, hat der Nutzer versucht, seine
+> Gehaltszahlung darauf zu ziehen. Es ging nicht — ein Fragment kann nur auf eine
+> **Karte** fallen. Die Kachel sah aus wie eine Karte und war keine.
+
+**Die Kachel wird dadurch keine Karte.** Kein Kontextmenü, kein Lebenszyklus, kein
+„Betrag anpassen", kein Bezahlt-Status. Der Klick öffnet weiterhin das
+Einkommens-Fenster (§10) — dort steht die zugeordnete Zahlung, und dort wird sie auch
+wieder gelöst.
+
+**Was die Kachel zeigt, sobald eine Zahlung zugeordnet ist:** oben den überwiesenen
+Betrag, darunter `geplant 4.165,11 €` — in derselben Zeile, in der eine gemeinsame
+Fixkosten-Karte `von 1.904,00 €` trägt. Die Zeile erscheint **nur bei Abweichung**;
+wurde exakt der Planbetrag überwiesen, stünde dort sonst zweimal dieselbe Zahl.
+Statuszeile: `Zugeordnet` statt `Monatlich`.
+
+**Die Zahlung verschwindet nicht aus der Rohmasse**, sondern verhält sich wie eine, die
+auf einer Karte liegt: sichtbar, nach hinten sortiert, nicht mehr ziehbar.
+
+**Mehrere Zahlungen in einem Monat summieren sich** (Nachzahlung, 13. Gehalt) —
+dieselbe Mechanik wie bei Karten, keine Sonderregel.
+
+**Der Plan bleibt unberührt**, ebenso alle Folgemonate. Für eine echte Gehaltsänderung
+gibt es das Einkommens-Fenster (§10); die Zuordnung korrigiert **einen** Monat.
+
 **`Ohne Kategorie`** ist ebenfalls keine Tabellenzeile, sondern die Menge der Karten
 ohne Zuordnung. Er ist ein **vollwertiger Behälter, kein Fehlerzustand**: Beide
 Karten-Anlage-RPCs kennen keine Kategorie, jeder Klick auf den leeren Platz erzeugt
@@ -1404,8 +1452,25 @@ Klick auf die Welle öffnet ein **Single-Surface-Overlay**, dismissible per Klic
 
 - **Kumulierte Treppe** als Stufen: **IST (teal) + Plan (grau)**.
 - **Jahressumme als Held** (z. B. „+8.880 €").
-- **Monatsklick → Top-3-Treiber** dieses Monats.
-- **Unterzeile/Legende:** „IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber".
+- **Monatsklick → die größten Treiber** dieses Monats: die **drei größten
+  Karten-Treiber**, plus — seit v2-19 — eine Zeile **`Gehalt`**, sobald das tatsächlich
+  überwiesene Netto vom geplanten abweicht.
+- **Unterzeile/Legende:** „IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die größten Treiber".
+
+**Die Gehalts-Zeile (`GE-2`, Record Entscheidungen B und C).** Sie ist die erste
+Treiber-Zeile, hinter der **keine Karte** steht, und deshalb **nicht anklickbar** —
+kein Cursor-Wechsel, kein Hover, kein Zielsprung. Sie trägt ihre Zahl und sonst nichts.
+Sähe sie aus wie die anderen, wäre sie ein Versprechen, das ins Leere führt.
+
+Sie **verdrängt keinen Karten-Treiber**: Die drei größten Karten werden zuerst bestimmt,
+danach kommt das Gehalt hinzu — an seiner Rangposition nach Betrag. Im Juli 2026 steht
+es mit −15,57 € hinten, weil die drei Budget-Treiber größer sind; bei einer Nachzahlung
+stünde es vorn. Deshalb können es zeitweise **vier** Zeilen sein, und deshalb nennt die
+Unterzeile keine Zahl mehr.
+
+**Ohne diese Zeile bräche die B2-Invariante** `Σ delta = Ist-Sparrate − Plan-Sparrate`:
+Die Sparrate bewegte sich, und die Treiber erklärten die Bewegung nicht — die
+Abweichung, um die es geht, bliebe unsichtbar, nur einen Bildschirm weiter hinten.
 
 **B6 — Vorjahres-Linie (nur Popup):** gold-gestrichelte Linie (`[5,4]`) auf dem **kumulierten Vorjahres-Jahresendwert** (Σ Jan–Dez X-1), auf derselben Skala wie die Treppe. Der **Betrag steht im rechten Gutter, außerhalb der Plotfläche**; die Legende „Vorjahr (gold)" in der Unterzeile. **Datenloses Vorjahr → Linie entfällt komplett** (keine 0-€-Linie; „nichts gespart" ≠ „keine Daten"). Ein Teiljahr mit einzelnen `NULL`-Monaten summiert normal (NULL = 0). Die **monatliche Welle führt keine** Vorjahres-Referenz — ein kumulierter Endwert ergibt nur auf kumulierter Fläche Sinn.
 
@@ -1453,6 +1518,28 @@ Zwei klickbare Labels (ICH / PARTNER) flankieren den Ring. Klick öffnet Gehalts
 **Sonderfall Partner 0 € Brutto:** Split = 100% / 0%. PARTNER-Label bleibt sichtbar mit `0 %`.
 
 **Sonderfall Partner unbekannt (kein Eintrag):** Split = 100 % / 0 %. ICH trägt alles allein. PARTNER-Label kann durch Klick befüllt werden.
+
+### Zugeordnete Gehaltszahlung (v2-19, `GE-1`)
+
+Liegt für den angezeigten Monat eine zugeordnete Zahlung vor, trägt das Fenster
+zwischen Netto-Feld und Vererbungs-Hinweis den Block **„Zugeordnete Zahlung"**:
+Buchungstag, Betrag, und daneben **`Lösen`**.
+
+**Warum hier und nirgends sonst:** Die Netto-Kachel bekommt bewusst kein
+Kontextmenü — über ein solches löst man die Verknüpfung bei Karten. Der Klick auf die
+Kachel öffnet ohnehin dieses Fenster, also gibt es genau **einen** Ort für alles, was
+das Netto betrifft, statt zwei.
+
+**Der Block steht unter dem Netto-Feld**, weil er genau dieses Feld für **diesen einen
+Monat** außer Kraft setzt: Solange die Zahlung liegt, rechnet der Monat mit ihr statt
+mit dem Plan darüber. Nach dem Lösen gilt wieder der Plan, und die Zahlung kehrt in die
+Rohmasse zurück.
+
+**Nur für `ICH`.** Das Partner-Netto ist nicht ablegbar.
+
+**Der Block ist neutral getönt, ohne farbige Kante** — anders als der
+Vererbungs-Hinweis darunter. Türkis heißt „erledigt/positiv" (§3); eine zugeordnete
+Zahlung ist weder gut noch schlecht, sondern ein Fakt.
 
 ### Onboarding — Pflichtumfang
 
@@ -2004,8 +2091,9 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Welle-Tooltip — Treiber | `Treiber: [Top-1]` (B2-Heuristik offen) |
 | Popup — Titel | `Kumulierte Sparrate [Jahr]` |
 | Popup — Held | Jahressumme (€) |
-| Popup — Unterzeile | `IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die drei Treiber` |
-| Popup — Monatsklick | drei Positionen (Top-3-Treiber, B2-Heuristik offen) |
+| Popup — Unterzeile | `IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die größten Treiber` |
+| Popup — Monatsklick | bis zu vier Positionen: drei Karten-Treiber + `Gehalt`, falls das Netto abweicht |
+| Popup — Treiber-Zeile Gehalt | `Gehalt −15,57 €` — nicht anklickbar |
 
 ### 12.9 Liquidität
 
@@ -2055,7 +2143,10 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Ordner-Name | `Einkommen` |
 | Netto-Kachel — Typ-Label | `Einkommen` |
 | Netto-Kachel — Name | `Nettogehalt` |
-| Netto-Kachel — Statuszeile | `Monatlich` · im Zukunftsmonat `Forecast` |
+| Netto-Kachel — Statuszeile | `Monatlich` · `Zugeordnet` bei zugeordneter Zahlung · im Zukunftsmonat `Forecast` |
+| Netto-Kachel — Planzeile | `geplant 4.165,11 €` — nur bei Abweichung; „geplant" statt „von", weil „von" den Haushaltsanteil meint |
+| Einkommens-Fenster — Zuordnungsblock | Überschrift `Zugeordnete Zahlung` · Knopf `Lösen` / `Wird gelöst …` |
+| Einkommens-Fenster — Zuordnungshinweis | `Dieser Monat rechnet mit dem überwiesenen Betrag. Nach dem Lösen gilt wieder der Plan.` |
 | Netto-Kachel — Meta | `Ich` |
 
 **Der Unsortiert-Behälter**

@@ -28,21 +28,31 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 13.08.2026 zeilengenau nachgezählt — nach Sprint v2-18 und nach
-Aufnahme des neuen Pakets 15.*
+*Alle Zahlen am 13.08.2026 zeilengenau nachgezählt — nach Sprint v2-19.*
 
 | | Anzahl | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **11** | 10 | 10 | 11 | 12 | 13 | 14 | 14 |
-| Themen darin | **32** | 29 | 28 | 31 | 32 | 34 | 35 | 36 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 5 | 6 | 6 | 7 | 7 |
-| **Offen gesamt** | **36** | 33 | 32 | 36 | 38 | 40 | 42 | 43 |
-| Erledigt | **43** | 43 | 41 | 37 | 35 | 33 | 31 | 30 |
+| Offene Pakete | **10** | 10 | 10 | 11 | 12 | 13 | 14 | 14 |
+| Themen darin | **30** | 29 | 28 | 31 | 32 | 34 | 35 | 36 |
+| Hausaufgaben ohne eigenen Sprint | **5** | 4 | 4 | 5 | 6 | 6 | 7 | 7 |
+| **Offen gesamt** | **35** | 33 | 32 | 36 | 38 | 40 | 42 | 43 |
+| Erledigt | **45** | 43 | 41 | 37 | 35 | 33 | 31 | 30 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand am 13.08.2026, zeilengenau ausgezählt.** Paket-Tabellen **39** Zeilen, davon
-> **7 ✅** → **32** offen (⬜ 29 · 🟡 3). Hausaufgaben **4**, alle ⬜. §4 Erledigt **43**
+> **Stand nach v2-19, zeilengenau ausgezählt.** Paket-Tabellen **39** Zeilen, davon
+> **9 ✅** → **30** offen (⬜ 27 · 🟡 3). Hausaufgaben **5**, alle ⬜. §4 Erledigt **45**
 > Zeilen. §3 unverändert **4**.
+>
+> **Paket 15 ist vollständig abgeschlossen** — `GE-1` und `GE-2` in v2-19 gebaut,
+> einen Tag nachdem das Paket überhaupt entstanden ist. Damit sinken die offenen
+> Pakete wieder auf 10.
+>
+> **Die Hausaufgaben sind auf 5 gestiegen:** `B2-R` kam dazu — die Treiber-Summe liegt
+> einen Cent neben `Ist − Plan`. **Der Befund stammt aus v2-19, ist aber nicht von ihm
+> verursacht**; er entstand am 13.08.2026, als die ersten Zahlungen gemeinsamen Karten
+> zugeordnet wurden. Aufgefallen ist er nur, weil der Prüfanker des Sprints ihn
+> streifte: Die Zielvorgabe „Treiber-Summe → −32,77 €" war damit **nicht erfüllbar**
+> und musste vor dem Bauen korrigiert werden.
 >
 > **Die Zahlen sind zum zweiten Mal in Folge gestiegen** — 29 → 32 Themen, obwohl
 > nichts zurückgenommen wurde. Ursache ist beide Male dieselbe: **Sichtbarwerden**,
@@ -499,8 +509,8 @@ Gestaltungsentscheidungen stehen. Briefing: `sprints/sprint_v2-19_briefing.md`.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| GE-1 | Gehalt auf die Netto-Kachel ziehbar, Ist-Netto je Monat | Feature | **ja** | ⬜ | Eigene schmale Ablage **neben** `income_timeline` (die beschreibt Gehalts*änderungen*, nicht Monats-Ist-Werte). Eingriff **ausschließlich** in `calculate_sparrate_for_month` — **nicht** in `get_net_monthly_for_month`: Die liest auch die *Plan*-Funktion, beide Seiten verschöben sich gleich weit und die Abweichung wäre unsichtbarer als vorher (LL-23). `get_category_amounts_for_month` muss mitziehen, sonst bricht Anker 1. Prüfanker: Juli-Ist 6,73 → **−8,84 €**, Plan unverändert 23,93 €, elf Monate 0,00 €. |
-| GE-2 | Treiber-Zeile „Gehalt" ohne Karte | Feature | **ja** | ⬜ | `get_year_deviation_drivers` läuft heute über `JOIN cards`; jeder Treiber trägt eine `card_id`. Ohne diese Zeile **bricht die B2-Invariante** — das Jahres-Popup erklärte eine Abweichung von 32,77 € mit Gründen, die nur 17,20 € ergeben. Heißt **„Gehalt"**, ist **nicht anklickbar** (Record 13.08.2026, Entscheidung B). Frontend muss `card_id: null` vertragen. |
+| GE-1 | Gehalt auf die Netto-Kachel ziehbar, Ist-Netto je Monat | Feature | **ja** | ✅ | **v2-19.** Tabelle `income_fragment_links` — sie speichert den **Link, nicht den Betrag**; die Summe entsteht aus `fragments.amount`, dadurch können beide nicht auseinanderlaufen und „zwei Gehälter summieren sich" fällt von selbst heraus. Eingriff wie vorgesehen **nur** in `calculate_sparrate_for_month` (plus `get_category_amounts_for_month` für Anker 1); `get_net_monthly_for_month` und `calculate_planned_sparrate_for_month` **nachweislich unberührt** — Prüfsummen vor und nach der Migration identisch. Prüfanker im Trockenlauf gegen Produktion bestätigt: Juli-Ist 6,73 → **−8,84 €**, Plan 23,93 € unverändert, elf Monate 0,00 €, Anker 1 12/12. |
+| GE-2 | Treiber-Zeile „Gehalt" ohne Karte | Feature | **ja** | ✅ | **v2-19.** Zeile mit `card_id: null`. Die Karten werden auf `p_limit` gekürzt, **danach** kommt das Gehalt dazu — es verdrängt keinen Karten-Treiber (Record, Entscheidung C, ergänzt am 13.08.). Im Frontend war `getTop3Drivers` die stille Gegenstelle: Es schnitt auf drei ab, und „Gehalt" liegt im Juli mit −15,57 € auf **Platz 4**. Ohne diesen Fund wäre die Zahl korrekt berechnet und nie sichtbar gewesen. Wächter: `tests/e2e/gehalt.spec.ts`. |
 
 ---
 
@@ -514,6 +524,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
+| B2-R | Die Treiber-Summe liegt einen Cent neben `Ist − Plan` | ⬜ | **Gefunden in v2-19, NICHT von diesem Sprint verursacht.** Gemessen Juli 2026: Treiber-Summe **−17,21 €** gegen Differenz **−17,20 €**. Ursache sind vier **gemeinsame** Karten, deren Delta exakt, aber im Sub-Cent-Bereich liegt (Internet +0,0022 · Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003 = +0,0057): `get_year_deviation_drivers` rundet **je Zeile** auf zwei Stellen, die Sparraten-Funktionen erst **am Ende über alles**. Entstanden ist das erst am 13.08.2026 mit den ersten Zuordnungen auf gemeinsame Karten — vorher gab es keine. **Abhilfe nach dem Muster von LL-25:** Ziel aus der Rechenfunktion holen und den Rest auf die betragsgrößte Zeile verteilen, statt jede Zeile für sich zu runden. Bewegt **keine** Sparrate, betrifft nur die Erklärzeile im Jahres-Popup — deshalb Hausaufgabe und kein eigener Sprint. |
 
 ---
 
@@ -575,6 +586,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | N3 | Text-Überlauf auf langer Karte | v2-01 |
 | N4 | Ring-Anzeige `+− 358,1 %` und Cap-Strategie | v2-01 / v2-03 |
 | N5 | Farbtöne zwischen zugeordneten Fragmenten und Überträgen vereinheitlicht | v2-03 |
+| GE-1 | Gehalt auf die Netto-Kachel ziehbar, Ist-Netto je Monat | v2-19 |
+| GE-2 | Treiber-Zeile „Gehalt" ohne Karte | v2-19 |
 
 ---
 
