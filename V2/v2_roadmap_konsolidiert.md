@@ -28,20 +28,28 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 13.08.2026 nach Sprint v2-18 zeilengenau nachgezählt.*
+*Alle Zahlen am 13.08.2026 zeilengenau nachgezählt — nach Sprint v2-18 und nach
+Aufnahme des neuen Pakets 15.*
 
-| | Anzahl | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 |
+| | Anzahl | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **10** | 10 | 11 | 12 | 13 | 14 | 14 | 14 |
-| Themen darin | **29** | 28 | 31 | 32 | 34 | 35 | 36 | 37 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 5 | 6 | 6 | 7 | 7 | 7 |
-| **Offen gesamt** | **33** | 32 | 36 | 38 | 40 | 42 | 43 | 44 |
-| Erledigt | **43** | 41 | 37 | 35 | 33 | 31 | 30 | 29 |
+| Offene Pakete | **11** | 10 | 10 | 11 | 12 | 13 | 14 | 14 |
+| Themen darin | **32** | 29 | 28 | 31 | 32 | 34 | 35 | 36 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 5 | 6 | 6 | 7 | 7 |
+| **Offen gesamt** | **36** | 33 | 32 | 36 | 38 | 40 | 42 | 43 |
+| Erledigt | **43** | 43 | 41 | 37 | 35 | 33 | 31 | 30 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-18 (13.08.2026), zeilengenau ausgezählt.** Paket-Tabellen **36**
-> Zeilen, davon **7 ✅** → **29** offen (⬜ 26 · 🟡 3). Hausaufgaben **4**, alle ⬜.
-> §4 Erledigt **43** Zeilen. §3 unverändert **4**.
+> **Stand am 13.08.2026, zeilengenau ausgezählt.** Paket-Tabellen **39** Zeilen, davon
+> **7 ✅** → **32** offen (⬜ 29 · 🟡 3). Hausaufgaben **4**, alle ⬜. §4 Erledigt **43**
+> Zeilen. §3 unverändert **4**.
+>
+> **Die Zahlen sind zum zweiten Mal in Folge gestiegen** — 29 → 32 Themen, obwohl
+> nichts zurückgenommen wurde. Ursache ist beide Male dieselbe: **Sichtbarwerden**,
+> nicht Rückschritt. Nach v2-18 kam `KAT-5` dazu (in v2-17 entschieden, nie gebaut,
+> nie benannt); jetzt kommen `GE-1`, `GE-2` und `GE-3` dazu, weil beim Zuordnen
+> auffiel, dass das Gehalt kein Ablageziel hat. **Ein neues Paket 15 ist entstanden
+> und wird vorgezogen** — vor Paket 5, weil es aus der Nutzung kommt.
 >
 > **Die Zahl der offenen Themen ist erstmals wieder GESTIEGEN** (28 → 29), obwohl ein
 > Sprint gelaufen ist. Das ist kein Rückschritt, sondern Ehrlichkeit: `KAT-5` (Record
@@ -464,14 +472,35 @@ Vergleichsbasis für die Verkettung.
 ---
 
 ### Paket 14 · Große Brocken
-**Bewusst nach hinten** — alle vier werden besser, wenn die Datenbasis sauber ist.
+**Bewusst nach hinten** — alle fünf werden besser, wenn die Datenbasis sauber ist.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
 | E2 | Periodenabgrenzung (Dezember-Gehalt am 30.11. = Januar-Periode) | Feature | nein | ⬜ | |
-| E1 | Rückwirkende Gehaltskorrektur mit Fairness-Ausgleich | Feature | **ja** | ⬜ | Neue Tabelle `fairness_deltas`. |
+| E1 | Rückwirkende Gehaltskorrektur mit Fairness-Ausgleich | Feature | **ja** | ⬜ | Neue Tabelle `fairness_deltas`. **Nicht zu verwechseln mit `GE-1`** (Paket 15): Eine Netto-Korrektur löst *keinen* Fairness-Ausgleich aus, weil der Anteil am **Brutto** hängt. |
+| GE-3 | Das Netto als echte Karte statt als Sockel | Architektur | **ja** | ⬜ 🔎 | **Vom User vorgeschlagen am 13.08.2026, bewusst vertagt** — Record `V2/design_direktor_2026-08-13_gehalt.md`, Abschnitt „Verworfen". Wäre sauberer als der heutige Sonderfall (Treiber und Ablageziel kämen geschenkt, der Einkommens-Ordner verlöre seine Ausnahme). **Was dagegen entschied:** Das Gehalt läge danach an zwei Orten — das Brutto muss für `get_split_factor` in der Zeitreihe bleiben, das Netto wanderte auf die Karte; eine vergessene Doppel-Eintragung ließe Brutto und Netto **still** auseinanderdriften und den Partner-Anteil falsch werden. Dazu: Onboarding speist das Netto über `estimate_net_monthly`, der Partner wäre asymmetrisch (§13 „keine Partner-only Karten"), 2025 ist exakt Netto × 12 und bräuchte `DA-1`, und Design-Doku §4.2 ist normativ. **Umfang:** 6 DB-Funktionen + 4 Frontend-Dateien. **Natürlicher Moment: zusammen mit `DA-1`** — dann fällt die Rückdatierung ohnehin an. |
 | M11 | Hell-/Dunkel-Modus | Feature | nein | ⬜ | Niedrige Priorität. Variablen-Ebene auf Basis von `src/styles/tokens.css`. |
 | M8 | Chat-Fenster für Rückfragen zu allen App-Daten | Feature | nein (API-Ebene) | ⬜ | Großes Feature, eigene Phase. **Braucht ein Sicherheits- und Datenschutz-Konzept**, bevor irgendetwas gebaut wird. |
+
+---
+
+### Paket 15 · Gehalt — „Realität gewinnt" auch für das Netto
+**Entsperrt:** dass eine Abweichung zwischen geplantem und tatsächlichem Gehalt
+überhaupt sichtbar wird. Heute ist das Netto **geplant, nicht gemessen** — Juli 2026
+geplant 4.165,11 €, überwiesen 4.149,54 €, und die App sieht die 15,57 € nicht.
+
+**Vorgezogen.** Das Paket ist am 13.08.2026 aus der Nutzung entstanden und wird
+**vor** Paket 5 gebaut, weil der User beim Zuordnen darauf gestoßen ist: Das
+Gehalts-Fragment ließ sich nicht auf die Netto-Kachel ziehen. Die Reihenfolge dieser
+Datei war immer ein Vorschlag, kein Beschluss.
+
+**Phase ① ist abgeschlossen und freigegeben.** Ziel, Nicht-Ziel, Prüfanker und beide
+Gestaltungsentscheidungen stehen. Briefing: `sprints/sprint_v2-19_briefing.md`.
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| GE-1 | Gehalt auf die Netto-Kachel ziehbar, Ist-Netto je Monat | Feature | **ja** | ⬜ | Eigene schmale Ablage **neben** `income_timeline` (die beschreibt Gehalts*änderungen*, nicht Monats-Ist-Werte). Eingriff **ausschließlich** in `calculate_sparrate_for_month` — **nicht** in `get_net_monthly_for_month`: Die liest auch die *Plan*-Funktion, beide Seiten verschöben sich gleich weit und die Abweichung wäre unsichtbarer als vorher (LL-23). `get_category_amounts_for_month` muss mitziehen, sonst bricht Anker 1. Prüfanker: Juli-Ist 6,73 → **−8,84 €**, Plan unverändert 23,93 €, elf Monate 0,00 €. |
+| GE-2 | Treiber-Zeile „Gehalt" ohne Karte | Feature | **ja** | ⬜ | `get_year_deviation_drivers` läuft heute über `JOIN cards`; jeder Treiber trägt eine `card_id`. Ohne diese Zeile **bricht die B2-Invariante** — das Jahres-Popup erklärte eine Abweichung von 32,77 € mit Gründen, die nur 17,20 € ergeben. Heißt **„Gehalt"**, ist **nicht anklickbar** (Record 13.08.2026, Entscheidung B). Frontend muss `card_id: null` vertragen. |
 
 ---
 
