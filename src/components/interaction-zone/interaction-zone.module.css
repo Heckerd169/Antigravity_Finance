@@ -558,14 +558,43 @@
   outline-offset: 1px;
 }
 
+/* v2-18: FESTE Höhe statt `max-height` — das behebt das Springen der Ansicht
+   beim Monatswechsel.
+
+   Vorher: Die drei Spalten der Interaktionszone stehen auf
+   `align-items: stretch`, die Zone ist also so hoch wie ihre höchste Spalte.
+   War die Rohmasse voll, maß sie 320 px und gab der Zone 341 px; war sie leer,
+   fiel die Zone auf 215 px. Die Welle darüber (`page.module.css .stage`,
+   `flex: 1 1 280px`) absorbiert die Resthöhe und wurde dadurch um **126 px**
+   größer. Beim Wechsel von Juli auf August sprang die gesamte Ansicht.
+
+   Gemessen am 13.08.2026 gegen einen PRODUKTIONS-Build bei 1440 × 900:
+   Zone 341 px (Juli, 77 Umsätze) gegen 215 px (August, keine).
+   Gegen den dev-Server ist der Sprung NICHT reproduzierbar — dort drückt das
+   Entwickler-Panel die Welle in beiden Monaten auf ihr Minimum von 280 px.
+
+   Die feste Höhe sitzt bewusst hier und nicht als `min-height` an der Zone:
+   Die Rohmasse ist das Element, dessen Inhalt schwankt, und so kann der Wert
+   nicht driften, wenn jemand später an den 320 px dreht. `overflow-y: auto`
+   bleibt — bei vollem Bestand scrollt die Liste wie bisher. */
 .fragmentStack {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 320px;
+  height: 320px;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
+}
+
+/* Der Leer-Satz. Bewusst leise (`--text-ghost`) und nicht mittig zentriert —
+   er ist eine Fußnote, keine Meldung. Oben ausgerichtet, damit er dort steht,
+   wo sonst die erste Karte stünde. */
+.stackEmpty {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-ghost);
+  padding: 10px 2px;
 }
 
 .fragmentStack::-webkit-scrollbar {

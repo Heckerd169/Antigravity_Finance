@@ -122,6 +122,63 @@ test("kategorie-kachel: das ⋯-menü wird beim überfahren sichtbar", async ({ 
   await expect(menueKnopf).toHaveCSS("opacity", "1");
 });
 
+// Regressions-Wächter gegen das Springen der Ansicht beim Monatswechsel
+// (gemeldet 13.08.2026, behoben in v2-18).
+//
+// Die drei Spalten der Interaktionszone stehen auf `align-items: stretch`; die
+// Zone ist also so hoch wie ihre höchste Spalte. Solange die Rohmasse ihre Höhe
+// vom Bestand ableitete, fiel die Zone in Monaten ohne Umsätze zusammen — und
+// die Welle darüber (`page.module.css .stage`, `flex: 1 1 280px`) bekam die
+// frei gewordene Höhe geschenkt. Gemessen: 341 px gegen 215 px, also 126 px
+// Sprung zwischen Juli und August.
+//
+// Der Test prüft die URSACHE, nicht das Symptom: Die Zonenhöhe darf nicht vom
+// Monat abhängen. Bewusst über MEHRERE Monate statt an einem Einzelfall — sonst
+// hinge er daran, dass ausgerechnet der August leer ist (LL-19).
+//
+// Läuft gegen den dev-Server, und das ist hier richtig: Geprüft wird die Zone,
+// nicht die Welle. Der Sprung der WELLE ist gegen den dev-Server nicht sichtbar,
+// weil das Entwickler-Panel sie in beiden Monaten auf ihr Minimum drückt.
+test("layout: die höhe der interaktionszone hängt nicht vom monat ab", async ({ page }) => {
+  const monate = ["2026-06", "2026-07", "2026-08", "2026-09"];
+  const hoehen: { monat: string; hoehe: number; umsaetze: number }[] = [];
+
+  for (const monat of monate) {
+    await page.goto(`/?month=${monat}`);
+    await expect(page.locator('[class*="interactionZone"]')).toBeVisible();
+    // Auf die Karten warten, sonst wird gemessen, bevor das Karussell steht.
+    await expect(page.getByText("Ordner").first()).toBeVisible();
+
+    const gemessen = await page.evaluate(() => {
+      const zone = document.querySelector('[class*="interactionZone"]');
+      return {
+        hoehe: zone ? Math.round(zone.getBoundingClientRect().height) : -1,
+        umsaetze: document.querySelectorAll('[class*="fragmentCard"]').length,
+      };
+    });
+    hoehen.push({ monat, ...gemessen });
+  }
+
+  // Aussagekraft sichern: Wären alle vier Monate gleich voll, bewiese der Test
+  // nichts. Mindestens einer muss Umsätze haben und mindestens einer keine.
+  const mitUmsaetzen = hoehen.filter((h) => h.umsaetze > 0).length;
+  const ohneUmsaetze = hoehen.filter((h) => h.umsaetze === 0).length;
+  expect(
+    mitUmsaetzen > 0 && ohneUmsaetze > 0,
+    `Der Test braucht beide Fälle. Gemessen: ${JSON.stringify(hoehen)}`,
+  ).toBe(true);
+
+  // Bewusst ohne `new Set(...)`-Spread: Die tsconfig zielt auf ein Ziel, das
+  // Iteration über ein Set nicht ohne `downlevelIteration` erlaubt.
+  const eindeutig = hoehen
+    .map((h) => h.hoehe)
+    .filter((h, i, alle) => alle.indexOf(h) === i);
+  expect(
+    eindeutig.length,
+    `Zonenhöhe schwankt zwischen den Monaten: ${JSON.stringify(hoehen)}`,
+  ).toBe(1);
+});
+
 test("monatsnavigation: vor und zurück über die header-flanken", async ({ page }) => {
   const now = new Date();
   const current = ymOf(now);
