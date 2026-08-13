@@ -125,16 +125,30 @@ export function FragmentStack({ fragments, targetMonth }: FragmentStackProps) {
         onDragEnd={handleDragEnd}
         onClick={handleClick}
       >
-        {visibleFragments.map((f) => (
-          <div
-            key={f.id}
-            className={
-              draggingId === f.id ? styles.fragmentCardDragging : undefined
-            }
-          >
-            <FragmentCard fragment={f} isLocked={f.status !== "UNASSIGNED"} />
-          </div>
-        ))}
+        {visibleFragments.length === 0 ? (
+          /* v2-18: Die Spalte reserviert ihre Höhe jetzt immer (siehe
+             `.fragmentStack` im CSS), damit die Ansicht beim Monatswechsel
+             nicht springt. Eine große leere Fläche unter der Überschrift
+             „ROHMASSE" sähe dadurch aus wie ein Ladefehler — dieser Satz sagt,
+             dass alles in Ordnung ist.
+
+             Er gilt bewusst für die ANGEZEIGTE Liste, nicht für den Bestand:
+             Sind alle Umsätze des Monats Überträge und der Schalter steht auf
+             „aus", ist die Liste ebenfalls leer, und derselbe Satz ist richtig.
+             Der Schalter darüber nennt in dem Fall die Zahl und führt weiter. */
+          <div className={styles.stackEmpty}>Keine offenen Umsätze</div>
+        ) : (
+          visibleFragments.map((f) => (
+            <div
+              key={f.id}
+              className={
+                draggingId === f.id ? styles.fragmentCardDragging : undefined
+              }
+            >
+              <FragmentCard fragment={f} isLocked={f.status !== "UNASSIGNED"} />
+            </div>
+          ))
+        )}
       </div>
 
       {showcaseFragment !== null && (

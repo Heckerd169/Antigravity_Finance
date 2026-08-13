@@ -9,10 +9,9 @@ import { CategoryTile } from "./category-tile";
 import { NettoTile } from "./netto-tile";
 import type { CategoryGroup } from "./category-groups";
 import type { Liquidity } from "./liquidity";
-import {
-  DRAG_MIME,
-  type FragmentRow,
-  type IncomeSlotProps,
+import type {
+  FragmentRow,
+  IncomeSlotProps,
 } from "./interaction-zone.types";
 import { formatEuroRounded } from "@/lib/format";
 import styles from "./interaction-zone.module.css";
@@ -86,55 +85,34 @@ export function Carousel({
     () => new Set<string>(),
   );
 
-  /* Record B4: Beim Anfassen einer Zahlung öffnen sich ALLE Ordner, beim
-   * Loslassen kehren sie in den vorherigen Zustand zurück.
+  /* ⚠️ Record B4 ist ABGELÖST (v2-18, 13.08.2026 — Befund aus der Nutzung).
    *
-   * Das löst Befund U1 (BLOCKER): Ein Drop braucht eine Karten-ID, eine
-   * zugeklappte Kategorie hat keine. HTML5-Drag kennt keinen Zustandswechsel
-   * während des Ziehens — außer man macht ihn selbst, und genau das passiert
-   * hier. `openKeys` bleibt dabei unangetastet, deshalb ist die Rückkehr
-   * automatisch und braucht kein Gedächtnis.
+   * B4 lautete: Beim Anfassen einer Zahlung öffnen sich ALLE Ordner. Das löste
+   * Befund U1 (ein Drop braucht eine Karten-ID, eine zugeklappte Kategorie hat
+   * keine) — und war beim Bauen plausibel.
    *
-   * Beim Arbeiten ist alles offen, beim Ansehen ist es aufgeräumt. */
-  const [dragActive, setDragActive] = useState(false);
+   * Beim ersten echten Zuordnen fiel auf, warum es nicht trägt: Elf Ordner auf
+   * einmal aufzuklappen schiebt die Zielkarte weit nach rechts aus dem Bild.
+   * Und weil die Maustaste gedrückt ist, lässt sich das Karussell in diesem
+   * Moment nicht scrollen — der Zug endet im Nichts. Je mehr Ordner, desto
+   * sicherer.
+   *
+   * Neue Regel: Es öffnet sich NICHTS von selbst. Wer zuordnen will, klappt den
+   * Zielordner vorher auf — dann bleibt genau er offen, alles andere zu, und
+   * die Zielkarte bleibt dort, wo man sie gesehen hat.
+   *
+   * U1 ist damit nicht wieder offen, sondern anders gelöst: nicht durch
+   * automatisches Aufklappen während des Zugs, sondern durch bewusstes
+   * Aufklappen davor. Der Preis ist ein Klick; der Gewinn ist ein Ziel, das
+   * stehen bleibt. */
 
   // LL-5: Overlays bei Monatswechsel schließen. `openKeys` bleibt bewusst
-  // stehen (B7), `dragActive` wird zurückgesetzt — ein Zug kann einen
-  // Monatswechsel nicht überdauern.
+  // stehen (B7) — der Aufklapp-Zustand ist eine Ansichts-Vorliebe, kein
+  // Monats-Zustand.
   useEffect(() => {
     setRecurrenceFragment(null);
     setDirectCreateOpen(false);
-    setDragActive(false);
   }, [targetMonth]);
-
-  useEffect(() => {
-    function isFragmentDrag(e: DragEvent): boolean {
-      const types = e.dataTransfer?.types;
-      if (!types) return false;
-      for (let i = 0; i < types.length; i += 1) {
-        if (types[i] === DRAG_MIME) return true;
-      }
-      return false;
-    }
-    function handleDragStart(e: DragEvent) {
-      // Der Handler der Fragment-Karte hat die Daten beim Hochblubbern schon
-      // gesetzt — hier ist der MIME-Typ also bereits lesbar.
-      if (isFragmentDrag(e)) setDragActive(true);
-    }
-    function handleDragEnd() {
-      setDragActive(false);
-    }
-    document.addEventListener("dragstart", handleDragStart);
-    // `dragend` feuert an der Quelle, `drop` am Ziel — beide werden gebraucht:
-    // Ein Drop außerhalb eines gültigen Ziels löst nur `dragend` aus.
-    document.addEventListener("dragend", handleDragEnd);
-    document.addEventListener("drop", handleDragEnd);
-    return () => {
-      document.removeEventListener("dragstart", handleDragStart);
-      document.removeEventListener("dragend", handleDragEnd);
-      document.removeEventListener("drop", handleDragEnd);
-    };
-  }, []);
 
   const recomputeScrollState = useCallback(() => {
     const vp = viewportRef.current;
@@ -162,7 +140,7 @@ export function Carousel({
     };
     // Auf- und Zuklappen ändert die Gesamtbreite genauso wie eine neue Karte —
     // sonst blieben die Pfeile fälschlich deaktiviert.
-  }, [recomputeScrollState, groups.length, openKeys, dragActive]);
+  }, [recomputeScrollState, groups.length, openKeys]);
 
   function scrollByStep(delta: number) {
     viewportRef.current?.scrollBy({ left: delta, behavior: "smooth" });
@@ -241,7 +219,9 @@ export function Carousel({
 
         <div ref={viewportRef} className={styles.cardsViewport}>
           {groups.map((group) => {
-            const isOpen = dragActive || openKeys.has(group.key);
+            // v2-18: Nur noch der Zustand, den der User selbst gesetzt hat.
+            // Kein automatisches Aufklappen während eines Zugs mehr (B4 abgelöst).
+            const isOpen = openKeys.has(group.key);
             return (
               <div key={group.key} className={styles.catBlock}>
                 <CategoryTile

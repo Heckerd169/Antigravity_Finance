@@ -8,27 +8,28 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 08. August 2026 · **nach:** Sprint **v2-17**
-> (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die Hausaufgabe `J1`;
-> Design-Doku **v3.5.0**, Schema-Doku **v3.5.0**, PR **#23** offen, noch nicht
-> gemerged). **Paket 4 ist damit vollständig**, und der Riegel vor Paket 5 ist gefallen.
+> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-18**
+> (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den bereits offenen Ordner,
+> die Ansicht springt beim Monatswechsel nicht mehr; Design-Doku **v3.6.0**,
+> Schema-Doku **v3.5.0**, PR **#26** offen).
 >
-> Vier Patches in dieser Runde, alle nach ausdrücklicher Freigabe:
-> **§6 Stolperfalle 4 war FALSCH** und ist korrigiert (die Regel lautet umgekehrt: wer
-> über den Nutzer aggregiert, nimmt `p_user_id`) · **neue Stolperfallen 13, 14 und 15**
-> (Aggregation über Teilmengen · Kategorie ist keine Karte · neue Tabelle bekommt keine
-> Policy) · **neuer Eintrag LL-25** · §9 auf Sprint-Stand.
+> Diese Runde berührt **nur §9**, dafür an vier Stellen — alle nach ausdrücklicher
+> Freigabe: **Der Juli-Anker steht jetzt auf −322,74 €** (`BF-4` hat zum ersten Mal in
+> Produktion gegriffen, ohne Eingriff — allein durch die Zuordnung dreier Zahlungen am
+> 13.08.) · **Sprint-Stand und Roadmap-Zahlen** auf v2-18 · und zwei Sätze, die der
+> Freigabe sonst offen widersprochen hätten: **„nichts ist entschieden und ungebaut"
+> war seit v2-17 falsch** (`KAT-5` / Record `A2`), und die Kopfzeile trug noch v2-17.
 >
-> Die Freigabe kam in zwei Schritten: zuerst C1–C4, dann auf Nachfrage C5/C6 (die
-> Stolperfallen 14 und 15). Sie waren mir beim Schreiben dazugekommen und standen nicht
-> im ersten Satz — deshalb erst herausgenommen und einzeln vorgelegt.
+> **Der Prüfanker ist damit zum ersten Mal seit dem 05.08.2026 nicht mehr flächendeckend
+> von diesem Datum** — elf Monate ja, der Juli nicht. Warum das kein Alarm ist und wann
+> er sich erneut bewegen darf, steht bei der Tabelle in §9. Der **zweite** Anker, die
+> Ordner-Spalte, geht weiterhin in allen zwölf Monaten exakt auf.
 >
-> Die **Prüfanker stehen weiterhin auf dem Stand vom 05.08.2026** und sind unverändert
-> gültig — in v2-17 vor und nach beiden Migrationen erneut gemessen, Abweichung überall
-> 0,00 €, zusätzlich über byte-identische Prüfsummen der vier Rechenfunktionen belegt.
-> **Neu hinzugekommen ist ein zweiter Anker:** die Ordner-Spalte (§9).
->
-> Davor Sprint v2-16 (`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite + `LQ-2`).
+> Davor Sprint v2-17 (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die
+> Hausaufgabe `J1`; **Paket 4 damit vollständig**, der Riegel vor Paket 5 gefallen;
+> **§6 Stolperfalle 4 war FALSCH** und ist korrigiert — wer über den Nutzer aggregiert,
+> nimmt `p_user_id` · **neue Stolperfallen 13, 14 und 15** · **neuer Eintrag LL-25**).
+> Davor v2-16 (`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite + `LQ-2`).
 > Davor die Design-Direktor-Runde vom 06.08.2026 (`LQ-2` `LQ-1` `RM-2` `PA-1`
 > entschieden, Design-Doku v3.3.0) und Sprint v2-14 (`LQ-1`, `cards.due_day`). Davor
 > v2-13 (`BF-4` — der
@@ -657,10 +658,18 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-17 (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die
-Hausaufgabe `J1`, 08.08.2026, PR **#23** offen, noch nicht gemerged) · **davor:** v2-16
-(`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite, `LQ-2`).
+**Letzter Sprint:** v2-18 (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
+bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr, 13.08.2026,
+PR **#26** offen) · **davor:** v2-17 (Kategorien im Karussell, `KAT-1` `KAT-2` `KAT-3`
+plus die Hausaufgabe `J1`) und v2-16 (`RM-2`, `PA-1`).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+
+**v2-18 hat eine Produkt-Entscheidung aufgehoben, nicht nur nachgezogen.** Record `B4`
+(„beim Anfassen einer Zahlung öffnen sich **alle** Ordner") war beim Bauen plausibel
+und löste den Blocker `U1`; in der Praxis schiebt es die Zielkarte aus dem Bild,
+während die Maustaste gedrückt ist und das Karussell deshalb nicht gescrollt werden
+kann. `U1` ist jetzt anders gelöst — durch bewusstes Aufklappen **vor** dem Zug.
+Design-Doku **§8**, Record Teil B.
 
 **Paket 4 ist vollständig abgeschlossen.** Das Karussell zeigt im Juli **elf Ordner
 statt 32 Karten**. Damit sind **vier der fünf Kettenglieder fertig** (Pakete 1, 2, 4
@@ -668,10 +677,11 @@ plus das danebenstehende 3), und der Riegel vor **Paket 5** — der besseren
 automatischen Zuordnung, dem einzigen Punkt der Roadmap, der Aufwand **wegnimmt** — ist
 gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 
-**Nichts ist entschieden und ungebaut.** Alle Beschlüsse der Runden vom 06.08. und
-07./08.08.2026 sind umgesetzt.
+**Ein Beschluss ist entschieden und ungebaut:** `KAT-5` / Record `A2`. Bis zum
+13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
+v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
 
-**Doku-Versionen:** Design-Doku **v3.5.0** · Schema-Doku **v3.5.0**.
+**Doku-Versionen:** Design-Doku **v3.6.0** · Schema-Doku **v3.5.0**.
 
 **Zweiter Prüfanker seit v2-17 — die Ordner-Spalte.** Sie ergibt in **allen zwölf
 Monaten exakt** die Sparrate, und das ist erzwungen, nicht zufällig (Stolperfalle 13 /
@@ -696,7 +706,7 @@ Rechenfunktion berührt wurde):
 | Januar–April | 1.931,18 € |
 | Mai | −86,77 € |
 | Juni | 4.208,76 € |
-| **Juli** | **−322,75 €** |
+| **Juli** | **−322,74 €** *(seit 13.08.2026, siehe unten)* |
 | August | 1.761,08 € |
 | September–Dezember | 1.824,08 € |
 | 2025 (alle Monate) | 4.037,11 € → Vorjahres-Goldlinie **48.445,32 €** |
@@ -719,23 +729,49 @@ Rechenfunktion berührt wurde):
 > **Ein grüner Anker beweist in so einem Fall wenig** — der Nachweis kam aus der
 > Übungs-Datenbank (Ist-Sparrate dort 1.840,00 → 1.600,00 €).
 >
-> **Was sich als Nächstes planmäßig bewegen wird:** der erste Monat, in dem eine
-> gemeinsame Karte eine zugeordnete Zahlung bekommt. Dann greift `BF-4` — bewusst
-> und richtig.
->
 > **v2-17 (Kategorien) hat die Tabelle ebenfalls NICHT bewegt.** Alle zwölf Monate
 > vor und nach beiden Migrationen gemessen, Abweichung überall 0,00 €, B2-Invariante
 > 12/12. Zusätzlich belegt über **byte-identische Prüfsummen**
 > (`md5(pg_get_functiondef(...))`) der vier Rechenfunktionen gegen Übungs- **und**
 > Produktiv-Datenbank — der Sprint hat sie nachweislich nicht angefasst.
+>
+> ---
+>
+> **Was hier als Nächstes erwartet wurde, ist am 13.08.2026 eingetreten** — und zwar
+> **ohne jeden Eingriff.** Der Satz an dieser Stelle lautete: „der erste Monat, in dem
+> eine gemeinsame Karte eine zugeordnete Zahlung bekommt — dann greift `BF-4`, bewusst
+> und richtig." Genau das ist passiert. Um 06:05 wurden drei echte Zahlungen den
+> gemeinsamen Juli-Karten zugeordnet: Miete 1.089,26 €, Strom 36,04 €, Internet
+> 22,87 €. Vorher rechnete die Karte `Plan × Anteil` = 1.904 × 0,57209… =
+> **1.089,25968…**; jetzt nimmt sie die **echte Überweisung**, glatt auf zwei Stellen.
+> Die Nachkommastellen, die den Juli auf −322,745**69** und damit knapp über die
+> Rundungsgrenze hoben, sind weg — **Juli-Ist −322,75 → −322,74 €**.
+>
+> **Damit hat `BF-4` aus v2-13 zum ersten Mal in Produktion gegriffen.** Keine
+> Migration, kein Sprint, keine Codeänderung: allein die Zuordnung einer Zahlung durch
+> den Nutzer. Die übrigen elf Monate stehen unverändert, und die Ordner-Spalte ergibt
+> weiterhin in **allen zwölf** Monaten exakt die Sparrate.
+>
+> **Der Rest steht noch aus.** Rechtsschutz ist die vierte gemeinsame Karte und noch
+> **nicht** zugeordnet — sobald sie es ist, kann der Juli erneut um einen Cent wandern.
+> Ein Cent Abweichung **im Juli** ist deshalb kein Alarm, solange er sich über eine
+> neue Zuordnung erklären lässt; **jede andere Zeile** der Tabelle ist es sehr wohl.
 
 **Übungs-Datenbank:** Anker **2.200,00 €** (März, synthetisch).
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**08.08.2026, nach v2-17**: **10 offene Pakete · 28 Themen · 4 Hausaufgaben ·
-32 offen gesamt · 41 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**13.08.2026, nach v2-18**: **10 offene Pakete · 29 Themen · 4 Hausaufgaben ·
+33 offen gesamt · 43 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
+
+> **Die offenen Themen sind gestiegen, obwohl ein Sprint gelaufen ist — 28 → 29.**
+> Das ist Ehrlichkeit, kein Rückschritt: `KAT-5` (Record `A2` — eine Zahlung auf die
+> Ordner-Kachel ziehen öffnet das Anlege-Fenster mit vorgewählter Kategorie) wurde in
+> v2-17 **entschieden, aber nie gebaut** und im dortigen Review **nicht als offen
+> benannt**. Der Punkt existierte die ganze Zeit, nur unsichtbar. Er steht jetzt in
+> Paket 7 und ist durch v2-18 relevanter geworden, weil ein zugeklappter Ordner nun
+> gar kein Ziel mehr ist.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).

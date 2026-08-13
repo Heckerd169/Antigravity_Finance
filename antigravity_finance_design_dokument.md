@@ -1,7 +1,7 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.5.0 (V2 · Sprint v2-17 — Kategorien im Karussell)
-**Status:** Freigegeben — Schema-Doku v3.5.0; V2-Patches bis Sprint v2-17 eingespielt (`LQ-1` · `LQ-2` · `RM-2` · `PA-1` · `KAT-1` · `KAT-2` · `KAT-3` gebaut). Aus den Runden vom 06.08. und 07./08.08.2026 ist damit **alles umgesetzt**.
+**Version:** 3.6.0 (V2 · Sprint v2-18 — zwei Befunde aus der Nutzung)
+**Status:** Freigegeben — Schema-Doku v3.5.0; V2-Patches bis Sprint v2-18 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8).
 **Datum:** 25. Juli 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -30,6 +30,28 @@
 > **Changelog v3.2.0 (05.08.2026, Sprint v2-13 · `BF-4`):** §4.5 **Split-Semantik umgekehrt** — der Anteil wird genau **einmal** angewandt, abhängig von der Herkunft des Betrags: auf Plan/Anpassung **ja**, auf Fragment-Summen **nein** (die Überweisung ist bereits der Anteil). Die bis dahin gültige Position „Wer überweist, ist eine Konto-Frage“ ist mit `E1` **bewusst aufgegeben** und im Abschnitt als geänderte Produkt-Entscheidung kenntlich gemacht — kein Bugfix. §4.6 Rechenbeispiel entsprechend nachgezogen (Ergebnis unverändert 2.910,01 €). §7 neue Haushaltsbetrag-Zeile `von [N] €` auf gemeinsamen Karten (Ort, Wortlaut, Ton, reservierte Höhe); §12.3 Copy-Zeile ergänzt. **Minor-Bump statt Patch-Bump**, weil eine Produkt-Entscheidung gedreht wurde und nicht nur eine Beschreibung nachgezogen.
 >
 > **Changelog v3.3.0 (06.08.2026, Design-Direktor-Runde · `LQ-2` `LQ-1` `RM-2` `PA-1`):** Vier neue Spezifikationen. §8 **Ausstehend-Anzeige** rechtsbündig in der Kopfzeile der Zone „Planung" — zwei getrennte Angaben (`[N] € noch fällig` / `[N] € Budget frei`), **nie eine Summe** (`LQ-2`, Befund `L7`); §12.9 neu für die Copy. §7 **Fälligkeitstag** am rechten Anschlag der Statuszeile, ohne zusätzliche Kartenhöhe, mit drei Leer-Fällen und Verbleib im Zustand „Bezahlt"; neuer Kontextmenü-Punkt `Fällig am …` (nicht auf Budget-Karten) statt eines Feldes in „Betrag anpassen" (`LQ-1`); §12.3 und §12.4 nachgezogen. §11 **Schaufenster-Popup** — reines Anzeigen, Empfänger als Hauptzeile, Visa-Sonderfall ohne Zweck-Zeile, feste Rangfolge unter dem Strich, Hash und Import-Zeitpunkt ausgeschlossen (`RM-2`). §10 **Konsequenz-Anzeige** als zweiter Popup-Zustand — Summe als Held, Spalten `Bisher`/`Künftig`/`Diff.`, 400 px in beiden Zuständen, leerer Fall zeigt nichts (`PA-1`); §12.7 nachgezogen. **Minor-Bump statt Patch-Bump**, weil §8 zusätzlich eine bestehende Regel **aufhebt**: zugeordnete Fragmente und Überträge sind nicht mehr per `pointer-events: none` tot gestellt, sondern öffnen das Schaufenster; §11 (Tabelle „Drag-Verhalten") ist mitgezogen, weil dort dieselbe Regel ein zweites Mal stand. Aufgehoben ist **ausschließlich die Klick-Sperre** — Daten-Invariante (nie an Karten verlinkbar) und Drag-Sperre bleiben, Letztere braucht ab jetzt einen eigenen Träger. Alle vier Spezifikationen sind **entschieden, aber noch nicht gebaut**. Beleg: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md`.
+>
+> **Changelog v3.6.0 (13.08.2026, Sprint v2-18 — zwei Befunde aus der Nutzung):**
+> Beide Punkte stammen aus der **ersten echten Benutzung** der Kategorien und waren
+> beim Bauen nicht sichtbar — sie zeigen sich erst mit echten Daten und echter Maus.
+>
+> §8 **Record `B4` ist ABGELÖST.** „Beim Anfassen einer Zahlung öffnen sich alle
+> Ordner" schiebt die Zielkarte aus dem Bild, und weil die Maustaste gedrückt ist,
+> lässt sich das Karussell in dem Moment nicht scrollen — der Zug endet im Nichts.
+> Neue Regel: Es öffnet sich **nichts** von selbst; wer zuordnen will, klappt den
+> Zielordner vorher auf. `U1` ist damit nicht wieder offen, sondern anders gelöst.
+>
+> §8 **Die Rohmasse reserviert ihre Höhe.** Vorher fiel die Interaktionszone in
+> Monaten ohne Umsätze von 341 auf 215 px zusammen, und die Welle bekam die
+> **126 px** geschenkt — beim Monatswechsel sprang die ganze Ansicht. Gemessen gegen
+> einen Produktions-Build; gegen den dev-Server ist der Sprung **nicht** reproduzierbar,
+> weil das Entwickler-Panel die Welle in beiden Monaten auf ihr Minimum drückt.
+> Dazu ein Leerzustand `Keine offenen Umsätze`, damit die reservierte Fläche nicht wie
+> ein Ladefehler aussieht. §12.11 um die Copy-Zeile ergänzt.
+>
+> **Minor-Bump statt Patch-Bump:** Eine bestehende, ausdrücklich festgeschriebene Regel
+> wird **aufgehoben** (`B4`), nicht nur nachgezogen. Belege:
+> `sprints/sprint_v2-18_review.md`.
 >
 > **Changelog v3.5.0 (08.08.2026, Sprint v2-17 · `KAT-1` `KAT-2` `KAT-3`):**
 > Kategorien im Karussell — die erste Gliederung, die die App je hatte.
@@ -1136,7 +1158,7 @@ später als Fehler meldet, findet an dieser Stelle die Begründung.
 | Beim Laden der Seite | **alles zu** — der Startzustand ist das Versprechen |
 | Beim Monatswechsel | aufgeklappte Ordner **bleiben** aufgeklappt |
 | Persistierung | **keine** |
-| Beim Anfassen einer Zahlung | **alle** Ordner öffnen sich; beim Loslassen kehren sie in den vorherigen Zustand zurück |
+| Beim Anfassen einer Zahlung | **nichts öffnet sich von selbst** — es bleibt offen, was der User vorher aufgeklappt hat |
 
 **Warum der Zustand den Monatswechsel überlebt** — bewusste Gegenentscheidung zu LL-5:
 Overlays werden auf `targetMonth` zurückgesetzt, weil sie Daten eines bestimmten Monats
@@ -1146,10 +1168,32 @@ will nicht siebenmal neu aufklappen. Eine im August geöffnete Kategorie, die im
 September leer ist, wird nach der Sichtbarkeits-Regel gar nicht angezeigt — der Zustand
 läuft ins Leere, ohne etwas anzurichten.
 
-**Warum sich beim Ziehen alles öffnet:** Ein Drop braucht eine Karten-ID, eine
-zugeklappte Kategorie hat keine (Befund `U1`, dort als BLOCKER geführt). HTML5-Drag
-kennt keinen Zustandswechsel während des Ziehens — außer man macht ihn selbst. **Beim
-Arbeiten ist alles offen, beim Ansehen ist es aufgeräumt.**
+**Warum sich beim Ziehen NICHTS öffnet — geänderte Entscheidung, 13.08.2026 (`v2-18`):**
+
+Bis dahin galt Record `B4`: Beim Anfassen einer Zahlung öffnen sich **alle** Ordner,
+beim Loslassen kehren sie zurück. Das löste Befund `U1` (ein Drop braucht eine
+Karten-ID, eine zugeklappte Kategorie hat keine) und war beim Bauen plausibel.
+
+**Beim ersten echten Zuordnen hat es sich als unbenutzbar erwiesen.** Elf Ordner auf
+einmal aufzuklappen schiebt die Zielkarte weit nach rechts aus dem Bild — und weil die
+Maustaste gedrückt ist, lässt sich das Karussell in diesem Moment **nicht scrollen**.
+Der Zug endet im Nichts. Je mehr Ordner, desto sicherer.
+
+**Die Regel lautet jetzt:** Wer zuordnen will, klappt den Zielordner **vorher** auf.
+Während des Zugs bleibt genau er offen, alles andere zu, und die Zielkarte steht dort,
+wo man sie gesehen hat.
+
+`U1` ist damit nicht wieder offen, sondern **anders gelöst**: nicht durch automatisches
+Aufklappen *während* des Zugs, sondern durch bewusstes Aufklappen *davor*. Der Preis
+ist ein Klick; der Gewinn ist ein Ziel, das stehen bleibt.
+
+**Folge, die man kennen muss:** Sind alle Ordner zu, gibt es im Karussell **kein**
+Drop-Ziel. Das ist gewollt und kein Fehler — es ist die Aufforderung, erst
+aufzuklappen. *(Ein Drop auf die Ordner-Kachel selbst, Record `A2`, ist bis heute nicht
+gebaut; er wäre der zweite Weg und ist ein eigenes Thema.)*
+
+**Merksatz, der nicht mehr gilt:** „Beim Arbeiten ist alles offen, beim Ansehen ist es
+aufgeräumt." Er stand hier bis v2-18 und beschreibt das abgelöste Verhalten.
 
 #### Die Zahl eines Ordners
 
@@ -1257,6 +1301,27 @@ Copy: §12.9. Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_f
 - Vertikales Scrollen, Mausrad / Scrollbar (`3px`, dezent)
 - Keine Chevrons
 - Fragmente sind Drag-Quellen
+- **Feste Höhe `320px` (seit v2-18, 13.08.2026)** — nicht `max-height`
+
+**Warum die Höhe fest ist und nicht mitwächst.** Die drei Zonen-Spalten stehen auf
+`align-items: stretch`; die Interaktionszone ist also so hoch wie ihre höchste Spalte.
+Solange die Rohmasse ihre Höhe vom Bestand ableitete, fiel die Zone in Monaten **ohne**
+Umsätze von `341px` auf `215px` zusammen — und die Welle darüber (§9, `flex: 1 1 280px`)
+bekam die frei gewordenen **126 px** geschenkt. Beim Monatswechsel sprang dadurch die
+gesamte Ansicht. Gemessen am 13.08.2026 gegen einen Produktions-Build bei 1440 × 900.
+
+> **Wer das nachmessen will, braucht einen Produktions-Build.** Gegen den dev-Server ist
+> der Sprung **nicht** reproduzierbar: Das Entwickler-Panel drückt die Welle in beiden
+> Monaten auf ihr Minimum von `280px`, und die Differenz schrumpft auf 5 px. Genau
+> daran ist der erste Messversuch gescheitert.
+
+**Leerzustand.** Ist die **angezeigte** Liste leer, steht dort `Keine offenen Umsätze`
+(§12.11) — leise gesetzt, oben ausgerichtet, wo sonst die erste Karte stünde. Ohne den
+Satz sähe die reservierte Fläche unter der Überschrift „ROHMASSE" wie ein Ladefehler
+aus. Er gilt bewusst für die **angezeigte** Liste, nicht für den Bestand: Sind alle
+Umsätze des Monats Überträge und der Schalter steht auf „aus", ist die Liste ebenfalls
+leer — dann ist derselbe Satz richtig, und der Schalter darüber nennt die Zahl und
+führt weiter.
 - **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7). **Umsetzungs-Nachtrag (v2-07, P0):** Der Monats-Scope wird seit v2-07 **server-seitig** abgefragt statt nachträglich in der Anwendung gefiltert. Bis dahin holte die App alle Fragmente aller Monate und filterte anschließend — was ab einem Gesamtbestand von 1000 Fragmenten stillschweigend abschnitt (Befund und Messung: `sprints/sprint_v2-07_review.md` §3). Zusätzlich zum Monats-Scope läuft eine zweite, link-orientierte Abfrage (`assigned_month` = angezeigter Monat), damit ein Fragment aus einem anderen Monat weiterhin als *verknüpftes Fragment auf der Karte* erscheint. An der sichtbaren Regel ändert sich nichts.
 - Zugeordnete Fragmente: `opacity: 0.22` · ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`; gebaut v2-16)**, siehe „Klickbarkeit des Stacks" unten. Die Deckkraft bleibt unverändert — auch im Hover.
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
@@ -1998,6 +2063,19 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Element | Text |
 |---|---|
 | Ordner-Name | `Ohne Kategorie` |
+
+**Leere Rohmasse** (seit v2-18)
+
+| Element | Text |
+|---|---|
+| Rohmasse ohne angezeigte Umsätze | `Keine offenen Umsätze` |
+
+**Warum überhaupt ein Satz.** Seit v2-18 reserviert die Rohmasse ihre Höhe auch dann,
+wenn sie leer ist (§8) — sonst springt die Ansicht beim Monatswechsel. Eine große leere
+Fläche unter einer Überschrift liest sich aber wie ein Ladefehler. Der Satz sagt, dass
+alles in Ordnung ist. **„Offen" statt „vorhanden"** ist bewusst gewählt: Zugeordnete
+Umsätze verschwinden aus dem Stack, es gibt sie also durchaus — sie sind nur nicht mehr
+zu tun.
 
 **Kontextmenü der Karte**
 
