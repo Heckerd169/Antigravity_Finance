@@ -118,10 +118,17 @@ expliziten Sprint-Auftrag.
 **Was NICHT verwendet wird:** kein Tailwind · keine Component-Library ·
 kein State-Manager · keine ORM.
 
-**Tests:** Playwright-Render-Smoke (read-only gegen dev/Prod-DB) + deterministische
-§9-Pixel-Checks (`pnpm test:visual`, synthetische Fixtures ohne Live-Daten).
-Daten-mutierende E2E laufen **nur** gegen die Übungs-Datenbank (§4). Der manuelle
-Browser-Smoke des Users bleibt der Produktiv-Gate.
+**Tests:** Playwright in drei Rollen. **Logik-Wächter** (die Mehrzahl, 72 von 75 im
+`visual`-Projekt) transpilieren die **echte Quelldatei** und führen sie aus, statt die
+Regel nachzubauen — ein Nachbau driftet ab und gibt falsche Sicherheit; diese Bauart hat
+in v2-12, v2-17 und v2-19 je einen Fehler gefunden. **Pixel-Checks** (§9, `draw.ts`)
+zeichnen auf ein Canvas und messen Farben. **Render-Smoke** fährt die Anwendung
+angemeldet hoch — read-only gegen dev/Prod-DB, und der einzige Test, der die App als
+Ganzes sieht.
+
+Alle drei brauchen **keine** Live-Daten außer dem Render-Smoke. Daten-mutierende E2E
+laufen **nur** gegen die Übungs-Datenbank (§4). Der manuelle Browser-Smoke des Users
+bleibt der Produktiv-Gate.
 
 ---
 

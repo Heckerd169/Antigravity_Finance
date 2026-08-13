@@ -22,15 +22,44 @@ node_modules/.bin/tsc --noEmit
 npx eslint src --ext .ts,.tsx --no-eslintrc --config .eslintrc.json --resolve-plugins-relative-to .
 pnpm build
 pnpm test:visual
+pnpm test:e2e
 ```
 
-Erwartung: `tsc` 0 Fehler · Lint 0/0 · Build 0 Fehler · `test:visual` **25/25**
-(9 Ring-Subzeile seit v2-12 + 3 §9-Pixel + 13 Liquiditäts-Regel seit v2-15).
+Erwartung: `tsc` **0 Fehler** · Lint **0/0** · Build **0 Fehler** · beide Testläufe
+**vollständig grün**.
+
+> **`pnpm test:e2e` gehört dazu — bis zum 13.08.2026 stand es hier nicht.** Es lief
+> trotzdem jedes Mal, weil der Eröffnungsprompt es zufällig verlangte. Eine Prüfung,
+> die nur läuft, weil der Auftrag sie erwähnt, ist keine Prüfstrecke. Und es ist nicht
+> irgendein Lauf: `render-smoke.spec.ts` ist der **einzige** Test des Projekts, der die
+> Anwendung tatsächlich hochfährt und angemeldet bedient.
+
+> **Die Testzahlen stehen hier bewusst NICHT.** Sie waren dreimal überholt (25 → 69 →
+> 75), jedes Mal durch normale Arbeit — dasselbe Muster, das am 13.08.2026 die
+> eingefrorene Anker-Tabelle aus §9 vertrieben hat. Eine Zahl, die sich bei
+> bestimmungsgemäßer Benutzung bewegt, wird nach dem dritten Fehlalarm nicht mehr
+> gelesen.
+>
+> **Geprüft wird stattdessen die Bewegung:** Vergleiche die Zahl mit der aus dem
+> **letzten Review** (dort steht sie, Abschnitt 2). Sie darf **nur steigen**, und nur um
+> die Tests, die du in diesem Sprint selbst geschrieben hast.
+>
+> **Ist sie gleich geblieben, obwohl du eine neue `*.spec.ts` angelegt hast, ist die
+> Datei nicht in `testMatch`** — genau die Falle unten. **Ist sie gesunken, hast du ein
+> echtes Problem**, keinen Zahlendreher.
+>
+> Stand 13.08.2026 nach v2-19, als Orientierung: `test:visual` **75** ·
+> `test:e2e` **84**.
 
 > **Das `visual`-Projekt hat eine feste Dateiliste.** Eine neue `*.spec.ts` in
 > `tests/e2e/` läuft **nicht** von allein mit — sie muss in `playwright.config.ts` in
 > `testMatch` des Projekts eingetragen werden, sonst bleibt sie unbemerkt liegen und
 > die Gesamtzahl oben verrät den Unterschied nicht.
+>
+> **In v2-19 ist genau das beinahe passiert:** `gehalt.spec.ts` prüft, dass die
+> Gehalts-Treiberzeile nicht abgeschnitten wird — sie wäre ohne den Eintrag in
+> `testMatch` nie gelaufen, und der Wächter für den teuersten Fund des Sprints hätte
+> nur so ausgesehen, als gäbe es ihn.
 
 > **`pnpm lint` bzw. `next lint` scheitert innerhalb eines Git-Worktrees** an doppelt
 > aufgelöster ESLint-Konfiguration. Der Aufruf oben ist der Ersatz **ohne**
@@ -161,7 +190,10 @@ Als Vorschlag formuliert. Die Anwendung braucht die Freigabe des Users.
 
 ## Checkliste
 
-- [ ] Prüfstrecke vollständig grün (inkl. `test:visual`), Bundle-Größe notiert
+- [ ] Prüfstrecke vollständig grün — **inkl. `test:visual` UND `test:e2e`**,
+      Bundle-Größe notiert
+- [ ] Testzahlen gegen das letzte Review verglichen: nur gestiegen, und nur um
+      selbst geschriebene Tests
 - [ ] Anker gemessen, sofern Daten berührt
 - [ ] Ein Commit je Phase, aussagekräftige Nachrichten
 - [ ] Review geschrieben, alle 7 Abschnitte
