@@ -335,10 +335,31 @@ gehört der häufigen. Karte und Kategorie bekommen denselben Menüpunkt auf zwe
 Befund `U1` (BLOCKER): Ein Drop braucht heute eine Karten-ID, eine zugeklappte Kategorie
 hat keine.
 
-**Entscheidung:** **Beim Anfassen einer Zahlung öffnen sich alle Kategorien**, beim
-Loslassen kehren sie in den vorherigen Zustand zurück. Beim Arbeiten ist alles offen,
-beim Ansehen ist es aufgeräumt. Die Kategorie-Kachel selbst bleibt daneben ein gültiges
-Ziel — dort greift die Anlege-Geste aus **A2**.
+> **⚠️ ABGELÖST am 13.08.2026 (Sprint v2-18) — nach dem ersten echten Zuordnen.**
+>
+> Die Entscheidung unten war plausibel und ist in der Praxis durchgefallen. Elf Ordner
+> auf einmal aufzuklappen schiebt die Zielkarte weit nach rechts aus dem Bild — und
+> weil die Maustaste gedrückt ist, lässt sich das Karussell in diesem Moment **nicht
+> scrollen**. Der Zug endet im Nichts, und zwar umso sicherer, je mehr Ordner es gibt.
+> Die Runde hat den Fall am Entwurf nicht sehen können: Dort war die Reihe kurz und
+> niemand hielt eine Maustaste.
+>
+> **Es gilt jetzt:** Es öffnet sich **nichts** von selbst. Wer zuordnen will, klappt
+> den Zielordner **vorher** auf; während des Zugs bleibt genau er offen.
+>
+> `U1` ist damit nicht wieder offen, sondern **anders gelöst** — nicht durch
+> automatisches Aufklappen *während* des Zugs, sondern durch bewusstes Aufklappen
+> *davor*. Neue Regel: Design-Doku §8 „Aufklappen".
+>
+> **Der zweite Halbsatz unten war ohnehin nie wahr:** „Die Kategorie-Kachel bleibt
+> daneben ein gültiges Ziel" — die Anlege-Geste aus **A2** wurde in v2-17 **nicht
+> gebaut**, und das ist im Review von v2-17 nicht benannt worden. Sie steht seit v2-18
+> als eigene Zeile in der Roadmap.
+
+**Entscheidung (abgelöst):** **Beim Anfassen einer Zahlung öffnen sich alle
+Kategorien**, beim Loslassen kehren sie in den vorherigen Zustand zurück. Beim Arbeiten
+ist alles offen, beim Ansehen ist es aufgeräumt. Die Kategorie-Kachel selbst bleibt
+daneben ein gültiges Ziel — dort greift die Anlege-Geste aus **A2**.
 
 ## B5 · Drei Details, die sich erst am Entwurf gezeigt haben
 

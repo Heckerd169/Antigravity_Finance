@@ -2,9 +2,9 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 08. August 2026 (nach v2-17 — `KAT-1`, `KAT-2`, `KAT-3` gebaut und
-> die Hausaufgabe `J1` erledigt, **Paket 4 abgeschlossen**) ·
-> **Vorgänger-Struktur:** bis zum
+> **Stand:** 13. August 2026 (nach v2-18 — zwei Befunde aus der Nutzung behoben;
+> davor v2-17 mit `KAT-1`/`KAT-2`/`KAT-3` und der Hausaufgabe `J1`, **Paket 4
+> abgeschlossen**) · **Vorgänger-Struktur:** bis zum
 > 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
@@ -28,22 +28,30 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 08.08.2026 nach Sprint v2-17 zeilengenau nachgezählt.*
+*Alle Zahlen am 13.08.2026 nach Sprint v2-18 zeilengenau nachgezählt.*
 
-| | Anzahl | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 | vor v2-10 |
+| | Anzahl | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 | vor v2-11 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **10** | 11 | 12 | 13 | 14 | 14 | 14 | 14 |
-| Themen darin | **28** | 31 | 32 | 34 | 35 | 36 | 37 | 40 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 5 | 6 | 6 | 7 | 7 | 7 | 8 |
-| **Offen gesamt** | **32** | 36 | 38 | 40 | 42 | 43 | 44 | 48 |
-| Erledigt | **41** | 37 | 35 | 33 | 31 | 30 | 29 | 25 |
+| Offene Pakete | **10** | 10 | 11 | 12 | 13 | 14 | 14 | 14 |
+| Themen darin | **29** | 28 | 31 | 32 | 34 | 35 | 36 | 37 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 5 | 6 | 6 | 7 | 7 | 7 |
+| **Offen gesamt** | **33** | 32 | 36 | 38 | 40 | 42 | 43 | 44 |
+| Erledigt | **43** | 41 | 37 | 35 | 33 | 31 | 30 | 29 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-17 (08.08.2026), zeilengenau nachgezählt** — nicht geschätzt,
-> sondern per `grep` über die Datei ausgezählt. Paket-Tabellen **35** Zeilen,
-> davon **7 ✅** (`BF-4`, `LQ-1`, `LQ-2`, `RM-2` plus neu `KAT-1`, `KAT-2`,
-> `KAT-3`) → **28** offen (⬜ 25 · 🟡 3). Hausaufgaben **4**, alle ⬜ — `J1` ist
-> raus und war die einzige 🟡. §4 Erledigt **41** Zeilen. §3 unverändert **4**.
+> **Stand nach v2-18 (13.08.2026), zeilengenau ausgezählt.** Paket-Tabellen **36**
+> Zeilen, davon **7 ✅** → **29** offen (⬜ 26 · 🟡 3). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **43** Zeilen. §3 unverändert **4**.
+>
+> **Die Zahl der offenen Themen ist erstmals wieder GESTIEGEN** (28 → 29), obwohl ein
+> Sprint gelaufen ist. Das ist kein Rückschritt, sondern Ehrlichkeit: `KAT-5` (Record
+> `A2` — Zahlung auf eine Ordner-Kachel ziehen) war in v2-17 entschieden, **nicht
+> gebaut und nicht als offen vermerkt**. Der Punkt existierte also die ganze Zeit, nur
+> unsichtbar. Die beiden Nutzungs-Befunde `NB-1` und `NB-2` sind erledigt.
+>
+> **Stand nach v2-17 (08.08.2026):** Paket-Tabellen 35 Zeilen, davon 7 ✅
+> (`BF-4`, `LQ-1`, `LQ-2`, `RM-2`, `KAT-1`, `KAT-2`, `KAT-3`) → 28 offen
+> (⬜ 25 · 🟡 3). §4 Erledigt 41.
 >
 > **Paket 4 fällt weg** — es bestand aus `KAT-1`, `KAT-2` und `KAT-3`, alle drei
 > sind mit v2-17 gebaut. `KAT-4` gehörte nie dazu, es liegt in Paket 10 (mit
@@ -382,6 +390,7 @@ automatischen Zuordnung profitiert statt sie vorwegzunehmen.
 | B2-F | Feinschliff der Abweichungs-Treiber | Diskussion | nein | ⬜ | Label-Format der Treiber-Zeilen · Wortlaut bei Monaten ohne Abweichung · Entscheidung über **E4** (Pseudo-Treiber „n € unzugeordnet in Monat M" für die Rohmasse — bewusst nicht umgesetzt). |
 | M5 | Karten-Anordnung im Karussell | Feature | nein | ⬜ 🔎 | Heute Fixkosten → Einnahmen → Budget (seit Sprint 4). Ursprünglicher Wunsch war Budget → Fixkosten → Einnahmen. **Vor dem Schnitt bestätigen**, ob das noch gilt. |
 | A1-F | Badge-Palette und Schalter-Sprache | Diskussion | nein | ⬜ | Aus v2-07: reiner Token- und Text-Tausch. **Achtung:** Wird BF-1 umgesetzt, entfallen die Vorschlags-Kästchen ganz — dann erledigt sich die Palettenfrage von selbst. Erst nach Paket 1 anfassen. |
+| KAT-5 | Zahlung auf eine Ordner-Kachel ziehen → Anlege-Fenster | Feature | nein | ⬜ | **Record `A2`, entschieden am 07.08.2026 — in v2-17 NICHT gebaut und im dortigen Review nicht benannt.** Ein Zug auf den Ordner soll dasselbe Fenster öffnen wie der leere Platz (Name, Betrag, Häufigkeit, Typ, Attribution), nur mit vorausgewählter Kategorie. Das Muster existiert bereits (`RecurrencePopup`, §8 „Leerer Slot — Weg 1"); es wird nur ein zweites Mal ausgelöst. **Seit v2-18 relevanter:** Weil sich beim Ziehen kein Ordner mehr von selbst öffnet, ist ein zugeklappter Ordner heute gar kein Ziel — `KAT-5` wäre der zweite Weg neben dem Aufklappen. |
 
 ---
 
@@ -494,6 +503,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| NB-1 | Ziehen öffnet nur noch, was offen ist — Record `B4` **abgelöst**. Alle Ordner aufzuklappen schob die Zielkarte aus dem Bild, und bei gedrückter Maustaste ließ sich das Karussell nicht scrollen. `U1` ist jetzt durch bewusstes Aufklappen **vor** dem Zug gelöst | v2-18 |
+| NB-2 | Ansicht springt beim Monatswechsel nicht mehr — die Rohmasse reserviert ihre Höhe (`height` statt `max-height`). Vorher fiel die Zone in leeren Monaten von 341 auf 215 px und die Welle wuchs um 126 px. Dazu der Leerzustand `Keine offenen Umsätze` | v2-18 |
 | KAT-1 | Kategorien als eigene Struktur: `card_categories` + `cards.category_id`, fünf RPCs, Menüpunkt „Kategorie ändern …". Keine `cards`-Zeile (D1), kein Papierkorb-Eintrag (D7 — Rücknahme über den Toast), RLS-Policy von Hand (D8). Zehn Ordner, **alle 46 Karten** zugeordnet — „Ohne Kategorie" erscheint dadurch in keinem Monat | v2-17 |
 | KAT-2 | Karussell gruppiert: Variante A, kein Tap-Catcher, beim Ziehen öffnen sich alle Ordner (löst `U1`), Aufklapp-Zustand überlebt den Monatswechsel, Einkommens-Ordner mit Netto-Kachel, „Ohne Kategorie" hinten. Juli: 32 Karten → 11 Ordner, 27 → 5 Pfeilklicks | v2-17 |
 | KAT-3 | Kategorie-Zahl server-seitig, **restverteilt**: Die Ordner-Spalte ergibt in allen zwölf Monaten exakt die Sparrate. Ohne die Restverteilung wäre sie in **jedem** Monat einen Cent daneben — die Anweisung aus der Gestaltungsrunde war notwendig, aber nicht hinreichend | v2-17 |
@@ -566,6 +577,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | LQ-1, LQ-2 | Paket 3 |
 | LQ-3 | Paket 9 (Folgepunkt zu LQ-2) |
 | KAT-1, KAT-2, KAT-3 | §4 Erledigt (v2-17) — Paket 4 ist damit weggefallen |
+| KAT-5 | Paket 7 (Rest aus Record `A2`, in v2-17 nicht gebaut) |
+| NB-1, NB-2 | §4 Erledigt (v2-18) — Befunde aus der Nutzung |
 | KAT-4 | Paket 10 (mit M7) |
 
 > **Achtung bei älteren Papieren:** Die Paket-Nummern 2–11 aus Fassungen vor der
