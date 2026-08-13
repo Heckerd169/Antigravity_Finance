@@ -192,6 +192,42 @@
   letter-spacing: 0.2px;
 }
 
+/* v2-19 (GE-1, Record E): die zugeordnete Gehaltszahlung.
+ *
+ *  Bewusst NEUTRAL getönt und ohne farbige Kante — anders als der
+ *  Vererbungs-Hinweis darunter, der türkis markiert ist. Türkis heißt in dieser
+ *  App „erledigt/positiv" (§3); eine zugeordnete Zahlung ist aber weder gut
+ *  noch schlecht, sie ist einfach ein Fakt. Eine Statusfarbe hier neu zu
+ *  belegen wäre der Griff in die schmale Palette. */
+.assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.assignmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.assignmentText {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.assignmentHint {
+  color: var(--text-ghost);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .inheritanceBadge {
   color: var(--text-ghost);
   font-size: 11px;

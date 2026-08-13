@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { estimateNetMonthly } from "@/lib/rpc";
 import { formatAmount } from "@/lib/format";
-import { saveIncomeChange } from "./actions";
+import { saveIncomeChange, unlinkIncomeFragmentAction } from "./actions";
 import type { IncomeSplitProps, SplitConsequence } from "./income-split.types";
 import styles from "./income-split.module.css";
 
@@ -20,6 +20,15 @@ const eur = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR",
 const eurExact = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const monthLabel = (year: number, month: number) =>
   new Date(year, month - 1, 1).toLocaleDateString("de-DE", { month: "long", year: "numeric" });
+
+/** "2026-07-28" → "28.07." — dasselbe kurze Format, das die Rohmasse benutzt.
+ *  Bewusst aus dem String geschnitten statt über `new Date()`: Ein
+ *  Datums-Objekt aus "YYYY-MM-DD" ist UTC-Mitternacht und rutscht in
+ *  westlichen Zeitzonen auf den Vortag (§7, `effective_month` als String). */
+const formatDayMonth = (isoDate: string): string => {
+  const [, month, day] = isoDate.split("-");
+  return `${day}.${month}.`;
+};
 
 export function IncomeSplitPopup(props: IncomeSplitProps) {
   if (!props.isOpen) return null;
@@ -36,8 +45,24 @@ function PopupBody({
   initialGrossAnnual,
   initialNetMonthly,
   counterpartGrossAnnual,
+  assignment,
 }: IncomeSplitProps) {
   const supabase = useMemo(() => createClient(), []);
+  const [isUnlinking, setIsUnlinking] = useState(false);
+
+  /** Lösen schließt das Fenster: Der Wert, den es anzeigt, ändert sich dadurch
+   *  hinter der Oberfläche (`revalidatePath`), und ein Fenster, das noch die
+   *  alte Zahl trägt, wäre irreführend. */
+  async function handleUnlink() {
+    if (!assignment) return;
+    setIsUnlinking(true);
+    try {
+      await unlinkIncomeFragmentAction(assignment.fragmentId);
+      onClose();
+    } finally {
+      setIsUnlinking(false);
+    }
+  }
 
   const [taxClass, setTaxClass] = useState<number>(initialTaxClass || 1);
   const [grossAnnual, setGrossAnnual] = useState<number>(
@@ -309,6 +334,37 @@ function PopupBody({
           />
           <NetHint state={netState} taxClass={estimationTaxClass} />
         </div>
+
+        {/* v2-19 (GE-1, Record E): Die zugeordnete Gehaltszahlung — und der
+            einzige Ort, an dem sie sich lösen lässt. Sie steht unmittelbar
+            unter dem Netto-Feld, weil sie genau dieses Feld für DIESEN Monat
+            außer Kraft setzt: Solange sie liegt, rechnet der Monat mit ihr
+            statt mit dem Plan darüber.
+
+            Nur bei ICH — das Partner-Netto ist nicht ablegbar. */}
+        {person === "ICH" && assignment && (
+          <div className={styles.assignment}>
+            <span className={styles.label}>Zugeordnete Zahlung</span>
+            <div className={styles.assignmentRow}>
+              <span className={styles.assignmentText}>
+                {formatDayMonth(assignment.transactionDate)} ·{" "}
+                {eurExact.format(assignment.amount)}
+              </span>
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                disabled={isUnlinking}
+                onClick={handleUnlink}
+              >
+                {isUnlinking ? "Wird gelöst …" : "Lösen"}
+              </button>
+            </div>
+            <span className={styles.assignmentHint}>
+              Dieser Monat rechnet mit dem überwiesenen Betrag. Nach dem Lösen
+              gilt wieder der Plan.
+            </span>
+          </div>
+        )}
 
         <div className={styles.inheritanceBadge}>
           Gilt ab {monthLabel(activeMonth.year, activeMonth.month)} für alle Folgemonate bis zur nächsten Änderung.

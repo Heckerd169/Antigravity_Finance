@@ -397,6 +397,16 @@ export type CategoryAmount = {
   sort_order: number;
   amount: number;
   posten: number;
+  /** v2-19 (GE-1): Der PLANWERT des Monats — nur beim Einkommens-Ordner
+   *  gesetzt, bei Karten-Ordnern `null`.
+   *
+   *  Er kommt aus derselben Antwort wie `amount`, damit die Netto-Kachel
+   *  „geplant 4.165,11 €" zeigen kann, ohne eine zweite Quelle zu befragen.
+   *  Der naheliegende Weg wäre `ichLatest` aus `page.tsx` gewesen — der liest
+   *  die Zeitreihe aber mit `ORDER BY effective_month DESC LIMIT 1` und liefert
+   *  damit den NEUESTEN Eintrag, nicht den des angezeigten Monats. In einem
+   *  2025er-Monat stünde dort der 2026er-Plan. */
+  planned: number | null;
 };
 
 /** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate.
@@ -426,6 +436,48 @@ export async function getCategoryAmountsForMonth(
   });
   if (error) throw error;
   return (data as unknown as CategoryAmount[]) ?? [];
+}
+
+// ── v2-19 (GE-1): das tatsächlich überwiesene Netto ─────────────────────────
+
+/** Antwort beider Netto-RPCs. `actual_net` ist der Stand NACH der Änderung —
+ *  `null`, wenn für den Monat nichts (mehr) zugeordnet ist. */
+export type IncomeLinkResult = {
+  fragment_id: string;
+  month: string;
+  actual_net: number | null;
+};
+
+/** Ordnet eine Zahlung dem Netto dieses Monats zu.
+ *
+ *  Warum eine RPC, wo `linkFragmentToCard` einen schlichten UPSERT macht: Hier
+ *  ist etwas zu prüfen, das PostgREST nicht prüfen kann — vor allem das
+ *  Vorzeichen. Ohne diese Prüfung ließe sich eine Ausgabe auf die Netto-Kachel
+ *  ziehen, und das Monats-Netto fiele auf einen negativen Betrag. Die RPC
+ *  wirft `22023` (kein Eingang), `23514` (Transfer) und `42501` (fremd). */
+export async function linkFragmentToIncome(
+  client: AppSupabaseClient,
+  args: { fragmentId: string; month: string },
+): Promise<IncomeLinkResult> {
+  const { data, error } = await client.rpc("link_fragment_to_income", {
+    p_fragment_id: args.fragmentId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return data as unknown as IncomeLinkResult;
+}
+
+/** Löst die Zuordnung wieder — danach gilt wieder der Plan, und die Zahlung
+ *  kehrt in die Rohmasse zurück (Record, Entscheidung E). */
+export async function unlinkFragmentFromIncome(
+  client: AppSupabaseClient,
+  args: { fragmentId: string },
+): Promise<IncomeLinkResult> {
+  const { data, error } = await client.rpc("unlink_fragment_from_income", {
+    p_fragment_id: args.fragmentId,
+  });
+  if (error) throw error;
+  return data as unknown as IncomeLinkResult;
 }
 
 // ── Sprint 5: Atomic Card-Creation-RPCs ──────────────────────────────────────

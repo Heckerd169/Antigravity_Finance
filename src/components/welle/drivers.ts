@@ -28,12 +28,16 @@ export type DriverEntry = {
 
 /** Ein Treiber, wie ihn die RPC liefert. */
 export type DeviationDriver = {
-  cardId: string;
+  /** `null` bei der Gehalts-Zeile (v2-19, GE-2): Sie ist der erste Treiber, hinter
+   *  dem KEINE Karte steht. Genau deshalb ist sie auch nicht anklickbar
+   *  (Record, Entscheidung B) — eine Zeile, die aussieht wie die anderen, wäre
+   *  ein Versprechen, das ins Leere führt. */
+  cardId: string | null;
   cardName: string;
-  /** FIXED_COST | INCOME | BUDGET. */
-  cardType: string;
-  /** ICH | GEMEINSAM. */
-  attribution: string;
+  /** FIXED_COST | INCOME | BUDGET — `null` bei der Gehalts-Zeile. */
+  cardType: string | null;
+  /** ICH | GEMEINSAM — `null` bei der Gehalts-Zeile. */
+  attribution: string | null;
   /** Karten-Ist-Betrag des Monats (roh, wie auf der Karte). */
   ist: number;
   /** Karten-Plan des Monats (adjustment-aware, roh, wie auf der Karte). */
@@ -94,10 +98,15 @@ export function parseYearDrivers(raw: unknown): DriversByMonth {
       const delta = Number(rec.delta);
       if (!Number.isFinite(delta)) continue;
       drivers.push({
-        cardId: String(rec.card_id ?? ""),
+        // v2-19: `null` bleibt `null` — vorher wurde es zu "" verschliffen.
+        // Sichtbar ist das nirgends (die Anzeige benutzt nur Name und Betrag),
+        // aber „keine Karte" und „Karte mit leerer ID" sind verschiedene
+        // Aussagen, und die Unterscheidung ist der Grund, warum diese Zeile
+        // nicht anklickbar ist.
+        cardId: rec.card_id == null ? null : String(rec.card_id),
         cardName: String(rec.card_name ?? ""),
-        cardType: String(rec.card_type ?? ""),
-        attribution: String(rec.attribution ?? ""),
+        cardType: rec.card_type == null ? null : String(rec.card_type),
+        attribution: rec.attribution == null ? null : String(rec.attribution),
         ist: Number(rec.ist ?? 0),
         plan: Number(rec.plan ?? 0),
         share: Number(rec.share ?? 1),
@@ -120,8 +129,22 @@ export function getTop1Driver(
   return first ? toEntry(first) : NO_DEVIATION;
 }
 
-/** Top-3-Treiber für den Popup-Monatsklick (§9). Die Begrenzung auf 3 macht
- *  bereits die RPC (p_limit) — der slice ist Defense-in-Depth. */
+/** Wie viele Zeilen das Popup höchstens zeigt.
+ *
+ *  ⚠️ Seit v2-19 sind es VIER, nicht drei. Die RPC begrenzt die
+ *  KARTEN-Treiber auf `p_limit` (= 3) und hängt die Gehalts-Zeile danach an —
+ *  sie erscheint immer, wenn das Netto abweicht, und verdrängt bewusst keinen
+ *  Karten-Treiber (Record, Entscheidung C). Stünde hier weiterhin 3, schnitte
+ *  dieser slice genau die Zeile ab, um die es in diesem Sprint geht: Im Juli
+ *  2026 liegt „Gehalt" mit −15,57 € an vierter Stelle, weil die drei
+ *  Budget-Treiber größer sind.
+ *
+ *  Mehr als vier kann es nicht werden — drei Karten plus höchstens ein
+ *  Gehalt. */
+const MAX_POPUP_DRIVERS = 4;
+
+/** Die größten Treiber für den Popup-Monatsklick (§9). Die Begrenzung macht
+ *  bereits die RPC — der slice ist Defense-in-Depth. */
 export function getTop3Drivers(
   drivers: DriversByMonth | null,
   monthIndex: number,
@@ -129,5 +152,5 @@ export function getTop3Drivers(
   if (drivers === null) return [NOT_LOADED];
   const monthDrivers = drivers[monthIndex];
   if (!monthDrivers || monthDrivers.length === 0) return [NO_DEVIATION];
-  return monthDrivers.slice(0, 3).map(toEntry);
+  return monthDrivers.slice(0, MAX_POPUP_DRIVERS).map(toEntry);
 }

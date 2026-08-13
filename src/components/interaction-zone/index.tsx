@@ -23,6 +23,7 @@ export function InteractionZone({
   categories,
   categoryAmounts,
   incomeSlot,
+  incomeAssignment,
   targetMonth,
   targetDbMonth,
   currentMonth,
@@ -98,6 +99,7 @@ export function InteractionZone({
         fragments={fragmentsForOverlay}
         liquidity={liquidity}
         incomeSlot={incomeSlot}
+        incomeAssignment={incomeAssignment}
       />
       <FragmentStack fragments={fragments} targetMonth={targetMonth} />
     </div>

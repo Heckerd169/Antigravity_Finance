@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   createCardDirect,
   createCardFromFragment,
+  linkFragmentToIncome,
   processCsvImport,
   setFragmentAssetReallocation,
   type AssetReallocationResult,
@@ -52,6 +53,40 @@ export async function linkFragmentToCard(
 
   revalidatePath("/", "page");
 }
+
+// ── v2-19 (GE-1): Drop einer Zahlung auf die Netto-Kachel ───────────────────
+
+/** Ordnet eine Zahlung dem Netto des angezeigten Monats zu.
+ *
+ *  Anders als `linkFragmentToCard` läuft das über eine RPC statt über einen
+ *  UPSERT: Das Vorzeichen muss geprüft werden, sonst ließe sich eine Ausgabe
+ *  aufs Gehalt ziehen. Die Prüfung gehört in die Datenbank, nicht hierher —
+ *  sonst gäbe es zwei Wahrheiten (§7 Regel 15).
+ *
+ *  Der Monat ist der ANGEZEIGTE, nicht das Buchungsdatum der Zahlung — dieselbe
+ *  Periodenabgrenzung wie beim Karten-Drop (§6 Stolperfalle 6). Ein Gehalt, das
+ *  am 30.06. für Juli kommt, gehört damit in den Juli. */
+export async function linkFragmentToIncomeAction(
+  fragmentId: string,
+  month: string, // "YYYY-MM-01"
+): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht authentifiziert");
+
+  await linkFragmentToIncome(supabase, { fragmentId, month });
+
+  revalidatePath("/", "page");
+}
+
+/* Das Gegenstück — das LÖSEN — liegt bewusst nicht hier, sondern in
+   `income-split/actions.ts`: Gelöst wird im Einkommens-Fenster (Record,
+   Entscheidung E), und dorthin gehört die Aktion auch im Code. Sie hier zu
+   lassen hieße, dass das Fenster aus dem Karussell importiert — eine
+   Import-Richtung, die es bisher nicht gibt und die einen Zyklus schafft
+   (`netto-tile` → `income-split` → `interaction-zone/actions`). */
 
 // ── CSV-Import (Sprint 8) ────────────────────────────────────────────────────
 
