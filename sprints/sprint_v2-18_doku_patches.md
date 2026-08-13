@@ -79,7 +79,23 @@ benannt.
 
 ---
 
-# Vorschlag für CLAUDE.md — NICHT angewendet
+# Vorschlag für CLAUDE.md — ✅ **angewendet am 13.08.2026**
+
+> **Freigabe:** ausdrücklich durch den User, für `C1` **und** `C2` zusammen
+> („Freigabe CLAUDE.md-Patch hiermit erteilt", 13.08.2026). §7 Regel 14.
+>
+> **Zwei Stellen sind über den Wortlaut der beiden Vorschläge hinaus mitgeändert
+> worden**, weil sie dieselbe Aussage tragen und ihr sonst **offen widersprochen**
+> hätten. Sie sind hier einzeln benannt, damit die Erweiterung nachvollziehbar bleibt
+> und nicht als stille Mitnahme durchgeht:
+>
+> | Stelle | Warum sie mit muss |
+> |---|---|
+> | Kopfblock „Letzte Aktualisierung" | trug „08.08.2026 · nach Sprint v2-17" und hätte §9 direkt widersprochen. Dieselbe Tatsache wie `C2`, nur an zweiter Stelle. |
+> | §9 „**Nichts** ist entschieden und ungebaut" | Der Satz ist durch `C2` nachweislich **falsch** — `KAT-5` / Record `A2` ist genau das. Er stand seit v2-17 falsch da. |
+>
+> Beides ist **keine neue Regel und keine neue Stolperfalle**, sondern die Fortschreibung
+> einer bereits freigegebenen Tatsache. Neue normative Inhalte sind **nicht** eingeflossen.
 
 ## C1 · §9 — Juli-Anker auf **−322,74 €**
 

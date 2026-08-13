@@ -213,10 +213,18 @@ Kennungs-Register ergänzt, Zahlen zeilengenau ausgezählt (10 Pakete · 29 Them
 4 Hausaufgaben · 33 offen · 43 erledigt) — inklusive der Erklärung, warum die Zahl
 gestiegen ist.
 
-**CLAUDE.md: zwei Vorschläge, nicht angewendet** — Volltext in
-`sprints/sprint_v2-18_doku_patches.md`:
+**CLAUDE.md: zwei Vorschläge — ✅ am 13.08.2026 freigegeben und angewendet.** Volltext
+und Anwendungs-Vermerk in `sprints/sprint_v2-18_doku_patches.md`:
 
-| # | Was |
-|---|---|
-| C1 | §9 Juli-Anker **−322,75 → −322,74 €**, mit der Begründung aus `BF-4`. Dazu den Satz „Was sich als Nächstes planmäßig bewegen wird" auf „ist eingetreten" umschreiben — und festhalten, dass Rechtsschutz noch aussteht |
-| C2 | §9 Sprint-Stand auf v2-18, Design-Doku 3.6.0, neue Roadmap-Zahlen |
+| # | Was | Stand |
+|---|---|---|
+| C1 | §9 Juli-Anker **−322,75 → −322,74 €**, mit der Begründung aus `BF-4`. Dazu den Satz „Was sich als Nächstes planmäßig bewegen wird" auf „ist eingetreten" umschreiben — und festhalten, dass Rechtsschutz noch aussteht | ✅ |
+| C2 | §9 Sprint-Stand auf v2-18, Design-Doku 3.6.0, neue Roadmap-Zahlen | ✅ |
+
+**Zwei Stellen sind über den Wortlaut hinaus mitgeändert worden** — der Kopfblock
+„Letzte Aktualisierung" (trug noch v2-17) und der Satz „**Nichts** ist entschieden und
+ungebaut" (durch `KAT-5` nachweislich falsch, und zwar seit v2-17). Beide tragen
+dieselbe Tatsache wie `C2` und hätten ihr nach der Anwendung **offen widersprochen**.
+Sie sind in der Patch-Datei einzeln benannt, statt still mitzulaufen — die Erweiterung
+einer gegateten Datei über den freigegebenen Satz hinaus ist in dieser Sitzung schon
+einmal passiert und soll nachvollziehbar bleiben.
