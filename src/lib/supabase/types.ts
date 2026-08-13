@@ -341,6 +341,48 @@ export type Database = {
           },
         ]
       }
+      income_fragment_links: {
+        Row: {
+          created_at: string
+          fragment_id: string
+          id: string
+          month: string
+          person: Database["public"]["Enums"]["person_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fragment_id: string
+          id?: string
+          month: string
+          person?: Database["public"]["Enums"]["person_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fragment_id?: string
+          id?: string
+          month?: string
+          person?: Database["public"]["Enums"]["person_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_fragment_links_fragment_id_fkey"
+            columns: ["fragment_id"]
+            isOneToOne: true
+            referencedRelation: "fragments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "income_fragment_links_fragment_id_fkey"
+            columns: ["fragment_id"]
+            isOneToOne: true
+            referencedRelation: "fragments_with_status"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_timeline: {
         Row: {
           created_at: string
@@ -546,6 +588,14 @@ export type Database = {
         Args: { p_card_id: string; p_transaction_date: string }
         Returns: number
       }
+      get_actual_net_for_month: {
+        Args: {
+          p_month: string
+          p_person: Database["public"]["Enums"]["person_role"]
+          p_user_id: string
+        }
+        Returns: number
+      }
       get_category_amounts_for_month: {
         Args: { p_month: string; p_user_id: string }
         Returns: Json
@@ -577,6 +627,10 @@ export type Database = {
       is_card_active_in_month: {
         Args: { p_card_id: string; p_month: string }
         Returns: boolean
+      }
+      link_fragment_to_income: {
+        Args: { p_fragment_id: string; p_month: string }
+        Returns: Json
       }
       name_similarity: {
         Args: { p_card_name: string; p_description: string }
@@ -622,6 +676,10 @@ export type Database = {
       toggle_card_manually_paid: {
         Args: { p_card_id: string; p_month: string }
         Returns: boolean
+      }
+      unlink_fragment_from_income: {
+        Args: { p_fragment_id: string }
+        Returns: Json
       }
     }
     Enums: {
