@@ -28,31 +28,37 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 13.08.2026 zeilengenau nachgezählt — nach Sprint v2-19.*
+*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-20.*
 
-| | Anzahl | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 | vor v2-12 |
+| | Anzahl | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **10** | 10 | 10 | 11 | 12 | 13 | 14 | 14 |
-| Themen darin | **30** | 29 | 28 | 31 | 32 | 34 | 35 | 36 |
-| Hausaufgaben ohne eigenen Sprint | **5** | 4 | 4 | 5 | 6 | 6 | 7 | 7 |
-| **Offen gesamt** | **35** | 33 | 32 | 36 | 38 | 40 | 42 | 43 |
-| Erledigt | **45** | 43 | 41 | 37 | 35 | 33 | 31 | 30 |
+| Offene Pakete | **10** | 10 | 10 | 10 | 11 | 12 | 13 | 14 |
+| Themen darin | **30** | 30 | 29 | 28 | 31 | 32 | 34 | 35 |
+| Hausaufgaben ohne eigenen Sprint | **5** | 5 | 4 | 4 | 5 | 6 | 6 | 7 |
+| **Offen gesamt** | **35** | 35 | 33 | 32 | 36 | 38 | 40 | 42 |
+| Erledigt | **47** | 45 | 43 | 41 | 37 | 35 | 33 | 31 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-19, zeilengenau ausgezählt.** Paket-Tabellen **39** Zeilen, davon
-> **9 ✅** → **30** offen (⬜ 27 · 🟡 3). Hausaufgaben **5**, alle ⬜. §4 Erledigt **45**
+> **Stand nach v2-20, zeilengenau ausgezählt.** Paket-Tabellen **41** Zeilen, davon
+> **11 ✅** → **30** offen (⬜ 27 · 🟡 3). Hausaufgaben **5**, alle ⬜. §4 Erledigt **47**
 > Zeilen. §3 unverändert **4**.
 >
-> **Paket 15 ist vollständig abgeschlossen** — `GE-1` und `GE-2` in v2-19 gebaut,
-> einen Tag nachdem das Paket überhaupt entstanden ist. Damit sinken die offenen
-> Pakete wieder auf 10.
+> **Zum ersten Mal seit drei Sprints steigt die Zahl der offenen Themen NICHT.**
+> Paket 16 ist am 15.08.2026 entstanden und noch am selben Tag vollständig
+> abgeschlossen worden — wie Paket 15 zwei Tage zuvor. Beide kamen aus der Nutzung,
+> nicht aus der Planung.
 >
-> **Die Hausaufgaben sind auf 5 gestiegen:** `B2-R` kam dazu — die Treiber-Summe liegt
-> einen Cent neben `Ist − Plan`. **Der Befund stammt aus v2-19, ist aber nicht von ihm
-> verursacht**; er entstand am 13.08.2026, als die ersten Zahlungen gemeinsamen Karten
-> zugeordnet wurden. Aufgefallen ist er nur, weil der Prüfanker des Sprints ihn
-> streifte: Die Zielvorgabe „Treiber-Summe → −32,77 €" war damit **nicht erfüllbar**
-> und musste vor dem Bauen korrigiert werden.
+> **Paket 15 ist vollständig abgeschlossen** — `GE-1` und `GE-2` in v2-19 gebaut,
+> einen Tag nachdem das Paket entstanden ist.
+>
+> **Paket 16 ebenfalls** — `KU-1` und `KU-2` in v2-20. Es entstand aus drei Befunden
+> beim Kuratieren des August; einen davon (`B2`) hat der User selbst gelöst.
+>
+> **Die Hausaufgaben stehen bei 5:** `B2-R` kam nach v2-19 dazu — die Treiber-Summe
+> liegt einen Cent neben `Ist − Plan`. **Nicht von v2-19 verursacht**; der Abstand
+> entstand am 13.08.2026 mit den ersten Zuordnungen auf gemeinsame Karten. In v2-20
+> erneut geprüft: Er ist in Juli **und** August vorhanden, hat dieselbe Ursache
+> (vier gemeinsame Karten mit Sub-Cent-Deltas) und ist **nicht gewachsen**.
 >
 > **Die Zahlen sind zum zweiten Mal in Folge gestiegen** — 29 → 32 Themen, obwohl
 > nichts zurückgenommen wurde. Ursache ist beide Male dieselbe: **Sichtbarwerden**,
@@ -514,6 +520,23 @@ Gestaltungsentscheidungen stehen. Briefing: `sprints/sprint_v2-19_briefing.md`.
 
 ---
 
+### Paket 16 · Befunde aus der August-Kuratierung
+**Entsperrt:** dass die Zahlen stimmen, während der User kuratiert — und dass er eine
+Karte, die er gerade angelegt hat, auch wieder loswird.
+
+**Aus der Nutzung entstanden**, wie Paket 15: Der User hat am 15.08.2026 den August
+kuratiert und dabei drei Dinge gemeldet. Diagnose:
+`V2/befunde_2026-08-15_kuratierung-august.md`. Der dritte Befund (`B2` — die
+Treiber-Zeile nennt eine Abweichung, keinen Kartenbetrag) hat er **selbst gelöst**,
+indem er den Plan auf den Ist-Wert anpasste; er gehört gestalterisch zu `B2-F`.
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| KU-1 | Eine Karte im Papierkorb rechnet weiter mit | Fehler | **ja** | ✅ | **v2-20.** Der Ordner „Urlaub" zeigte −559,85 € statt −914,85 €, die Kachel sagte „4 Posten" bei drei Karten, und die Sparrate August war um 355,00 € zu hoch. Vier Rechenfunktionen filtern jetzt `deleted_at IS NULL` — **in einer Migration**, weil jede einzeln eine Invariante bricht. **Kein Konflikt mit §2.1 Snapshot-Integrität:** `HAS_PAST_PLAN` lässt keine Karte mit Vergangenheit löschen, der Filter wirkt also nur im laufenden Monat und der Zukunft. Die alte Begründung („Papierkorb-Karten tragen ohnehin 0 bei") galt für die **Treiber**, nicht für die **Sparrate** — ein Schluss von einer Differenz auf einen Absolutwert, dieselbe Klasse wie LL-23. |
+| KU-2 | Löschen ist eine Sackgasse | Fehler | **ja** | ✅ | **v2-20.** `HAS_STATES` blockiert nur noch bei Zuständen aus **vergangenen** Monaten; `HAS_LINKS` und `HAS_PAST_PLAN` unverändert. Der Hinweis verweist auf »Karte beenden…« **nur wenn es den Menüpunkt gibt** — bei einmaligen Karten gibt es ihn nicht, und Karten aus einer Zahlung sind typischerweise einmalig. **Zweiter Fund beim Bauen:** `page.tsx` bildet das Lösch-Tor nach (statt 31 RPC-Aufrufe) und hätte die Datenbank-Änderung stillschweigend aufgehoben — die Abfrage lud alle Monats-Zustände. Wächter: `tests/e2e/loesch-tor.spec.ts` prüft beide Seiten auf dieselbe Regel. |
+
+---
+
 ## 2. Hausaufgaben ohne eigenen Sprint
 
 An einen passenden Sprint anhängen, nie als eigenen schneiden.
@@ -588,6 +611,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | N5 | Farbtöne zwischen zugeordneten Fragmenten und Überträgen vereinheitlicht | v2-03 |
 | GE-1 | Gehalt auf die Netto-Kachel ziehbar, Ist-Netto je Monat | v2-19 |
 | GE-2 | Treiber-Zeile „Gehalt" ohne Karte | v2-19 |
+| KU-1 | Eine Karte im Papierkorb rechnet weiter mit | v2-20 |
+| KU-2 | Löschen ist eine Sackgasse (Lösch-Tor + Hinweis) | v2-20 |
 
 ---
 
