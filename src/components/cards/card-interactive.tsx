@@ -22,11 +22,21 @@ import type {
 } from "./cards.types";
 import styles from "./cards.module.css";
 
-/** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt). */
+/** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt).
+ *
+ *  v2-20 (KU-2): Die Texte sagen jetzt, was zu TUN ist, statt nur zu benennen,
+ *  was im Weg steht — und sie stehen für sich, ohne den pauschalen Zusatz
+ *  „Stattdessen »Karte beenden…«". Der erschien vorher IMMER, auch wenn es den
+ *  Menüpunkt gar nicht gibt: „Karte beenden…" existiert nur bei wiederkehrenden
+ *  Karten. Bei einer einmaligen Karte war das eine Sackgasse mit Wegweiser
+ *  ins Leere — und Karten aus einer Zahlung sind typischerweise einmalig.
+ *
+ *  `HAS_STATES` meint seit v2-20 nur noch Zustände aus VERGANGENEN Monaten;
+ *  der Text nennt deshalb den Grund und nicht mehr die Mechanik. */
 const GATE_REASON_TEXT: Record<DeleteGate["reasons"][number], string> = {
-  HAS_LINKS: "hat verknüpfte Fragmente",
-  HAS_STATES: "hat Monats-Änderungen",
-  HAS_PAST_PLAN: "war in vergangenen Monaten eingeplant",
+  HAS_LINKS: "Erst die zugeordnete Zahlung lösen",
+  HAS_STATES: "Sie trägt vergangene Monate",
+  HAS_PAST_PLAN: "Sie war in vergangenen Monaten eingeplant",
 };
 
 type CardInteractiveProps = {
@@ -315,8 +325,13 @@ export function CardInteractive({
           </button>
           {!deleteGate.deletable && (
             <div className={styles.contextMenuReason}>
-              Nicht löschbar: {deleteGate.reasons.map((r) => GATE_REASON_TEXT[r]).join(", ")}.
-              Stattdessen »Karte beenden…«.
+              Nicht löschbar. {deleteGate.reasons.map((r) => GATE_REASON_TEXT[r]).join(" · ")}.
+              {/* v2-20 (KU-2): Der Verweis auf „Karte beenden…" erscheint NUR,
+                  wenn es den Menüpunkt oben tatsächlich gibt. Er hing vorher an
+                  keiner Bedingung und schickte den Nutzer bei einmaligen Karten
+                  zu etwas, das dort nie existiert. */}
+              {canEnd && " Stattdessen »Karte beenden…«."}
+              {!canEnd && " Sie bleibt als Beleg erhalten."}
             </div>
           )}
         </div>,
