@@ -3,10 +3,10 @@
 > Verfahren nach LL-16 / §7 Regel 14: **Anker + Patch-Satz je Stelle**, nie eine
 > direkte Bearbeitung der Bibeln.
 >
-> Betroffen: **Schema-Doku** (RPC-Katalog §4, Kopf, Changelog).
+> Betroffen: **Schema-Doku** (RPC-Katalog §4, Kopf, Changelog) und **CLAUDE.md §9**
+> (Teil B, nach ausdrücklicher Freigabe).
 > **Nicht betroffen: Design-Doku** — der Sprint ändert keine Formensprache und keinen
 > Text. Das Jahres-Popup zeigt dieselben Zeilen, nur mit einer Summe, die aufgeht.
-> **Nicht betroffen: CLAUDE.md** — Begründung unten.
 
 ---
 
@@ -54,11 +54,12 @@ neuer Changelog-Block darunter.
 > §7 Regel 14 verlangt für diese Datei zusätzlich zur Patch-Form die Freigabe des
 > Users. Sie ist nach Vorlage des Reviews erteilt worden.
 >
-> **Es sind zwei Stellen, nicht eine.** Vorgelegt war der `B2-R`-Kasten. Beim
-> Anwenden zeigte sich, dass der Absatz **direkt darüber** ebenfalls überholt ist —
-> er nennt die Roadmap-Zahlen „nach v2-19", also drei Sprints alt. Beide stehen im
-> selben Sinnzusammenhang; nur den Kasten zu korrigieren hätte einen Absatz
-> hinterlassen, der sich selbst widerspricht.
+> **Es sind drei Stellen, nicht eine.** Vorgelegt war der `B2-R`-Kasten. Beim
+> Anwenden zeigte sich, dass der Absatz **direkt darüber** ebenfalls überholt ist (er
+> nennt die Roadmap-Zahlen „nach v2-19", also drei Sprints alt) — und weiter unten
+> stand noch die **falsche Ursachen-Diagnose zu Paket 5**, die in der Roadmap bereits
+> in v2-21 korrigiert worden war. Alle drei stehen im selben Sinnzusammenhang; nur
+> den Kasten zu korrigieren hätte einen §9 hinterlassen, der sich selbst widerspricht.
 
 ## Patch 5 · §9 — die Roadmap-Zahlen
 
