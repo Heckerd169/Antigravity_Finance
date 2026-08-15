@@ -98,7 +98,7 @@ Fehler.
 
 ### P4 · Die besten Vorschläge sichtbar machen
 
-`src/app/page.tsx` · Commit `<P4>`
+`src/app/page.tsx` · Commit `95a9f02`
 
 Bis hierher galt `conf >= badgeThreshold && conf < autoAbsorbThreshold`. Die
 Obergrenze war **nie eine Aussage über die Konfidenz** — sie war ein Stellvertreter
@@ -128,11 +128,44 @@ aus dem tatsächlichen Link abgeleitet.
 | ESLint (Worktree-Umweg) | 0/0 | **0 Fehler, 0 Warnungen** ✅ |
 | `pnpm build` | 0 | **0** ✅ |
 | `pnpm test:visual` | 81/81 | **81/81** ✅ |
-| `pnpm test:e2e` | 90/90 | **<E2E>** |
+| `pnpm test:e2e` | 90/90 | **90/90** — aber erst nach Einzelläufen, siehe unten |
 
 **Bundle:** Route `/` 35,6 kB · **First Load JS 187 kB** · Middleware 81,8 kB.
 
-> Der ESLint-Aufruf meldete zunächst Exit-Code 1 bei gleichzeitiger Ausgabe
+> ### Zum e2e-Lauf — ehrlich, weil „90/90" allein irreführend wäre
+>
+> Die Suite ist **zweimal** gelaufen: einmal vor dem Nachrechnen auf Produktion,
+> einmal danach. **Beide Male fiel etwas aus, beide Male anderes.**
+>
+> | Lauf | Ergebnis | Ausfälle |
+> |---|---|---|
+> | vor dem Nachrechnen | 89 passed, 1 failed | `einkommens-popup: klick darin öffnet nicht die jahres-welle` |
+> | nach dem Nachrechnen | 88 passed, 2 failed | `kategorie-kachel: ⋯-menü beim überfahren` · `layout: höhe der interaktionszone` |
+>
+> **Alle drei einzeln nachgefahren: grün.** Und die Ursache ist belegt, nicht
+> vermutet — sie steht im Server-Log des zweiten Laufs:
+>
+> ```
+> [supabase-fetch] Netz-Fehler, wiederhole Lese-Request:
+>   …/rpc/get_effective_plan_for_month  Error: read ECONNRESET
+> ```
+>
+> Die App wiederholt den Request korrekt, aber die Wiederholungen kosten Zeit, und der
+> Test reißt sein 60-Sekunden-Budget. Mit `--timeout=180000` läuft der Layout-Test
+> **vollständig durch (49,2 s)** — inklusive der eigentlichen Höhen-Prüfung. Damit ist
+> ausgeschlossen, dass die Prüfung selbst gebrochen ist.
+>
+> **Warum das hier ausdrücklich steht:** Der Layout-Test heißt *„die Höhe der
+> Interaktionszone hängt nicht vom Monat ab"*, und dieser Sprint hat die Datenlage je
+> Monat verändert. Ein Ausfall genau dort sieht nach Regression aus. Er ist keine —
+> aber das musste geprüft werden, nicht weggedeutet. Die Vorschläge erscheinen im
+> Schaufenster-Popup; in der Liste wird nichts zusätzlich gezeichnet
+> (`SHOW_SUGGESTION_BADGES = false`), die Höhe kann sich also gar nicht ändern.
+>
+> ECONNRESET gegen Supabase ist im Projekt bekannt (Eröffnungs-Briefing; Memory
+> „SSR-ECONNRESET-Burst" seit dem Initial-Import).
+>
+> **Zu ESLint:** Der Aufruf meldete zunächst Exit-Code 1 bei gleichzeitiger Ausgabe
 > „No issues found". Nachgeprüft über `rtk proxy`: **echter Exit-Code 0**. Der
 > Code 1 kam vom Ausgabe-Filter, nicht von ESLint.
 
@@ -147,18 +180,64 @@ nötig. Das ist eine bewusste Lücke, siehe §6.
 
 | Monat 2026 | Ist vorher | Ist nachher | Plan vorher | Plan nachher |
 |---|---|---|---|---|
-| Januar | 1.899,67 | <N01> | 1.899,67 | <P01> |
-| Februar | 1.931,18 | <N02> | 1.931,18 | <P02> |
-| März | 1.931,18 | <N03> | 1.931,18 | <P03> |
-| April | 1.899,67 | <N04> | 1.899,67 | <P04> |
-| Mai | −86,77 | <N05> | −86,77 | <P05> |
-| Juni | 4.208,76 | <N06> | 4.220,53 | <P06> |
-| Juli | −8,84 | <N07> | 23,93 | <P07> |
-| August | 721,24 | <N08> | 796,23 | <P08> |
-| September | 1.824,08 | <N09> | 1.824,08 | <P09> |
-| Oktober | 1.792,57 | <N10> | 1.792,57 | <P10> |
-| November | 1.824,08 | <N11> | 1.824,08 | <P11> |
-| Dezember | 1.824,08 | <N12> | 1.824,08 | <P12> |
+| Januar | 1.899,67 | **1.899,67** ✅ | 1.899,67 | **1.899,67** ✅ |
+| Februar | 1.931,18 | **1.931,18** ✅ | 1.931,18 | **1.931,18** ✅ |
+| März | 1.931,18 | **1.931,18** ✅ | 1.931,18 | **1.931,18** ✅ |
+| April | 1.899,67 | **1.899,67** ✅ | 1.899,67 | **1.899,67** ✅ |
+| Mai | −86,77 | **−86,77** ✅ | −86,77 | **−86,77** ✅ |
+| Juni | 4.208,76 | **4.208,76** ✅ | 4.220,53 | **4.220,53** ✅ |
+| Juli | −8,84 | **−8,84** ✅ | 23,93 | **23,93** ✅ |
+| August | 721,24 | **721,24** ✅ | 796,23 | **796,23** ✅ |
+| September | 1.824,08 | **1.824,08** ✅ | 1.824,08 | **1.824,08** ✅ |
+| Oktober | 1.792,57 | **1.792,57** ✅ | 1.792,57 | **1.792,57** ✅ |
+| November | 1.824,08 | **1.824,08** ✅ | 1.824,08 | **1.824,08** ✅ |
+| Dezember | 1.824,08 | **1.824,08** ✅ | 1.824,08 | **1.824,08** ✅ |
+
+**Alle 24 Werte identisch.** Gemessen unmittelbar vor der Migration und unmittelbar
+nach dem Nachrechen-Lauf, in derselben Sitzung.
+
+**Verknüpfungen:** 132 vorher → **132 nachher**. Der Zähler-Wächter in
+`refresh_fragment_suggestions` hat nicht ausgelöst.
+
+**Wirkung:** Fragmente mit Vorschlag 23 → **129**; davon **offen und im Jahr 2026:
+9 → 115**, davon 24 mit Konfidenz ≥ 0,95. Überträge mit Vorschlag: **0**
+(Stolperfalle 7 gehalten).
+
+### Wo die Vorschläge stehen — je Monat
+
+| Monat 2026 | offen | **mit Vorschlag** | davon ≥ 0,95 |
+|---|---|---|---|
+| Januar | 49 | **20** | 5 |
+| Februar | 42 | **17** | 5 |
+| März | 56 | **17** | 5 |
+| April | 51 | **18** | 4 |
+| **Mai** | 55 | **32** | 4 |
+| Juni | 29 | **11** | 1 |
+| Juli | 1 | 0 | 0 |
+
+Juli und August sind zu 100 % zugeordnet — dort gibt es nichts vorzuschlagen. **Mai
+ist der ergiebigste Prüfmonat.**
+
+### Stichprobe Mai — was tatsächlich vorgeschlagen wird
+
+| Zahlung | Betrag | Vorschlag | Konfidenz |
+|---|---|---|---|
+| `Nurnberger Lebensversicherung Aktiengesell…` | −116,70 | Private Altersvorsorge - Nürnberger | **100 %** |
+| `Alte Leipziger Lebensversicherung auf Gege…` | −100,68 | Berufsunfähigkeit - Alte Leipziger | **100 %** |
+| `NETFLIX.COM` | −13,99 | Netflix | **100 %** |
+| `DB Vertrieb GmbH` | −63,00 | Deutschlandticket Mama | **100 %** |
+| `Dominik Hecker und Aline Nünninghoff \| Mie…` | **−1.089,26** | **Miete** | **94 %** |
+| `Dominik Hecker \| Strom (Domi)` | −36,04 | Strom - Mainova | 94 % |
+| `Dominik Hecker und Aline Nünninghoff \| Rec…` | −15,45 | Rechtsschutz - Adam Riese | 94 % |
+
+> **Die Miete-Zeile ist der Paradefall der Roadmap** — genau der, an dem Paket 5
+> begründet wurde: Die Karte plant 1.904 € (Haushalt), überwiesen werden 1.089,26 €
+> (der Anteil), 43 % Abweichung. Sie wird jetzt zugeordnet, und zwar **nicht** über
+> den Betrag, sondern über die Wiedererkennung (94 % = `history_score`). Die
+> Diagnose in der Roadmap zielte auf `amount_match` — die Lösung kam von woanders.
+>
+> Die vier 100-%-Zeilen stammen dagegen aus P1: Ohne Umlaut-Normalisierung und
+> Wortvergleich lagen `Nürnberger` bei 0,139 und `Alte Leipziger` bei 0,344.
 
 **Erwartung: jede Zeile identisch.** Der Sprint darf keine Zahl bewegen — und das ist
 nicht nur eine Absicht, sondern strukturell belegt: `name_similarity`, `amount_match`
@@ -167,13 +246,61 @@ und `frequency_match` haben über `pg_proc` nachgewiesen **genau einen** Aufrufe
 Rechenfunktionen vollständig isoliert.
 
 **Anker 1 — Ordner-Spalte == Ist-Sparrate:** vorher in allen zwölf Monaten exakt 0,00.
-Nachher: <ANKER1>
+**Nachher: in allen zwölf Monaten exakt 0,00.** ✅
 
 **Anker 2 — `Σ delta = Ist − Plan` (B2):** vorher zehn Monate exakt 0; Juli −32,78
 gegen −32,77 und August −75,00 gegen −74,99 — der bekannte Cent-Rückstand `B2-R`.
-Nachher: <ANKER2>
+**Nachher Zeichen für Zeichen dieselbe Zeile.** Der Rückstand ist **nicht gewachsen
+und nicht gewandert**. ✅
 
-**Übungs-Datenbank:** <UEBUNG>
+### Übungs-Datenbank — die volle Strecke, auf Wunsch des Users
+
+Ich hatte vorgeschlagen, sie auszulassen (Rennrad-Trainer zur Unzeit, keine
+Zuordnungsdaten im Seed). **Der User hat sich dagegen entschieden**, und die Strecke
+ist gefahren worden:
+
+| Schritt | Ergebnis |
+|---|---|
+| Rennrad-Trainer pausiert, Übungs-DB restauriert | ✅ |
+| Auf `ACTIVE_HEALTHY` gewartet | ✅ — **und die Falle ist eingetreten**: bei `COMING_UP` meldete `public` **0 Tabellen und 0 Funktionen**. Genau der Zustand, in dem am 05.08.2026 fast eine gesunde Datenbank neu aufgebaut wurde. Nach dem Statuswechsel waren 12 Tabellen und 72 Funktionen da |
+| Anker Übungs-DB vor der Migration | ✅ **2.200,00 €** in allen zwölf Monaten |
+| Migrationen wortgleich eingespielt | ✅ P1 · P2 · P3 |
+| `T1` Auth-Guard ohne Session | ✅ `28000` |
+| `T2` Zeitraum verkehrt herum | ✅ `22023` |
+| `T3` Zeitraum > 5 Jahre | ✅ `22023` |
+| `T4` NULL-Zeitraum | ✅ `22023` |
+| `T5` Leerfall (0 Fragmente) | ✅ `{geprueft: 0, vorschlag_gesetzt: 0, links_unveraendert: 0}` — definierte Antwort, kein Absturz |
+| `T6` Anker nach der Migration | ✅ **26.400,00 €** = 12 × 2.200,00 €, unverändert |
+| `T7` neue Funktionen vorhanden | ✅ 5 |
+| Übungs-DB pausiert, Rennrad-Trainer zurück | ✅ `ACTIVE_HEALTHY` verifiziert |
+
+> **Was die Übungs-Datenbank leisten konnte und was nicht.** Sie hat die Migration
+> als *Migration* geprüft — Syntax, Abhängigkeiten, Auth, Bereichsvalidierung,
+> Leerfall, Anker. Sie konnte den *Algorithmus* nicht prüfen: Ihr Seed enthält
+> **0 Fragmente** und 2 Karten. Diesen Teil trägt die zurückgerollte Transaktion auf
+> Produktion gegen die 101 echten Handzuordnungen. Beide Proben zusammen decken ab,
+> was keine von beiden allein könnte.
+
+### Wortgleichheit belegt, nicht zugesichert
+
+`md5(pg_get_functiondef(...))` auf **beiden** Projekten, zehn Funktionen:
+
+| Funktion | Prüfsumme (identisch auf Übung und Produktion) |
+|---|---|
+| `af_normalize_text` | `05a73da318ccbda82500b41d974c8b4c` |
+| `af_word_in_text` | `4f8e4b757b63998ddb7bcdd1195df451` |
+| `name_similarity_scoped` | `f0b110f0a91de5a0f60ec9934c55476c` |
+| `history_match` | `5da26193c869c506627c0044b963c94f` |
+| `refresh_fragment_suggestions` | `191809d6e0286436415984ffb28c60a5` |
+| `calculate_match_confidence` | `8581c7348fae528e1f717086ad35d9dc` |
+| `calculate_sparrate_for_month` | `68b4954451deb829a5e61d65b1946eaf` |
+| `calculate_planned_sparrate_for_month` | `cb2b43af5cc71fd8d1556cefe2ecc51e` |
+| `calculate_card_amount_for_month` | `4af07d327f17363e2452b815403e5c89` |
+| `get_category_amounts_for_month` | `e6e0361bcf30a5d56dcaf6b83a32fe97` |
+
+Die unteren vier sind die **Rechenfunktionen**. Ihre Übereinstimmung auf beiden
+Projekten belegt, dass die Migration sie nicht angefasst hat — dieselbe Beweisform
+wie in v2-17.
 
 ---
 
@@ -186,7 +313,7 @@ Nachher: <ANKER2>
 | A3 | Falsche Vorschläge über der Badge-Schwelle bleiben bei höchstens 1 | ⚠️ **nicht erfüllt — 4** | Siehe §6. Das Kriterium war zu streng formuliert: Es hätte jeden Zugewinn an Abdeckung ausgeschlossen. Präzision 42/46 = **91 %** gegenüber 14/15 = 93 % vorher, bei **dreifacher** Abdeckung |
 | A4 | Kein Score überschreitet 1,0 | ✅ | Höchster Score im Prüflauf **1,0000**; `LEAST(1.00, …)` in `name_similarity_scoped` |
 | A5 | `refresh_fragment_suggestions` schreibt keine Verknüpfungen | ✅ | Trockenlauf: `links_unveraendert: 132`, Zähler-Wächter nicht ausgelöst |
-| A6 | Alle zwölf Monate Ist/Plan unverändert | <A6> | §3 |
+| A6 | Alle zwölf Monate Ist/Plan unverändert | ✅ | §3 — alle 24 Werte identisch, beide Invarianten unverändert |
 | A7 | Eine offene Zahlung mit Konfidenz ≥ 0,95 zeigt einen Vorschlag | ✅ | `page.tsx` — Obergrenze entfällt, `f.status === "UNASSIGNED"` tritt an ihre Stelle |
 | A8 | `SHOW_SUGGESTION_BADGES` bleibt `false` | ✅ | `fragment-card.tsx:32` unverändert |
 | A9 | Überträge bekommen keinen Vorschlag | ✅ | `f.transfer_type IS NULL` in der Schleife von `refresh_fragment_suggestions` und in `history_match` |
@@ -289,8 +416,18 @@ keine Zahl.
   werden 1.089,26 €; `amount_match` wiegt 0,30, 43 % Abweichung reichen nie für die
   95-%-Schwelle"). Gemessen ist der Betrag **nicht** der Engpass: Die 72 Zahlungen im
   toten Band 0,50–0,60 haben einen Betrags-Score von **1,00** und scheitern am Namen.
-- **Neu `ZO-1`** (Paket 9): `frequency_match` aussagekräftig machen — siehe §6 ②.
+- **Neu `ZO-1`** (Paket 5): `frequency_match` aussagekräftig machen — siehe §6 ②.
 - **Neu `ZO-2`** (Hausaufgabe): Vorschlags-Sichtbarkeit aus `page.tsx` in eine reine
   Funktion ziehen und testbar machen — siehe §6 ③.
 - **Neu `ZO-3`** (Paket 5, Folgesprint): rückwirkende Auto-Verlinkung ab 0,95, nachdem
   der User die Vorschläge geprüft hat — siehe §6 ④.
+
+> **Alles oben ist bereits in die Roadmap eingetragen** (Schritt 5 der
+> Abschluss-Strecke), inklusive zeilengenauer Neuzählung: Paket-Tabellen **43** Zeilen
+> · ✅ 11 · 🟡 4 · ⬜ 28 · Hausaufgaben **6** · offen gesamt **38** · erledigt **47**.
+> Zusätzlich korrigiert wurde dort der Ursachensatz an Paket 5 — er nannte die
+> Split-Systematik als Engpass, gemessen ist es der Name (die 72 Zahlungen im toten
+> Band haben einen Betrags-Score von 1,00).
+>
+> **Offen ist nur CLAUDE.md.** Die drei Vorschläge oben (Stolperfalle 17, Regel 25,
+> LL-27) sind **nicht** angewendet — dafür fehlt die Freigabe.
