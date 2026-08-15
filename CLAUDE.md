@@ -8,18 +8,18 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 15. August 2026 · **nach:** Sprint **v2-21**
-> (die automatische Zuordnung nimmt Arbeit ab — `M6`, Paket 5; Design-Doku
-> **v3.7.0**, Schema-Doku **v3.8.0**, PR **#31** offen — und **#30** davor, in dieser
-> Reihenfolge zu mergen).
+> **Letzte Aktualisierung:** 15. August 2026 · **nach:** Sprint **v2-22**
+> (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`; Design-Doku **v3.7.0**, Schema-Doku
+> **v3.9.0**). **Drei PRs offen: #30 → #31 → #32**, in dieser Reihenfolge zu mergen.
 >
-> **Dieser Nachzug holt zwei Sprints auf einmal nach.** §9 stand noch auf v2-19; der
+> **Dieser Nachzug holt drei Sprints auf einmal nach.** §9 stand noch auf v2-19; der
 > Eintrag für **v2-20** war nie geschrieben worden und wäre stillschweigend
 > verschwunden. Er ist jetzt verzeichnet — nachgeschrieben wird er nicht, dafür gibt
 > es `sprints/sprint_v2-20_review.md`.
 >
-> **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** v2-21 bewegt keine
-> Zahl; alle 24 Anker-Werte sind vor und nach dem Eingriff identisch gemessen worden.
+> **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
+> v2-22 bewegt eine Zahl; alle 24 Anker-Werte sind bei beiden vor und nach dem
+> Eingriff identisch gemessen worden.
 >
 > Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
 > Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
@@ -755,22 +755,30 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-21 (die automatische Zuordnung nimmt Arbeit ab — `M6`,
-15.08.2026, PR **#31** offen) · **davor:** v2-20 (Papierkorb und Lösch-Tor, `KU-1`
-`KU-2`, PR **#30** offen) und v2-19 (Netto, `GE-1` `GE-2`, PR #29 **gemerged**).
+**Letzter Sprint:** v2-22 (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`, 15.08.2026,
+PR **#32** offen) · **davor:** v2-21 (automatische Zuordnung, `M6`, PR **#31** offen),
+v2-20 (Papierkorb und Lösch-Tor, `KU-1` `KU-2`, PR **#30** offen) und v2-19 (Netto,
+`GE-1` `GE-2`, PR #29 **gemerged**).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-> **⚠️ Zwei Pull Requests hängen ineinander — die Reihenfolge ist nicht beliebig.**
-> **#31 (v2-21) baut auf dem Branch von #30 (v2-20) auf, nicht auf `main`.** Erst #30
-> mergen, dann #31. Das war eine bewusste Entscheidung: Die v2-20-Migrationen lagen
-> beim Start von v2-21 bereits auf Produktion, ein Aufbau von `main` hätte gegen eine
-> Datenbank gemessen, die der Code gar nicht kennt.
+> **⚠️ Drei Pull Requests hängen ineinander — die Reihenfolge ist nicht beliebig.**
+> **#30 → #31 → #32.** Jeder baut auf dem Branch des vorigen auf, nicht auf `main`.
+> Das war eine bewusste Entscheidung: Die v2-20-Migrationen lagen beim Start von v2-21
+> bereits auf Produktion, ein Aufbau von `main` hätte gegen eine Datenbank gemessen,
+> die der Code gar nicht kennt.
 >
-> **Bei beiden liegen die Migrationen schon auf Produktion, der Browser-Smoke des
-> Users steht aus.** Bei v2-21 ist das belegt unkritisch: Der Nachrechen-Lauf hat
-> **alle 24 Anker-Werte unverändert gelassen** (zwölf Monate × Ist/Plan) und die
-> Zahl der Verknüpfungen bei 132 belassen. Er füllt ausschließlich Anzeige-Spalten.
-> Wer hier ansetzt, prüft zuerst den Stand von #30 und #31.
+> **Bei allen dreien liegen die Migrationen schon auf Produktion, der Browser-Smoke
+> des Users steht aus.** Bei v2-21 und v2-22 ist das belegt unkritisch: Beide haben
+> **alle 24 Anker-Werte unverändert gelassen** (zwölf Monate × Ist/Plan) und die Zahl
+> der Verknüpfungen bei 132 belassen. v2-21 füllt ausschließlich Anzeige-Spalten,
+> v2-22 fasst nur eine Auswertungs-Funktion an.
+> Wer hier ansetzt, prüft zuerst den Stand von #30, #31 und #32.
+
+**v2-22 hat zwei Hausaufgaben abgeräumt und keine neue erzeugt** — `B2-R` und `ZO-2`.
+Die B2-Invariante gilt wieder in allen zwölf Monaten exakt, und die Regel, ob ein
+Kartenvorschlag angezeigt wird, liegt jetzt als reine Funktion mit eigener Spec vor
+(`src/lib/suggestion.ts`) statt inline in einer Server Component. Genau dort saß der
+Fehler aus v2-21 — es war die **dritte** Stelle dieser Art in vier Tagen (LL-26).
 
 **v2-21 macht Paket 5 zum ersten Mal wirksam.** Die automatische Zuordnung schlägt
 für **115 statt 9** offene Zahlungen aus 2026 eine Karte vor. Drei Ursachen waren
@@ -915,21 +923,23 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**13.08.2026, nach v2-19**: **10 offene Pakete · 30 Themen · 5 Hausaufgaben ·
-35 offen gesamt · 45 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**15.08.2026, nach v2-22**: **10 offene Pakete · 32 Themen · 4 Hausaufgaben ·
+36 offen gesamt · 49 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
-> **Eine Hausaufgabe ist dazugekommen: `B2-R`.** Die Treiber-Summe liegt im Juli
-> **einen Cent** neben `Ist − Plan` (−17,21 € gegen −17,20 €). Ursache sind vier
-> **gemeinsame** Karten mit exakten, aber Sub-Cent-großen Deltas (Internet +0,0022 ·
-> Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003): `get_year_deviation_drivers`
-> rundet **je Zeile**, die Sparrate-Funktionen erst **am Ende über alles**.
+> **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
+> Cent neben `Ist − Plan`; `get_year_deviation_drivers` rundete **je Zeile**, die
+> Sparrate-Funktionen erst **am Ende über alles**. Seit v2-22 wird das Ziel aus den
+> Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt.
+> **Die Invariante gilt wieder in allen zwölf Monaten exakt.**
 >
-> **Der Befund stammt nicht aus v2-19**, sondern vom 13.08.2026, als die ersten
-> Zahlungen gemeinsamen Karten zugeordnet wurden — vorher gab es keine solche Karte.
-> Aufgefallen ist er nur, weil der Prüfanker von v2-19 ihn streifte und dadurch **nicht
-> erfüllbar** war. **Wer die B2-Invariante misst, muss das wissen**, sonst hält er den
-> Cent für die Wirkung seines eigenen Eingriffs. Abhilfe nach LL-25.
+> **Der Satz, der den Sprint überlebt, weil er eine Falle beschreibt:**
+> Die Karten, die den Abstand verursachten, waren **gar nicht sichtbar**. Ein Delta
+> von 0,0022 € rundet auf 0,00 und fällt aus der Anzeige — es verschiebt die Summe
+> trotzdem. Wer die B2-Invariante prüft und sie um einen Cent verfehlt, sucht den
+> Fehler in den **angezeigten** Zeilen und findet ihn nie.
+> Ebenfalls gemessen und dabei widerlegt: Das separat gerundete **Gehalts-Delta trägt
+> nichts bei** — es ist exakt.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
@@ -939,19 +949,33 @@ Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 (v2-10/v2-16), `LQ-1`/`LQ-2` (v2-14/v2-15) und `KAT-1`/`KAT-2`/`KAT-3` (v2-17).
 `LQ-3` und `RM-3` gehörten nie dazu — beide liegen in Paket 9, `KAT-4` in Paket 10.
 
-**Als Nächstes dran: Paket 5** (bessere automatische Zuordnung) — v2-19 hat sich
-dazwischengeschoben, weil es aus der Nutzung kam. Es ist der einzige
-Punkt der Roadmap, der Aufwand **wegnimmt**, und die Kategorien-Runde hat nebenbei
-belegt, wie dringend es ist: Von **76 gemeinsamen Monatszahlungen sind zwei
-zugeordnet**, bei 19 Monaten identischem Text, Betrag und Tag.
+**Paket 5 ist seit v2-21 zum großen Teil gebaut** (`M6` steht auf 🟡, nicht ✅). Die
+automatische Zuordnung schlägt für **115 statt 9** offene Zahlungen aus 2026 eine
+Karte vor. Offen bleiben `ZO-1`, `ZO-3` und der Teil `F2` — das Vorschlags-Badge in
+der Rohmasse liegt weiter hinter `SHOW_SUGGESTION_BADGES = false`.
 
-> **v2-19 hat die Dringlichkeit noch erhöht.** Es liegen **20 unzugeordnete
-> Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli) — bei identischem Text,
-> festem Rhythmus und einem Betrag, der elf Monate lang auf den Cent gleich war. Sie
-> alle von Hand zu ziehen ist genau die Arbeit, die Paket 5 abnehmen soll. Ursache ist die
-Split-Systematik — „Miete" plant 1.904 € (Haushalt), überwiesen werden 1.089,26 €
-(der Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
-43 % Abweichung reichen nie für die 95-%-Schwelle.
+> ### ⚠️ Die alte Ursachen-Diagnose war falsch — hier stand sie bis zum 15.08.2026
+>
+> Der Satz lautete: *„Ursache ist die Split-Systematik — ‚Miete' plant 1.904 €,
+> überwiesen werden 1.089,26 €, und `calculate_match_confidence` gewichtet
+> `amount_match` mit 0,30; 43 % Abweichung reichen nie für die 95-%-Schwelle."*
+>
+> **Gemessen stimmt das nicht.** Die 72 Zahlungen, die im toten Band 0,50–0,60 direkt
+> unter der Schwelle klemmten, hatten einen Betrags-Score von **1,00** — perfekt
+> getroffen. Sie scheiterten am **Namen**. Die wirklichen Ursachen waren drei andere:
+> `frequency_match` liefert immer `1.00` und macht die Schwelle ohne Namenstreffer
+> rechnerisch unerreichbar (§6 Stolperfalle 17); die Namensfunktion verglich ganze
+> Zeichenketten statt Wörter; und die Konfidenz wurde **nur beim Import** berechnet.
+>
+> **Der Fehler wäre teuer geworden:** Eine Sitzung, die der alten Diagnose gefolgt
+> wäre, hätte an `amount_match` und der Split-Behandlung gearbeitet — und die 72
+> Zahlungen mit perfektem Betrag nicht bewegt. Die Beobachtung „von 76 gemeinsamen
+> Monatszahlungen sind zwei zugeordnet" war richtig; nur ihre Erklärung nicht.
+> Deshalb steht sie hier als **korrigierte** Fassung und nicht bloß gelöscht.
+
+**Die 20 unzugeordneten Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli)
+bleiben bestehen: Sie sind kein Zuordnungsproblem, sondern ein Datenproblem für 2025
+(`DA-1`, Paket 6) — dort ist keine Karte aktiv, es gibt also nichts vorzuschlagen.
 
 **Weiterhin offen, für eine eigene Gestaltungsrunde:** `M2` (Verben und Gesten des
 Karten-Lebenszyklus) und `M5` (Reihenfolge). **`M5` hat seit v2-17 einen Ort** —
