@@ -9,6 +9,7 @@ import {
   getSplitFactor,
 } from "@/lib/rpc";
 import type { CategoryAmount } from "@/lib/rpc";
+import { istVorschlagSichtbar } from "@/lib/suggestion";
 import {
   addMonths,
   getCurrentMonthYM,
@@ -427,40 +428,25 @@ export default async function Home({ searchParams }: HomeProps) {
           f.status !== null,
       )
       .map((f) => {
-        /* Vorschlag ab `badge_threshold` UND mit gesetztem suggested_card_id
-           (§6). Karten-Name via Lookup; zeigt die Karte ins Leere (gelöscht),
-           kein Vorschlag.
+        /* Vorschlag: Die Regel selbst steht in `@/lib/suggestion` und ist dort
+           mit einer eigenen Spec abgedeckt (v2-22, `ZO-2`) — sie war bis dahin
+           hier inline eingebettet und damit nicht einzeln prüfbar, und genau an
+           dieser Stelle saß in v2-21 ein Fehler, der den ganzen Sprint entwertet
+           hätte. Die Begründung im Detail steht in der Lib-Datei.
 
-           v2-21 P4 — die OBERGRENZE ist weggefallen, und das ist der Kern
-           dieser Phase. Bis hierher galt `conf < auto_absorption_threshold`:
-           Ab 0.95 verlinkt der Import selbst, ein Vorschlag wäre gegenstandslos
-           gewesen. Diese Bedingung war nie eine Aussage über die Konfidenz —
-           sie war ein STELLVERTRETER für „wurde bereits automatisch verlinkt".
-
-           Seit v2-21 stimmt der Stellvertreter nicht mehr.
-           `refresh_fragment_suggestions` rechnet Vorschläge für alte Zahlungen
-           nach, verlinkt dabei aber bewusst NICHT (User-Entscheid 15.08.2026,
-           weil Verlinken die Sparrate rückwirkend bewegen würde). Dadurch
-           entstehen OFFENE Zahlungen mit Konfidenz ≥ 0.95 — gemessen 24 Stück
-           allein in 2026, und es sind die TREFFSICHERSTEN des ganzen Sprints.
-           Mit der alten Bedingung wären ausgerechnet die unsichtbar geblieben.
-
-           Das ist LL-26 / §6 Stolperfalle 16 in Reinform: ein Frontend-Filter,
-           der eine Datenbank-Entscheidung stillschweigend aufhebt. Kein Anker
-           und keine Prüfsumme hätte es gefangen — die Zahlen wären alle richtig
-           gewesen, nur eben nie zu sehen.
-
-           Der Status ist die verlässliche Auskunft darüber, ob bereits
-           verlinkt wurde; er kommt aus `fragments_with_status` und wird dort
-           aus dem tatsächlichen Link abgeleitet, nicht aus einer Schwelle.
-           Die Schwellen-Auswertung bleibt server-seitig (LL-17): Die
-           Komponente bekommt `suggestedCardName`, nicht Rohwert plus Schwelle. */
+           Hier bleibt nur, was von der Datenlage abhängt: der Karten-Lookup.
+           Zeigt `suggested_card_id` ins Leere (Karte gelöscht), bleibt der Name
+           null und das Popup lässt die Zeile weg. Die Schwellen-Auswertung
+           bleibt server-seitig (LL-17). */
         const conf = f.confidence != null ? Number(f.confidence) : null;
         const suggestedCardName =
           f.suggested_card_id != null &&
-          conf != null &&
-          conf >= badgeThreshold &&
-          f.status === "UNASSIGNED"
+          istVorschlagSichtbar({
+            suggestedCardId: f.suggested_card_id,
+            confidence: conf,
+            status: f.status,
+            badgeThreshold,
+          })
             ? cardNameById.get(f.suggested_card_id) ?? null
             : null;
 
