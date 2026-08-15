@@ -118,9 +118,14 @@ export function WellePopup({ data, onClose }: WellePopupProps) {
         >
           {fmtSignedEuro(yearTotal)}
         </div>
+        {/* v2-19 (GE-2, Record F): „die drei Treiber" → „die größten Treiber".
+            Seit dieser Runde kann eine vierte Zeile dazukommen — „Gehalt"
+            erscheint immer, wenn das Netto abweicht, zusätzlich zu den drei
+            Karten-Treibern. Eine Zahl im Text, die die App brechen kann, ist
+            eine Zusage zu viel. */}
         <div className={styles.popupSub}>
           IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die
-          drei Treiber
+          größten Treiber
         </div>
 
         <div className={styles.popupChart} ref={chartRef}>

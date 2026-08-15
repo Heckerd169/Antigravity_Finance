@@ -28,7 +28,10 @@ import type {
 } from "@/components/cards/cards.types";
 import { InteractionZone } from "@/components/interaction-zone";
 import { CardActionToastProvider } from "@/components/cards/card-action-toast-provider";
-import type { FragmentRow } from "@/components/interaction-zone/interaction-zone.types";
+import type {
+  FragmentRow,
+  IncomeAssignment,
+} from "@/components/interaction-zone/interaction-zone.types";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
 import styles from "./page.module.css";
@@ -184,6 +187,34 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("Kategorie-Beträge fehlgeschlagen", err);
   }
 
+  // v2-19 (GE-1): die diesem Monat zugeordnete Gehaltszahlung — für den
+  // Lösen-Block im Einkommens-Fenster (Record, Entscheidung E).
+  //
+  // Monats-eng abgefragt, nicht als Voll-Scan: PostgREST liefert höchstens 1000
+  // Zeilen, ohne Fehler und ohne Warnung (§7 Regel 18 / LL-21). Hier wären es
+  // zwar auf Jahre hinaus zwölf pro Jahr — aber die Gewohnheit ist der
+  // eigentliche Schutz, nicht die Schätzung.
+  //
+  // Der ANGEZEIGTE Wert der Kachel kommt NICHT von hier, sondern aus
+  // `categoryAmounts`. Zwei Quellen für dieselbe Zahl könnten auseinanderlaufen;
+  // diese Abfrage liefert nur Datum und Beschreibung, die es dort nicht gibt.
+  const { data: incomeLinkRows } = await supabase
+    .from("income_fragment_links")
+    .select("fragment_id, fragments(transaction_date, description, amount)")
+    .eq("month", targetDbDate)
+    .eq("person", "ICH");
+
+  const incomeAssignment: IncomeAssignment | null = (() => {
+    const row = (incomeLinkRows ?? [])[0];
+    const f = row?.fragments;
+    if (!row || !f || f.transaction_date === null || f.amount === null) return null;
+    return {
+      fragmentId: row.fragment_id,
+      transactionDate: f.transaction_date,
+      description: f.description ?? "",
+      amount: Number(f.amount),
+    };
+  })();
 
   // v2-05 Lösch-Tor-Vorberechnung: Links/States über ALLE Monate (zwei kleine
   // Selects statt 31 RPC-Calls). Autoritativ prüft delete_card server-seitig.
@@ -558,6 +589,7 @@ export default async function Home({ searchParams }: HomeProps) {
             taxClass,
             taxYear,
           }}
+          incomeAssignment={incomeAssignment}
         />
       </CardActionToastProvider>
 

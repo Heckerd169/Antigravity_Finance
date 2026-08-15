@@ -36,6 +36,10 @@ export type CategoryGroup = {
   /** Wie viele Karten in diesem Monat in diesem Ordner liegen. Beim
    *  Einkommens-Ordner immer 1 (das Netto). */
   posten: number;
+  /** v2-19 (GE-1): Der Planwert — nur beim Einkommens-Ordner gesetzt. Weicht er
+   *  von `amount` ab, liegt eine zugeordnete Gehaltszahlung vor, und die Kachel
+   *  zeigt beide Werte übereinander (Record, Entscheidung D). */
+  planned: number | null;
   /** Wie viele davon noch offen sind — `null` im Zukunftsmonat (Record C3). */
   offen: number | null;
   /** Zukunftsmonat: alle Kinder sind Forecast, also ist es der Ordner auch. */
@@ -80,11 +84,16 @@ export function buildCategoryGroups({
 }: BuildArgs): CategoryGroup[] {
   const amountByCategoryId = new Map<string, number>();
   let incomeAmount: number | null = null;
+  let incomePlanned: number | null = null;
   let uncategorizedAmount: number | null = null;
 
   for (const a of amounts) {
-    if (a.key === "INCOME") incomeAmount = Number(a.amount);
-    else if (a.key === "UNCATEGORIZED") uncategorizedAmount = Number(a.amount);
+    if (a.key === "INCOME") {
+      incomeAmount = Number(a.amount);
+      incomePlanned = a.planned === null || a.planned === undefined
+        ? null
+        : Number(a.planned);
+    } else if (a.key === "UNCATEGORIZED") uncategorizedAmount = Number(a.amount);
     else if (a.category_id) amountByCategoryId.set(a.category_id, Number(a.amount));
   }
 
@@ -120,6 +129,7 @@ export function buildCategoryGroups({
       sortOrder: INCOME_SORT_ORDER,
       amount: incomeAmount,
       posten: 1,
+      planned: incomePlanned,
       offen: null,
       isGhost: isFuture,
       cards: [],
@@ -141,6 +151,7 @@ export function buildCategoryGroups({
       sortOrder: cat.sortOrder,
       amount: amountByCategoryId.get(cat.id) ?? null,
       posten: list.length,
+      planned: null,
       offen: countOpen(list),
       isGhost: isFuture,
       cards: list,
@@ -161,6 +172,7 @@ export function buildCategoryGroups({
       sortOrder: UNCATEGORIZED_SORT_ORDER,
       amount: uncategorizedAmount,
       posten: lose.length,
+      planned: null,
       offen: countOpen(lose),
       isGhost: isFuture,
       cards: lose,

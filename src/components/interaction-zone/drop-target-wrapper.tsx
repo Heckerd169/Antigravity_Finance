@@ -2,11 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DRAG_MIME } from "./interaction-zone.types";
-import { linkFragmentToCard } from "./actions";
+import { linkFragmentToCard, linkFragmentToIncomeAction } from "./actions";
 import styles from "./interaction-zone.module.css";
 
+/** Wohin eine gezogene Zahlung fällt.
+ *
+ *  v2-19 (GE-1): Bis dahin gab es nur Karten. Die Netto-Kachel im
+ *  Einkommens-Ordner sieht aus wie eine Karte, ist aber keine — genau das war
+ *  der Grund, warum der Bedienversuch scheiterte. Sie bekommt hier ihr eigenes
+ *  Ziel, statt eine Pseudo-Karten-ID zu erfinden: Ein Netto-Drop schreibt in
+ *  eine andere Tabelle und über eine andere RPC. */
+export type DropTarget =
+  | { kind: "card"; cardId: string }
+  | { kind: "income" };
+
 type DropTargetWrapperProps = {
-  cardId: string;
+  target: DropTarget;
   /** false → kein Drop-Handler (Ghost-Card, Konflikt 3 §7). */
   active: boolean;
   /** "YYYY-MM-01" — wird als link_month gesetzt (A19 / Konflikt 4 §7). */
@@ -17,7 +28,7 @@ type DropTargetWrapperProps = {
 };
 
 export function DropTargetWrapper({
-  cardId,
+  target,
   active,
   targetDbMonth,
   targetMonth,
@@ -78,7 +89,11 @@ export function DropTargetWrapper({
     // Server Action — bei Fehler nicht in der UI hängen lassen, sondern werfen
     // (LL-2). Next.js zeigt den Error im Dev-Overlay; im Prod sieht der User
     // einfach kein Update, was hier akzeptabel ist (keine destruktive Aktion).
-    await linkFragmentToCard(fragmentId, cardId, targetDbMonth);
+    if (target.kind === "income") {
+      await linkFragmentToIncomeAction(fragmentId, targetDbMonth);
+    } else {
+      await linkFragmentToCard(fragmentId, target.cardId, targetDbMonth);
+    }
   }
 
   return (

@@ -11,6 +11,7 @@ import type { CategoryGroup } from "./category-groups";
 import type { Liquidity } from "./liquidity";
 import type {
   FragmentRow,
+  IncomeAssignment,
   IncomeSlotProps,
 } from "./interaction-zone.types";
 import { formatEuroRounded } from "@/lib/format";
@@ -42,6 +43,9 @@ type CarouselProps = {
   liquidity: Liquidity | null;
   /** v2-17 (KAT-2): für die Netto-Kachel im Ordner „Einkommen". */
   incomeSlot: IncomeSlotProps;
+  /** v2-19 (GE-1): die zugeordnete Gehaltszahlung dieses Monats, falls es eine
+   *  gibt — sie wird im Einkommens-Fenster zum Lösen angeboten. */
+  incomeAssignment: IncomeAssignment | null;
 };
 
 const SCROLL_STEP = 146; // 136 Karten-Breite + 10 Gap
@@ -54,6 +58,7 @@ export function Carousel({
   fragments,
   liquidity,
   incomeSlot,
+  incomeAssignment,
 }: CarouselProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scrollState, setScrollState] = useState({
@@ -244,16 +249,32 @@ export function Carousel({
                     }`}
                   >
                     {group.kind === "INCOME" ? (
-                      <NettoTile
-                        amount={group.amount ?? 0}
-                        isGhost={group.isGhost}
-                        income={incomeSlot}
-                      />
+                      /* v2-19 (GE-1): Die Netto-Kachel ist jetzt Ablageziel.
+                         Bewusst DERSELBE Wrapper wie bei Karten — die
+                         Hervorhebung beim Drüberziehen ist damit garantiert
+                         dieselbe und kann nicht auseinanderlaufen (Record,
+                         Entscheidung A). Nur das Ziel ist ein anderes: Ein
+                         Netto-Drop schreibt in eine eigene Tabelle, weil es
+                         keine Karte gibt, an die er hängen könnte. */
+                      <DropTargetWrapper
+                        target={{ kind: "income" }}
+                        active={!isFuture}
+                        targetDbMonth={targetDbMonth}
+                        targetMonth={targetMonth}
+                      >
+                        <NettoTile
+                          amount={group.amount ?? 0}
+                          planned={group.planned}
+                          isGhost={group.isGhost}
+                          income={incomeSlot}
+                          assignment={incomeAssignment}
+                        />
+                      </DropTargetWrapper>
                     ) : (
                       group.items.map((item) => (
                         <DropTargetWrapper
                           key={item.id}
-                          cardId={item.id}
+                          target={{ kind: "card", cardId: item.id }}
                           active={!isFuture}
                           targetDbMonth={targetDbMonth}
                           targetMonth={targetMonth}

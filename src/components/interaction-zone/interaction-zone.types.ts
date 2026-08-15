@@ -14,6 +14,13 @@ export type IncomeSlotProps = {
   taxYear: number;
 };
 
+/** v2-19 (GE-1): Die zugeordnete Gehaltszahlung. Definiert wird sie beim
+ *  Einkommens-Fenster, weil sie fachlich dorthin gehört und dort gelöst wird
+ *  (Record, Entscheidung E); hier nur weitergereicht, damit die bestehende
+ *  Import-Richtung interaction-zone → income-split erhalten bleibt. */
+import type { IncomeAssignment } from "@/components/income-split/income-split.types";
+export type { IncomeAssignment };
+
 export type CardType = Database["public"]["Enums"]["card_type"];
 export type CardAttribution = Database["public"]["Enums"]["card_attribution"];
 export type CardFrequency = Database["public"]["Enums"]["card_frequency"];
@@ -135,6 +142,9 @@ export type InteractionZoneProps = {
   /** v2-17 (KAT-2): was die Netto-Kachel im Ordner „Einkommen" braucht, um das
    *  bestehende Einkommens-Fenster zu öffnen. */
   incomeSlot: IncomeSlotProps;
+  /** v2-19 (GE-1): die diesem Monat zugeordnete Gehaltszahlung, falls es eine
+   *  gibt. `null` heißt: Es gilt der Plan. */
+  incomeAssignment: IncomeAssignment | null;
   /** "YYYY-MM" — der aktuell angezeigte Monat. */
   targetMonth: string;
   /** "YYYY-MM-01" — Datenbank-Variante für RPC-Aufrufe / link_month. */

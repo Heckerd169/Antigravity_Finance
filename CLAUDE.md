@@ -8,9 +8,29 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 13. August 2026 · **nach:** dem Doku-Nachzug
-> *„der Anker wird invariantenbasiert"* (`sprints/doku_patch_2026-08-13_anker-invarianten.md`),
-> davor Sprint **v2-18**.
+> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-19**
+> („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`; Design-Doku **v3.7.0**,
+> Schema-Doku **v3.6.0**, PR **#29** offen).
+>
+> Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
+> Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
+> Sprint-Stand, Doku-Versionen und Roadmap-Zahlen. **Die Momentaufnahme in §9 bleibt
+> unverändert** — der Sprint hat keine Zahl bewegt, und das ist hier das erwartete
+> Ergebnis, nicht ein fehlender Nachtrag.
+>
+> **Das Netto ist nicht mehr nur geplant.** Zieht der Nutzer seine Gehaltszahlung auf
+> die Netto-Kachel, rechnet dieser Monat mit dem tatsächlich überwiesenen Betrag. Die
+> Differenz bekommt eine eigene Treiber-Zeile — die **erste ohne Karte dahinter**.
+> Der teuerste Fund dabei steckt in Stolperfalle 16: Eine Frontend-Zeile hätte die
+> ganze Sache stillgelegt, ohne dass ein einziger Wächter angeschlagen hätte.
+>
+> ⚠️ **Die Migrationen liegen auf Produktion, der Browser-Smoke steht aus.** Unkritisch,
+> solange nichts zugeordnet ist — Details in §9.
+>
+> ---
+>
+> Davor der Doku-Nachzug
+> *„der Anker wird invariantenbasiert"* (`sprints/doku_patch_2026-08-13_anker-invarianten.md`).
 >
 > **Die eingefrorene Zwölf-Monats-Tabelle in §9 ist RAUS.** Sie war am 13.08.2026
 > zweimal innerhalb weniger Stunden überholt, ohne dass irgendetwas kaputt war — der
@@ -28,8 +48,7 @@
 > ---
 >
 > Davor Sprint **v2-18** (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
-> bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr;
-> Design-Doku **v3.6.0**, Schema-Doku **v3.5.0**).
+> bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr).
 >
 > Jene Runde berührte **nur §9**, dafür an vier Stellen — alle nach ausdrücklicher
 > Freigabe: Juli-Anker auf −322,74 € · **Sprint-Stand und Roadmap-Zahlen** auf v2-18 ·
@@ -99,10 +118,17 @@ expliziten Sprint-Auftrag.
 **Was NICHT verwendet wird:** kein Tailwind · keine Component-Library ·
 kein State-Manager · keine ORM.
 
-**Tests:** Playwright-Render-Smoke (read-only gegen dev/Prod-DB) + deterministische
-§9-Pixel-Checks (`pnpm test:visual`, synthetische Fixtures ohne Live-Daten).
-Daten-mutierende E2E laufen **nur** gegen die Übungs-Datenbank (§4). Der manuelle
-Browser-Smoke des Users bleibt der Produktiv-Gate.
+**Tests:** Playwright in drei Rollen. **Logik-Wächter** (die Mehrzahl, 72 von 75 im
+`visual`-Projekt) transpilieren die **echte Quelldatei** und führen sie aus, statt die
+Regel nachzubauen — ein Nachbau driftet ab und gibt falsche Sicherheit; diese Bauart hat
+in v2-12, v2-17 und v2-19 je einen Fehler gefunden. **Pixel-Checks** (§9, `draw.ts`)
+zeichnen auf ein Canvas und messen Farben. **Render-Smoke** fährt die Anwendung
+angemeldet hoch — read-only gegen dev/Prod-DB, und der einzige Test, der die App als
+Ganzes sieht.
+
+Alle drei brauchen **keine** Live-Daten außer dem Render-Smoke. Daten-mutierende E2E
+laufen **nur** gegen die Übungs-Datenbank (§4). Der manuelle Browser-Smoke des Users
+bleibt der Produktiv-Gate.
 
 ---
 
@@ -452,6 +478,18 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     PostgREST liefert dann ein **stilles `[]`** beim SELECT und `42501` beim INSERT —
     beim Testen liest sich das wie „noch keine Daten angelegt". `ENABLE` **und**
     Policy gehören von Hand in die Migration. (v2-17, Befund D8)
+16. **Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben.**
+    `get_year_deviation_drivers` liefert seit v2-19 bewusst bis zu **vier** Treiber —
+    drei Karten plus die Zeile „Gehalt", die absichtlich **nicht** gegen die Karten
+    gerankt wird. Im Frontend schnitt `getTop3Drivers` auf **drei** ab, und „Gehalt"
+    liegt im Juli 2026 mit −15,57 € auf **Platz 4**, weil die Budget-Treiber größer
+    sind. Die Zahl wäre korrekt berechnet, in die Sparrate gerechnet, B2-konform —
+    und **nie sichtbar** gewesen.
+    **Kein Wächter dieses Projekts fängt das:** Der Anker misst die Sparrate, die
+    Prüfsummen messen den Funktionsrumpf, die B2-Invariante misst die Summe. Alle drei
+    wären grün. **Wer eine Datenbank-Antwort erweitert, sucht im Frontend nach der
+    Stelle, die sie kürzt** — `slice`, `LIMIT`, `take`, eine feste Feldliste.
+    (v2-19, LL-26)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -661,6 +699,16 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-23 | Wandert ein Faktor in eine Basis-Funktion, wird aus `f × (a − b)` ein `(a − b × f)` — gemischte Klammer, B2 in allen zwölf Monaten prüfen | §7 Regel 23 · §6 Stolperfalle 11 | v2-13 (BF-4) |
 | LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
 | LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
+| LL-26 | Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben — wer eine Antwort erweitert, sucht die Stelle, die sie kürzt | §6 Stolperfalle 16 | v2-19 (GE-2) |
+
+> **Warum LL-26 neben LL-21 steht und nicht darin aufgeht.** LL-21 warnt vor einer
+> **stillen Kürzung durch die Infrastruktur** — PostgREST liefert 1000 Zeilen und
+> schweigt. LL-26 ist die Umkehrung: Die Kürzung ist **absichtlich und dokumentiert**,
+> nur ist ihre Begründung veraltet. `slice(0, 3)` war jahrelang richtig, mit einem
+> Kommentar, der es erklärte („die Begrenzung macht bereits die RPC"). Erst als die
+> RPC ihre Antwort erweiterte, wurde aus der Defense-in-Depth ein Filter. **Wer nach
+> LL-21 sucht, sucht nach fehlenden Grenzen; LL-26 sucht nach vorhandenen, die zu eng
+> geworden sind.**
 
 > **Warum LL-25 neben LL-24 steht und nicht darin aufgeht.** LL-24 warnt, dass die
 > Gegenseite **anders** rundet. Bei LL-25 rundet sie **seltener** — einmal am Ende
@@ -674,11 +722,30 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-18 (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
-bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr, 13.08.2026,
-PR **#26** gemerged) · **davor:** v2-17 (Kategorien im Karussell, `KAT-1` `KAT-2` `KAT-3`
-plus die Hausaufgabe `J1`) und v2-16 (`RM-2`, `PA-1`).
+**Letzter Sprint:** v2-19 („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`,
+13.08.2026, PR **#29** offen) · **davor:** v2-18 (zwei Befunde aus der Nutzung, PR #26)
+und v2-17 (Kategorien im Karussell).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+
+> **⚠️ Zwei Dinge, die bei v2-19 auseinanderfallen.** Die beiden Migrationen liegen
+> **bereits auf Produktion** (nach ausdrücklicher Freigabe, mit vollständiger Probe auf
+> der Übungs-Datenbank davor) — der **Browser-Smoke des Users steht aber noch aus**.
+> Das ist unkritisch, weil die Migrationen **keine Zahl bewegt haben**: Solange keine
+> Gehaltszahlung zugeordnet ist, rechnet alles wie zuvor. Bewegt wird erst durch das
+> Ziehen im Browser. Wer hier ansetzt, prüft zuerst den Stand von PR #29.
+
+**v2-19 macht das Netto von geplant zu gemessen.** Bis dahin galt „Realität gewinnt"
+für Fixkosten und Einnahmen, für das Gehalt nicht: Juli 2026 geplant 4.165,11 €,
+überwiesen 4.149,54 €, und die App sah die 15,57 € nicht. Jetzt lässt sich die Zahlung
+auf die Netto-Kachel ziehen; der Monat rechnet dann mit dem echten Betrag, und die
+Differenz erscheint als eigene Treiber-Zeile **ohne Karte dahinter** — die erste ihrer
+Art. Der Eingriff sitzt ausschließlich in `calculate_sparrate_for_month`;
+`calculate_planned_sparrate_for_month` und `get_net_monthly_for_month` sind
+**nachweislich** unberührt (identische Prüfsummen vor und nach der Migration, LL-23).
+
+**Paket 15 ist vollständig abgeschlossen** — einen Tag nachdem es entstanden ist. Es
+kam nicht aus der Roadmap, sondern aus einem **gescheiterten Bedienversuch**: Der User
+wollte sein Gehalt auf die Kachel ziehen, und es ging nicht.
 
 **v2-18 hat eine Produkt-Entscheidung aufgehoben, nicht nur nachgezogen.** Record `B4`
 („beim Anfassen einer Zahlung öffnen sich **alle** Ordner") war beim Bauen plausibel
@@ -697,7 +764,7 @@ gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
 v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
 
-**Doku-Versionen:** Design-Doku **v3.6.0** · Schema-Doku **v3.5.0**.
+**Doku-Versionen:** Design-Doku **v3.7.0** · Schema-Doku **v3.6.0**.
 
 ### Die Prüfanker
 
@@ -789,17 +856,21 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**13.08.2026, nach v2-18**: **10 offene Pakete · 29 Themen · 4 Hausaufgaben ·
-33 offen gesamt · 43 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**13.08.2026, nach v2-19**: **10 offene Pakete · 30 Themen · 5 Hausaufgaben ·
+35 offen gesamt · 45 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
-> **Die offenen Themen sind gestiegen, obwohl ein Sprint gelaufen ist — 28 → 29.**
-> Das ist Ehrlichkeit, kein Rückschritt: `KAT-5` (Record `A2` — eine Zahlung auf die
-> Ordner-Kachel ziehen öffnet das Anlege-Fenster mit vorgewählter Kategorie) wurde in
-> v2-17 **entschieden, aber nie gebaut** und im dortigen Review **nicht als offen
-> benannt**. Der Punkt existierte die ganze Zeit, nur unsichtbar. Er steht jetzt in
-> Paket 7 und ist durch v2-18 relevanter geworden, weil ein zugeklappter Ordner nun
-> gar kein Ziel mehr ist.
+> **Eine Hausaufgabe ist dazugekommen: `B2-R`.** Die Treiber-Summe liegt im Juli
+> **einen Cent** neben `Ist − Plan` (−17,21 € gegen −17,20 €). Ursache sind vier
+> **gemeinsame** Karten mit exakten, aber Sub-Cent-großen Deltas (Internet +0,0022 ·
+> Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003): `get_year_deviation_drivers`
+> rundet **je Zeile**, die Sparrate-Funktionen erst **am Ende über alles**.
+>
+> **Der Befund stammt nicht aus v2-19**, sondern vom 13.08.2026, als die ersten
+> Zahlungen gemeinsamen Karten zugeordnet wurden — vorher gab es keine solche Karte.
+> Aufgefallen ist er nur, weil der Prüfanker von v2-19 ihn streifte und dadurch **nicht
+> erfüllbar** war. **Wer die B2-Invariante misst, muss das wissen**, sonst hält er den
+> Cent für die Wirkung seines eigenen Eingriffs. Abhilfe nach LL-25.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
@@ -809,10 +880,16 @@ Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 (v2-10/v2-16), `LQ-1`/`LQ-2` (v2-14/v2-15) und `KAT-1`/`KAT-2`/`KAT-3` (v2-17).
 `LQ-3` und `RM-3` gehörten nie dazu — beide liegen in Paket 9, `KAT-4` in Paket 10.
 
-**Als Nächstes dran: Paket 5** (bessere automatische Zuordnung). Es ist der einzige
+**Als Nächstes dran: Paket 5** (bessere automatische Zuordnung) — v2-19 hat sich
+dazwischengeschoben, weil es aus der Nutzung kam. Es ist der einzige
 Punkt der Roadmap, der Aufwand **wegnimmt**, und die Kategorien-Runde hat nebenbei
 belegt, wie dringend es ist: Von **76 gemeinsamen Monatszahlungen sind zwei
-zugeordnet**, bei 19 Monaten identischem Text, Betrag und Tag. Ursache ist die
+zugeordnet**, bei 19 Monaten identischem Text, Betrag und Tag.
+
+> **v2-19 hat die Dringlichkeit noch erhöht.** Es liegen **20 unzugeordnete
+> Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli) — bei identischem Text,
+> festem Rhythmus und einem Betrag, der elf Monate lang auf den Cent gleich war. Sie
+> alle von Hand zu ziehen ist genau die Arbeit, die Paket 5 abnehmen soll. Ursache ist die
 Split-Systematik — „Miete" plant 1.904 € (Haushalt), überwiesen werden 1.089,26 €
 (der Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
 43 % Abweichung reichen nie für die 95-%-Schwelle.

@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectivePlanForMonth, getSplitFactor } from "@/lib/rpc";
+import {
+  getEffectivePlanForMonth,
+  getSplitFactor,
+  unlinkFragmentFromIncome,
+} from "@/lib/rpc";
 import {
   buildConsequenceItems,
   isEmptyConsequence,
@@ -196,6 +200,29 @@ async function buildSplitConsequence(
   } catch {
     return null;
   }
+}
+
+/** v2-19 (GE-1, Record E): Löst die zugeordnete Gehaltszahlung.
+ *
+ *  Danach rechnet der Monat wieder mit dem Plan, und die Zahlung kehrt in die
+ *  Rohmasse zurück — Letzteres ergibt sich von selbst, weil
+ *  `fragments_with_status` den Zustand aus dem Link ableitet und ohne Link
+ *  wieder `UNASSIGNED` liefert.
+ *
+ *  Sie liegt hier und nicht bei den Karussell-Aktionen, weil gelöst wird, wo
+ *  das Fenster steht: im Einkommens-Fenster. */
+export async function unlinkIncomeFragmentAction(
+  fragmentId: string,
+): Promise<void> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht authentifiziert");
+
+  await unlinkFragmentFromIncome(supabase, { fragmentId });
+
+  revalidatePath("/", "page");
 }
 
 function isPastMonth(am: { year: number; month: number }): boolean {

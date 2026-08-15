@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gehalt zuordnen — Entwurf v2-19</title>
+<style>
+:root{
+  --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-ghost:#181818;
+  --color-teal:#3ECFAF; --color-red:#FF453A; --color-gold:rgba(255,200,60,.6);
+  --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
+  --border-subtle:rgba(255,255,255,.07); --outline-drop:rgba(255,255,255,.35);
+  --bg-category:#131318; --border-category:rgba(255,255,255,.13);
+  --border-bracket:rgba(255,255,255,.14);
+  --fragment-hue:255,255,255;
+  --font:system-ui,-apple-system,"Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg-primary);color:var(--text-primary);
+  font-family:var(--font);font-size:14px;line-height:1.55;padding:32px 24px 80px}
+.wrap{max-width:1040px;margin:0 auto}
+h1{font-size:21px;font-weight:600;letter-spacing:-.4px;margin:0 0 6px}
+h2{font-size:15px;font-weight:600;letter-spacing:-.2px;margin:44px 0 4px;
+  padding-top:22px;border-top:1px solid var(--border-subtle)}
+h2:first-of-type{border-top:none;padding-top:0}
+.lead{color:var(--text-muted);margin:0 0 8px;max-width:70ch}
+.hint{font-size:12px;color:var(--text-ghost);margin:4px 0 18px}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--text-muted)}
+
+/* ---------- Karte / Kachel (echte Maße aus cards.module.css) ---------- */
+.card{width:136px;flex-shrink:0;min-height:170px;border-radius:14px;
+  padding:14px 13px 12px;border:1px solid rgba(255,255,255,.07);background:#141416;
+  position:relative;opacity:.75;display:flex;flex-direction:column;text-align:left;
+  transition:transform .15s,border-color .15s,background .25s,opacity .25s}
+.card.expected{background:#0D1A16;border-color:rgba(62,207,175,.18)}
+.card.received{background:#0A140E;border-color:rgba(62,207,175,.22)}
+.cardLabel{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(62,207,175,.45)}
+.received .cardLabel{color:rgba(62,207,175,.45)}
+.cardName{font-size:13px;font-weight:500;letter-spacing:-.2px;margin-bottom:2px;
+  color:var(--text-muted)}
+.received .cardName{color:var(--text-primary)}
+.cardAmount{font-size:22px;font-weight:200;letter-spacing:-1.2px;
+  font-variant-numeric:tabular-nums;line-height:1;margin-bottom:2px;color:var(--text-muted)}
+.received .cardAmount{color:var(--text-primary)}
+.householdAmount{font-size:10px;font-weight:400;font-variant-numeric:tabular-nums;
+  line-height:12px;min-height:12px;white-space:nowrap;color:var(--text-muted);margin-bottom:5px}
+.stateRow{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.stateLabel{font-size:9px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;
+  color:rgba(62,207,175,.45)}
+.cardMeta{display:flex;align-items:center;gap:5px;margin-top:8px}
+.metaDot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22)}
+.metaText{font-size:10px;font-weight:500;color:rgba(255,255,255,.20);letter-spacing:.2px}
+.spacer{flex:1}
+
+/* Drop-Hervorhebung — exakt .dropTargetActive */
+.dropWrap{border-radius:14px}
+.dropWrap.over{outline:2px solid var(--outline-drop);outline-offset:2px}
+
+/* ---------- Ordner-Kachel ---------- */
+.catTile{width:136px;flex-shrink:0;min-height:170px;border-radius:14px;
+  padding:14px 13px 12px;background:var(--bg-category);
+  border:1px solid var(--border-category);display:flex;flex-direction:column;opacity:.85}
+.catKicker{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,.30)}
+.catName{font-size:13px;font-weight:500;letter-spacing:-.2px;margin-bottom:2px}
+.catAmount{font-size:22px;font-weight:200;letter-spacing:-1.2px;
+  font-variant-numeric:tabular-nums;line-height:1;margin-bottom:2px;color:var(--color-teal)}
+.catCount{font-size:9px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;
+  color:rgba(255,255,255,.30)}
+
+/* ---------- Bühne ---------- */
+.stage{display:grid;grid-template-columns:236px 1fr;gap:20px;align-items:start;
+  background:rgba(255,255,255,.02);border:1px solid var(--border-subtle);
+  border-radius:16px;padding:20px;margin:18px 0 6px}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.colTitle{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-ghost);margin-bottom:10px}
+
+/* Rohmasse */
+.fragment{border:1px solid rgba(var(--fragment-hue),.10);
+  background:rgba(var(--fragment-hue),.035);border-radius:10px;padding:9px 11px;
+  margin-bottom:7px;cursor:grab;display:flex;justify-content:space-between;
+  align-items:center;gap:10px;transition:opacity .2s,border-color .2s}
+.fragment:active{cursor:grabbing}
+.fragment.dragging{opacity:.35}
+.fragment.locked{cursor:default;opacity:.4;border-style:dashed}
+.fragDesc{font-size:11px;color:var(--text-muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.fragAmt{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;
+  color:var(--text-primary);font-weight:400}
+.fragAmt.pos{color:var(--color-teal)}
+.lockTag{font-size:8px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-ghost)}
+
+/* Klammer unter offenem Ordner */
+.bracket{display:flex;gap:10px;padding:10px 10px 12px;
+  border:1px solid var(--border-bracket);border-top:none;
+  border-radius:0 0 12px 12px;margin-left:2px}
+.folderRow{display:flex;gap:10px;align-items:flex-start}
+
+/* Sparraten-Anzeige */
+.readout{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;padding-top:16px;
+  border-top:1px solid var(--border-subtle)}
+.metric .k{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-ghost);margin-bottom:3px}
+.metric .v{font-size:26px;font-weight:200;letter-spacing:-1.4px;
+  font-variant-numeric:tabular-nums;line-height:1}
+.v.teal{color:var(--color-teal)} .v.red{color:var(--color-red)}
+.v.muted{color:var(--text-muted)}
+.delta{font-size:11px;color:var(--text-ghost);margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* Treiber */
+.drivers{margin-top:16px;padding:13px 15px;border-radius:12px;
+  background:rgba(255,255,255,.025);border:1px solid var(--border-subtle);font-size:12px}
+.driversHead{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-ghost);margin-bottom:9px}
+.driverRow{display:flex;justify-content:space-between;gap:14px;padding:4px 0;
+  font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.driverRow.salary{color:var(--text-primary)}
+.driverRow.salary .dn::after{content:" ← neu";font-size:9px;color:var(--color-teal);
+  letter-spacing:.5px}
+.driverSum{display:flex;justify-content:space-between;gap:14px;margin-top:9px;
+  padding-top:9px;border-top:1px solid var(--border-subtle);
+  font-variant-numeric:tabular-nums;color:var(--text-ghost);font-size:11px}
+
+.btn{font:inherit;font-size:12px;color:var(--text-muted);background:rgba(255,255,255,.05);
+  border:1px solid var(--border-subtle);border-radius:8px;padding:6px 13px;cursor:pointer;
+  transition:background .15s,color .15s}
+.btn:hover{background:rgba(255,255,255,.09);color:var(--text-primary)}
+
+/* Varianten-Vergleich */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:18px}
+.opt{border:1px solid var(--border-subtle);border-radius:14px;padding:17px;
+  background:rgba(255,255,255,.018)}
+.opt.rec{border-color:rgba(62,207,175,.30);background:rgba(62,207,175,.045)}
+.optTag{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-ghost);margin-bottom:9px}
+.opt.rec .optTag{color:var(--color-teal)}
+.optWhy{font-size:12px;color:var(--text-muted);margin-top:13px}
+.optCost{font-size:11px;color:var(--text-ghost);margin-top:7px}
+
+/* Einkommens-Fenster */
+.modal{border:1px solid rgba(255,255,255,.10);border-radius:13px;
+  background:#111113;padding:15px;font-size:12px}
+.modalTitle{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text-ghost);margin-bottom:11px}
+.field{display:flex;justify-content:space-between;gap:12px;padding:6px 0;
+  color:var(--text-muted);font-variant-numeric:tabular-nums}
+.assignBlock{margin-top:12px;padding-top:11px;border-top:1px solid var(--border-subtle)}
+.assignRow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px}
+.dots{font-size:15px;color:var(--text-ghost);letter-spacing:1px}
+.menu{border:1px solid rgba(255,255,255,.12);border-radius:9px;background:#17171a;
+  padding:5px;font-size:12px;display:inline-block;margin-top:8px}
+.menuItem{padding:6px 11px;color:var(--text-muted);border-radius:6px}
+
+/* Popup */
+.popup{border:1px solid rgba(255,255,255,.10);border-radius:15px;background:#101012;
+  padding:19px;max-width:520px}
+.popupKicker{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--text-ghost)}
+.popupHero{font-size:33px;font-weight:200;letter-spacing:-1.8px;color:var(--color-teal);
+  margin:5px 0 3px;font-variant-numeric:tabular-nums}
+.popupSub{font-size:11px;color:var(--text-ghost);margin-bottom:15px}
+.popupDrivers{font-size:12px;color:var(--text-muted);padding-top:13px;
+  border-top:1px solid var(--border-subtle);line-height:1.9}
+.sw{color:var(--color-teal)}
+.strike{text-decoration:line-through;text-decoration-color:rgba(255,69,58,.6);
+  color:var(--text-ghost)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Das Gehalt zuordnen — was gebaut werden soll</h1>
+<p class="lead">Alle Zahlen sind echt: Juli 2026, geplantes Netto <strong>4.165,11 €</strong>,
+tatsächlich überwiesen <strong>4.149,54 €</strong> am 28.07. Die Formen und Farben
+kommen aus <code>tokens.css</code> und <code>cards.module.css</code>.</p>
+
+<h2>① So funktioniert es — bitte ausprobieren</h2>
+<p class="lead">Zieh die Gehaltszahlung links auf die Kachel „Nettogehalt". Beobachte dabei
+die Sparrate und die Treiber-Liste darunter.</p>
+<p class="hint">Das ist der ganze Sprint in einer Geste. Heute geht sie nicht — das Netto
+ist keine Karte, und nur Karten nehmen Zahlungen an.</p>
+
+<div class="stage">
+  <div>
+    <div class="colTitle">Rohmasse — Juli</div>
+    <div class="fragment locked"><span class="fragDesc">15.07. · Aldi Süd</span><span class="fragAmt">−48,22 €</span></div>
+    <div class="fragment locked"><span class="fragDesc">20.07. · Shell Tankstelle</span><span class="fragAmt">−71,05 €</span></div>
+    <div id="salaryFrag" class="fragment" draggable="true">
+      <span class="fragDesc">28.07. · Lohn-/Gehaltzahlung 7/2026</span>
+      <span class="fragAmt pos">4.149,54 €</span>
+    </div>
+    <div id="assignedNote" style="display:none">
+      <div class="fragment locked">
+        <span class="fragDesc">28.07. · Lohn-/Gehaltzahlung 7/2026</span>
+        <span class="lockTag">zugeordnet</span>
+      </div>
+      <p class="hint" style="margin-top:9px">Wie bei jeder Karte: die Zahlung bleibt
+      sichtbar, rutscht nach hinten und ist nicht mehr ziehbar.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="colTitle">Karussell — Ordner „Einkommen", aufgeklappt</div>
+    <div class="folderRow">
+      <div class="catTile">
+        <div class="catKicker">Kategorie</div>
+        <div class="catName">Einkommen</div>
+        <div id="folderAmt" class="catAmount">4.165,11 €</div>
+        <div class="householdAmount"></div>
+        <div class="spacer"></div>
+        <div class="catCount">1 Posten</div>
+        <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ordner</div></div>
+      </div>
+    </div>
+    <div class="bracket">
+      <div id="dropWrap" class="dropWrap">
+        <div id="nettoCard" class="card expected">
+          <div class="cardLabel">Einkommen</div>
+          <div class="cardName">Nettogehalt</div>
+          <div id="nettoAmt" class="cardAmount">4.165,11 €</div>
+          <div id="nettoPlan" class="householdAmount"></div>
+          <div class="spacer"></div>
+          <div class="stateRow"><span id="nettoState" class="stateLabel">Monatlich</span></div>
+          <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ich</div></div>
+        </div>
+      </div>
+      <p class="hint" style="align-self:center;margin:0;max-width:26ch">
+        ← hierhin ziehen</p>
+    </div>
+
+    <div class="readout">
+      <div class="metric">
+        <div class="k">Sparrate Juli — Ist</div>
+        <div id="ist" class="v teal">6,73 €</div>
+        <div id="istDelta" class="delta">&nbsp;</div>
+      </div>
+      <div class="metric">
+        <div class="k">Sparrate Juli — Plan</div>
+        <div class="v muted">23,93 €</div>
+        <div class="delta">rührt sich nicht</div>
+      </div>
+    </div>
+
+    <div class="drivers">
+      <div class="driversHead">Abweichungs-Treiber Juli — im Jahres-Popup</div>
+      <div class="driverRow"><span class="dn">Urlaub Frankreich (Vogesen)</span><span>+303,23 €</span></div>
+      <div class="driverRow"><span class="dn">Privates Budget</span><span>−302,58 €</span></div>
+      <div class="driverRow"><span class="dn">Tanken</span><span>+57,75 €</span></div>
+      <div id="salaryDriver" class="driverRow salary" style="display:none">
+        <span class="dn">Gehalt</span><span>−15,57 €</span>
+      </div>
+      <div class="driverSum"><span>Ist minus Plan</span><span id="sumVal">−17,20 €</span></div>
+    </div>
+
+    <button id="reset" class="btn" style="margin-top:15px">Zurücksetzen</button>
+  </div>
+</div>
+
+<h2>② Wo löst du die Zuordnung wieder?</h2>
+<p class="lead">Das ist die Lücke, die ich noch nicht entscheiden kann. Bei einer Karte
+löst man im Kontextmenü unter „Verknüpfte Fragmente" — genau dieses Menü hat der
+Gestaltungs-Record der Netto-Kachel aber ausdrücklich verwehrt
+(„<em>kein Karten-Kontextmenü, kein Lebenszyklus</em>").</p>
+
+<div class="opts">
+  <div class="opt rec">
+    <div class="optTag">Variante 1 · Empfehlung</div>
+    <div class="modal">
+      <div class="modalTitle">Einkommen · Juli 2026</div>
+      <div class="field"><span>Brutto jährlich</span><span>92.400,00 €</span></div>
+      <div class="field"><span>Netto monatlich</span><span>4.165,11 €</span></div>
+      <div class="assignBlock">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-ghost)">Zugeordnete Zahlung</div>
+        <div class="assignRow">
+          <span style="color:var(--text-muted)">28.07. · 4.149,54 €</span>
+          <button class="btn" style="padding:4px 10px">Lösen</button>
+        </div>
+      </div>
+    </div>
+    <div class="optWhy">Im Einkommens-Fenster — dem Fenster, das der Klick auf die Kachel
+    ohnehin öffnet.</div>
+    <div class="optCost">Kein neues Menü, kein zweiter Ort. Fügt sich in die Entscheidung
+    ein, die schon getroffen ist.</div>
+  </div>
+
+  <div class="opt">
+    <div class="optTag">Variante 2</div>
+    <div style="display:flex;gap:8px;align-items:flex-start">
+      <div class="card received" style="min-height:150px">
+        <div class="cardLabel">Einkommen</div>
+        <div class="cardName">Nettogehalt</div>
+        <div class="cardAmount">4.149,54 €</div>
+        <div class="householdAmount">geplant 4.165,11 €</div>
+        <div class="spacer"></div>
+        <div class="cardMeta"><div class="metaDot"></div><div class="metaText">Ich</div></div>
+      </div>
+      <div>
+        <div class="dots">⋯</div>
+        <div class="menu"><div class="menuItem">Zuordnung lösen</div></div>
+      </div>
+    </div>
+    <div class="optWhy">Ein ⋯-Menü auf der Kachel, wie es die Ordner-Kachel hat.</div>
+    <div class="optCost">Näher an der Karten-Analogie — widerspricht aber dem Record,
+    der die Kachel ohne Menü lässt.</div>
+  </div>
+
+  <div class="opt">
+    <div class="optTag">Variante 3</div>
+    <div style="border:1px solid var(--border-subtle);border-radius:11px;padding:11px">
+      <div class="fragment locked" style="margin:0">
+        <span class="fragDesc">28.07. · Lohn-/Gehaltzahlung</span>
+        <span style="color:var(--text-ghost);font-size:13px">✕</span>
+      </div>
+    </div>
+    <div class="optWhy">Die Zahlung trägt in der Rohmasse selbst ein Kreuz.</div>
+    <div class="optCost">Am nächsten an der Herkunft — aber gesperrte Zahlungen haben
+    heute nirgends eine eigene Bedienung; das wäre ein neues Muster.</div>
+  </div>
+</div>
+
+<h2>③ Der Satz unter dem Jahres-Popup</h2>
+<p class="lead">Du hast entschieden, dass „Gehalt" <em>zusätzlich</em> zu den drei
+Karten-Treibern erscheint. Damit sind es zeitweise vier Zeilen — die Unterzeile
+verspricht aber wörtlich „die drei Treiber".</p>
+
+<div class="popup">
+  <div class="popupKicker">Kumulierte Sparrate 2026</div>
+  <div class="popupHero">+18.545,12 €</div>
+  <div class="popupSub">IST (teal), Plan (grau), Vorjahr (gold) ·
+    <span class="strike">Klick auf einen Monat zeigt die drei Treiber</span>
+    <span class="sw">→ zeigt die größten Treiber</span></div>
+  <div class="popupDrivers">
+    <strong>Juli 2026</strong> · Urlaub Frankreich (Vogesen) +303,23 € ·
+    Privates Budget −302,58 € · Tanken +57,75 € ·
+    <span style="color:var(--text-primary)">Gehalt −15,57 €</span>
+  </div>
+</div>
+<p class="hint" style="margin-top:12px">Vier Zeilen statt drei — deshalb die Frage.
+„die größten Treiber" bleibt wahr, egal wie viele es sind.</p>
+
+</div>
+
+<script>
+(function(){
+  var frag=document.getElementById('salaryFrag'), wrap=document.getElementById('dropWrap'),
+      card=document.getElementById('nettoCard'), amt=document.getElementById('nettoAmt'),
+      plan=document.getElementById('nettoPlan'), state=document.getElementById('nettoState'),
+      folder=document.getElementById('folderAmt'), ist=document.getElementById('ist'),
+      istDelta=document.getElementById('istDelta'), sum=document.getElementById('sumVal'),
+      drv=document.getElementById('salaryDriver'), note=document.getElementById('assignedNote'),
+      reset=document.getElementById('reset'), depth=0, MIME='application/x-fragment-id';
+
+  frag.addEventListener('dragstart',function(e){
+    e.dataTransfer.setData(MIME,'salary'); e.dataTransfer.effectAllowed='move';
+    frag.classList.add('dragging');
+  });
+  frag.addEventListener('dragend',function(){frag.classList.remove('dragging')});
+
+  function isOurs(e){var t=e.dataTransfer.types; if(!t) return false;
+    for(var i=0;i<t.length;i++){if(t[i]===MIME) return true} return false}
+
+  wrap.addEventListener('dragenter',function(e){
+    if(!isOurs(e))return; e.preventDefault(); depth++; if(depth===1) wrap.classList.add('over')});
+  wrap.addEventListener('dragover',function(e){
+    if(!isOurs(e))return; e.preventDefault(); e.dataTransfer.dropEffect='move'});
+  wrap.addEventListener('dragleave',function(e){
+    if(!isOurs(e))return; e.preventDefault(); depth=Math.max(0,depth-1);
+    if(depth===0) wrap.classList.remove('over')});
+  wrap.addEventListener('drop',function(e){
+    if(!isOurs(e))return; e.preventDefault(); depth=0; wrap.classList.remove('over'); assign()});
+
+  function assign(){
+    card.classList.remove('expected'); card.classList.add('received');
+    amt.textContent='4.149,54 €';
+    plan.textContent='geplant 4.165,11 €';
+    state.textContent='Zugeordnet';
+    folder.textContent='4.149,54 €';
+    ist.textContent='−8,84 €'; ist.classList.remove('teal'); ist.classList.add('red');
+    istDelta.textContent='−15,57 € gegenüber vorher';
+    sum.textContent='−32,77 €';
+    drv.style.display='flex';
+    frag.style.display='none'; note.style.display='block';
+  }
+
+  reset.addEventListener('click',function(){
+    card.classList.add('expected'); card.classList.remove('received');
+    amt.textContent='4.165,11 €'; plan.textContent=''; state.textContent='Monatlich';
+    folder.textContent='4.165,11 €';
+    ist.textContent='6,73 €'; ist.classList.add('teal'); ist.classList.remove('red');
+    istDelta.innerHTML='&nbsp;'; sum.textContent='−17,20 €';
+    drv.style.display='none'; frag.style.display='flex'; note.style.display='none';
+  });
+})();
+</script>
+</body>
+</html>
