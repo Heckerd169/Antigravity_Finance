@@ -1318,3 +1318,720 @@ Worktree). Ersatz ohne Konfigurationsänderung:
 nicht von A1 verursacht — kürzen oder umbrechen ist eine DD-Frage) ·
 DD-Feinschliff Palette und Schalter-Sprache (beides reiner Token-/Text-Tausch) ·
 unverändert offen: M2- und B2-Feinschliff, M5, E4, Karten-Rückdatierung 2025.
+
+---
+
+## Nachtrag vom 15. August 2026 — fünfzehn Sprints auf einmal
+
+> **Was hier passiert ist.** Dieser Log endete bei **v2-07** (25. Juli 2026). Die
+> Sprints **v2-08 bis v2-22** wurden gebaut, abgenommen und in eigenen Review-Dateien
+> dokumentiert — aber nie hierher übertragen. Aufgefallen ist es am 15.08.2026, als
+> jemand einer Lessons-Learned-Spur folgen wollte.
+>
+> **Warum das mehr als Unordnung war.** `CLAUDE.md §8` verspricht zu **jeder** Lesson
+> Learned: *„Die Langfassung mit dem Vorfall, der sie erzeugt hat, steht in
+> `sprints/projekt_historie.md` beim genannten Sprint."* Für **LL-21 bis LL-27** war
+> das schlicht nicht wahr — die Verweise liefen ins Leere. Ein Register, dessen
+> Verweise nicht auflösen, ist schlimmer als keines: Man sucht und hört auf zu suchen.
+>
+> **Wie die Einträge entstanden sind.** Verdichtet aus den fünfzehn Review-Dateien
+> unter `sprints/`, die alle vollständig vorliegen. Sie sind **nachträglich
+> geschrieben** und geben deshalb nicht wieder, was man *damals* wusste — genau das,
+> was dieser Log sonst leistet. Wo eine Annahme später widerlegt wurde, steht es dabei.
+> Die Reviews selbst bleiben die Primärquelle und sind ungekürzt erhalten.
+>
+> **Die Append-only-Regel ist gewahrt:** Kein bestehender Eintrag wurde angefasst.
+
+---
+
+### Sprint v2-08 · DONE 04. August 2026
+
+**Komponente:** Repo-Hygiene und Arbeitssetup. Keine Fehlerbehebung, keine neue
+Funktion, keine Verhaltensänderung an der App — die Bundle-Größe war vorher wie
+nachher identisch, was hier der Beleg ist und nicht bloß eine Randnotiz.
+
+**Der Kern: `CLAUDE.md` von 1.857 auf 434 Zeilen.** 70 % der Datei waren Anhang-Log —
+1.293 Zeilen, die **jede** Sitzung vollständig lud (~39.000 Token, danach ~7.900).
+Der Log wurde **byte-genau** ausgelagert und die Gleichheit per `md5` belegt, nicht
+behauptet. Genau diese Datei hier ist das Ergebnis.
+
+**Fünf Regeln gerettet.** LL-1, LL-3, LL-4, LL-5 und LL-8 waren **ausschließlich** im
+Anhang definiert; ein naives Auslagern hätte sie lautlos entfernt. LL-5 war zu dem
+Zeitpunkt aktiv in Gebrauch — v2-07 hatte ausdrücklich damit argumentiert. Dazu 17 tote
+Pfade korrigiert und ein Regel-Widerspruch aufgelöst (Zeile 472 verbot Änderungen an
+`CLAUDE.md`, Zeile 4 erlaubte sie — seit v2-05 war Letzteres Praxis).
+
+**Drei Fähigkeiten entstanden, sechs Verfahren wurden verworfen.** `db-eingriff`
+(2× gefahren, 1× begründet ausgelassen), `sprint-abschluss` (Schritt 5 war zweimal
+vergessen worden → drei Nachzugs-Commits) und `sprint-briefing`. Verworfen unter
+anderem: CSV-Import (erst zwei Läufe) und die Doku-Patch-Routine (der `docs-maintainer`
+deckt sie ab). **Keine Fähigkeit ohne Beleg im Repo** war die Auflage.
+
+**`.claude/settings.json` neu, 103 Freigaben.** `git` je **Unterbefehl** gelistet —
+`Bash(git *)` hätte `push` und `merge` mit eingeschlossen und genau das Gate
+ausgehebelt, das technisch greifen sollte.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · `test:visual` 3/3, nach jeder Phase.
+Kein Zahlenwert bewegt — kein DB-Zugriff, keine Migration.
+
+**Offen nach v2-08:** 26 Remote-Branches · veralteter Prüfwert in
+`supabase/test_projekt/README.md:66` (4.545,32 statt 4.589,53) · doppelte
+Abschnittsnummer „13." in der Schema-Doku · die fünf Befunde vom 04.08. unangetastet,
+einer davon mit 900 € Wirkung auf die Juli-Sparrate.
+
+---
+
+### Sprint v2-09 · DONE 04. August 2026
+
+**Komponente:** Den Sprint-Ablauf vereinfachen. Kein Eingriff in die App.
+
+**Der Auslöser war eine Zurückweisung.** Nach der Beschreibung des Ablaufs in v2-08 hat
+der User ihn als **zu komplex** verworfen. Die Diagnose davor war der eigentliche Wert:
+**Nicht der Prozess war teuer, sondern der Chat-Wechsel zum Design-Direktor.** Von
+sieben Stufen kosteten fünf nichts.
+
+**Sieben Sprint-Stufen wurden drei** — Klären · Bauen · Abnehmen. Der **Design-Direktor
+zog aus einem eigenen Chat in eine Fähigkeit** um, und die Roadmap wurde von 14
+Buchstaben-Kategorien auf **elf Sprint-Pakete** umgebaut. Elf Themen kamen dabei
+erstmals überhaupt in die Roadmap — die fünf Befunde vom 04.08., zwei Datenbasis-Themen,
+zwei Übungs-DB-Hausaufgaben und zwei Feinschliff-Punkte standen vorher nur in eigenen
+Papieren oder im Projekt-Gedächtnis.
+
+**Die Entscheidung, die daraus einen Merksatz machte:** Der erste Vorschlag war ein
+*Agent* für den Design-Direktor. Der User-Einwand: Bei Gestaltung muss man sagen können,
+**was** und **warum** etwas nicht passt — das braucht Dialog. Ein Agent liefe über den
+Hauptchat als Übersetzer, und bei Gestaltung ist die Nuance die ganze Aussage. Daraus
+wurde `CLAUDE.md §4`: **Muss ich mit dem Ding reden können, ist es nie ein Subagent.**
+
+**Ebenfalls abgelehnt: ein Agent „Daten-Architekt".** Migrations-Entwurf ist
+Konstruktion, keine Zweitmeinung — wer sie anwendet, muss sie ganz verstanden haben.
+
+**Zwei Regeln wanderten aus dem Projekt-Gedächtnis ins Repo:** die Sprachregel
+(Empfehlungen in einfacher Sprache) und die Gedächtnis-Regel selbst — *nichts
+Dauerhaftes darf ausschließlich außerhalb des Repos liegen.*
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · `test:visual` 3/3. Bundle unverändert.
+Alle 56 alten Roadmap-Kennungen lösen weiter auf, alle 21 LL auffindbar.
+
+**Offen nach v2-09:** Der neue Ablauf war **ungetestet** — der erste echte Durchlauf
+sollte Paket 1 sein. `CLAUDE.md` war auf 500 Zeilen gewachsen; bei etwa 600 wäre erneut
+zu prüfen, was nach unten wandern kann.
+
+---
+
+### Sprint v2-10 · DONE 05. August 2026
+
+**Komponente:** Drei Anzeige-Fehler aus dem Befund-Papier vom 04.08. — `BF-3`
+(Einkommens-Popup), `BF-1` (Vorschlags-Kästchen und Umbruch), `RM-1` (Verwendungszweck
+statt Empfänger). Lief **unbeaufsichtigt, rund zwei Stunden, ohne anwesenden User**
+nach einem schriftlichen Auftrag.
+
+**`BF-3`** — Das Popup zum Eintragen der Gehälter öffnete als unbenutzbare Säule von
+rund 80 px. Ursache: `.splitLeft`/`.splitRight` tragen ein `transform: translateY(-50%)`,
+und ein Vorfahre mit `transform` wird zum Bezugsrahmen für `position: fixed`. `inset: 0`
+meinte dadurch das schmale Label statt des Fensters. Behoben per `createPortal`.
+
+**`BF-1`** — Das Euro-Zeichen rutschte in die zweite Zeile. Die KI-Vorschlags-Kästchen
+entfielen aus der Anzeige, umgesetzt über die Konstante `SHOW_SUGGESTION_BADGES = false`
+statt durch Löschen des Zweigs — „später mit **einer Zeile** wieder einschaltbar" war
+wörtliche Auflage. *(Diese eine Konstante wird v2-21 sechs Tage später wieder einholen:
+Ein perfekt nachgerechneter Vorschlag wäre in der Rohmasse unsichtbar geblieben.)*
+
+**`RM-1`** — Die Beschreibung zeigt seither den letzten `|`-Teil. Die Regel wurde
+**vor** der Umsetzung lesend gegen die Produktiv-Datenbank geprüft: 469 Visa-Zeilen ohne
+Trennzeichen, 973 DKB-Giro, 106 Cortal — und **genau ein** Fragment mit leerem Zweck,
+für das der Rückfall greift.
+
+**`PA-1` wurde bewusst NICHT gebaut.** Die Rechnung war fertig und verifiziert, aber
+Design-Doku §10 und §12.7 kannten **keinen** Zustand nach dem Speichern. Das Feature zu
+bauen hätte bedeutet, fünf Gestaltungsentscheidungen zu erfinden — der Auftrag verbot
+das zweimal, §7 Regel 3 ein drittes Mal.
+
+**Der Lernpunkt des Sprints — und er ist teuer bezahlt.** Der Portal-Fix aus Phase 1
+hatte eine Regression im Gepäck: `welle/index.tsx` prüft `closest("[data-wave-block]")`
+im **echten DOM**; nach dem Portal-Hop lief die Suche ins Leere, und **jeder Klick im
+Einkommens-Popup riss zusätzlich das Jahres-Popup auf**. Die gesamte Prüfstrecke war zu
+diesem Zeitpunkt **fünfmal grün**. Gefunden hat es der optische Smoke — der Schritt, den
+man am ehesten für Zierrat hält. Das ist die Kehrseite von LL-6: **Ein Portal repariert
+den Layout-Bezug und zerreißt im selben Zug jede Logik, die sich auf DOM-Nähe verlässt,
+während das Event-Bubbling weiterläuft**, weil Portale React-Kinder bleiben.
+
+Der Fall wanderte als Regressions-Wächter in die Suite — mit **Gegenprobe**: ohne den
+Fix ist der Test rot. Ein Wächter, der auch ohne die Reparatur grün bliebe, wäre wertlos.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · visual 3/3 · **e2e 10/10** (setup ·
+visual 3 · unauth 2 · render-smoke **4**). Anker in allen zwölf Monaten unbewegt.
+
+**Werkzeug-Hinweis:** Der bis dahin dokumentierte ESLint-Umweg reichte im Worktree
+**nicht** — er verhindert die doppelte *Plugin*-Auflösung, nicht die doppelte
+*Konfigurations*-Auflösung. Funktioniert hat erst `--no-eslintrc --config .eslintrc.json`.
+
+**Offen nach v2-10:** Anker-Tabelle in `CLAUDE.md §9` überholt · `PA-1` braucht eine
+Gestaltungsrunde · das Einkommens-Popup hat als **einziges von acht Overlays** keinen
+Escape-Handler (Altbestand, nicht von diesem Sprint verursacht).
+
+---
+
+### Sprint v2-11 · DONE 05. August 2026
+
+**Komponente:** `BF-5` — Fragmente wurden ohne Vorzeichen addiert.
+`calculate_card_amount_for_month` aggregierte mit `SUM(ABS(f.amount))`. `ABS` wirft bei
+**jedem** Fragment das Vorzeichen weg. Das fällt nicht auf, solange alle Fragmente einer
+Karte in dieselbe Richtung zeigen — sobald sich beide mischen, werden sie **addiert
+statt verrechnet**.
+
+**Der Fix wertet die Richtung einmal je Kartenart aus:** `INCOME` → `+SUM(amount)`,
+`FIXED_COST`/`BUDGET` → `−SUM(amount)`. **Kein `GREATEST(…, 0)`** — `E2` verlangte
+ausdrücklich keine Kappung. Alle übrigen Funktionen wurden auf dieselbe Fehlerklasse
+durchsucht; `ABS` kommt noch zweimal vor, beide Male legitim. **Der Fehler war auf die
+eine Stelle begrenzt.**
+
+**Der Folgefund im Frontend:** `sumLinkedFragments` in `card.tsx` trug **dieselbe**
+`Math.abs`-Konstruktion. Ohne die Korrektur hätte die Datenbank-Reparatur die Karte
+**schlechter** aussehen lassen als vorher — der Fehler wäre von *beide falsch, aber
+konsistent* zu *offen widersprüchlich* gewandert.
+
+**Die Doku beschrieb ein Verhalten, das es nie gab.** Design-Doku §11 sagte in **einem**
+Satz zwei Dinge, die einander ausschließen: die Funktion summiere „vorzeichen-agnostisch",
+und bei BUDGET „senke die Gutschrift den Verbrauch". Im selben Abschnitt stand die
+Schlussfolgerung, ein RPC-Eingriff sei „nicht nötig und wurde bewusst verworfen" — sie
+beruhte auf der ungeprüften Annahme. **Das ist der Ursprung von LL-22.**
+
+**Der Baseline-Lauf hat einen Fehler im eigenen Testaufbau gefunden.** Die
+Budget-Testkarte war zunächst ab Januar aktiv und zog den Anker innerhalb der Transaktion
+von 2.200 auf 2.050. Das sah aus wie ein Migrationsfehler, war aber der eigene.
+Aufgefallen ist es **nur**, weil die Reihe zuerst gegen die unveränderte Funktion lief.
+**Seither ist der Doppel-Lauf Teil von `db-eingriff`.**
+
+**Verifikation:** Übungs-DB-Probe mit 13 Tests, zweimal gefahren; T2/T5/T9 sind der
+eigentliche Beweis (Karten ohne gemischte Vorzeichen dürfen sich **nicht** bewegen — sie
+tun es nicht). Anker Produktion nach der Freigabe: **Juli −1.222,75 € → −322,75 €, exakt
+die vorab festgelegten +900,00 €**, elf Monate um 0,00 €. B2-Invariante hält 12/12.
+
+**Offen nach v2-11:** Reihenfolge-Warnung — erst Migration, dann Merge, weil Datenbank
+und Frontend gekoppelt sind.
+
+---
+
+### Sprint v2-12 · DONE 05. August 2026
+
+**Komponente:** `BF-2` — die Ring-Subzeile im Degenerations-Modus, mit Entscheidung
+`E3`. Reine Anzeige, keine Datenbank.
+
+**Der Fehler:** Der Code verzweigte am **Vorzeichen des Plans**. Der zweite Zweig
+unterstellte ein positives Ist — er schrieb das Vorzeichen sogar ins Wort („gespart").
+Juli 2026 fiel genau dort hinein und las sich als **„Plan fast 0 € — −1.223 € gespart"**.
+Man spart keine minus 1.223 €.
+
+**Warum es ein Jahr überlebt hat:** Die Kombination *kleiner positiver Plan + negatives
+Ist* war bis zur Juli-Kuratierung **nicht erreichbar** — Ist und Plan waren in jedem
+Monat identisch. Und der Fehler stand nicht nur im Code: **Design-Doku §5 spezifizierte
+dieselben zwei Zweige**, inklusive Vorzeichen im Beispiel. LL-22 bekam damit noch am
+selben Tag seinen zweiten Beleg.
+
+**Der Fix:** eine Regel, unabhängig vom Vorzeichen des Plans — `+X € über Plan` (türkis),
+`−X € unter Plan` (rot), `genau nach Plan` (neutral). Die dritte Zeile greift ab einer
+Abweichung **unter 0,50 €**, nicht bei exakt null: Bei strenger Lesart stünde bei 0,30 €
+weiterhin „+0 € über Plan" da — exakt der Text, den `E3` abschaffen sollte.
+
+**Die eigentliche Lehre:** Die Regel liegt seither in `ring-subline.ts` — rein, ohne
+React, ohne CSS. Der Fehler saß in einer Textregel, die **im Bauteil eingebettet und
+damit nicht einzeln prüfbar** war. *(Dieselbe Diagnose wiederholt sich in v2-16, v2-17
+und schließlich in v2-22 als `ZO-2`.)*
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 12/12** (3 + 9 neue) · e2e 19/19.
+Der neue Wächter transpiliert die **echte** Quelldatei statt die Logik nachzubauen.
+**Gegenprobe:** Mit dem alten Zweig fallen 7 Tests um. Anker unbewegt.
+
+**Offen nach v2-12:** keine. `BF-2` war mit `E3` vollständig entschieden.
+
+---
+
+### Sprint v2-13 · DONE 05. August 2026
+
+**Komponente:** `BF-4` — der Split-Anteil wurde **zweimal** angewandt, sobald eine
+gemeinsame Karte ein Fragment bekam (rund 466 €/Monat zu gut). Der letzte der fünf
+Befunde vom 04.08.; **Paket 1 damit vollständig.**
+
+**Alle vier Rechenfunktionen in EINER Transaktion.** `calculate_card_amount_for_month`
+wendet den Anteil jetzt auf **Plan/Anpassung** an — nicht auf Fragment-Summen;
+`calculate_sparrate_for_month` verliert ihre Multiplikation;
+`calculate_planned_sparrate_for_month` läuft **wortgleich** mit;
+`get_year_deviation_drivers` bekommt `delta = sign × (ist − plan × share)`.
+
+**Warum nicht teilbar:** Würde man die Kartenfunktion zuerst ausliefern und die Aufrufer
+später, wäre die Sparrate dazwischen **doppelt** anteilig — schlimmer als der
+Ausgangsfehler.
+
+**Die wichtigste stille Entscheidung: der Anteil wird NICHT je Karte gerundet.**
+`calculate_planned_sparrate_for_month` multipliziert ebenfalls ungerundet und rundet
+erst die Endsumme. Hätte die Kartenfunktion je Karte gerundet, wären Ist und Plan auf
+den vier gemeinsamen Karten um Cent-Beträge auseinandergelaufen — **die Produktiv-Anker
+hätten sich bewegt.** Ungerundet zu lassen ist der Grund, warum zwölf Nullen dastehen.
+**Das ist der Ursprung von LL-24.**
+
+**Und die Klammer wurde gemischt.** Aus `f × (a − b)` wurde `(a − b × f)`: Ein Faktor
+außen hätte die bereits umgerechnete Seite ein zweites Mal gekürzt. Das fällt nicht auf,
+weil keine Zahl offensichtlich falsch *aussieht*. Wächter ist die B2-Invariante — **das
+ist der Ursprung von LL-23.**
+
+**Verifikation:** Übungs-DB-Probe, zehn Tests, zweimal gefahren. **T6 ist der Kern:**
+Ist-Sparrate 1.840,00 → **1.600,00 €** — die 240,00 € sind exakt der doppelte Abzug
+(`600 × (1 − 0,6)`). Auf Produktion **bewegte sich keine einzige Zahl**, weil keine
+gemeinsame Karte damals ein verlinktes Fragment hatte. **Ein grüner Anker beweist hier
+bewusst wenig** — der Beweis kam aus der Übungs-Datenbank. Vier Prüfsummen belegen die
+Wortgleichheit, `calculate_planned_sparrate_for_month` trägt **dieselbe wie vorher**.
+
+**Nebenbefund ohne Testziel:** Die neuen Kartenbeträge decken sich auf den Cent mit den
+realen Daueraufträgen — Miete 1.089,26 · Strom 36,04 · Internet 22,87 · Rechtsschutz 15,45.
+
+**Offen nach v2-13:** Der Sprint hat den Fehler behoben, **bevor er eintrat**. Sobald
+eine gemeinsame Karte ein Fragment bekommt, greift die neue Logik — *das geschah am
+13.08.2026 und ist in v2-18 dokumentiert.* Kein authentifizierter Render-Smoke möglich:
+`.env.e2e.local` fehlte.
+
+---
+
+### Sprint v2-14 · DONE 06. August 2026
+
+**Komponente:** `LQ-1` — Karten bekommen einen Fälligkeitstag, abgeleitet aus der
+eigenen Buchungshistorie. Bis dahin legten Frequenz und erster aktiver Monat nur den
+*Monat* fest, nie den Tag.
+
+**`cards.due_day smallint NULL`** mit CHECK 1–31, **17 Werte aus `fragments`
+abgeleitet**, je Wert ein Kommentar mit Belegzahl und beobachteter Spanne. Idempotent.
+
+**Gespeichert wird der Soll-Tag, nicht der Median.** Sieben Karten zeigen über 19 Monate
+exakt dasselbe Muster — gebucht am 1., 2., 3. oder 4., **nie früher**. Das ist kein
+Streuwert, sondern ein Dauerauftrag zum Ersten, der auf den nächsten Bankarbeitstag
+rutscht. Mit dem Median stünde bei der Miete eine 2 — und die Vorhersage wäre am 1.
+jedes Monats falsch. Bei echter Streuung gewinnt der **frühere** Tag: Für eine
+Liquiditätsfrage ist die vorsichtige Annahme die, bei der das Geld früher abfließt.
+
+**Grenze 1–31, nicht 1–28.** Ein Dauerauftrag zum 31. existiert; die Klammerung auf die
+Monatslänge gehört in die Vorhersage, nicht in die Spalte — sonst wäre der gespeicherte
+Wert schon eine Interpretation.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 (Bundle **unverändert**, identische
+Chunk-Hashes) · visual 12/12. Anker 12/12 bei 0,00 €; **Prüfsummen der vier
+Rechenfunktionen unverändert** gegenüber v2-13. Übungs-DB: 2.200,00 € vorher wie nachher,
+acht Tests, Zweitlauf der Migration ohne Wirkung.
+
+**Zwei Betriebs-Lehren, die in `db-eingriff` wanderten:** Der Restore-Status flippt nicht
+zuverlässig — verlässlicher ist es, **auf den Anker zu warten** statt auf
+`ACTIVE_HEALTHY`. Und zwischen `pause_project` und einem Restore des anderen Projekts
+liegt ein `PAUSING`-Fenster, in dem Supabase jeden Restore ablehnt; der Rennrad-Trainer
+stand deshalb rund 40 Minuten fest.
+
+**Offen nach v2-14:** Die Oberfläche zum Ändern fehlte bewusst — `LQ-1` blieb 🟡.
+Deutschlandticket steht auf einem einzigen Beleg, Friseur hat keinen Wert.
+
+---
+
+### Sprint v2-15 · DONE 06. August 2026
+
+**Komponente:** `LQ-1`-Anzeigeseite und `LQ-2` — der Fälligkeitstag steht auf der Karte
+und lässt sich dort ändern; die Kopfzeile sagt im laufenden Monat, wie viel noch abgeht
+und wie viel Budget frei ist. Keine Datenbank.
+
+**Warum der Tag sichtbar werden musste:** Die 17 Werte aus v2-14 sind **abgeleitet** —
+aus der Historie gelesen, nie bestätigt — und steuern ab `LQ-2` eine sichtbare Zahl. Ein
+geratener Wert, der eine sichtbare Zahl treibt und selbst unsichtbar bleibt, ist genau
+die Bauart, aus der die Befunde vom 04.08. entstanden sind.
+
+**Kein neuer Bereich, keine neue Zeile.** Die Statuszeile bekam zwei Enden
+(`Offen ····· am 1.`), getrennt durch **Position**, nicht durch ein Trennzeichen. Die
+Liquiditätszahlen stehen in **derselben** Zeile wie die Zonen-Überschrift — dasselbe
+Muster wie der Übertrags-Schalter aus v2-07.
+
+**`Fällig am …` ist ein eigener Menüpunkt, kein Feld in „Betrag anpassen".** Das ist
+keine Platz-, sondern eine Bedeutungsfrage: Dort gilt alles entweder *nur dieser Monat*
+oder *dauerhaft ab diesem Monat*, `cards.due_day` gilt dagegen **immer**.
+
+**Die Rechnung liegt server-seitig auf den bereits geladenen Karten** — keine zusätzliche
+Abfrage, kein nachgelagerter JS-Filter. Die 1000-Zeilen-Grenze ist strukturell
+unerreichbar, weil über `cards` gezählt wird und nicht über die mitwachsende Rohmasse.
+
+**Der wertvollste Beleg des Sprints:** Ein Befund vom 05.08. hatte unabhängig und mit
+anderer Methode **1.814,02 €** gemessen. Die neue Rechnung liefert am 1. August
+**1.769,02 €** — die Differenz ist auf den Cent der Friseur (45,00 €), die einzige Karte
+ohne Termin. Damit ist belegt: Die Anzeige nutzt dieselbe Betragsbasis wie die Sparrate.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · visual 12/12 · e2e 14/14. Anker 12/12 bei
+0,00 €. **Der angemeldete Render-Smoke fiel aus** — `.env.e2e.local` existierte nirgends
+mehr.
+
+**Die Diagnose dazu, weil sie sich wiederholt hätte:** Zuerst hieß es, der angemeldete
+Smoke fehle „strukturell". **Das war falsch** — `sprint_v2-10_review.md` §2 weist
+`render-smoke` 4/4 aus, die Zugangsdaten waren am 05.08. vorhanden. Sie lagen in einem
+früheren Worktree und sind mit dessen Löschung verschwunden. **Seither gilt: beide
+`.env`-Dateien gehören in den Haupt-Checkout und werden in jeden Worktree kopiert.**
+
+**Offen nach v2-15:** Zwei bekannte Untererfassungen (Friseur ohne Termin,
+Kreditkarten-Abrechnung `L5`) · der Stichtag wird in UTC bestimmt, zwischen 0 und 2 Uhr
+zeigt die App den Vortag · das Einkommens-Popup hat weiterhin keinen Escape-Handler.
+
+---
+
+### Sprint v2-16 · DONE 07. August 2026
+
+**Komponente:** `RM-2` (Schaufenster-Popup) und `PA-1` (Konsequenz-Anzeige) — beides
+reine Anzeige, kein Datenbank-Eingriff. **Paket 2 damit vollständig.**
+
+**`RM-2`** ist die Gegenleistung für `RM-1`: Seit v2-10 zeigt die Fragment-Karte den
+Verwendungszweck, der **Empfänger war damit nirgends mehr sichtbar**. Ein Klick auf
+jede Buchung öffnet jetzt ein reines Anzeige-Popup ohne Knöpfe.
+
+**Die aufgehobene Regel trug dreierlei zugleich.** Zugeordnete Fragmente und Überträge
+waren per `pointer-events: none` tot gestellt — das sperrte Klick, Drag **und** die
+Hover-Rückmeldung. Aufgehoben ist ausschließlich das Erste; Drag-Sperre und
+Deckkraft-Werte haben jetzt **eigene** Träger. *Klickbar ≠ ziehbar ≠ verlinkbar.*
+Ohne die eigenen `:hover`-Regeln wäre die Deckkraft beim Überfahren von 0.22 auf 0.92
+gesprungen — genau die zwei Werte, die §8 als *unberührt* festschreibt.
+
+**`PA-1`** sagt nach einer Gehaltsänderung, was sie kostet. Basis ist
+`get_effective_plan_for_month` (Roh-Soll) und **nicht** `calculate_card_amount_for_month`
+— die trägt den Anteil seit v2-13 bereits in sich; sie zu nehmen und den Faktor erneut
+anzuwenden wäre exakt der Doppel-Abzug, gegen den `BF-4` geschrieben wurde.
+
+**Beinahe in die K2.1-Falle gelaufen:** Der erste Entwurf verwendete
+`.fragmentAmountPos/Neg` wieder. Die lesen `--frag-amount-pos/neg`, und die sind auf
+`.interactionZone` definiert — über den Portal-Hop nach `document.body` vererben sie
+**nicht**. Der Betrag wäre farblos geblieben; tsc, Lint und Build hätten das nie
+gemeldet. *(Daraus wurde der Vorschlag für Stolperfalle 12.)*
+
+**Runden, zweigeteilt (LL-24):** Die drei Spalten lassen sich **nicht gleichzeitig** zum
+Aufgehen bringen — die Differenz zweier gerundeter Zahlen ist nicht die gerundete
+Differenz. Gewählt: Spalten aus gerundeten Zeilenwerten, Held-Zahl ungerundet summiert.
+Der erste Entwurf hatte hier einen Cent Abweichung zum Beleg; aufgefallen ist es beim
+Schreiben des Wächters. **Anker-Wirkung hat nichts davon** — hier wird nichts
+persistiert. Das ist der Unterschied zu `BF-4`.
+
+**Mitgenommener Altbestand:** Das Einkommens-Popup hat endlich seinen
+**Escape-Handler** bekommen — es war als einziges von acht Overlays ohne, offen seit
+Sprint 1.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 48/48** (25 + 23 neue) ·
+**e2e 55/55** inkl. render-smoke 4/4. Anker 12/12 bei 0,00 € auf beiden Seiten.
+
+**Offen nach v2-16:** Die Popup-Breite ist von 480 auf 400 px **geschrumpft**, obwohl
+der Record von „340 → 400, das Popup wird breiter" sprach — die Zahl ist normativ, nur
+ihre Herleitung ging von einem falschen Ist-Wert aus. Vier am 07.08. getroffene
+Entscheidungen fehlten noch im Record.
+
+---
+
+### Sprint v2-17 · DONE 08. August 2026
+
+**Komponente:** `J1` (Datenbank-Grundstand), `KAT-1` (Kategorien als Struktur), `KAT-3`
+(Ordner-Zahl), `KAT-2` (Karussell). **Paket 4 vollständig** — das Karussell zeigt im
+Juli statt 32 Karten **elf Ordner**.
+
+**`J1`** legte die fehlende Basis: Unter `supabase/migrations/` lagen nur fünf
+Delta-Dateien ab v2-04; alles davor existierte **ausschließlich in den beiden lebenden
+Datenbanken**. Rekonstruiert aus dem `pg_catalog` (nicht per `pg_dump` — das Passwort
+liegt nicht im Repo), 1.984 Zeilen, 31 Funktionen. Die bekannten Fallen stehen als
+Kommentar **an der Stelle, an der sie zuschlagen**.
+
+**Drei Fallen, drei bewusste Antworten bei `KAT-1`:** Eine Kategorie wird **nie** eine
+`cards`-Zeile (beide Sparrate-RPCs laufen ohne Typ-Filter) · kein Papierkorb für
+Kategorien, sondern hartes Löschen mit Wiederherstellungs-Bausatz im 5-Sekunden-Toast ·
+`ENABLE` **und** Policy von Hand, weil `rls_auto_enable` nur ENABLE setzt und sein
+eigenes Scheitern schluckt.
+
+**Der wichtigste Punkt des Sprints — eine Zusicherung der Gestaltungsrunde war falsch.**
+Der Record verlangte, die Kategorie-Summe „aus ungerundeten Kartenwerten zu bilden und
+erst am Ende zu runden", und benannte als Ursache „Wohnen". **Beides nachgemessen,
+beides trifft nicht zu:** Innerhalb von „Wohnen" liefern beide Rundungsreihenfolgen
+dasselbe, und die Anweisung ist **notwendig, aber nicht hinreichend** — auch ungerundet
+je Ordner ergibt die Spalte −322,74 € statt −322,75 €.
+
+Die wirkliche Ursache liegt eine Ebene höher: `calculate_sparrate_for_month` rundet
+**einmal ganz am Schluss über alles**. Elf unabhängig gerundete Zahlen können diese eine
+Rundung prinzipiell nicht nachbilden. **Am schärfsten:** Die Aufstellung im Record
+summierte sich **selbst** auf −322,74 €, obwohl darüber −322,75 € stand und der Satz
+„Deckt sich exakt" danebenstand. **LL-22 in Reinform — und der Ursprung von LL-25.**
+
+**Die Lösung: Restverteilung.** Das Ziel wird aus `calculate_sparrate_for_month`
+**geholt**, nicht hergeleitet; der Rest wandert auf den betragsgrößten Ordner. Bewiesen
+auf der Übungs-DB mit einem Szenario, das den Cent **erzwingt** (Split-Faktor exakt ⅓).
+**Bekannter Preis, benannt:** „Wohnen" zeigt im Juli −1.148,18 € statt −1.148,17 €.
+
+**`KAT-3` vor `KAT-2` gebaut**, abweichend vom Briefing: Die Kachel trägt eine Zahl, und
+die darf nach Arbeitsregel 1 nicht im Browser entstehen.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 (+1,8 kB für ein ganzes Feature) ·
+**visual 69/69** · **e2e 76/76** inkl. vier angemeldeter Render-Smokes. Anker 12/12 bei
+0,00 €, B2 12/12, **zehn Prüfsummen identisch** zwischen Übung und Produktion.
+**Der zweite Anker entstand hier:** Die Ordner-Spalte ergibt in allen zwölf Monaten
+exakt die Sparrate.
+
+**Offen nach v2-17:** Der N+1-Ladeweg (`D14`) blieb unaufgeräumt — ein Loader-Umbau im
+selben Sprint hätte den Browser-Smoke mehrdeutig gemacht. `tests/` trägt vier bestehende
+ESLint-Fehler, die die kanonische Strecke nicht sieht. **Und `KAT-5` wurde entschieden,
+aber nie gebaut — im Review nicht benannt, was erst v2-18 auffiel.**
+
+---
+
+### Sprint v2-18 · DONE 13. August 2026
+
+**Komponente:** Zwei Befunde aus der **ersten echten Benutzung** der Kategorien — beide
+beim Bauen unsichtbar, beide in Minuten behoben.
+
+**`NB-1` hebt eine ausdrücklich festgeschriebene Entscheidung wieder auf.** Record `B4`
+(„beim Anfassen einer Zahlung öffnen sich **alle** Ordner") war beim Bauen plausibel und
+löste den Blocker `U1`. In der Praxis schiebt es die Zielkarte aus dem Bild, während die
+Maustaste gedrückt ist und das Karussell deshalb nicht gescrollt werden kann. **Am
+Entwurf war der Fehler nicht zu sehen** — dort war die Reihe kurz und niemand hielt eine
+Maustaste. Neue Regel: Es öffnet sich nichts von selbst. `U1` ist **nicht wieder offen,
+sondern anders gelöst** — durch bewusstes Aufklappen *vor* dem Zug. Netto **weniger**
+Code.
+
+**`NB-2`** — die Ansicht sprang beim Monatswechsel. `.fragmentStack` hatte
+`max-height: 320px`; voll gab die Zone 341 px, leer fiel sie auf 215 px, und die Welle
+darüber wuchs um **126 px**. Fix: `max-height` → `height`, dazu der Leerzustand
+`Keine offenen Umsätze`.
+
+**Der Juli-Anker hat sich unabhängig von diesem Sprint bewegt** — und es war der Fall,
+den §9 wörtlich vorhergesagt hatte. Am 13.08.2026 um 06:05 wurden drei echte Zahlungen
+zugeordnet (Miete · Strom · Internet). **Damit hat `BF-4` aus v2-13 zum ersten Mal in
+Produktion gegriffen:** Vorher rechnete die Karte `Plan × Anteil` (1.089,25968…), jetzt
+nimmt sie die Überweisung — glatt auf zwei Stellen. Juli: −322,75 → **−322,74 €**.
+Rechtsschutz war die vierte gemeinsame Karte und noch nicht zugeordnet.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · visual 69/69 · **e2e 78/78**. Der
+Layout-Anker ist neu: Zone und Welle in Juli **und** August je 341/326 px statt
+341/215 und 326/452. Der Wächter misst die **Zone**, nicht die Welle — die Welle ist das
+Symptom, und im dev-Server ist ihr Sprung gar nicht messbar.
+
+**Drei Läufe waren zwischendurch rot, alle drei durch die Umgebung** — der bekannte
+`ECONNRESET`-Burst gegen Supabase.
+
+**Offen nach v2-18:** **`KAT-5` wurde sichtbar** — in v2-17 entschieden, nie gebaut, im
+dortigen Review nicht benannt. Die Zahl der offenen Themen stieg dadurch von 28 auf 29;
+das ist Ehrlichkeit, kein Rückschritt. Kein automatischer Wächter für Phase 1 möglich:
+HTML5-Drag lässt sich in Playwright nicht verlässlich nachstellen.
+
+---
+
+### Sprint v2-19 · DONE 13. August 2026
+
+**Komponente:** `GE-1` und `GE-2` — das Gehalt lässt sich aus der Rohmasse auf die
+Netto-Kachel ziehen; der Monat rechnet dann mit dem **tatsächlich überwiesenen** Betrag,
+und die Differenz erscheint als eigene Zeile in den Abweichungs-Treibern. **Paket 15
+entstand und war einen Tag später vollständig.**
+
+**Der Entwurfs-Entschluss, der alles andere vereinfacht hat: die Tabelle speichert den
+Link, nicht den Betrag.** Das Briefing hatte „Monat, Person, Ist-Netto, Herkunft"
+vorgeschlagen. Die Summe stattdessen aus `fragments.amount` zu ziehen hat zwei Folgen:
+Betrag und Zuordnung können nicht auseinanderlaufen, und die Fachregel „zwei Gehälter in
+einem Monat summieren sich" fällt heraus, ohne eigens behandelt zu werden.
+
+**Drei Wächter, jeder gegen eine bezahlte Erfahrung:** `ENABLE` **und** Policy von Hand
+(Stolperfalle 15) · Transfer-Trigger (Stolperfalle 7) · zwei Trigger gegen Doppel-Links
+in **beide** Richtungen — ein Fragment an Karte **und** Netto zugleich wäre doppelt in
+der Sparrate. Die Doppel-Link-Wächter sind bewusst Trigger und nicht Teil der RPC: So
+greifen sie auch für `process_csv_import` und den direkten UPSERT, die alle an der neuen
+RPC vorbeischreiben.
+
+**`fragments_with_status` liefert `ASSIGNED`** — bewusst kein neuer Status-Wert. Dadurch
+greifen Sperre und Ziehbarkeit ohne **eine Zeile** Frontend-Änderung.
+
+**Zwei Migrationen, nicht eine und nicht drei.** Zwischen „Ist-Sparrate rechnet mit dem
+echten Wert" und „Ordner-Spalte zieht mit" wäre Anker 1 gebrochen; getrennt ausgeliefert
+gäbe es auf Produktion ein Zeitfenster, in dem das gilt.
+
+**Die Gehalts-Zeile wird nicht gegen die Karten gerankt** — erst kürzen, dann anhängen.
+Sonst hätte „Gehalt" im Juli einen Karten-Treiber verdrängt.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 75/75** · **e2e 84/84**. Nach den
+Migrationen ohne Zuordnung: 0,00 € in 12/12, Anker 1 hält. Trockenlauf gegen Produktion
+(zurückgerollt): Juli-Ist **−8,84 €** wie erwartet. **Elf Prüfsummen byte-identisch**,
+drei davon mussten unverändert bleiben und sind es. Übungs-DB 2.200,00 € vorher wie
+nachher, zwölf Tests grün.
+
+**`B2-R` wurde hier gefunden** — die Treiber-Summe liegt einen Cent neben `Ist − Plan`.
+**Nicht von diesem Sprint verursacht:** Er entstand am 13.08. mit den ersten Zuordnungen
+auf gemeinsame Karten. Aufgefallen ist er nur, weil der Prüfanker ihn streifte — die
+Vorgabe „Treiber-Summe → −32,77 €" war **nicht erfüllbar** und musste vor dem Bauen
+korrigiert werden. *(Behoben in v2-22.)*
+
+**Offen nach v2-19:** 20 unzugeordnete Gehalts-Fragmente; für 2026 Januar–Juni bewegt
+eine Zuordnung **nichts** (exakt der Planbetrag), für 2025 wandert die Goldlinie um
+−0,01 € — korrekt, sieht aber nach einem Fehler aus, wenn man es nicht erwartet. Ein
+fehlgeschlagener Drop bleibt stumm. **Und der Vorschlag für Stolperfalle 16 / LL-26
+entstand hier:** `getTop3Drivers` schnitt auf drei Zeilen ab, während die Datenbank
+bewusst vier lieferte.
+
+---
+
+### Sprint v2-20 · DONE 15. August 2026
+
+**Komponente:** `KU-1` und `KU-2` — eine gelöschte Karte verschwindet sofort aus jeder
+Zahl, und eine Karte aus dem laufenden Monat lässt sich auch wieder loswerden.
+**Paket 16 entstand und war noch am selben Tag vollständig.**
+
+**Das Lösch-Tor schützt nur noch die Vergangenheit.** `HAS_STATES` blockiert nur noch
+bei Monats-Zuständen aus **vergangenen** Monaten. Was die Regel schützen soll, ist die
+**Historie** — und die schützt sie weiterhin vollständig. Bei einer Karte aus dem
+laufenden Monat ist der Zustand entweder eine Betragsanpassung oder ein Bezahlt-Haken;
+beides gehört zur Karte und stirbt mit ihr.
+
+**Vier Funktionen bekommen `deleted_at IS NULL`, in EINER Migration.** Jede einzeln
+wegzulassen bricht etwas: nur die Ist-Funktion → Ist und Plan driften auseinander · ohne
+die Ordner-Funktion → Anker 1 · ohne die Treiber → Anker 2.
+
+**Der eigentliche Fund war nicht geplant: `page.tsx` bildet das Lösch-Tor nach** — und
+hätte die Lockerung aus P1 **stillschweigend aufgehoben**. Das Menü hätte ausgegraut,
+was die Datenbank längst erlaubte. **Das ist eine neue Ausprägung von LL-26:** Bisher
+hieß die Lehre „ein Frontend-**Limit** kann eine Antwort kürzen"; hier war es ein
+Frontend-**Nachbau einer Regel**. Die Suchrichtung ist eine andere — nicht „wo wird
+gekürzt", sondern **„wo wird dieselbe Regel ein zweites Mal formuliert"**.
+
+**Der Widerspruch zu §2.1 ist keiner.** Die Snapshot-Integrität verbietet den
+`deleted_at`-Filter, damit historische Sparraten nicht kippen. Das Lösch-Tor lässt über
+`HAS_PAST_PLAN` aber gar keine Karte mit Vergangenheit löschen — der Filter kann
+strukturell nur den laufenden Monat und die Zukunft berühren. Diese Prüfung stand **vor**
+der Migration, nicht danach.
+
+**Die neue Spec prüft Quelltext, nicht Verhalten** — ungewöhnlich für dieses Projekt und
+hier bewusst: Die Lösch-Regel existiert an zwei Orten. Ein Verhaltens-Nachbau wäre die
+**dritte** Kopie derselben Logik gewesen und hätte den Widerspruch gerade nicht gefunden.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 81/81** · **e2e 90/90** — beide
+nur gestiegen, und zwar um genau die sechs neuen Fälle. August Ist 1.076,24 → **721,24 €**
+und Plan 1.151,23 → **796,23 €**, beide Seiten um dieselben −355,00 wie vorab festgelegt;
+die Differenz bleibt −74,99 €. Übrige elf Monate 0,00 €. **Acht Prüfsummen byte-identisch.**
+
+**Offen nach v2-20:** `B2-R` bleibt liegen, in Juli **und** August je 0,01 €, **nicht
+gewachsen**. Nicht geprüft: ob es **weitere** Frontend-Nachbauten von Datenbank-Regeln
+gibt — ein gezielter Durchgang wäre eine eigene Hausaufgabe.
+
+---
+
+### Sprint v2-21 · DONE 15. August 2026
+
+**Komponente:** `M6` — die automatische Zuordnung. **Paket 5 zum ersten Mal wirksam:**
+Die App schlägt für **115 statt 9** offene Zahlungen aus 2026 eine Karte vor.
+
+**Der Auftrag trug einen Verdacht, der stimmte — aber nicht der große Hebel war.**
+`calculate_match_confidence` hat im gesamten Schema **genau einen** Aufrufer und steht
+dort hinter `IF v_was_inserted`: Sie lief ausschließlich für **neu eingefügte** Zeilen.
+Von 1.590 Fragmenten trugen **1.567 gar keinen Konfidenzwert**. Aber ein Nachrechnen mit
+dem **alten** Algorithmus hätte nur 36 von 284 Zahlungen erreicht (12,7 %).
+
+**Drei Ursachen, gemessen statt vermutet:**
+
+1. **Die Badge-Schwelle war ohne Namenstreffer rechnerisch unerreichbar.**
+   `frequency_match` prüft nur, ob die Karte im Monat aktiv ist — worauf ihr einziger
+   Aufrufer bereits filtert. Sie liefert *immer* `1.00`. Betrag + Frequenz ergeben
+   höchstens 0,50, die Schwelle liegt bei 0,60. **72 Zahlungen** klemmten im toten Band
+   0,50–0,60 mit perfektem Betrag. *(Ursprung von Stolperfalle 17.)*
+2. **Die Namensfunktion verglich ganze Zeichenketten.** `Nurnberger Lebensversicherung`
+   gegen `Private Altersvorsorge - Nürnberger` ergab **0,139** — der Kontoauszug schreibt
+   keinen Umlaut, der Kartenname trägt einen.
+3. **Die 101 Handzuordnungen des Nutzers aus Juli/August wurden nie ausgelesen.**
+
+**Die naive Verbesserung war messbar SCHLECHTER als gar keine.** Bloß wortweise zu
+vergleichen hob die richtigen Vorschläge von 14 auf 27 — und die **falschen** von 1 auf
+**18**. Zwei Ursachen: Das Wort `aline` steht in **sieben** Kartennamen und traf überall;
+und `LIKE '%wort%'` machte `Doug|las`→`Glas` und `Kauf|land`→`Kauf` zu Treffern. **Das
+ist der Ursprung von LL-27 und Regel 25:** Wer eine Ähnlichkeitsfunktion ändert, zählt
+**beide** Seiten. Die Abhilfe braucht keine gepflegte Namensliste — ein Kartenwort, das
+in `n` Kartennamen desselben Nutzers vorkommt, zählt nur `1/n`.
+
+**Die Wiedererkennung lernt nur aus `MANUAL_DROP`** — eine automatische Zuordnung ist
+keine Zustimmung des Nutzers, sondern eine Vermutung der App; mitgelernt verstärkte sich
+ein Fehler bei jedem Import selbst. Sie wirkt als **Untergrenze** (`GREATEST`), nicht als
+vierter gewichteter Summand: Ein Summand hätte alle Scores gesenkt, bei denen keine
+Historie vorliegt — und das sind die meisten. Kreuzvalidierung Juli→August: **9 von 9
+richtig, 0 falsch.**
+
+**Die scharfe Kante des Sprints:** `suggested_card_id` zu setzen bewegt keine Zahl,
+`card_fragment_links` zu schreiben bewegt sofort die Sparrate. `refresh_fragment_suggestions`
+verlinkt deshalb **nie** — und die Zusage ist **erzwungen**, nicht behauptet: Die Funktion
+zählt die Verknüpfungen vor und nach ihrem Lauf und bricht bei jeder Abweichung mit
+Rollback ab.
+
+**Und beinahe wäre alles unsichtbar geblieben.** `page.tsx` ließ Vorschläge nur
+*unterhalb* der Auto-Schwelle durch — eine Bedingung, die stillschweigend „ist schon
+verlinkt" meinte. Da nachgerechnet wird, ohne zu verlinken, wären ausgerechnet die **24
+treffsichersten** verschwunden. **Dritter Fall dieser Art in vier Tagen** (v2-19
+`getTop3Drivers`, v2-20 Lösch-Tor).
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 81/81** · **e2e 90/90** (zwei
+ECONNRESET-Ausfälle einzeln nachgefahren, Ursache im Server-Log belegt). **Alle 24
+Anker-Werte identisch**, Verknüpfungen 132 → 132, beide Invarianten unverändert.
+Übungs-DB-Strecke vollständig gefahren (T1–T7 grün, Anker 26.400,00 € = 12 × 2.200),
+**zehn Prüfsummen byte-identisch**. Auf dem 101er-Prüfset: richtige Vorschläge über der
+Schwelle **14 → 42**, falsche 1 → 4.
+
+**Betriebs-Beleg:** Beim Restore der Übungs-DB meldete `public` **0 Tabellen und 0
+Funktionen** — minutenlang, bei Status `COMING_UP`. Genau der Zustand, in dem am
+05.08.2026 fast eine gesunde Datenbank neu aufgebaut wurde. Der Restore dauerte rund
+20 Minuten.
+
+**Offen nach v2-21:** `ZO-1` (`frequency_match` ist eine Konstante) · `ZO-2`
+(Vorschlags-Sichtbarkeit nicht prüfbar) · `ZO-3` (rückwirkend verlinken — 24 Kandidaten,
+im Prüfset 11 von 11 richtig; **gehört dem User**, weil es die Sparrate rückwirkend
+bewegt). Der Badge in der Rohmasse bleibt hinter `SHOW_SUGGESTION_BADGES = false`,
+deshalb steht `M6` auf 🟡 und nicht ✅.
+
+---
+
+### Sprint v2-22 · DONE 15. August 2026
+
+**Komponente:** Zwei Hausaufgaben — `B2-R` (der Cent in der Treiber-Summe) und `ZO-2`
+(die Vorschlags-Sichtbarkeit wird prüfbar). Erster Sprint seit v2-20, der die Zahl der
+offenen Themen **senkt**.
+
+**`B2-R`:** `get_year_deviation_drivers` rundete das Delta **je Karte**, während die
+Sparraten-Funktionen erst am Ende über alles runden. Gemessen: Karten ungerundet
+−17,2036 € gegen je Zeile gerundet −17,21 € (Juli) und −74,9943 gegen −75,00 (August).
+
+**Zwei Vermutungen aus der Hausaufgabe wurden dabei widerlegt.** Das separat gerundete
+**Gehalts-Delta trägt nichts bei** — es ist exakt. Und die verursachenden Karten sind
+**gar nicht sichtbar**: Ein Delta von 0,0022 € rundet auf 0,00 und wird von
+`WHERE delta <> 0` gefiltert — es steht in keiner Anzeige, verschiebt aber die Summe.
+**Wer nur auf die angezeigten Zeilen schaut, findet die Ursache nie.**
+
+**Die Abhilfe holt das Ziel aus den Rechenfunktionen, statt es herzuleiten.** Naheliegend
+wäre `round(Σ delta_roh, 2)` gewesen — es stimmt in allen geprüften Monaten. Aber
+`Ist − Plan` ist die Differenz **zweier getrennt gerundeter** Summen und muss nicht
+gleich der gerundeten Differenz sein. LL-25 sagt wörtlich: *Ziel holen, nicht herleiten* —
+genau daran ist diese Fehlerklasse in v2-17 schon einmal gescheitert. Der Rest geht auf
+die betragsgrößte Kartenzeile; sie trägt `rn = 1` und überlebt jeden `p_limit`-Schnitt.
+
+**`ZO-2`:** Die Regel, ob ein Kartenvorschlag angezeigt wird, stand inline im `.map()`
+einer Server Component — **genau dort saß der Fehler aus v2-21**. Sie liegt jetzt als
+reine Funktion in `src/lib/suggestion.ts` mit zehn Fällen, darunter der entscheidende:
+*über der Auto-Schwelle und noch offen*. Die Spec transpiliert die **echte** Quelldatei;
+ein Nachbau driftet ab und gibt falsche Sicherheit. **Dieselbe Diagnose wie bei `BF-2`
+in v2-12** — nur zehn Sprints später.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · **visual 91/91** (+10) · **e2e 100/100**
+(+10) — gestiegen um exakt die eigenen Tests. **Alle 24 Anker-Werte identisch**, Anker 1
+zwölfmal 0,00. **Anker 2: abweichende Monate 2 → 0** — das ist der Zweck. `p_limit = 3`
+gegengeprüft: höchstens vier Zeilen je Monat. Laufzeit 229 ms.
+
+**Ohne Übungs-Datenbank, begründet.** Ihr Anker liegt in allen zwölf Monaten bei
+2.200,00 € — für Ist **und** Plan. Damit ist `Ist − Plan` dort überall exakt 0, es gibt
+keine Treiber, und die Funktion liefert leere Listen. **Ein Rundungsfehler in einer
+leeren Liste ist nicht sichtbar.** Geprüft wurde stattdessen in einer zurückgerollten
+Transaktion gegen die echten Daten. *Die allgemeine Lehre: vor dem Slot-Tausch prüfen,
+ob die Übungs-Datenbank den fraglichen Fall überhaupt enthalten kann.*
+
+**Nebenbefund, nicht von diesem Sprint verursacht:** Schlägt `auth.setup` fehl, schreibt
+Playwright einen Seiten-Snapshot nach `test-results/` — **mit dem Passwort im Klartext**
+im ausgefüllten Formularfeld. Das Verzeichnis ist gitignored, es gelangt also nichts ins
+Repo; wer aber ein Trace-Zip weitergibt, gibt das Passwort mit.
+
+**Offen nach v2-22:** `ZO-1` und `ZO-3` unverändert. Ein konstruierbarer Randfall bleibt
+bewusst stehen: Gäbe es in einem Monat gar keine sichtbare Kartenzeile, während die Summe
+dennoch einen Cent ergibt, hätte der Rest keinen Träger — nicht real, aber im
+Migrations-Kommentar festgehalten.
+
+---
+
+*Nachtrag geschrieben am 15. August 2026, verdichtet aus den Review-Dateien v2-08 bis
+v2-22. Primärquellen bleiben `sprints/sprint_v2-NN_review.md`.*
