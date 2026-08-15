@@ -28,20 +28,29 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-21.*
+*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-22.*
 
-| | Anzahl | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 |
+| | Anzahl | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **10** | 10 | 10 | 10 | 10 | 11 | 12 | 13 |
-| Themen darin | **32** | 30 | 30 | 29 | 28 | 31 | 32 | 34 |
-| Hausaufgaben ohne eigenen Sprint | **6** | 5 | 5 | 4 | 4 | 5 | 6 | 6 |
-| **Offen gesamt** | **38** | 35 | 35 | 33 | 32 | 36 | 38 | 40 |
-| Erledigt | **47** | 47 | 45 | 43 | 41 | 37 | 35 | 33 |
+| Offene Pakete | **10** | 10 | 10 | 10 | 10 | 10 | 11 | 12 |
+| Themen darin | **32** | 32 | 30 | 30 | 29 | 28 | 31 | 32 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 6 | 5 | 5 | 4 | 4 | 5 | 6 |
+| **Offen gesamt** | **36** | 38 | 35 | 35 | 33 | 32 | 36 | 38 |
+| Erledigt | **49** | 47 | 47 | 45 | 43 | 41 | 37 | 35 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-21, zeilengenau ausgezählt.** Paket-Tabellen **43** Zeilen, davon
-> **11 ✅** → **32** offen (⬜ 28 · 🟡 4). Hausaufgaben **6**, alle ⬜. §4 Erledigt **47**
+> **Stand nach v2-22, zeilengenau ausgezählt.** Paket-Tabellen **43** Zeilen, davon
+> **11 ✅** → **32** offen (⬜ 28 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **49**
 > Zeilen. §3 unverändert **4**.
+>
+> **Zum ersten Mal seit v2-20 sinkt die Zahl wieder** — 38 → 36. v2-22 hat zwei
+> Hausaufgaben abgeräumt (`B2-R`, `ZO-2`) und keine neue erzeugt. Das ist kein Zufall:
+> Es war ein Aufräum-Sprint ohne neue Oberfläche, und beide Punkte waren durch v2-21
+> bereits vollständig diagnostiziert.
+>
+> **`B2-R` ist damit erledigt** — die B2-Invariante gilt wieder in allen zwölf Monaten
+> exakt. Sie stand seit v2-19 offen und musste in jedem Anker-Protokoll miterklärt
+> werden.
 >
 > **Die Zahlen steigen, obwohl der größte Einzelposten der Roadmap gebaut wurde —
 > und `Erledigt` bleibt bei 47.** Das ist kein Rückschritt, sondern dieselbe
@@ -580,8 +589,6 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
-| ZO-2 | Vorschlags-Sichtbarkeit aus `page.tsx` in eine prüfbare Funktion ziehen | ⬜ | **Aus v2-21.** Die Entscheidung, ob ein Vorschlag angezeigt wird, sitzt inline im `.map()` einer Server Component — sie ist damit nicht automatisiert prüfbar, und genau an dieser Stelle ist in v2-21 ein Fehler gefunden worden (die Obergrenze hätte die besten 24 Vorschläge verschluckt). Herausgezogen als reine Funktion `istVorschlagSichtbar(confidence, status, badgeThreshold)` wäre sie mit wenigen Zeilen abgedeckt. **Klein, aber nicht folgenlos:** Es ist der dritte Frontend-Filter in vier Tagen, der eine Datenbank-Entscheidung stillschweigend aufhob (LL-26). |
-| B2-R | Die Treiber-Summe liegt einen Cent neben `Ist − Plan` | ⬜ | **Gefunden in v2-19, NICHT von diesem Sprint verursacht.** *(In v2-21 erneut geprüft: unverändert vorhanden in Juli und August, nicht gewachsen und nicht gewandert.)* Gemessen Juli 2026: Treiber-Summe **−17,21 €** gegen Differenz **−17,20 €**. Ursache sind vier **gemeinsame** Karten, deren Delta exakt, aber im Sub-Cent-Bereich liegt (Internet +0,0022 · Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003 = +0,0057): `get_year_deviation_drivers` rundet **je Zeile** auf zwei Stellen, die Sparraten-Funktionen erst **am Ende über alles**. Entstanden ist das erst am 13.08.2026 mit den ersten Zuordnungen auf gemeinsame Karten — vorher gab es keine. **Abhilfe nach dem Muster von LL-25:** Ziel aus der Rechenfunktion holen und den Rest auf die betragsgrößte Zeile verteilen, statt jede Zeile für sich zu runden. Bewegt **keine** Sparrate, betrifft nur die Erklärzeile im Jahres-Popup — deshalb Hausaufgabe und kein eigener Sprint. |
 
 ---
 
@@ -600,6 +607,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| B2-R | Die Treiber-Summe stimmt wieder auf den Cent. `get_year_deviation_drivers` rundete **je Karte**, die Sparraten-Funktionen erst am Ende über alles. Jetzt wird das Ziel aus den Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt. **Zwei Vermutungen widerlegt:** Das Gehalt trägt nichts bei (sein Delta ist exakt), und die verursachenden Zeilen sind **gar nicht sichtbar** — ein Delta von 0,0022 € rundet auf 0,00 und wird gefiltert, verschiebt aber die Summe. `Σ delta = Ist − Plan` gilt jetzt in allen zwölf Monaten exakt (vorher 2 Monate daneben) | v2-22 |
+| ZO-2 | Vorschlags-Sichtbarkeit als reine Funktion `istVorschlagSichtbar` mit eigener Spec (10 Fälle). Die Regel stand inline im `.map()` einer Server Component — genau dort saß der Fehler aus v2-21 P4, und es war die **dritte** Stelle dieser Art in vier Tagen. Die Spec transpiliert die echte Quelldatei statt die Logik nachzubauen | v2-22 |
 | NB-1 | Ziehen öffnet nur noch, was offen ist — Record `B4` **abgelöst**. Alle Ordner aufzuklappen schob die Zielkarte aus dem Bild, und bei gedrückter Maustaste ließ sich das Karussell nicht scrollen. `U1` ist jetzt durch bewusstes Aufklappen **vor** dem Zug gelöst | v2-18 |
 | NB-2 | Ansicht springt beim Monatswechsel nicht mehr — die Rohmasse reserviert ihre Höhe (`height` statt `max-height`). Vorher fiel die Zone in leeren Monaten von 341 auf 215 px und die Welle wuchs um 126 px. Dazu der Leerzustand `Keine offenen Umsätze` | v2-18 |
 | KAT-1 | Kategorien als eigene Struktur: `card_categories` + `cards.category_id`, fünf RPCs, Menüpunkt „Kategorie ändern …". Keine `cards`-Zeile (D1), kein Papierkorb-Eintrag (D7 — Rücknahme über den Toast), RLS-Policy von Hand (D8). Zehn Ordner, **alle 46 Karten** zugeordnet — „Ohne Kategorie" erscheint dadurch in keinem Monat | v2-17 |
