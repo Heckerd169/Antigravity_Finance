@@ -10,8 +10,8 @@
 > Vorschlag im Schaufenster auch oberhalb von 0,95 erscheint; das ist eine
 > Korrektur an einer Sichtbarkeitsgrenze, keine Gestaltungsentscheidung.
 >
-> **CLAUDE.md** ist bewusst **nicht** enthalten — dafür liegt ein eigener Vorschlag
-> im Review §7, der die ausdrückliche Freigabe des Users braucht.
+> **CLAUDE.md** ist seit dem 15.08.2026 enthalten — siehe Patches 5–8. Der User hat
+> die Freigabe nach Vorlage des Reviews ausdrücklich erteilt.
 
 ---
 
@@ -118,3 +118,74 @@
 | Schema-Doku §6 (Lösch-Logik), §7 (Snapshot), §8 (RLS) | nicht berührt; keine neue Tabelle, also auch kein Policy-Thema (Stolperfalle 15) |
 | Design-Doku §11 (CSV-Import / Distiller) | beschreibt den Import-Ablauf, der unverändert bleibt. Die Schwellen 0,60 / 0,95 gelten weiter wie dokumentiert |
 | Design-Doku §12 (UI-Copy) | kein neuer und kein geänderter Text. Die Zeile „Vorschlag" im Schaufenster existiert seit v2-16 |
+
+---
+
+# Teil B · CLAUDE.md — nach ausdrücklicher Freigabe (15.08.2026)
+
+> §7 Regel 14 verlangt für **diese** Datei zusätzlich zur Patch-Form die Freigabe des
+> Users. Sie ist nach Vorlage des Reviews erteilt worden.
+>
+> **Nummerierung geprüft gegen den v2-20-Stand im Branch:** Stolperfallen enden bei
+> **16**, Arbeitsregeln bei **24**, das LL-Register bei **LL-26**. Die neuen Einträge
+> sind also 17 · 25 · LL-27 — keine Kollision.
+
+## Patch 5 · §6 — neue Stolperfalle 17
+
+**Anker** (Ende von Stolperfalle 16, eindeutig):
+
+```
+    Stelle, die sie kürzt** — `slice`, `LIMIT`, `take`, eine feste Feldliste.
+    (v2-19, LL-26)
+```
+
+**Patch-Satz:** Der Anker bleibt, danach folgt Stolperfalle 17 (Wortlaut siehe
+angewendete Datei — Kern: eine Sub-Score-Funktion, die nicht streuen kann, macht eine
+Schwelle rechnerisch unerreichbar; `frequency_match` liefert ausnahmslos `1.00`).
+
+## Patch 6 · §7 — neue Regel 25
+
+**Anker** (Ende von Regel 24, eindeutig):
+
+```
+    ohnehin am Ende. (LL-24)
+```
+
+**Patch-Satz:** Regel 25 wird angehängt — wer eine Erkennungs- oder
+Ähnlichkeitsfunktion ändert, misst gegen echte Entscheidungen, mit Richtig **und**
+Falsch, und schließt das geprüfte Element aus seiner eigenen Lernmenge aus.
+
+## Patch 7 · §8 — neuer Eintrag LL-27
+
+**Anker** (LL-26-Zeile, eindeutig):
+
+```
+| LL-26 | Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben — wer eine Antwort erweitert, sucht die Stelle, die sie kürzt | §6 Stolperfalle 16 | v2-19 (GE-2) |
+```
+
+**Patch-Satz:** Danach LL-27 einfügen.
+
+## Patch 8 · §9 und Kopfzeile — Stand
+
+**Anker A** (Kopfzeile, eindeutig):
+
+```
+> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-19**
+```
+
+**Anker B** (§9, eindeutig):
+
+```
+**Letzter Sprint:** v2-19 („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`,
+```
+
+> ### ⚠️ Dieser Patch schließt zugleich eine Lücke, die nicht von v2-21 stammt
+>
+> §9 stand im Branch noch auf **v2-19** — der Nachzug für **v2-20** war nie
+> geschrieben worden. Hätte v2-21 sich einfach davorgesetzt, wäre v2-20 aus der
+> Verfassung verschwunden, ohne dass es jemandem auffällt.
+>
+> Der Patch nennt deshalb **beide**. Er schreibt v2-20 nicht nach (das ist Sache des
+> dortigen Reviews), sondern verzeichnet es im Stand und markiert die offene
+> PR-Kette. **Die Sparraten-Momentaufnahme wird NICHT angefasst** — v2-21 bewegt
+> keine Zahl, und §9 warnt selbst davor, sie als Sollwert zu behandeln.
