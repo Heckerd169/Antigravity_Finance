@@ -336,23 +336,26 @@ export default async function Home({ searchParams }: HomeProps) {
     );
   }
 
-  // ── Badge-Schwellen aus app_config (§11, CLAUDE.md Regel 5: nicht hardcoden).
-  // Fallback auf Spec-Defaults nur als Defense-in-Depth, falls Row fehlt. ─────
+  // ── Vorschlags-Schwelle aus app_config (§11, CLAUDE.md Regel 5: nicht
+  // hardcoden). Fallback auf den Spec-Default nur als Defense-in-Depth,
+  // falls die Zeile fehlt.
+  //
+  // v2-21 P4: `confidence.auto_absorption_threshold` wird hier NICHT mehr
+  // gelesen. Sie diente allein der Obergrenze weiter unten, und die ist
+  // entfallen — ob eine Zahlung bereits verlinkt ist, sagt jetzt der Status,
+  // nicht die Konfidenz (ausführliche Begründung an der Fundstelle).
+  // Die Schwelle selbst bleibt in `app_config` und in Gebrauch: die
+  // Auto-Absorption in `process_csv_import` liest sie weiterhin. ────────────
 
   const { data: thresholdRows } = await supabase
     .from("app_config")
     .select("key, value")
-    .in("key", [
-      "confidence.badge_threshold",
-      "confidence.auto_absorption_threshold",
-    ]);
+    .in("key", ["confidence.badge_threshold"]);
 
   const thresholdByKey = new Map(
     (thresholdRows ?? []).map((r) => [r.key, Number(r.value)]),
   );
   const badgeThreshold = thresholdByKey.get("confidence.badge_threshold") ?? 0.6;
-  const autoAbsorbThreshold =
-    thresholdByKey.get("confidence.auto_absorption_threshold") ?? 0.95;
 
   // ── Fragmente ────────────────────────────────────────────────────────────
   // v2-07 P0 (Bugfix): zwei monats-enge Abfragen statt eines Voll-Scans.
@@ -424,15 +427,40 @@ export default async function Home({ searchParams }: HomeProps) {
           f.status !== null,
       )
       .map((f) => {
-        // Badge nur im Bereich [badge_threshold, auto_absorption_threshold) UND
-        // mit gesetztem suggested_card_id (§6). Karten-Name via Lookup; zeigt die
-        // Karte ins Leere (gelöscht), kein Badge.
+        /* Vorschlag ab `badge_threshold` UND mit gesetztem suggested_card_id
+           (§6). Karten-Name via Lookup; zeigt die Karte ins Leere (gelöscht),
+           kein Vorschlag.
+
+           v2-21 P4 — die OBERGRENZE ist weggefallen, und das ist der Kern
+           dieser Phase. Bis hierher galt `conf < auto_absorption_threshold`:
+           Ab 0.95 verlinkt der Import selbst, ein Vorschlag wäre gegenstandslos
+           gewesen. Diese Bedingung war nie eine Aussage über die Konfidenz —
+           sie war ein STELLVERTRETER für „wurde bereits automatisch verlinkt".
+
+           Seit v2-21 stimmt der Stellvertreter nicht mehr.
+           `refresh_fragment_suggestions` rechnet Vorschläge für alte Zahlungen
+           nach, verlinkt dabei aber bewusst NICHT (User-Entscheid 15.08.2026,
+           weil Verlinken die Sparrate rückwirkend bewegen würde). Dadurch
+           entstehen OFFENE Zahlungen mit Konfidenz ≥ 0.95 — gemessen 24 Stück
+           allein in 2026, und es sind die TREFFSICHERSTEN des ganzen Sprints.
+           Mit der alten Bedingung wären ausgerechnet die unsichtbar geblieben.
+
+           Das ist LL-26 / §6 Stolperfalle 16 in Reinform: ein Frontend-Filter,
+           der eine Datenbank-Entscheidung stillschweigend aufhebt. Kein Anker
+           und keine Prüfsumme hätte es gefangen — die Zahlen wären alle richtig
+           gewesen, nur eben nie zu sehen.
+
+           Der Status ist die verlässliche Auskunft darüber, ob bereits
+           verlinkt wurde; er kommt aus `fragments_with_status` und wird dort
+           aus dem tatsächlichen Link abgeleitet, nicht aus einer Schwelle.
+           Die Schwellen-Auswertung bleibt server-seitig (LL-17): Die
+           Komponente bekommt `suggestedCardName`, nicht Rohwert plus Schwelle. */
         const conf = f.confidence != null ? Number(f.confidence) : null;
         const suggestedCardName =
           f.suggested_card_id != null &&
           conf != null &&
           conf >= badgeThreshold &&
-          conf < autoAbsorbThreshold
+          f.status === "UNASSIGNED"
             ? cardNameById.get(f.suggested_card_id) ?? null
             : null;
 
