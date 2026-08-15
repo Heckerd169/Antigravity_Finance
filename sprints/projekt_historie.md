@@ -2035,3 +2035,65 @@ Migrations-Kommentar festgehalten.
 
 *Nachtrag geschrieben am 15. August 2026, verdichtet aus den Review-Dateien v2-08 bis
 v2-22. Primärquellen bleiben `sprints/sprint_v2-NN_review.md`.*
+
+---
+
+## Nachtrag ②, wenige Minuten später — v2-01
+
+> **Gefunden vom Wächter, nicht von mir.** Die Prüfung
+> `tests/e2e/doku-vollstaendigkeit.spec.ts` lief zum ersten Mal und war sofort rot:
+> `sprints/sprint_v2-01_review.md` existiert, ein Historie-Eintrag nicht — die Datei
+> begann bei v2-02.
+>
+> **Das ist ein besserer Beleg für den Wächter als jede Begründung.** Ich hatte die
+> fünfzehn Lücken von Hand gesucht und v2-01 dabei übersehen; der Test brauchte drei
+> Sekunden. Und das Review von v2-01 trägt in §8 sogar einen **fertigen Vorschlag** für
+> genau diesen Eintrag — er wurde nie angewendet, und niemandem ist es aufgefallen.
+>
+> **Chronologisch gehört er vor v2-02.** Er steht trotzdem hier unten, weil die
+> Append-only-Regel keine Einfügungen vorsieht. Wer chronologisch liest, springt von
+> hier zurück an den Anfang der V2-Reihe.
+
+### Sprint v2-01 · DONE 26. Juni 2026 *(nachgetragen am 15.08.2026)*
+
+**Komponente:** Bug-Sprint `N1`–`N4a`, Option A — reine UI-/Loader-Fixes, kein
+Schema-Eingriff, direkt gegen Produktion. Fünf Phasen-Commits.
+
+**`N1` — Fragment-Stack-Monatsfilter.** Der Stack lud `fragments_with_status` **ohne**
+Monatsfilter, zeigte also alle Monate. Sprint-5-E5 hatte „Rohmasse = alle Monate" als
+Lesart von §8 gesetzt; `N1` korrigiert auf Single-Surface: **ein Monat**.
+
+**Die bewusste Abweichung vom Briefing, die den Sprint trägt:** Vorgeschlagen war ein
+query-seitiger `date_trunc`-Filter. Gebaut wurde ein **JS-Filter auf einer abgeleiteten
+Liste**, während die volle `fragments`-Liste für `linkedByCardId` erhalten bleibt. Ein
+Filter in der Abfrage hätte **Cross-Monat-Links zerstört** — ein Fragment mit
+`assigned_month = targetMonth`, aber `transaction_date` in einem anderen Monat (§4.7) —
+und damit den sichtbaren Bezahlt-Status betroffener Karten. Der String-Vergleich
+`"YYYY-MM"` ist zeitzonenstabil, ohne `new Date()`-Konstruktion (Regel 8).
+
+**`N2`/`N3` — die Karte streckt sich nicht mehr.** `.dropTargetWrap` bekommt
+`flex: 0 0 136px` (der Wrapper hatte keine harte Breite, nur die `.card` darin), und
+`.cardName` wird einzeilig mit Ellipsis. **`overflow` bleibt auf `.cardName` beschränkt,
+nicht auf `.card`** — dort würde es Kontext-Icon und Tap-Catcher clippen (Sprint-4 E3).
+
+**`N4a` — doppeltes Vorzeichen im Ring.** Bei negativem Plan-Nenner ergab
+`+${formatPct((pct-1)*100)}` die Anzeige `+−X %`. Behoben mit `Math.abs`, sodass das
+`+`-Präfix die einzige Vorzeichen-Quelle ist. **`N4b` bewusst NICHT entschieden** —
+ob bei winzigem Plan-Nenner gekappt wird, blieb dem Design-Direktor vorbehalten.
+*(Diese offene Flanke wird in v2-12 als `BF-2` zurückkommen: Der Zweig, der hier stehen
+blieb, produzierte im Juli 2026 „Plan fast 0 € — −1.223 € gespart".)*
+
+**Verifikation:** tsc 0 · Lint 0 · Build 0 · Bundle **26,2 kB / 178 kB unverändert**
+gegenüber der Sprint-10-Baseline. Sparrate **per Konstruktion** stabil — keiner der vier
+Fixes berührt eine Sparrate-Quelle; die RPCs wurden nicht angefasst.
+
+**Offen nach v2-01:** Der **manuelle Cross-Monat-Drop entfällt** als Folge von `N1` —
+Fremd-Monats-Fragmente stehen nicht mehr im Stack; die Auto-Absorption beim Import
+bleibt unberührt. Dazu ein Bundle-Quirk, der **nicht** von diesem Sprint stammt: Das
+Dashboard-Dev-Panel wird nicht aus dem Produktions-Bundle tree-geshaked, byte-gleich
+schon an der Branch-Basis.
+
+---
+
+*Nachtrag ② geschrieben am 15. August 2026, nachdem der neue Wächter die Lücke gemeldet
+hat. Primärquelle: `sprints/sprint_v2-01_review.md`.*

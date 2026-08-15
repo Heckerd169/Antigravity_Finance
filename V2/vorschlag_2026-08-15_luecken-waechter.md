@@ -2,7 +2,9 @@
 
 > **Datum:** 15. August 2026 · **Anlass:** Die Projekt-Historie endete bei v2-07;
 > fünfzehn Sprints fehlten (nachgetragen in PR #33).
-> **Status:** Vorschlag, nicht umgesetzt. Braucht die Entscheidung des Users.
+> **Status:** ✅ **angenommen und umgesetzt am 15.08.2026.** Alle drei Punkte sind
+> gebaut — siehe §9 unten, inklusive dessen, was der Wächter beim ersten Lauf sofort
+> gefunden hat.
 
 ---
 
@@ -90,9 +92,14 @@ Schaden gilt** — nicht der fehlenden Datei, sondern dem gebrochenen Verspreche
 
 Für LL-21 bis LL-27 war dieser Satz unwahr. Regel ② macht ihn prüfbar.
 
-**③ Der letzte Sprint in der Historie ist der letzte mit Review.**
+**③ Die Nummernfolge der Historie ist lückenlos.**
 
-Fängt den Fall, dass jemand einen Eintrag anlegt, aber einen älteren Sprint überspringt.
+Fängt den Fall, dass jemand einen Eintrag anlegt, aber einen älteren Sprint überspringt
+— Regel ① sieht das nur, wenn für den übersprungenen Sprint auch ein Review existiert.
+
+*(Beim Bauen so umgesetzt; der ursprüngliche Entwurf lautete „der letzte Eintrag ist der
+letzte Sprint mit Review" — das wäre eine Dublette zu ① gewesen und hätte keine Lücke in
+der Mitte gefunden.)*
 
 ### Was der Wächter kostet
 
@@ -207,3 +214,64 @@ Punkt 3 ist unabhängig und kann mitlaufen.
 **Umfang:** ein kleiner Sprint oder ein Doku-Nachzug mit einer Test-Datei. Kein
 Datenbank-Eingriff, keine Zahl bewegt sich, kein Browser-Smoke nötig — die neue Spec
 läuft ohne Zugangsdaten.
+
+---
+
+## 9 · Umgesetzt am 15.08.2026 — und was dabei passiert ist
+
+Alle drei Punkte sind gebaut:
+
+| # | Was | Wo |
+|---|---|---|
+| 1 | Wächter mit den drei Regeln | `tests/e2e/doku-vollstaendigkeit.spec.ts`, eingetragen in `playwright.config.ts` |
+| 2 | Schritt **4b** + Zeile in der Abhakliste | `.claude/skills/sprint-abschluss/SKILL.md` |
+| 3 | `design-system/`-Satz bei Schritt 6 + Abhakliste | ebenda |
+
+### Der Wächter war beim ersten Lauf sofort rot — und das ist sein bester Beleg
+
+```
+Diese Sprints haben einen Review, aber keinen Eintrag in
+sprints/projekt_historie.md: v2-01
+```
+
+**`sprint_v2-01_review.md` existiert seit dem 26. Juni 2026. Ein Historie-Eintrag nie.**
+Die Datei begann bei v2-02.
+
+Das ist die **sechzehnte** Lücke — und ich hatte die anderen fünfzehn von Hand gesucht
+und diese dabei übersehen. Der Test brauchte drei Sekunden.
+
+**Noch schärfer:** Das Review von v2-01 trägt in seinem §8 einen **fertigen Vorschlag
+für genau diesen Eintrag**, formuliert vom damaligen Sprint selbst. Er wurde nie
+angewendet, und in vierzehn Monaten ist es niemandem aufgefallen. Genau dafür ist ein
+Test da: Er stellt die Frage bei **jedem** Lauf, nicht nur wenn jemand daran denkt.
+
+v2-01 ist nachgetragen (Nachtrag ② in der Historie). Der Eintrag steht chronologisch an
+der falschen Stelle — am Ende statt vor v2-02 —, weil die Append-only-Regel keine
+Einfügungen vorsieht. Das ist der Preis, und er ist im Nachtrag benannt.
+
+### Gegenprobe gefahren
+
+Ein Wächter, der auch ohne den Fehler grün bliebe, wäre wertlos. Deshalb geprüft:
+
+| Lauf | Ergebnis |
+|---|---|
+| Historie vollständig | **3/3 grün** |
+| ein Eintrag testweise unkenntlich gemacht (`v2-15`) | **Regel ① und ③ fallen um**, ② bleibt grün |
+
+Dass ② grün bleibt, ist richtig: v2-15 ist kein Lessons-Learned-Ursprung. Die drei
+Regeln prüfen tatsächlich Verschiedenes und sind keine Dubletten.
+
+### Ein Fund am eigenen Code
+
+`tsc` hat die erste Fassung des Wächters abgelehnt: `matchAll` in einer `for…of`-Schleife
+verlangt `downlevelIteration` (TS2802). Umgebaut auf `Array.from(...).forEach(...)`.
+
+Bemerkenswert daran: **`ring-subline.spec.ts` warnt seit v2-12 im Kommentar vor genau
+dieser Falle** („Bewusst ohne `new Set(...)`-Spread: Die tsconfig zielt auf ein Ziel,
+das Iteration über ein Set nicht ohne `downlevelIteration` erlaubt"). Ich bin trotzdem
+hineingelaufen — die Prüfstrecke hat es gefangen, so wie sie soll.
+
+### Prüfstrecke nach der Umsetzung
+
+`tsc` 0 · ESLint 0/0 · Build 0 · `test:visual` **78/78** (75 auf `main`-Stand plus die
+drei neuen Regeln). Keine Zahl bewegt, kein Datenbank-Eingriff, kein Browser-Smoke nötig.
