@@ -1,8 +1,22 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.8.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung)
+**Version:** 3.9.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung)
 **Datum:** 15. August 2026
+
+> **Changelog v3.9.0 (15.08.2026, Sprint v2-22 · `B2-R`):** `get_year_deviation_drivers`
+> rundet **nicht mehr je Zeile**. Sie holt das Ziel aus den Sparrate-Funktionen und
+> legt den Rest auf die betragsgrößte Kartenzeile — dieselbe Abhilfe wie bei den
+> Kategorien in v2-17 (LL-25), eine Ebene tiefer. Damit gilt `Σ delta = Ist − Plan`
+> in **allen zwölf** Monaten exakt; vorher lagen Juli und August je einen Cent daneben.
+>
+> **Zwei Vermutungen sind dabei widerlegt worden.** Das separat gerundete
+> Gehalts-Delta trägt **nichts** bei (es ist exakt). Und die verursachenden Karten
+> sind **gar nicht sichtbar**: Ein Delta von 0,0022 € rundet auf 0,00 und wird von
+> `WHERE delta <> 0` gefiltert — es steht in keiner Anzeige, verschiebt aber die Summe.
+>
+> **Keine Schema-Änderung, keine neue Funktion** — eine Auswertungs-Funktion ersetzt.
+> Die Sparrate bewegt sich in keinem der zwölf Monate.
 
 > **Changelog v3.8.0 (15.08.2026, Sprint v2-21 · `M6`):** Die automatische Zuordnung
 > rechnet nach und trifft öfter. **Zwei neue Sub-Score-Funktionen** —
@@ -277,7 +291,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023. **Seit v2-19 kann ein Treiber `card_id: null` tragen** — die Zeile `Gehalt` (`card_type` und `attribution` ebenfalls `null`). `p_limit` begrenzt die **Karten**-Treiber; die Gehalts-Zeile wird **danach** angehängt und deshalb nie abgeschnitten. Aufrufer müssen `card_id: null` vertragen — auch beim Kürzen: Ein Frontend-Limit von 3 schnitte im Juli 2026 genau diese Zeile ab. **Seit v2-20 filtert sie `deleted_at IS NULL`** — sonst bräche die B2-Invariante: Die Treiber erklärten eine Karte, die in keiner der beiden Sparraten mehr vorkommt | `jsonb` |
+| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023. **Seit v2-19 kann ein Treiber `card_id: null` tragen** — die Zeile `Gehalt` (`card_type` und `attribution` ebenfalls `null`). `p_limit` begrenzt die **Karten**-Treiber; die Gehalts-Zeile wird **danach** angehängt und deshalb nie abgeschnitten. Aufrufer müssen `card_id: null` vertragen — auch beim Kürzen: Ein Frontend-Limit von 3 schnitte im Juli 2026 genau diese Zeile ab. **Seit v2-20 filtert sie `deleted_at IS NULL`** — sonst bräche die B2-Invariante: Die Treiber erklärten eine Karte, die in keiner der beiden Sparraten mehr vorkommt. **Seit v2-22 (`B2-R`) rundet sie nicht mehr je Zeile:** Die Deltas werden ungerundet berechnet, das Ziel wird aus `calculate_sparrate_for_month` und `calculate_planned_sparrate_for_month` **geholt** (LL-25 — `Ist − Plan` ist die Differenz zweier getrennt gerundeter Summen und darf nicht hergeleitet werden), das Gehalts-Delta abgezogen, und der verbleibende Rest auf die **betragsgrößte** Kartenzeile gelegt. Sie trägt `rn = 1` und überlebt damit jeden `p_limit`-Schnitt. Vorher lag `Σ delta` in Juli und August je einen Cent neben `Ist − Plan`; Ursache war nicht das separat gerundete Gehalt, sondern Karten mit **Sub-Cent-Deltas, die gar nicht angezeigt werden** (ein Delta von 0,0022 € rundet auf 0,00 und wird von `WHERE delta <> 0` gefiltert, verschiebt aber die Summe) | `jsonb` |
 
 **Return-Form** — immer genau 12 Einträge (auch ohne Treiber), aufsteigend nach Monat:
 
