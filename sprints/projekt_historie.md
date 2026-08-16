@@ -2097,3 +2097,56 @@ schon an der Branch-Basis.
 
 *Nachtrag ② geschrieben am 15. August 2026, nachdem der neue Wächter die Lücke gemeldet
 hat. Primärquelle: `sprints/sprint_v2-01_review.md`.*
+
+---
+
+### Sprint v2-23 · DONE 16. August 2026
+
+**Komponente:** `ZU-1` — automatisch zugeordnete Zahlungen zählten an ihrer Karte
+nicht mit. **Vom Nutzer gemeldet, nicht von der Prüfstrecke gefunden.**
+
+**Der Befund:** *„Auf der Spotify-Karte steht trotz automatischer Zuordnung noch offen
+und es ist auch kein Fragment hinterlegt."* Beide Beobachtungen stimmten — und die
+Messung in der Datenbank stimmte ebenfalls: `card_fragment_links` trug einen sauberen
+Link, der Link-Monat war korrekt, und die Sparrate rechnete den Betrag mit. **Der Bruch
+lag dazwischen.**
+
+**Die Ursache:** `page.tsx` filterte die verknüpften Fragmente je Karte mit
+`f.status === "ASSIGNED"`. Die View `fragments_with_status` kennt aber **zwei**
+zugeordnete Zustände — `ASSIGNED` (der Nutzer hat gezogen) und `AUTO_ABSORBED` (die App
+hat ab 95 % Konfidenz beim Import selbst zugeordnet). Die Unterscheidung ist für die
+**Herkunft** gedacht, nicht für die Frage, **ob** verknüpft ist; der Filter las sie als
+Ob-Frage. `card.linkedFragments` blieb leer, und `card-state.ts` entscheidet genau
+daran auf „Offen".
+
+**Der Fehler stammt aus v2-07 P0** (25.07.2026) — ausgerechnet aus dem Sprint, der
+LL-21 hervorgebracht hat. Er lag drei Wochen unentdeckt, weil es im **ganzen Bestand
+nur vier** automatische Zuordnungen gibt (Spotify, Mai bis August 2026); die übrigen
+128 Verknüpfungen hat der Nutzer selbst gezogen und die tragen `ASSIGNED`.
+
+**Behoben über ein benanntes Prädikat `isLinkedToCard`**, nicht über einen zweiten
+`||`-Vergleich an der Fundstelle. Begründung: Der Einzelwert-Vergleich **ist** die
+Fehlerbauart. Ein Prädikat ist einzeln prüfbar und hat genau einen Ort, an dem ein
+dritter Zustand nachgetragen würde — dieselbe Lehre wie `BF-2` (v2-12) und `ZO-2`
+(v2-22), nur an einem anderen Gegenstand.
+
+**Der Wächter enthält zwei Prüfungen, die über den Einzelfall hinausgehen:** Eine
+verlangt, dass **jeder** der fünf Status genau **einer** Gruppe zugeordnet ist (offen ·
+verlinkt · Übertrag) — käme ein sechster dazu, fiele er auf, statt durchzurutschen. Die
+zweite vergleicht die Status-Liste im Test gegen den Typ in der Quelldatei, damit der
+erste Test nicht grün bleibt, während er eine veraltete Liste prüft.
+
+**Verifikation:** tsc 0 · Lint 0/0 · Build 0 · `test:visual` **100/100** (94 + 6).
+Gegenprobe: Mit der alten Bedingung fallen **zwei** Tests um. Anker unverändert —
+reines Frontend, kein Datenbank-Eingriff. **Die Sparrate war nie betroffen:**
+`calculate_sparrate_for_month` liest `card_fragment_links` direkt, nicht über den
+Status. Falsch war ausschließlich, was die Karte über sich selbst sagte.
+
+**Vierter Fall von LL-26 in fünf Tagen** — nach v2-19 (Antwort gekürzt), v2-20 (Regel
+nachgebaut) und v2-21 (Schwelle als Stellvertreter). Diesmal: ein Filter, der **einen**
+Wert prüft, wo die Datenbank **mehrere** kennt.
+
+**Offen nach v2-23:** Der Browser-Smoke steht aus (Spotify-Karte Mai–August muss
+„Bezahlt" zeigen). Und: Ob es weitere Aufzählungen gibt, die einen Enum-Wert vergessen
+(`link_origin`, `card_type`, `transfer_type`), ist **nicht** geprüft — eine eigene
+Hausaufgabe.
