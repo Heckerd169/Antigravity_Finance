@@ -216,15 +216,26 @@ export default async function Home({ searchParams }: HomeProps) {
     };
   })();
 
-  // v2-05 Lösch-Tor-Vorberechnung: Links/States über ALLE Monate (zwei kleine
-  // Selects statt 31 RPC-Calls). Autoritativ prüft delete_card server-seitig.
+  const nowMonthDb = ymToDbDate(currentMonth);
+
+  // v2-05 Lösch-Tor-Vorberechnung: zwei kleine Selects statt 31 RPC-Calls.
+  // Autoritativ prüft `delete_card` server-seitig erneut.
+  //
+  // ⚠️ Diese Vorberechnung BILDET `card_delete_gate` NACH. Ändert sich die
+  // Regel dort, muss sie hier mit — sonst zeigt das Menü einen ausgegrauten
+  // Punkt, den die Datenbank längst durchließe (LL-26: ein Frontend-Nachbau
+  // hebt eine Datenbank-Entscheidung stillschweigend auf).
+  //
+  // v2-20 (KU-2): Zustände zählen nur noch, wenn sie in einem VERGANGENEN
+  // Monat liegen — server-seitig gefiltert, nicht nachgelagert in JS
+  // (§7 Regel 18). Vorher lud die Abfrage alle Zustände über alle Monate und
+  // machte damit jede frisch angepasste Karte unlöschbar.
   const [{ data: linkCardRows }, { data: stateCardRows }] = await Promise.all([
     supabase.from("card_fragment_links").select("card_id"),
-    supabase.from("card_monthly_states").select("card_id"),
+    supabase.from("card_monthly_states").select("card_id").lt("month", nowMonthDb),
   ]);
   const cardsWithLinks = new Set((linkCardRows ?? []).map((r) => r.card_id));
   const cardsWithStates = new Set((stateCardRows ?? []).map((r) => r.card_id));
-  const nowMonthDb = ymToDbDate(currentMonth);
 
   // Name-Lookup über ALLE nicht-gelöschten Karten (auch monats-inaktive) —
   // ein suggested_card_id kann auf eine Karte zeigen, die im targetMonth nicht
