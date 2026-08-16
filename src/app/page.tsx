@@ -33,6 +33,7 @@ import type {
   FragmentRow,
   IncomeAssignment,
 } from "@/components/interaction-zone/interaction-zone.types";
+import { isLinkedToCard } from "@/components/interaction-zone/interaction-zone.types";
 import { logout } from "./actions/auth";
 import { DashboardDevPanel } from "./dashboard-dev-panel";
 import styles from "./page.module.css";
@@ -501,10 +502,14 @@ export default async function Home({ searchParams }: HomeProps) {
   // umfasst auch Fragmente, deren transaction_date außerhalb des angezeigten
   // Monats liegt. Die assigned_month-Bedingung ist bereits server-seitig
   // gesetzt; der Check bleibt als Defense-in-Depth stehen.
+  // v2-23 (`ZU-1`): `isLinkedToCard` statt `f.status === "ASSIGNED"`. Es gibt
+  // ZWEI zugeordnete Zustände — automatisch absorbierte Zahlungen fielen hier
+  // durch, die Karte blieb dadurch „Offen" und zeigte keine Zahlung, obwohl
+  // beides in der Datenbank stand. Begründung an der Funktion.
   const linkedByCardId = new Map<string, LinkedFragmentRef[]>();
   for (const f of toFragmentRows(linkedRows)) {
     if (
-      f.status === "ASSIGNED" &&
+      isLinkedToCard(f) &&
       f.assigned_card_id &&
       f.assigned_month === targetDbDate
     ) {

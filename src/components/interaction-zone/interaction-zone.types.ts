@@ -77,6 +77,31 @@ export function isTransferFragment(f: Pick<FragmentRow, "status">): boolean {
   );
 }
 
+/** v2-23 (`ZU-1`): Liegt dieses Fragment auf einer Karte?
+ *
+ *  **Es gibt ZWEI zugeordnete Zustände**, und genau daran ist `page.tsx` drei
+ *  Wochen lang gescheitert: `ASSIGNED` (der Nutzer hat gezogen) und
+ *  `AUTO_ABSORBED` (die App hat ab 95 % Konfidenz selbst zugeordnet, §11).
+ *  Die Unterscheidung ist für die **Herkunft** gedacht — das Schaufenster-Popup
+ *  schreibt „automatisch erkannt" —, nicht für die Frage, **ob** verknüpft ist.
+ *
+ *  **Der Vorfall:** `page.tsx:507` filterte die verknüpften Fragmente je Karte
+ *  mit `f.status === "ASSIGNED"`. Die vier automatisch zugeordneten
+ *  Spotify-Zahlungen (Mai–August 2026) fielen durch, `card.linkedFragments`
+ *  blieb leer, und `card-state.ts` entschied daran „Offen" — obwohl die Zahlung
+ *  in der Datenbank sauber verlinkt war und in jeder Sparrate mitzählte.
+ *  Gemeldet vom Nutzer am 16.08.2026, nachdem die App die Karte als offen
+ *  auswies und zugleich keine Zahlung an ihr zeigte.
+ *
+ *  **Warum ein Prädikat und kein zweiter `||`-Vergleich:** Dieselbe Frage wird
+ *  an mehreren Stellen gestellt, und ein Einzelwert-Vergleich ist genau die
+ *  Bauart, die den Fehler erzeugt hat. Ein benanntes Prädikat lässt sich
+ *  einzeln prüfen (`zuordnung.spec.ts`) und wächst mit, falls je ein dritter
+ *  zugeordneter Zustand dazukommt. Muster von `isTransferFragment` darüber. */
+export function isLinkedToCard(f: Pick<FragmentRow, "status">): boolean {
+  return f.status === "ASSIGNED" || f.status === "AUTO_ABSORBED";
+}
+
 /** Karten-Erstellungs-Input (Direct + Drop teilen Felder). */
 export type CardCreateInput = {
   name: string;
