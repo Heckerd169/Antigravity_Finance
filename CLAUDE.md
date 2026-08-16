@@ -8,9 +8,18 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-19**
-> („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`; Design-Doku **v3.7.0**,
-> Schema-Doku **v3.6.0**, PR **#29** offen).
+> **Letzte Aktualisierung:** 15. August 2026 · **nach:** Sprint **v2-21**
+> (die automatische Zuordnung nimmt Arbeit ab — `M6`, Paket 5; Design-Doku
+> **v3.7.0**, Schema-Doku **v3.8.0**, PR **#31** offen — und **#30** davor, in dieser
+> Reihenfolge zu mergen).
+>
+> **Dieser Nachzug holt zwei Sprints auf einmal nach.** §9 stand noch auf v2-19; der
+> Eintrag für **v2-20** war nie geschrieben worden und wäre stillschweigend
+> verschwunden. Er ist jetzt verzeichnet — nachgeschrieben wird er nicht, dafür gibt
+> es `sprints/sprint_v2-20_review.md`.
+>
+> **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** v2-21 bewegt keine
+> Zahl; alle 24 Anker-Werte sind vor und nach dem Eingriff identisch gemessen worden.
 >
 > Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
 > Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
@@ -490,6 +499,19 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     wären grün. **Wer eine Datenbank-Antwort erweitert, sucht im Frontend nach der
     Stelle, die sie kürzt** — `slice`, `LIMIT`, `take`, eine feste Feldliste.
     (v2-19, LL-26)
+17. **Eine Sub-Score-Funktion, die nicht streuen kann, macht eine Schwelle
+    rechnerisch unerreichbar.** `frequency_match` prüft ausschließlich, ob die Karte
+    im Monat des Fragments aktiv ist — und **genau darauf filtert ihr einziger
+    Aufrufer bereits**. Sie liefert deshalb ausnahmslos `1.00`, gemessen über alle
+    fünf Score-Klassen. 20 % des Konfidenz-Gewichts unterscheiden damit nichts: Der
+    Wertebereich ist auf `[0.20, 1.00]` gestaucht, und ohne Namensähnlichkeit ist das
+    Maximum `0.3 + 0.2 = 0.50` — bei einer Badge-Schwelle von **0,60**. In den Daten
+    saßen **72 Zahlungen** im toten Band 0,50–0,60, mit perfektem Betrag und
+    perfekter Frequenz.
+    **Wer Gewichte vergibt, prüft, ob jede Komponente überhaupt streuen kann.** Eine
+    Konstante im Zähler verschiebt den ganzen Wertebereich, ohne dass irgendeine Zahl
+    falsch *aussieht* — und keine der bestehenden Prüfungen schlägt an. Offen als
+    `ZO-1`. (v2-21)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -601,6 +623,16 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Regressions-Wächter des Projekts. Vor jedem neuen `round()` prüfen, ob die
     **Gegenseite genauso rundet**. Im Zweifel nicht runden: die Aufrufer runden
     ohnehin am Ende. (LL-24)
+25. **Wer eine Erkennungs- oder Ähnlichkeitsfunktion ändert, misst gegen echte
+    Entscheidungen — vorher und nachher, mit Richtig UND Falsch.** Eine Verbesserung,
+    die nur die Treffer zählt, ist keine: Der wortweise Namensvergleich hob in v2-21
+    die richtigen Vorschläge von 14 auf 27 — und die **falschen** von 1 auf **18**.
+    Beides sichtbar wurde erst, weil beide Seiten gezählt wurden; die Trefferzahl
+    allein hätte die Verschlechterung als Erfolg ausgewiesen.
+    Grundlage waren die **101 Handzuordnungen aus Juli/August 2026** — echte
+    Entscheidungen des Nutzers, kein synthetisches Set. **Das jeweils geprüfte
+    Element gehört aus seiner eigenen Lernmenge ausgeschlossen**, sonst misst man
+    Auswendiglernen statt Vorhersage. (LL-27)
 
 ### Datei-Konventionen
 
@@ -700,6 +732,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
 | LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
 | LL-26 | Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben — wer eine Antwort erweitert, sucht die Stelle, die sie kürzt | §6 Stolperfalle 16 | v2-19 (GE-2) |
+| LL-27 | Eine Ähnlichkeitsfunktion braucht ein Prüfset aus echten Entscheidungen — die naive Verbesserung war messbar **schlechter** als gar keine | §7 Regel 25 · §6 Stolperfalle 17 | v2-21 (M6) |
 
 > **Warum LL-26 neben LL-21 steht und nicht darin aufgeht.** LL-21 warnt vor einer
 > **stillen Kürzung durch die Infrastruktur** — PostgREST liefert 1000 Zeilen und
@@ -722,17 +755,43 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-19 („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`,
-13.08.2026, PR **#29** offen) · **davor:** v2-18 (zwei Befunde aus der Nutzung, PR #26)
-und v2-17 (Kategorien im Karussell).
+**Letzter Sprint:** v2-21 (die automatische Zuordnung nimmt Arbeit ab — `M6`,
+15.08.2026, PR **#31** offen) · **davor:** v2-20 (Papierkorb und Lösch-Tor, `KU-1`
+`KU-2`, PR **#30** offen) und v2-19 (Netto, `GE-1` `GE-2`, PR #29 **gemerged**).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-> **⚠️ Zwei Dinge, die bei v2-19 auseinanderfallen.** Die beiden Migrationen liegen
-> **bereits auf Produktion** (nach ausdrücklicher Freigabe, mit vollständiger Probe auf
-> der Übungs-Datenbank davor) — der **Browser-Smoke des Users steht aber noch aus**.
-> Das ist unkritisch, weil die Migrationen **keine Zahl bewegt haben**: Solange keine
-> Gehaltszahlung zugeordnet ist, rechnet alles wie zuvor. Bewegt wird erst durch das
-> Ziehen im Browser. Wer hier ansetzt, prüft zuerst den Stand von PR #29.
+> **⚠️ Zwei Pull Requests hängen ineinander — die Reihenfolge ist nicht beliebig.**
+> **#31 (v2-21) baut auf dem Branch von #30 (v2-20) auf, nicht auf `main`.** Erst #30
+> mergen, dann #31. Das war eine bewusste Entscheidung: Die v2-20-Migrationen lagen
+> beim Start von v2-21 bereits auf Produktion, ein Aufbau von `main` hätte gegen eine
+> Datenbank gemessen, die der Code gar nicht kennt.
+>
+> **Bei beiden liegen die Migrationen schon auf Produktion, der Browser-Smoke des
+> Users steht aus.** Bei v2-21 ist das belegt unkritisch: Der Nachrechen-Lauf hat
+> **alle 24 Anker-Werte unverändert gelassen** (zwölf Monate × Ist/Plan) und die
+> Zahl der Verknüpfungen bei 132 belassen. Er füllt ausschließlich Anzeige-Spalten.
+> Wer hier ansetzt, prüft zuerst den Stand von #30 und #31.
+
+**v2-21 macht Paket 5 zum ersten Mal wirksam.** Die automatische Zuordnung schlägt
+für **115 statt 9** offene Zahlungen aus 2026 eine Karte vor. Drei Ursachen waren
+dafür zu beheben, und nur die erste stand im Auftrag: Die Konfidenz wurde
+ausschließlich **beim Import** berechnet (1.567 von 1.590 Zahlungen trugen gar keinen
+Wert); die Namensfunktion verglich **ganze Zeichenketten** statt Wörter
+(`Nurnberger` gegen `Nürnberger` ergab 0,139); und die **101 Handzuordnungen** des
+Nutzers aus Juli/August wurden nie ausgelesen.
+
+> **Diese 101 Handzuordnungen sind ab jetzt das Prüfset des Projekts.** Wer an der
+> Zuordnung arbeitet, misst dagegen — mit Richtig **und** Falsch (§7 Regel 25).
+> Stand nach v2-21: 42 richtige Vorschläge über der Badge-Schwelle gegen 4 falsche;
+> davor 14 gegen 1.
+
+**Eine Produktentscheidung steht beim User und ist bewusst nicht vorweggenommen:**
+ob ab 0,95 **rückwirkend** automatisch verknüpft werden darf (`ZO-3`). 24 Zahlungen
+aus 2026 lägen darüber, im Prüfset waren 11 von 11 solcher Fälle richtig. Verknüpfen
+bewegt die Sparrate rückwirkend über bis zu zwölf Monate — deshalb schreibt
+`refresh_fragment_suggestions` ausschließlich Anzeige-Spalten, und das ist **erzwungen,
+nicht zugesagt**: Die Funktion zählt `card_fragment_links` vor und nach ihrem Lauf und
+bricht bei jeder Abweichung mit Rollback ab.
 
 **v2-19 macht das Netto von geplant zu gemessen.** Bis dahin galt „Realität gewinnt"
 für Fixkosten und Einnahmen, für das Gehalt nicht: Juli 2026 geplant 4.165,11 €,

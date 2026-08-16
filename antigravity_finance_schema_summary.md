@@ -1,8 +1,27 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.7.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien)
-**Datum:** 08. August 2026
+**Version:** 3.8.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung)
+**Datum:** 15. August 2026
+
+> **Changelog v3.8.0 (15.08.2026, Sprint v2-21 · `M6`):** Die automatische Zuordnung
+> rechnet nach und trifft öfter. **Zwei neue Sub-Score-Funktionen** —
+> `name_similarity_scoped` (wortweise, umlautfest, mit Entwertung mehrdeutiger
+> Kartenwörter) und `history_match` (Wiedererkennung aus den eigenen
+> Handzuordnungen). **Eine neue mutierende RPC** `refresh_fragment_suggestions`,
+> die Vorschläge für alte Zahlungen nachrechnet und dabei **niemals verlinkt** —
+> erzwungen über einen Zähler-Wächter auf `card_fragment_links`.
+> **Neuer `app_config`-Schlüssel** `confidence.history_score` (0,94).
+>
+> Der Befund dahinter: `calculate_match_confidence` lief ausschließlich beim
+> Einfügen, weshalb 1.567 von 1.590 Zahlungen gar keinen Konfidenzwert trugen.
+> Gemessen an 101 Handzuordnungen aus Juli/August stieg die Zahl richtiger
+> Vorschläge über der Badge-Schwelle von **14 auf 42**, die Zahl falscher von
+> 1 auf 4. Für den Nutzer: von 9 auf 115 sichtbare Vorschläge bei 283 offenen
+> Zahlungen in 2026.
+>
+> **Ohne Schema-Änderung an Tabellen** — nur Funktionen und ein Konfigurationswert.
+> Die Sparrate bewegt sich in keinem der zwölf Monate.
 
 > **Changelog v3.5.0 (08.08.2026, Sprint v2-17 · `KAT-1` + `KAT-3`):** **Neue Tabelle
 > `card_categories`** (`id`, `user_id`, `name`, `sort_order smallint`, Zeitstempel) mit
@@ -369,10 +388,13 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` jetzt **aktiv**: `'DKB'` (Default) | `'CORTAL_CONSORS'` | `'DKB_VISA'`. Bei `'DKB_VISA'` greift zusätzlich zur IBAN-Erkennung die KK-Klassifikation: Zeilen mit `amount > 0` **und** Beschreibung `ILIKE 'Einzahlung%'` **oder** `ILIKE 'Ausgleich Kreditkarte%'` → `INTERNAL_TRANSFER` (inkl. OQ-B-Link-Auflösung), da der DKB-Visa-Export keine Gegen-IBAN führt. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
-| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score, gewichtete Summe aus den drei Sub-Scores | `numeric` (0..1) |
-| `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) | `numeric` |
+| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score. Gewichtete Summe aus den drei Sub-Scores (Name über `name_similarity_scoped` seit v2-21), danach die **Wiedererkennung als Untergrenze**: Greift `history_match`, wird der Score auf `confidence.history_score` (0,94) **gehoben** — nie gesenkt. Bewusst knapp **unter** der Auto-Absorptions-Schwelle 0,95: Eine wiedererkannte Zahlung erzeugt einen sichtbaren Vorschlag, aber niemals eine automatische Verknüpfung (User-Entscheid 15.08.2026). Der Wert steht in `app_config` und lässt sich ohne Migration anheben. Eine vierte **gewichtete** Komponente wäre falsch gewesen: Sie hätte alle Scores gesenkt, bei denen keine Historie vorliegt — und das sind die meisten | `numeric` (0..1) |
+| `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) über die **ganzen** Strings. Seit v2-21 **nicht mehr direkt von `calculate_match_confidence` aufgerufen**, sondern als Untergrenze innerhalb von `name_similarity_scoped` mitgeführt | `numeric` |
+| `name_similarity_scoped(description, card_id)` **(v2-21)** | Wortweiser Namensvergleich: Umlaut-/ß-Normalisierung auf beiden Seiten, Zerlegung des Kartennamens in Wörter ab 4 Zeichen, Treffer nur an **echten Wortgrenzen** (`Douglas` trifft nicht mehr `Glas`), unscharfer Fallback über `word_similarity` erst ab `0.7`. **Entwertung mehrdeutiger Wörter:** Ein Kartenwort, das in `n` Kartennamen desselben Nutzers vorkommt, zählt nur `1/n` — das fängt Personennamen wie `Aline` (in 7 Kartennamen) ohne gepflegte Stoppwortliste. Führt `name_similarity` als Untergrenze mit: das Ergebnis kann nie schlechter werden als vorher | `numeric` (0..1) |
+| `history_match(fragment_id, card_id)` **(v2-21)** | Wiedererkennung: Wurde eine Zahlung mit **identischer** Beschreibung schon einmal **von Hand** (`origin = 'MANUAL_DROP'`) dieser Karte zugeordnet? Lernt bewusst **nicht** aus `AUTO_ABSORBED` (sonst verstärkt sich ein Automatik-Fehler selbst) und nicht aus Überträgen. Das Fragment selbst ist ausgeschlossen | `numeric` (0 oder 1) |
 | `amount_match(fragment_amount, planned)` | Bracket-Score (`<1%→1.00`, `<5%→0.85`, `<15%→0.60`, `<30%→0.30`, sonst `0.00`) | `numeric` |
-| `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month` | `numeric` |
+| `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month`. ⚠️ **In der Praxis eine Konstante:** Der einzige Aufrufer filtert Karten bereits auf Aktivität im Monat des Fragments, weshalb sie dort ausnahmslos `1.00` liefert — gemessen über alle Score-Klassen (v2-21). 20 % des Gewichts unterscheiden damit nichts, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ergeben höchstens 0,50). Offen als Hausaufgabe `ZO-1` | `numeric` |
+| `refresh_fragment_suggestions(p_from_month, p_to_month)` **(v2-21)** | Rechnet Kartenvorschläge für **offene** Zahlungen eines Zeitraums neu und schreibt **ausschließlich** `suggested_card_id` und `confidence`. Nötig, weil `calculate_match_confidence` sonst nur beim Einfügen läuft (`process_csv_import`, hinter `IF v_was_inserted`) — wer später eine Karte anlegt, bekam für ältere Zahlungen nie einen Vorschlag. **Verlinkt niemals**, auch nicht ab 0,95: `card_fragment_links` zu schreiben bewegt sofort die Sparrate. Die Zusage ist **erzwungen**, nicht behauptet — die Funktion zählt die Verknüpfungen vor und nach ihrem Lauf und bricht bei jeder Abweichung mit Exception und Rollback ab. Auth über `auth.uid()` (`28000`), Zeitraum validiert (`22023`, höchstens 5 Jahre). Überträge (`transfer_type IS NOT NULL`) bleiben unangetastet | `jsonb` (`{geprueft, vorschlag_gesetzt, vorschlag_geleert, links_unveraendert, badge_threshold}`) |
 
 ### Beim Transfer-Markieren (Sprint v2-04)
 
