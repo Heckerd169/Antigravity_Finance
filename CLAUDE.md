@@ -8,18 +8,14 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 15. August 2026 · **nach:** Sprint **v2-22**
-> (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`; Design-Doku **v3.7.0**, Schema-Doku
-> **v3.9.0**). **Drei PRs offen: #30 → #31 → #32**, in dieser Reihenfolge zu mergen.
->
-> **Dieser Nachzug holt drei Sprints auf einmal nach.** §9 stand noch auf v2-19; der
-> Eintrag für **v2-20** war nie geschrieben worden und wäre stillschweigend
-> verschwunden. Er ist jetzt verzeichnet — nachgeschrieben wird er nicht, dafür gibt
-> es `sprints/sprint_v2-20_review.md`.
+> **Letzte Aktualisierung:** 16. August 2026 · **nach:** Sprint **v2-23**
+> (automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte — `ZU-1`;
+> Design-Doku **v3.7.0**, Schema-Doku **v3.9.0**). **#30 bis #34 sind gemerged,
+> #35 (v2-23) ist offen.**
 >
 > **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
-> v2-22 bewegt eine Zahl; alle 24 Anker-Werte sind bei beiden vor und nach dem
-> Eingriff identisch gemessen worden.
+> v2-22 noch v2-23 bewegt eine Zahl; die Anker-Werte sind bei allen dreien vor und
+> nach dem Eingriff identisch gemessen worden.
 >
 > Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
 > Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
@@ -499,6 +495,26 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     wären grün. **Wer eine Datenbank-Antwort erweitert, sucht im Frontend nach der
     Stelle, die sie kürzt** — `slice`, `LIMIT`, `take`, eine feste Feldliste.
     (v2-19, LL-26)
+
+    **Dieselbe Lehre ist inzwischen in DREI Gestalten aufgetreten, und die
+    Suchrichtung ist bei jeder eine andere:**
+
+    | Form | Vorfall | Wonach man sucht |
+    |---|---|---|
+    | **Kürzen** | `getTop3Drivers` schnitt vier Treiber auf drei (v2-19) | `slice`, `LIMIT`, `take`, feste Feldlisten |
+    | **Nachbauen** | `page.tsx` bildete `card_delete_gate` nach, um 31 RPC-Aufrufe zu sparen. Als die Datenbank in v2-20 großzügiger wurde, blieb der Nachbau streng — das Menü hätte ausgegraut, was die Datenbank längst erlaubte | *wo wird dieselbe Regel ein zweites Mal formuliert* |
+    | **Auf einen Wert filtern** | `page.tsx` filterte verknüpfte Zahlungen mit `status === "ASSIGNED"`. Die View kennt **zwei** zugeordnete Zustände; `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung — obwohl beides in der Datenbank stand und die Sparrate den Betrag mitrechnete (v2-23) | *ist die Menge hinter dem Vergleich größer als der eine Wert* |
+
+    **Vier Vorfälle in fünf Tagen** (v2-19 · v2-20 · v2-21 · v2-23) — das ist die
+    teuerste Fehlerklasse dieses Projekts, weil **jede Zahl richtig bleibt**. Anker,
+    Prüfsummen und B2-Invariante sind dabei grün; gefunden hat drei der vier Fälle
+    nicht die Prüfstrecke, sondern das Benutzen.
+
+    **Gegenmittel, wo die Menge exakt ist:** ein **benanntes Prädikat** statt eines
+    Vergleichs an Ort und Stelle (`isLinkedToCard`, `isTransferFragment`). Es hat
+    genau einen Ort, an dem ein neuer Wert nachzutragen ist, und es lässt sich
+    einzeln prüfen — inklusive der strukturellen Frage, ob **jeder** Wert des Typs
+    genau einer Gruppe zugeordnet ist. Genau daran wäre `AUTO_ABSORBED` aufgefallen.
 17. **Eine Sub-Score-Funktion, die nicht streuen kann, macht eine Schwelle
     rechnerisch unerreichbar.** `frequency_match` prüft ausschließlich, ob die Karte
     im Monat des Fragments aktiv ist — und **genau darauf filtert ihr einziger
@@ -731,7 +747,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-23 | Wandert ein Faktor in eine Basis-Funktion, wird aus `f × (a − b)` ein `(a − b × f)` — gemischte Klammer, B2 in allen zwölf Monaten prüfen | §7 Regel 23 · §6 Stolperfalle 11 | v2-13 (BF-4) |
 | LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
 | LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
-| LL-26 | Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben — wer eine Antwort erweitert, sucht die Stelle, die sie kürzt | §6 Stolperfalle 16 | v2-19 (GE-2) |
+| LL-26 | Ein Frontend kann eine Datenbank-Entscheidung stillschweigend aufheben — durch **Kürzen**, **Nachbauen** oder **Filtern auf einen Wert**. Jede Zahl bleibt dabei richtig, nur sichtbar ist sie nicht | §6 Stolperfalle 16 | v2-19 (GE-2) · v2-20 (KU-1) · v2-23 (ZU-1) |
 | LL-27 | Eine Ähnlichkeitsfunktion braucht ein Prüfset aus echten Entscheidungen — die naive Verbesserung war messbar **schlechter** als gar keine | §7 Regel 25 · §6 Stolperfalle 17 | v2-21 (M6) |
 
 > **Warum LL-26 neben LL-21 steht und nicht darin aufgeht.** LL-21 warnt vor einer
@@ -755,24 +771,38 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-22 (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`, 15.08.2026,
-PR **#32** offen) · **davor:** v2-21 (automatische Zuordnung, `M6`, PR **#31** offen),
-v2-20 (Papierkorb und Lösch-Tor, `KU-1` `KU-2`, PR **#30** offen) und v2-19 (Netto,
-`GE-1` `GE-2`, PR #29 **gemerged**).
+**Letzter Sprint:** v2-23 (automatisch zugeordnete Zahlungen zählen wieder an ihrer
+Karte — `ZU-1`, 16.08.2026, PR **#35** offen) · **davor:** v2-22 (der Cent und die
+Prüfbarkeit, `B2-R` `ZO-2`), v2-21 (automatische Zuordnung, `M6`), v2-20 (Papierkorb
+und Lösch-Tor, `KU-1` `KU-2`) und v2-19 (Netto, `GE-1` `GE-2`) — **alle gemerged**.
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-> **⚠️ Drei Pull Requests hängen ineinander — die Reihenfolge ist nicht beliebig.**
-> **#30 → #31 → #32.** Jeder baut auf dem Branch des vorigen auf, nicht auf `main`.
-> Das war eine bewusste Entscheidung: Die v2-20-Migrationen lagen beim Start von v2-21
-> bereits auf Produktion, ein Aufbau von `main` hätte gegen eine Datenbank gemessen,
-> die der Code gar nicht kennt.
+> ### ⚠️ Eine PR-Kette sieht nach „erledigt" aus, ohne es zu sein
 >
-> **Bei allen dreien liegen die Migrationen schon auf Produktion, der Browser-Smoke
-> des Users steht aus.** Bei v2-21 und v2-22 ist das belegt unkritisch: Beide haben
-> **alle 24 Anker-Werte unverändert gelassen** (zwölf Monate × Ist/Plan) und die Zahl
-> der Verknüpfungen bei 132 belassen. v2-21 füllt ausschließlich Anzeige-Spalten,
-> v2-22 fasst nur eine Auswertungs-Funktion an.
+> **Am 16.08.2026 real passiert.** v2-20, v2-21 und v2-22 lagen als Kette vor: #30 auf
+> `main`, #31 auf dem v2-20-Branch, #32 auf dem v2-21-Branch. Alle drei wurden
+> gemerged — aber **nur #30 landete in `main`**. Die anderen beiden gingen in ihre
+> Ketten-Basis und standen auf GitHub trotzdem als „merged".
+>
+> **Das war produktiv relevant, nicht kosmetisch:** Die Datenbank trug alle
+> v2-21-Funktionen, aber `page.tsx` in `main` filterte Vorschläge noch mit der alten
+> Obergrenze — die 24 treffsichersten wären unsichtbar geblieben. Repariert mit #34,
+> der den vollständigen Branch nach `main` brachte.
+>
+> **Zwei Lehren:**
+> **①** Wer eine Kette baut, braucht am Ende einen PR des **letzten** Branches nach
+> `main` — oder prüft nach jedem Merge, ob die Dateien wirklich dort liegen
+> (`git ls-tree origin/main`). Der PR-Status allein ist kein Beleg.
+> **②** Ein neuer Sprint setzt **auf `main` auf**, sobald die Vorgänger dort sind.
+> v2-23 ist genau deshalb ein eigenständiger PR und kein viertes Kettenglied.
 > Wer hier ansetzt, prüft zuerst den Stand von #30, #31 und #32.
+
+**v2-23 kam aus der Benutzung, nicht aus der Planung.** Der Nutzer meldete am
+16.08.2026, dass die Spotify-Karte „Offen" zeigte und keine Zahlung führte — obwohl der
+Link in der Datenbank stand und die Sparrate den Betrag mitrechnete. Ursache war ein
+Filter auf **einen** Status, wo die View **zwei** zugeordnete kennt (§6 Stolperfalle 16,
+dritte Form). **Der Fehler stammte aus v2-07 und lag drei Wochen unentdeckt**, weil es
+im ganzen Bestand nur vier automatische Zuordnungen gibt.
 
 **v2-22 hat zwei Hausaufgaben abgeräumt und keine neue erzeugt** — `B2-R` und `ZO-2`.
 Die B2-Invariante gilt wieder in allen zwölf Monaten exakt, und die Regel, ob ein
@@ -923,8 +953,8 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**15.08.2026, nach v2-22**: **10 offene Pakete · 32 Themen · 4 Hausaufgaben ·
-36 offen gesamt · 49 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**16.08.2026, nach v2-23**: **10 offene Pakete · 32 Themen · 4 Hausaufgaben ·
+36 offen gesamt · 50 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
 > **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
