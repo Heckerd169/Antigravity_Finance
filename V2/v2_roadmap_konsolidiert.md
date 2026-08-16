@@ -28,7 +28,7 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-22.*
+*Alle Zahlen am 16.08.2026 zeilengenau nachgezählt — nach Sprint v2-23.*
 
 | | Anzahl | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 |
 |---|---|---|---|---|---|---|---|---|
@@ -36,12 +36,17 @@
 | Themen darin | **32** | 32 | 30 | 30 | 29 | 28 | 31 | 32 |
 | Hausaufgaben ohne eigenen Sprint | **4** | 6 | 5 | 5 | 4 | 4 | 5 | 6 |
 | **Offen gesamt** | **36** | 38 | 35 | 35 | 33 | 32 | 36 | 38 |
-| Erledigt | **49** | 47 | 47 | 45 | 43 | 41 | 37 | 35 |
+| Erledigt | **50** | 49 | 47 | 47 | 45 | 43 | 41 | 37 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-22, zeilengenau ausgezählt.** Paket-Tabellen **43** Zeilen, davon
-> **11 ✅** → **32** offen (⬜ 28 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **49**
+> **Stand nach v2-23, zeilengenau ausgezählt.** Paket-Tabellen **43** Zeilen, davon
+> **11 ✅** → **32** offen (⬜ 28 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **50**
 > Zeilen. §3 unverändert **4**.
+>
+> **`ZU-1` erhöht nur die Erledigt-Zahl, nicht die offenen.** Der Punkt stand nie in
+> der Roadmap: Er wurde am 16.08.2026 vom Nutzer gemeldet und am selben Tag behoben.
+> Ein Fehler, der entsteht und vergeht, ohne je offen zu sein, ist der beste Fall —
+> gefunden hat ihn allerdings nicht die Prüfstrecke, sondern das Benutzen.
 >
 > **Zum ersten Mal seit v2-20 sinkt die Zahl wieder** — 38 → 36. v2-22 hat zwei
 > Hausaufgaben abgeräumt (`B2-R`, `ZO-2`) und keine neue erzeugt. Das ist kein Zufall:
@@ -607,6 +612,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| ZU-1 | Automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte. `page.tsx` filterte mit `status === "ASSIGNED"`, aber die View kennt **zwei** zugeordnete Zustände — `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung, obwohl beides in der Datenbank stand. **Vom Nutzer gemeldet**, Fehler aus v2-07 P0, drei Wochen unentdeckt (nur vier automatische Zuordnungen im ganzen Bestand). Behoben über ein benanntes Prädikat `isLinkedToCard` statt eines zweiten Vergleichs. **Sparrate war nie betroffen** — sie liest `card_fragment_links` direkt | v2-23 |
 | B2-R | Die Treiber-Summe stimmt wieder auf den Cent. `get_year_deviation_drivers` rundete **je Karte**, die Sparraten-Funktionen erst am Ende über alles. Jetzt wird das Ziel aus den Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt. **Zwei Vermutungen widerlegt:** Das Gehalt trägt nichts bei (sein Delta ist exakt), und die verursachenden Zeilen sind **gar nicht sichtbar** — ein Delta von 0,0022 € rundet auf 0,00 und wird gefiltert, verschiebt aber die Summe. `Σ delta = Ist − Plan` gilt jetzt in allen zwölf Monaten exakt (vorher 2 Monate daneben) | v2-22 |
 | ZO-2 | Vorschlags-Sichtbarkeit als reine Funktion `istVorschlagSichtbar` mit eigener Spec (10 Fälle). Die Regel stand inline im `.map()` einer Server Component — genau dort saß der Fehler aus v2-21 P4, und es war die **dritte** Stelle dieser Art in vier Tagen. Die Spec transpiliert die echte Quelldatei statt die Logik nachzubauen | v2-22 |
 | NB-1 | Ziehen öffnet nur noch, was offen ist — Record `B4` **abgelöst**. Alle Ordner aufzuklappen schob die Zielkarte aus dem Bild, und bei gedrückter Maustaste ließ sich das Karussell nicht scrollen. `U1` ist jetzt durch bewusstes Aufklappen **vor** dem Zug gelöst | v2-18 |
