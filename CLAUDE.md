@@ -10,8 +10,8 @@
 >
 > **Letzte Aktualisierung:** 16. August 2026 · **nach:** Sprint **v2-23**
 > (automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte — `ZU-1`;
-> Design-Doku **v3.7.0**, Schema-Doku **v3.9.0**). **#30 bis #34 sind gemerged,
-> #35 (v2-23) ist offen.**
+> Design-Doku **v3.7.0**, Schema-Doku **v3.9.0**). **Alle Pull Requests bis #35 sind
+> gemerged, der Browser-Smoke ist am 16.08.2026 bestanden.** Nichts hängt mehr.
 >
 > **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
 > v2-22 noch v2-23 bewegt eine Zahl; die Anker-Werte sind bei allen dreien vor und
@@ -29,8 +29,8 @@
 > Der teuerste Fund dabei steckt in Stolperfalle 16: Eine Frontend-Zeile hätte die
 > ganze Sache stillgelegt, ohne dass ein einziger Wächter angeschlagen hätte.
 >
-> ⚠️ **Die Migrationen liegen auf Produktion, der Browser-Smoke steht aus.** Unkritisch,
-> solange nichts zugeordnet ist — Details in §9.
+> ✅ **Erledigt:** Migrationen auf Produktion, **Browser-Smoke am 16.08.2026 bestanden**
+> — für v2-19 bis v2-23 in einem Durchgang.
 >
 > ---
 >
@@ -772,10 +772,22 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 ## 9. Aktueller Stand
 
 **Letzter Sprint:** v2-23 (automatisch zugeordnete Zahlungen zählen wieder an ihrer
-Karte — `ZU-1`, 16.08.2026, PR **#35** offen) · **davor:** v2-22 (der Cent und die
+Karte — `ZU-1`, 16.08.2026) · **davor:** v2-22 (der Cent und die
 Prüfbarkeit, `B2-R` `ZO-2`), v2-21 (automatische Zuordnung, `M6`), v2-20 (Papierkorb
-und Lösch-Tor, `KU-1` `KU-2`) und v2-19 (Netto, `GE-1` `GE-2`) — **alle gemerged**.
+und Lösch-Tor, `KU-1` `KU-2`) und v2-19 (Netto, `GE-1` `GE-2`) — **alle gemerged, der
+Browser-Smoke ist am 16.08.2026 für alle fünf in einem Durchgang bestanden.**
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+
+> **`ZO-3` ist damit entscheidungsreif — und das ist der nächste Schritt.** v2-21 hatte
+> festgelegt: *erst sehen, dann entscheiden.* Der Nutzer hat gesehen. Offen ist die
+> Frage, ob Zahlungen ab 95 % Konfidenz **rückwirkend** automatisch verlinkt werden
+> dürfen: **23 Zahlungen in Januar bis Mai** (Summe der Zahlungen −1.296,87 €), im
+> Prüfset waren 11 von 11 solcher Fälle richtig.
+>
+> **Diese Summe ist NICHT die Sparraten-Bewegung.** Bei Fixkosten gilt „Realität
+> gewinnt": Bewegt wird nur die **Differenz** zwischen Plan und tatsächlicher Zahlung —
+> wo beide übereinstimmen, bewegt sich nichts. Die echte Wirkung ist vor dem Eingriff
+> zu messen und als Erwartung aufzuschreiben (§7 Regel 21).
 
 > ### ⚠️ Eine PR-Kette sieht nach „erledigt" aus, ohne es zu sein
 >
