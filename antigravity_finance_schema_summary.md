@@ -1,8 +1,41 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.7.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien)
-**Datum:** 08. August 2026
+**Version:** 3.9.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung)
+**Datum:** 15. August 2026
+
+> **Changelog v3.9.0 (15.08.2026, Sprint v2-22 · `B2-R`):** `get_year_deviation_drivers`
+> rundet **nicht mehr je Zeile**. Sie holt das Ziel aus den Sparrate-Funktionen und
+> legt den Rest auf die betragsgrößte Kartenzeile — dieselbe Abhilfe wie bei den
+> Kategorien in v2-17 (LL-25), eine Ebene tiefer. Damit gilt `Σ delta = Ist − Plan`
+> in **allen zwölf** Monaten exakt; vorher lagen Juli und August je einen Cent daneben.
+>
+> **Zwei Vermutungen sind dabei widerlegt worden.** Das separat gerundete
+> Gehalts-Delta trägt **nichts** bei (es ist exakt). Und die verursachenden Karten
+> sind **gar nicht sichtbar**: Ein Delta von 0,0022 € rundet auf 0,00 und wird von
+> `WHERE delta <> 0` gefiltert — es steht in keiner Anzeige, verschiebt aber die Summe.
+>
+> **Keine Schema-Änderung, keine neue Funktion** — eine Auswertungs-Funktion ersetzt.
+> Die Sparrate bewegt sich in keinem der zwölf Monate.
+
+> **Changelog v3.8.0 (15.08.2026, Sprint v2-21 · `M6`):** Die automatische Zuordnung
+> rechnet nach und trifft öfter. **Zwei neue Sub-Score-Funktionen** —
+> `name_similarity_scoped` (wortweise, umlautfest, mit Entwertung mehrdeutiger
+> Kartenwörter) und `history_match` (Wiedererkennung aus den eigenen
+> Handzuordnungen). **Eine neue mutierende RPC** `refresh_fragment_suggestions`,
+> die Vorschläge für alte Zahlungen nachrechnet und dabei **niemals verlinkt** —
+> erzwungen über einen Zähler-Wächter auf `card_fragment_links`.
+> **Neuer `app_config`-Schlüssel** `confidence.history_score` (0,94).
+>
+> Der Befund dahinter: `calculate_match_confidence` lief ausschließlich beim
+> Einfügen, weshalb 1.567 von 1.590 Zahlungen gar keinen Konfidenzwert trugen.
+> Gemessen an 101 Handzuordnungen aus Juli/August stieg die Zahl richtiger
+> Vorschläge über der Badge-Schwelle von **14 auf 42**, die Zahl falscher von
+> 1 auf 4. Für den Nutzer: von 9 auf 115 sichtbare Vorschläge bei 283 offenen
+> Zahlungen in 2026.
+>
+> **Ohne Schema-Änderung an Tabellen** — nur Funktionen und ein Konfigurationswert.
+> Die Sparrate bewegt sich in keinem der zwölf Monate.
 
 > **Changelog v3.5.0 (08.08.2026, Sprint v2-17 · `KAT-1` + `KAT-3`):** **Neue Tabelle
 > `card_categories`** (`id`, `user_id`, `name`, `sort_order smallint`, Zeitstempel) mit
@@ -258,7 +291,7 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023. **Seit v2-19 kann ein Treiber `card_id: null` tragen** — die Zeile `Gehalt` (`card_type` und `attribution` ebenfalls `null`). `p_limit` begrenzt die **Karten**-Treiber; die Gehalts-Zeile wird **danach** angehängt und deshalb nie abgeschnitten. Aufrufer müssen `card_id: null` vertragen — auch beim Kürzen: Ein Frontend-Limit von 3 schnitte im Juli 2026 genau diese Zeile ab. **Seit v2-20 filtert sie `deleted_at IS NULL`** — sonst bräche die B2-Invariante: Die Treiber erklärten eine Karte, die in keiner der beiden Sparraten mehr vorkommt | `jsonb` |
+| `get_year_deviation_drivers(p_year integer, p_limit integer DEFAULT 3)` | B2-Abweichungs-Treiber je Monat — EIN Call speist Welle-Tooltip (Top-1) und Popup-Monatsklick (Top-3). `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id` (auth.uid()-basiert, Hot-Path-Konvention) + expliziter `cards.user_id`-Filter als Defense-in-Depth. Auth-Pflicht 28000; `p_year` außerhalb 1900–2999 und `p_limit` außerhalb 1–50 → 22023. **Seit v2-19 kann ein Treiber `card_id: null` tragen** — die Zeile `Gehalt` (`card_type` und `attribution` ebenfalls `null`). `p_limit` begrenzt die **Karten**-Treiber; die Gehalts-Zeile wird **danach** angehängt und deshalb nie abgeschnitten. Aufrufer müssen `card_id: null` vertragen — auch beim Kürzen: Ein Frontend-Limit von 3 schnitte im Juli 2026 genau diese Zeile ab. **Seit v2-20 filtert sie `deleted_at IS NULL`** — sonst bräche die B2-Invariante: Die Treiber erklärten eine Karte, die in keiner der beiden Sparraten mehr vorkommt. **Seit v2-22 (`B2-R`) rundet sie nicht mehr je Zeile:** Die Deltas werden ungerundet berechnet, das Ziel wird aus `calculate_sparrate_for_month` und `calculate_planned_sparrate_for_month` **geholt** (LL-25 — `Ist − Plan` ist die Differenz zweier getrennt gerundeter Summen und darf nicht hergeleitet werden), das Gehalts-Delta abgezogen, und der verbleibende Rest auf die **betragsgrößte** Kartenzeile gelegt. Sie trägt `rn = 1` und überlebt damit jeden `p_limit`-Schnitt. Vorher lag `Σ delta` in Juli und August je einen Cent neben `Ist − Plan`; Ursache war nicht das separat gerundete Gehalt, sondern Karten mit **Sub-Cent-Deltas, die gar nicht angezeigt werden** (ein Delta von 0,0022 € rundet auf 0,00 und wird von `WHERE delta <> 0` gefiltert, verschiebt aber die Summe) | `jsonb` |
 
 **Return-Form** — immer genau 12 Einträge (auch ohne Treiber), aufsteigend nach Monat:
 
@@ -369,10 +402,13 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` jetzt **aktiv**: `'DKB'` (Default) | `'CORTAL_CONSORS'` | `'DKB_VISA'`. Bei `'DKB_VISA'` greift zusätzlich zur IBAN-Erkennung die KK-Klassifikation: Zeilen mit `amount > 0` **und** Beschreibung `ILIKE 'Einzahlung%'` **oder** `ILIKE 'Ausgleich Kreditkarte%'` → `INTERNAL_TRANSFER` (inkl. OQ-B-Link-Auflösung), da der DKB-Visa-Export keine Gegen-IBAN führt. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
-| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score, gewichtete Summe aus den drei Sub-Scores | `numeric` (0..1) |
-| `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) | `numeric` |
+| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score. Gewichtete Summe aus den drei Sub-Scores (Name über `name_similarity_scoped` seit v2-21), danach die **Wiedererkennung als Untergrenze**: Greift `history_match`, wird der Score auf `confidence.history_score` (0,94) **gehoben** — nie gesenkt. Bewusst knapp **unter** der Auto-Absorptions-Schwelle 0,95: Eine wiedererkannte Zahlung erzeugt einen sichtbaren Vorschlag, aber niemals eine automatische Verknüpfung (User-Entscheid 15.08.2026). Der Wert steht in `app_config` und lässt sich ohne Migration anheben. Eine vierte **gewichtete** Komponente wäre falsch gewesen: Sie hätte alle Scores gesenkt, bei denen keine Historie vorliegt — und das sind die meisten | `numeric` (0..1) |
+| `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) über die **ganzen** Strings. Seit v2-21 **nicht mehr direkt von `calculate_match_confidence` aufgerufen**, sondern als Untergrenze innerhalb von `name_similarity_scoped` mitgeführt | `numeric` |
+| `name_similarity_scoped(description, card_id)` **(v2-21)** | Wortweiser Namensvergleich: Umlaut-/ß-Normalisierung auf beiden Seiten, Zerlegung des Kartennamens in Wörter ab 4 Zeichen, Treffer nur an **echten Wortgrenzen** (`Douglas` trifft nicht mehr `Glas`), unscharfer Fallback über `word_similarity` erst ab `0.7`. **Entwertung mehrdeutiger Wörter:** Ein Kartenwort, das in `n` Kartennamen desselben Nutzers vorkommt, zählt nur `1/n` — das fängt Personennamen wie `Aline` (in 7 Kartennamen) ohne gepflegte Stoppwortliste. Führt `name_similarity` als Untergrenze mit: das Ergebnis kann nie schlechter werden als vorher | `numeric` (0..1) |
+| `history_match(fragment_id, card_id)` **(v2-21)** | Wiedererkennung: Wurde eine Zahlung mit **identischer** Beschreibung schon einmal **von Hand** (`origin = 'MANUAL_DROP'`) dieser Karte zugeordnet? Lernt bewusst **nicht** aus `AUTO_ABSORBED` (sonst verstärkt sich ein Automatik-Fehler selbst) und nicht aus Überträgen. Das Fragment selbst ist ausgeschlossen | `numeric` (0 oder 1) |
 | `amount_match(fragment_amount, planned)` | Bracket-Score (`<1%→1.00`, `<5%→0.85`, `<15%→0.60`, `<30%→0.30`, sonst `0.00`) | `numeric` |
-| `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month` | `numeric` |
+| `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month`. ⚠️ **In der Praxis eine Konstante:** Der einzige Aufrufer filtert Karten bereits auf Aktivität im Monat des Fragments, weshalb sie dort ausnahmslos `1.00` liefert — gemessen über alle Score-Klassen (v2-21). 20 % des Gewichts unterscheiden damit nichts, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ergeben höchstens 0,50). Offen als Hausaufgabe `ZO-1` | `numeric` |
+| `refresh_fragment_suggestions(p_from_month, p_to_month)` **(v2-21)** | Rechnet Kartenvorschläge für **offene** Zahlungen eines Zeitraums neu und schreibt **ausschließlich** `suggested_card_id` und `confidence`. Nötig, weil `calculate_match_confidence` sonst nur beim Einfügen läuft (`process_csv_import`, hinter `IF v_was_inserted`) — wer später eine Karte anlegt, bekam für ältere Zahlungen nie einen Vorschlag. **Verlinkt niemals**, auch nicht ab 0,95: `card_fragment_links` zu schreiben bewegt sofort die Sparrate. Die Zusage ist **erzwungen**, nicht behauptet — die Funktion zählt die Verknüpfungen vor und nach ihrem Lauf und bricht bei jeder Abweichung mit Exception und Rollback ab. Auth über `auth.uid()` (`28000`), Zeitraum validiert (`22023`, höchstens 5 Jahre). Überträge (`transfer_type IS NOT NULL`) bleiben unangetastet | `jsonb` (`{geprueft, vorschlag_gesetzt, vorschlag_geleert, links_unveraendert, badge_threshold}`) |
 
 ### Beim Transfer-Markieren (Sprint v2-04)
 

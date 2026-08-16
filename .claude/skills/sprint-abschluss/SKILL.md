@@ -107,6 +107,46 @@ Commit-Nachricht: **was** und **warum**, nicht **wie**. Das Wie steht im Diff.
 
 `sprints/sprint_v2-NN_review.md`. Gliederung siehe unten.
 
+### 4b · Historie-Eintrag schreiben ← direkt im Anschluss, nicht später
+
+`sprints/projekt_historie.md` bekommt einen Eintrag
+`### Sprint v2-NN · DONE <Datum>` — **append-only**, verdichtet aus dem Review, den
+du gerade geschrieben hast. **Jetzt**, nicht am Sprint-Ende: Der Eintrag ist eine
+Verdichtung, und der Kontext ist in diesem Moment frisch. Wer beides trennt, schreibt
+den zweiten Text aus dem Gedächtnis.
+
+**Gliederung:**
+
+- **Komponente** — was war der Auftrag, in zwei bis drei Sätzen
+- Die **tragenden Entscheidungen mit ihrer Begründung**, nicht nur die Ergebnisse
+- **Verifikation** — Prüfstrecke und Anker **mit Zahlen**
+- **Offen nach v2-NN** — was liegen blieb und warum
+
+**Was hier hineingehört und sonst verloren geht: die Stellen, an denen sich eine
+Annahme als falsch erwiesen hat.** Ein Log, der nur Erfolge verzeichnet, wird nicht
+gelesen — und die Lessons Learned verweisen auf genau diese Stellen. Die wertvollsten
+Einträge dieses Logs sind die, in denen jemand seinen eigenen Irrtum notiert hat.
+
+**Bestehende Einträge werden NIE umgeschrieben**, auch nicht bei späterer besserer
+Erkenntnis. Die Korrektur kommt als neuer Eintrag. Der Wert des Logs liegt darin, dass
+er zeigt, was man **damals** wusste.
+
+> **Warum dieser Schritt existiert.** Er fehlte bis zum 15.08.2026 — und die Historie
+> endete deshalb bei **v2-07**, während fünfzehn Sprints unverzeichnet blieben.
+> `CLAUDE.md §8` verspricht zu jeder Lesson Learned die Langfassung „beim genannten
+> Sprint"; für LL-21 bis LL-27 lief dieser Verweis ins Leere. Sprint v2-08 hat die
+> Datei erzeugt, aber ihre Fortschreibung nie in diesem Ablauf verankert.
+>
+> **`tests/e2e/doku-vollstaendigkeit.spec.ts` prüft, dass dieser Schritt passiert
+> ist** — drei Regeln: jeder Sprint mit Review hat einen Eintrag · jeder LL-Ursprung
+> aus §8 ist auffindbar · keine Lücke in der Nummernfolge. Der Test wird rot, sobald
+> der Review steht und der Eintrag fehlt. **Das ist Absicht.**
+>
+> **Er prüft Existenz, nicht Qualität.** Ein Eintrag mit einem Satz macht ihn grün.
+> Dagegen hilft nur die Gliederung oben. Ein Checklisten-Punkt allein hätte nicht
+> gereicht: Schritt 5 steht seit v2-08 als „der vergessene Schritt" markiert in dieser
+> Datei — und wurde trotzdem zweimal übersehen.
+
 ### 5 · Roadmap-Stand nachziehen ← der vergessene Schritt
 
 In `V2/v2_roadmap_konsolidiert.md`:
@@ -130,6 +170,16 @@ Stelle — nie eine direkte Bearbeitung der Bibeln (LL-16). Werkzeug: Subagent
 Patch-Stelle, keine Nebensache.
 
 Anker vor der Anwendung einzeln per Suche auf Eindeutigkeit prüfen.
+
+> **Und die Seiten unter `design-system/` gehören mit nachgezogen**, sobald der Sprint
+> an Tokens oder Komponenten etwas geändert hat — `CLAUDE.md §4` verlangt das, und
+> diese Datei hat es bis zum 15.08.2026 nirgends gesagt. Sonst zeigen die Seiten beim
+> nächsten Gestaltungsgespräch einen überholten Stand, und der Design-Direktor
+> beurteilt Bilder, die es so nicht mehr gibt. Ablauf: `design-system/SYNC.md`.
+>
+> **Dafür gibt es bewusst keinen Test** — „hat sich die Formensprache geändert?" ist
+> keine Frage, die eine Maschine beantworten kann. Anders als bei der Historie, wo die
+> Regel exakt ist (Schritt 4b).
 
 ### 7 · Doku-Commit
 
@@ -197,8 +247,11 @@ Als Vorschlag formuliert. Die Anwendung braucht die Freigabe des Users.
 - [ ] Anker gemessen, sofern Daten berührt
 - [ ] Ein Commit je Phase, aussagekräftige Nachrichten
 - [ ] Review geschrieben, alle 7 Abschnitte
+- [ ] **Historie-Eintrag geschrieben** (Schritt 4b) — `doku-vollstaendigkeit.spec.ts`
+      prüft es, aber nur auf Existenz; die Gliederung steht dort
 - [ ] **Roadmap-Stand nachgezogen, Zahlen nachgezählt**
 - [ ] Doku-Patches als eigene Datei, Versions-Bump als eigene Patch-Stelle
+- [ ] `design-system/` nachgezogen, falls Tokens oder Komponenten berührt wurden
 - [ ] `docs:`-Commit mit Review + Patches + Roadmap zusammen
 - [ ] Branch gepusht
 - [ ] **Nicht gemerged** — Freigabe erfragt

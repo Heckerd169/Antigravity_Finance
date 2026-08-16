@@ -28,20 +28,43 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-20.*
+*Alle Zahlen am 15.08.2026 zeilengenau nachgezählt — nach Sprint v2-22.*
 
-| | Anzahl | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 | vor v2-15 | vor v2-13 |
+| | Anzahl | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 | vor v2-16 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **10** | 10 | 10 | 10 | 11 | 12 | 13 | 14 |
-| Themen darin | **30** | 30 | 29 | 28 | 31 | 32 | 34 | 35 |
-| Hausaufgaben ohne eigenen Sprint | **5** | 5 | 4 | 4 | 5 | 6 | 6 | 7 |
-| **Offen gesamt** | **35** | 35 | 33 | 32 | 36 | 38 | 40 | 42 |
-| Erledigt | **47** | 45 | 43 | 41 | 37 | 35 | 33 | 31 |
+| Offene Pakete | **10** | 10 | 10 | 10 | 10 | 10 | 11 | 12 |
+| Themen darin | **32** | 32 | 30 | 30 | 29 | 28 | 31 | 32 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 6 | 5 | 5 | 4 | 4 | 5 | 6 |
+| **Offen gesamt** | **36** | 38 | 35 | 35 | 33 | 32 | 36 | 38 |
+| Erledigt | **49** | 47 | 47 | 45 | 43 | 41 | 37 | 35 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-20, zeilengenau ausgezählt.** Paket-Tabellen **41** Zeilen, davon
-> **11 ✅** → **30** offen (⬜ 27 · 🟡 3). Hausaufgaben **5**, alle ⬜. §4 Erledigt **47**
+> **Stand nach v2-22, zeilengenau ausgezählt.** Paket-Tabellen **43** Zeilen, davon
+> **11 ✅** → **32** offen (⬜ 28 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **49**
 > Zeilen. §3 unverändert **4**.
+>
+> **Zum ersten Mal seit v2-20 sinkt die Zahl wieder** — 38 → 36. v2-22 hat zwei
+> Hausaufgaben abgeräumt (`B2-R`, `ZO-2`) und keine neue erzeugt. Das ist kein Zufall:
+> Es war ein Aufräum-Sprint ohne neue Oberfläche, und beide Punkte waren durch v2-21
+> bereits vollständig diagnostiziert.
+>
+> **`B2-R` ist damit erledigt** — die B2-Invariante gilt wieder in allen zwölf Monaten
+> exakt. Sie stand seit v2-19 offen und musste in jedem Anker-Protokoll miterklärt
+> werden.
+>
+> **Die Zahlen steigen, obwohl der größte Einzelposten der Roadmap gebaut wurde —
+> und `Erledigt` bleibt bei 47.** Das ist kein Rückschritt, sondern dieselbe
+> Ehrlichkeit wie nach v2-18: `M6` ist von ⬜ auf 🟡 gewandert, nicht auf ✅, weil das
+> Vorschlags-Badge in der Rohmasse (F2) weiter hinter `SHOW_SUGGESTION_BADGES = false`
+> liegt. Dazu kommen drei Punkte, die **erst durch das Bauen sichtbar wurden**:
+> `ZO-1` (`frequency_match` ist eine Konstante und macht die Badge-Schwelle ohne
+> Namenstreffer unerreichbar), `ZO-2` (die Vorschlags-Sichtbarkeit ist nicht prüfbar
+> — genau dort saß der Fehler) und `ZO-3` (rückwirkendes Verlinken, bewusst dem User
+> überlassen).
+>
+> **Was die Zahlen nicht zeigen:** Von 283 offenen Zahlungen in 2026 haben jetzt
+> **115 einen Vorschlag statt 9**. Paket 5 war der einzige Punkt der Roadmap, der
+> Aufwand *wegnimmt* — dieser Teil ist eingelöst.
 >
 > **Zum ersten Mal seit drei Sprints steigt die Zahl der offenen Themen NICHT.**
 > Paket 16 ist am 15.08.2026 entstanden und noch am selben Tag vollständig
@@ -201,6 +224,23 @@ Empfänger und alles Übrige (`RM-2`).
 > Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
 > 43 % Abweichung reichen nie für die 95-%-Schwelle. Kategorien **erben** die
 > automatische Zuordnung korrekt — es gibt heute nur fast nichts zu erben.
+>
+> > **⚠️ Diese Ursachen-Diagnose stimmt nur zur Hälfte — korrigiert am 15.08.2026
+> > in v2-21.** Der Split-Effekt auf `amount_match` ist real, aber er ist **nicht
+> > der Engpass**. Gemessen: Die **72** Zahlungen, die im toten Band 0,50–0,60
+> > direkt unter der Badge-Schwelle klemmen, haben einen Betrags-Score von **1,00**
+> > — perfekt getroffen. Sie scheitern am **Namen** (Mittelwert 0,05).
+> >
+> > Die eigentlichen Ursachen waren drei andere: `frequency_match` liefert immer
+> > `1.00` und macht die Schwelle 0,60 ohne Namenstreffer rechnerisch unerreichbar
+> > (Betrag + Frequenz ≤ 0,50); die Namensfunktion verglich ganze Zeichenketten
+> > statt Wörter; und die Konfidenz wurde **nur beim Import** berechnet, sodass
+> > 1.567 von 1.590 Zahlungen gar keinen Wert trugen.
+> >
+> > Die Zahl „zwei von 76" war also richtig beobachtet und falsch erklärt. Der
+> > Fehler wäre teuer geworden: Eine Sitzung, die ihm gefolgt wäre, hätte an
+> > `amount_match` und der Split-Behandlung gearbeitet — und die 72 Zahlungen mit
+> > perfektem Betrag nicht bewegt.
 
 *Die frühere Fassung dieses Abschnitts, zur Nachvollziehbarkeit:*
 
@@ -387,7 +427,9 @@ Kontrolle. Diese Begründung ist in einem halben Jahr sonst verloren.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | evtl. | ⬜ | **Fasst F1, F2, F3 zusammen.** F1 Konfidenz-Verbesserung (Embeddings, Levenshtein, Klassifikator; evtl. Score-Spalten) · F2 Kategorie-Vorhersage pro Nutzer (Schema-Eingriff) · F3 Fragment-Clustering. **Namenskollision beachten:** „F2 Kategorie-Vorhersage" meint das KI-Vorschlags-Badge auf Fragmenten, nicht die Karten-Kategorien aus Paket 4 (Befund U6). |
+| M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | ✅ ja | 🟡 | **Fasst F1, F2, F3 zusammen.** **In v2-21 gebaut: F1 und F3.** Die Namensfunktion vergleicht jetzt Wörter statt Zeichenketten (umlautfest, mit echten Wortgrenzen, mehrdeutige Kartenwörter entwertet), die eigenen Handzuordnungen fließen als Wiedererkennung ein, und `refresh_fragment_suggestions` rechnet Vorschläge für alte Zahlungen nach — was vorher **nie** geschah. Gemessen an 101 Handzuordnungen: richtige Vorschläge über der Badge-Schwelle **14 → 42**, falsche 1 → 4. Für den Nutzer: **9 → 115** sichtbare Vorschläge bei 283 offenen Zahlungen in 2026. **Offen bleibt F2** — das Vorschlags-Badge in der Rohmasse liegt weiter hinter `SHOW_SUGGESTION_BADGES = false` (Entscheid 04.08.2026); sichtbar ist der Vorschlag nur im Schaufenster-Popup. **Namenskollision beachten:** „F2 Kategorie-Vorhersage" meint das KI-Vorschlags-Badge auf Fragmenten, nicht die Karten-Kategorien aus Paket 4 (Befund U6). |
+| ZO-1 | `frequency_match` aussagekräftig machen | Bugfix | **ja** | ⬜ | **Befund aus v2-21, bewusst dort nicht behoben.** Die Funktion prüft ausschließlich, ob die Karte im Monat des Fragments aktiv ist — worauf ihr einziger Aufrufer bereits filtert. Sie liefert deshalb ausnahmslos `1.00`, gemessen über alle fünf Score-Klassen. **20 % des Konfidenz-Gewichts unterscheiden nichts**, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ≤ 0,50). Material liegt bereit: `cards.due_day` seit v2-14 — allerdings nur bei **18 von 51** Karten, fehlende Tage müssten neutral bleiben statt zu bestrafen. **Warum nicht in v2-21:** Jede Änderung dort verschiebt *alle* bestehenden Scores gleichzeitig mit P1 und P2; zwei Verschiebungen in einem Sprint lassen sich nicht mehr auseinanderhalten. |
+| ZO-3 | Rückwirkende automatische Verknüpfung ab 0,95 | Feature | ja | ⬜ | **Bewusst nicht Teil von v2-21.** `refresh_fragment_suggestions` schreibt ausschließlich Anzeige-Spalten und verlinkt nie — das ist erzwungen, nicht nur zugesagt. 24 offene Zahlungen in 2026 liegen ≥ 0,95; im Prüfset waren **11 von 11** solcher Fälle richtig. Ob daraus Verknüpfungen werden dürfen, entscheidet der User, **nachdem** er die Vorschläge gesehen hat — Verlinken bewegt die Sparrate rückwirkend über bis zu zwölf Monate. Dann auch zu klären: ob `confidence.history_score` von 0,94 über die Auto-Schwelle steigt. |
 
 ---
 
@@ -547,7 +589,6 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
-| B2-R | Die Treiber-Summe liegt einen Cent neben `Ist − Plan` | ⬜ | **Gefunden in v2-19, NICHT von diesem Sprint verursacht.** Gemessen Juli 2026: Treiber-Summe **−17,21 €** gegen Differenz **−17,20 €**. Ursache sind vier **gemeinsame** Karten, deren Delta exakt, aber im Sub-Cent-Bereich liegt (Internet +0,0022 · Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003 = +0,0057): `get_year_deviation_drivers` rundet **je Zeile** auf zwei Stellen, die Sparraten-Funktionen erst **am Ende über alles**. Entstanden ist das erst am 13.08.2026 mit den ersten Zuordnungen auf gemeinsame Karten — vorher gab es keine. **Abhilfe nach dem Muster von LL-25:** Ziel aus der Rechenfunktion holen und den Rest auf die betragsgrößte Zeile verteilen, statt jede Zeile für sich zu runden. Bewegt **keine** Sparrate, betrifft nur die Erklärzeile im Jahres-Popup — deshalb Hausaufgabe und kein eigener Sprint. |
 
 ---
 
@@ -566,6 +607,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| B2-R | Die Treiber-Summe stimmt wieder auf den Cent. `get_year_deviation_drivers` rundete **je Karte**, die Sparraten-Funktionen erst am Ende über alles. Jetzt wird das Ziel aus den Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt. **Zwei Vermutungen widerlegt:** Das Gehalt trägt nichts bei (sein Delta ist exakt), und die verursachenden Zeilen sind **gar nicht sichtbar** — ein Delta von 0,0022 € rundet auf 0,00 und wird gefiltert, verschiebt aber die Summe. `Σ delta = Ist − Plan` gilt jetzt in allen zwölf Monaten exakt (vorher 2 Monate daneben) | v2-22 |
+| ZO-2 | Vorschlags-Sichtbarkeit als reine Funktion `istVorschlagSichtbar` mit eigener Spec (10 Fälle). Die Regel stand inline im `.map()` einer Server Component — genau dort saß der Fehler aus v2-21 P4, und es war die **dritte** Stelle dieser Art in vier Tagen. Die Spec transpiliert die echte Quelldatei statt die Logik nachzubauen | v2-22 |
 | NB-1 | Ziehen öffnet nur noch, was offen ist — Record `B4` **abgelöst**. Alle Ordner aufzuklappen schob die Zielkarte aus dem Bild, und bei gedrückter Maustaste ließ sich das Karussell nicht scrollen. `U1` ist jetzt durch bewusstes Aufklappen **vor** dem Zug gelöst | v2-18 |
 | NB-2 | Ansicht springt beim Monatswechsel nicht mehr — die Rohmasse reserviert ihre Höhe (`height` statt `max-height`). Vorher fiel die Zone in leeren Monaten von 341 auf 215 px und die Welle wuchs um 126 px. Dazu der Leerzustand `Keine offenen Umsätze` | v2-18 |
 | KAT-1 | Kategorien als eigene Struktur: `card_categories` + `cards.category_id`, fünf RPCs, Menüpunkt „Kategorie ändern …". Keine `cards`-Zeile (D1), kein Papierkorb-Eintrag (D7 — Rücknahme über den Toast), RLS-Policy von Hand (D8). Zehn Ordner, **alle 46 Karten** zugeordnet — „Ohne Kategorie" erscheint dadurch in keinem Monat | v2-17 |

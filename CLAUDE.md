@@ -8,9 +8,18 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 13. August 2026 · **nach:** Sprint **v2-19**
-> („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`; Design-Doku **v3.7.0**,
-> Schema-Doku **v3.6.0**, PR **#29** offen).
+> **Letzte Aktualisierung:** 15. August 2026 · **nach:** Sprint **v2-22**
+> (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`; Design-Doku **v3.7.0**, Schema-Doku
+> **v3.9.0**). **Drei PRs offen: #30 → #31 → #32**, in dieser Reihenfolge zu mergen.
+>
+> **Dieser Nachzug holt drei Sprints auf einmal nach.** §9 stand noch auf v2-19; der
+> Eintrag für **v2-20** war nie geschrieben worden und wäre stillschweigend
+> verschwunden. Er ist jetzt verzeichnet — nachgeschrieben wird er nicht, dafür gibt
+> es `sprints/sprint_v2-20_review.md`.
+>
+> **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
+> v2-22 bewegt eine Zahl; alle 24 Anker-Werte sind bei beiden vor und nach dem
+> Eingriff identisch gemessen worden.
 >
 > Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
 > Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
@@ -490,6 +499,19 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     wären grün. **Wer eine Datenbank-Antwort erweitert, sucht im Frontend nach der
     Stelle, die sie kürzt** — `slice`, `LIMIT`, `take`, eine feste Feldliste.
     (v2-19, LL-26)
+17. **Eine Sub-Score-Funktion, die nicht streuen kann, macht eine Schwelle
+    rechnerisch unerreichbar.** `frequency_match` prüft ausschließlich, ob die Karte
+    im Monat des Fragments aktiv ist — und **genau darauf filtert ihr einziger
+    Aufrufer bereits**. Sie liefert deshalb ausnahmslos `1.00`, gemessen über alle
+    fünf Score-Klassen. 20 % des Konfidenz-Gewichts unterscheiden damit nichts: Der
+    Wertebereich ist auf `[0.20, 1.00]` gestaucht, und ohne Namensähnlichkeit ist das
+    Maximum `0.3 + 0.2 = 0.50` — bei einer Badge-Schwelle von **0,60**. In den Daten
+    saßen **72 Zahlungen** im toten Band 0,50–0,60, mit perfektem Betrag und
+    perfekter Frequenz.
+    **Wer Gewichte vergibt, prüft, ob jede Komponente überhaupt streuen kann.** Eine
+    Konstante im Zähler verschiebt den ganzen Wertebereich, ohne dass irgendeine Zahl
+    falsch *aussieht* — und keine der bestehenden Prüfungen schlägt an. Offen als
+    `ZO-1`. (v2-21)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -601,6 +623,16 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Regressions-Wächter des Projekts. Vor jedem neuen `round()` prüfen, ob die
     **Gegenseite genauso rundet**. Im Zweifel nicht runden: die Aufrufer runden
     ohnehin am Ende. (LL-24)
+25. **Wer eine Erkennungs- oder Ähnlichkeitsfunktion ändert, misst gegen echte
+    Entscheidungen — vorher und nachher, mit Richtig UND Falsch.** Eine Verbesserung,
+    die nur die Treffer zählt, ist keine: Der wortweise Namensvergleich hob in v2-21
+    die richtigen Vorschläge von 14 auf 27 — und die **falschen** von 1 auf **18**.
+    Beides sichtbar wurde erst, weil beide Seiten gezählt wurden; die Trefferzahl
+    allein hätte die Verschlechterung als Erfolg ausgewiesen.
+    Grundlage waren die **101 Handzuordnungen aus Juli/August 2026** — echte
+    Entscheidungen des Nutzers, kein synthetisches Set. **Das jeweils geprüfte
+    Element gehört aus seiner eigenen Lernmenge ausgeschlossen**, sonst misst man
+    Auswendiglernen statt Vorhersage. (LL-27)
 
 ### Datei-Konventionen
 
@@ -700,6 +732,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-24 | Runden ist eine Entscheidung mit Anker-Wirkung — prüfen, ob die Gegenseite genauso rundet | §7 Regel 24 | v2-13 (BF-4) |
 | LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
 | LL-26 | Ein Frontend-Limit kann eine Datenbank-Entscheidung stillschweigend aufheben — wer eine Antwort erweitert, sucht die Stelle, die sie kürzt | §6 Stolperfalle 16 | v2-19 (GE-2) |
+| LL-27 | Eine Ähnlichkeitsfunktion braucht ein Prüfset aus echten Entscheidungen — die naive Verbesserung war messbar **schlechter** als gar keine | §7 Regel 25 · §6 Stolperfalle 17 | v2-21 (M6) |
 
 > **Warum LL-26 neben LL-21 steht und nicht darin aufgeht.** LL-21 warnt vor einer
 > **stillen Kürzung durch die Infrastruktur** — PostgREST liefert 1000 Zeilen und
@@ -722,17 +755,51 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-19 („Realität gewinnt" auch für das Netto — `GE-1` `GE-2`,
-13.08.2026, PR **#29** offen) · **davor:** v2-18 (zwei Befunde aus der Nutzung, PR #26)
-und v2-17 (Kategorien im Karussell).
+**Letzter Sprint:** v2-22 (der Cent und die Prüfbarkeit — `B2-R` `ZO-2`, 15.08.2026,
+PR **#32** offen) · **davor:** v2-21 (automatische Zuordnung, `M6`, PR **#31** offen),
+v2-20 (Papierkorb und Lösch-Tor, `KU-1` `KU-2`, PR **#30** offen) und v2-19 (Netto,
+`GE-1` `GE-2`, PR #29 **gemerged**).
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-> **⚠️ Zwei Dinge, die bei v2-19 auseinanderfallen.** Die beiden Migrationen liegen
-> **bereits auf Produktion** (nach ausdrücklicher Freigabe, mit vollständiger Probe auf
-> der Übungs-Datenbank davor) — der **Browser-Smoke des Users steht aber noch aus**.
-> Das ist unkritisch, weil die Migrationen **keine Zahl bewegt haben**: Solange keine
-> Gehaltszahlung zugeordnet ist, rechnet alles wie zuvor. Bewegt wird erst durch das
-> Ziehen im Browser. Wer hier ansetzt, prüft zuerst den Stand von PR #29.
+> **⚠️ Drei Pull Requests hängen ineinander — die Reihenfolge ist nicht beliebig.**
+> **#30 → #31 → #32.** Jeder baut auf dem Branch des vorigen auf, nicht auf `main`.
+> Das war eine bewusste Entscheidung: Die v2-20-Migrationen lagen beim Start von v2-21
+> bereits auf Produktion, ein Aufbau von `main` hätte gegen eine Datenbank gemessen,
+> die der Code gar nicht kennt.
+>
+> **Bei allen dreien liegen die Migrationen schon auf Produktion, der Browser-Smoke
+> des Users steht aus.** Bei v2-21 und v2-22 ist das belegt unkritisch: Beide haben
+> **alle 24 Anker-Werte unverändert gelassen** (zwölf Monate × Ist/Plan) und die Zahl
+> der Verknüpfungen bei 132 belassen. v2-21 füllt ausschließlich Anzeige-Spalten,
+> v2-22 fasst nur eine Auswertungs-Funktion an.
+> Wer hier ansetzt, prüft zuerst den Stand von #30, #31 und #32.
+
+**v2-22 hat zwei Hausaufgaben abgeräumt und keine neue erzeugt** — `B2-R` und `ZO-2`.
+Die B2-Invariante gilt wieder in allen zwölf Monaten exakt, und die Regel, ob ein
+Kartenvorschlag angezeigt wird, liegt jetzt als reine Funktion mit eigener Spec vor
+(`src/lib/suggestion.ts`) statt inline in einer Server Component. Genau dort saß der
+Fehler aus v2-21 — es war die **dritte** Stelle dieser Art in vier Tagen (LL-26).
+
+**v2-21 macht Paket 5 zum ersten Mal wirksam.** Die automatische Zuordnung schlägt
+für **115 statt 9** offene Zahlungen aus 2026 eine Karte vor. Drei Ursachen waren
+dafür zu beheben, und nur die erste stand im Auftrag: Die Konfidenz wurde
+ausschließlich **beim Import** berechnet (1.567 von 1.590 Zahlungen trugen gar keinen
+Wert); die Namensfunktion verglich **ganze Zeichenketten** statt Wörter
+(`Nurnberger` gegen `Nürnberger` ergab 0,139); und die **101 Handzuordnungen** des
+Nutzers aus Juli/August wurden nie ausgelesen.
+
+> **Diese 101 Handzuordnungen sind ab jetzt das Prüfset des Projekts.** Wer an der
+> Zuordnung arbeitet, misst dagegen — mit Richtig **und** Falsch (§7 Regel 25).
+> Stand nach v2-21: 42 richtige Vorschläge über der Badge-Schwelle gegen 4 falsche;
+> davor 14 gegen 1.
+
+**Eine Produktentscheidung steht beim User und ist bewusst nicht vorweggenommen:**
+ob ab 0,95 **rückwirkend** automatisch verknüpft werden darf (`ZO-3`). 24 Zahlungen
+aus 2026 lägen darüber, im Prüfset waren 11 von 11 solcher Fälle richtig. Verknüpfen
+bewegt die Sparrate rückwirkend über bis zu zwölf Monate — deshalb schreibt
+`refresh_fragment_suggestions` ausschließlich Anzeige-Spalten, und das ist **erzwungen,
+nicht zugesagt**: Die Funktion zählt `card_fragment_links` vor und nach ihrem Lauf und
+bricht bei jeder Abweichung mit Rollback ab.
 
 **v2-19 macht das Netto von geplant zu gemessen.** Bis dahin galt „Realität gewinnt"
 für Fixkosten und Einnahmen, für das Gehalt nicht: Juli 2026 geplant 4.165,11 €,
@@ -856,21 +923,23 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**13.08.2026, nach v2-19**: **10 offene Pakete · 30 Themen · 5 Hausaufgaben ·
-35 offen gesamt · 45 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**15.08.2026, nach v2-22**: **10 offene Pakete · 32 Themen · 4 Hausaufgaben ·
+36 offen gesamt · 49 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
-> **Eine Hausaufgabe ist dazugekommen: `B2-R`.** Die Treiber-Summe liegt im Juli
-> **einen Cent** neben `Ist − Plan` (−17,21 € gegen −17,20 €). Ursache sind vier
-> **gemeinsame** Karten mit exakten, aber Sub-Cent-großen Deltas (Internet +0,0022 ·
-> Rechtsschutz +0,0022 · Strom +0,0017 · Miete −0,0003): `get_year_deviation_drivers`
-> rundet **je Zeile**, die Sparrate-Funktionen erst **am Ende über alles**.
+> **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
+> Cent neben `Ist − Plan`; `get_year_deviation_drivers` rundete **je Zeile**, die
+> Sparrate-Funktionen erst **am Ende über alles**. Seit v2-22 wird das Ziel aus den
+> Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt.
+> **Die Invariante gilt wieder in allen zwölf Monaten exakt.**
 >
-> **Der Befund stammt nicht aus v2-19**, sondern vom 13.08.2026, als die ersten
-> Zahlungen gemeinsamen Karten zugeordnet wurden — vorher gab es keine solche Karte.
-> Aufgefallen ist er nur, weil der Prüfanker von v2-19 ihn streifte und dadurch **nicht
-> erfüllbar** war. **Wer die B2-Invariante misst, muss das wissen**, sonst hält er den
-> Cent für die Wirkung seines eigenen Eingriffs. Abhilfe nach LL-25.
+> **Der Satz, der den Sprint überlebt, weil er eine Falle beschreibt:**
+> Die Karten, die den Abstand verursachten, waren **gar nicht sichtbar**. Ein Delta
+> von 0,0022 € rundet auf 0,00 und fällt aus der Anzeige — es verschiebt die Summe
+> trotzdem. Wer die B2-Invariante prüft und sie um einen Cent verfehlt, sucht den
+> Fehler in den **angezeigten** Zeilen und findet ihn nie.
+> Ebenfalls gemessen und dabei widerlegt: Das separat gerundete **Gehalts-Delta trägt
+> nichts bei** — es ist exakt.
 
 **Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
 erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
@@ -880,19 +949,33 @@ Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 (v2-10/v2-16), `LQ-1`/`LQ-2` (v2-14/v2-15) und `KAT-1`/`KAT-2`/`KAT-3` (v2-17).
 `LQ-3` und `RM-3` gehörten nie dazu — beide liegen in Paket 9, `KAT-4` in Paket 10.
 
-**Als Nächstes dran: Paket 5** (bessere automatische Zuordnung) — v2-19 hat sich
-dazwischengeschoben, weil es aus der Nutzung kam. Es ist der einzige
-Punkt der Roadmap, der Aufwand **wegnimmt**, und die Kategorien-Runde hat nebenbei
-belegt, wie dringend es ist: Von **76 gemeinsamen Monatszahlungen sind zwei
-zugeordnet**, bei 19 Monaten identischem Text, Betrag und Tag.
+**Paket 5 ist seit v2-21 zum großen Teil gebaut** (`M6` steht auf 🟡, nicht ✅). Die
+automatische Zuordnung schlägt für **115 statt 9** offene Zahlungen aus 2026 eine
+Karte vor. Offen bleiben `ZO-1`, `ZO-3` und der Teil `F2` — das Vorschlags-Badge in
+der Rohmasse liegt weiter hinter `SHOW_SUGGESTION_BADGES = false`.
 
-> **v2-19 hat die Dringlichkeit noch erhöht.** Es liegen **20 unzugeordnete
-> Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli) — bei identischem Text,
-> festem Rhythmus und einem Betrag, der elf Monate lang auf den Cent gleich war. Sie
-> alle von Hand zu ziehen ist genau die Arbeit, die Paket 5 abnehmen soll. Ursache ist die
-Split-Systematik — „Miete" plant 1.904 € (Haushalt), überwiesen werden 1.089,26 €
-(der Anteil), und `calculate_match_confidence` gewichtet `amount_match` mit 0,30;
-43 % Abweichung reichen nie für die 95-%-Schwelle.
+> ### ⚠️ Die alte Ursachen-Diagnose war falsch — hier stand sie bis zum 15.08.2026
+>
+> Der Satz lautete: *„Ursache ist die Split-Systematik — ‚Miete' plant 1.904 €,
+> überwiesen werden 1.089,26 €, und `calculate_match_confidence` gewichtet
+> `amount_match` mit 0,30; 43 % Abweichung reichen nie für die 95-%-Schwelle."*
+>
+> **Gemessen stimmt das nicht.** Die 72 Zahlungen, die im toten Band 0,50–0,60 direkt
+> unter der Schwelle klemmten, hatten einen Betrags-Score von **1,00** — perfekt
+> getroffen. Sie scheiterten am **Namen**. Die wirklichen Ursachen waren drei andere:
+> `frequency_match` liefert immer `1.00` und macht die Schwelle ohne Namenstreffer
+> rechnerisch unerreichbar (§6 Stolperfalle 17); die Namensfunktion verglich ganze
+> Zeichenketten statt Wörter; und die Konfidenz wurde **nur beim Import** berechnet.
+>
+> **Der Fehler wäre teuer geworden:** Eine Sitzung, die der alten Diagnose gefolgt
+> wäre, hätte an `amount_match` und der Split-Behandlung gearbeitet — und die 72
+> Zahlungen mit perfektem Betrag nicht bewegt. Die Beobachtung „von 76 gemeinsamen
+> Monatszahlungen sind zwei zugeordnet" war richtig; nur ihre Erklärung nicht.
+> Deshalb steht sie hier als **korrigierte** Fassung und nicht bloß gelöscht.
+
+**Die 20 unzugeordneten Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli)
+bleiben bestehen: Sie sind kein Zuordnungsproblem, sondern ein Datenproblem für 2025
+(`DA-1`, Paket 6) — dort ist keine Karte aktiv, es gibt also nichts vorzuschlagen.
 
 **Weiterhin offen, für eine eigene Gestaltungsrunde:** `M2` (Verben und Gesten des
 Karten-Lebenszyklus) und `M5` (Reihenfolge). **`M5` hat seit v2-17 einen Ort** —

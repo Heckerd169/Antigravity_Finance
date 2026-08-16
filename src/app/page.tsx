@@ -9,6 +9,7 @@ import {
   getSplitFactor,
 } from "@/lib/rpc";
 import type { CategoryAmount } from "@/lib/rpc";
+import { istVorschlagSichtbar } from "@/lib/suggestion";
 import {
   addMonths,
   getCurrentMonthYM,
@@ -336,23 +337,26 @@ export default async function Home({ searchParams }: HomeProps) {
     );
   }
 
-  // ── Badge-Schwellen aus app_config (§11, CLAUDE.md Regel 5: nicht hardcoden).
-  // Fallback auf Spec-Defaults nur als Defense-in-Depth, falls Row fehlt. ─────
+  // ── Vorschlags-Schwelle aus app_config (§11, CLAUDE.md Regel 5: nicht
+  // hardcoden). Fallback auf den Spec-Default nur als Defense-in-Depth,
+  // falls die Zeile fehlt.
+  //
+  // v2-21 P4: `confidence.auto_absorption_threshold` wird hier NICHT mehr
+  // gelesen. Sie diente allein der Obergrenze weiter unten, und die ist
+  // entfallen — ob eine Zahlung bereits verlinkt ist, sagt jetzt der Status,
+  // nicht die Konfidenz (ausführliche Begründung an der Fundstelle).
+  // Die Schwelle selbst bleibt in `app_config` und in Gebrauch: die
+  // Auto-Absorption in `process_csv_import` liest sie weiterhin. ────────────
 
   const { data: thresholdRows } = await supabase
     .from("app_config")
     .select("key, value")
-    .in("key", [
-      "confidence.badge_threshold",
-      "confidence.auto_absorption_threshold",
-    ]);
+    .in("key", ["confidence.badge_threshold"]);
 
   const thresholdByKey = new Map(
     (thresholdRows ?? []).map((r) => [r.key, Number(r.value)]),
   );
   const badgeThreshold = thresholdByKey.get("confidence.badge_threshold") ?? 0.6;
-  const autoAbsorbThreshold =
-    thresholdByKey.get("confidence.auto_absorption_threshold") ?? 0.95;
 
   // ── Fragmente ────────────────────────────────────────────────────────────
   // v2-07 P0 (Bugfix): zwei monats-enge Abfragen statt eines Voll-Scans.
@@ -424,15 +428,25 @@ export default async function Home({ searchParams }: HomeProps) {
           f.status !== null,
       )
       .map((f) => {
-        // Badge nur im Bereich [badge_threshold, auto_absorption_threshold) UND
-        // mit gesetztem suggested_card_id (§6). Karten-Name via Lookup; zeigt die
-        // Karte ins Leere (gelöscht), kein Badge.
+        /* Vorschlag: Die Regel selbst steht in `@/lib/suggestion` und ist dort
+           mit einer eigenen Spec abgedeckt (v2-22, `ZO-2`) — sie war bis dahin
+           hier inline eingebettet und damit nicht einzeln prüfbar, und genau an
+           dieser Stelle saß in v2-21 ein Fehler, der den ganzen Sprint entwertet
+           hätte. Die Begründung im Detail steht in der Lib-Datei.
+
+           Hier bleibt nur, was von der Datenlage abhängt: der Karten-Lookup.
+           Zeigt `suggested_card_id` ins Leere (Karte gelöscht), bleibt der Name
+           null und das Popup lässt die Zeile weg. Die Schwellen-Auswertung
+           bleibt server-seitig (LL-17). */
         const conf = f.confidence != null ? Number(f.confidence) : null;
         const suggestedCardName =
           f.suggested_card_id != null &&
-          conf != null &&
-          conf >= badgeThreshold &&
-          conf < autoAbsorbThreshold
+          istVorschlagSichtbar({
+            suggestedCardId: f.suggested_card_id,
+            confidence: conf,
+            status: f.status,
+            badgeThreshold,
+          })
             ? cardNameById.get(f.suggested_card_id) ?? null
             : null;
 
