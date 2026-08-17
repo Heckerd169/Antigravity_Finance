@@ -31,21 +31,32 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 17.08.2026 zeilengenau nachgezählt — nach Sprint v2-24.*
+*Alle Zahlen am 17.08.2026 zeilengenau nachgezählt — nach der Design-Runde vom 17.08.2026
+(Paket 18 neu). Der Stand „nach v2-24" steht als Vergleichsspalte daneben.*
 
-| | Anzahl | nach v2-23 | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 |
+| | Anzahl | nach v2-24 | nach v2-23 | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **11** | 10 | 10 | 10 | 10 | 10 | 10 | 11 |
-| Themen darin | **34** | 32 | 32 | 30 | 30 | 29 | 28 | 31 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 6 | 5 | 5 | 4 | 4 | 5 |
-| **Offen gesamt** | **38** | 36 | 38 | 35 | 35 | 33 | 32 | 36 |
-| Erledigt | **53** | 50 | 49 | 47 | 47 | 45 | 43 | 41 |
+| Offene Pakete | **12** | 11 | 10 | 10 | 10 | 10 | 10 | 10 |
+| Themen darin | **39** | 34 | 32 | 32 | 30 | 30 | 29 | 28 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 6 | 5 | 5 | 4 | 4 |
+| **Offen gesamt** | **43** | 38 | 36 | 38 | 35 | 35 | 33 | 32 |
+| Erledigt | **53** | 53 | 50 | 49 | 47 | 47 | 45 | 43 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach v2-24, zeilengenau ausgezählt.** Paket-Tabellen **48** Zeilen, davon
-> **14 ✅** → **34** offen (⬜ 30 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **53**
-> Zeilen. §3 unverändert **4**. Pakete **17**, davon **6** vollständig erledigt
-> (1, 2, 3, 4, 15, 16) → **11** offen.
+> **Stand nach der Design-Runde vom 17.08.2026, zeilengenau ausgezählt.** Paket-Tabellen
+> **53** Zeilen, davon **14 ✅** → **39** offen (⬜ 35 · 🟡 4). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **53** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
+> erledigt (1, 2, 3, 4, 15, 16) → **12** offen.
+>
+> **Die Zahl springt um fünf, und das ist kein Rückschritt.** Das neue **Paket 18** trägt
+> die zehn Meldungen aus der Jahres-Kuratierung 2026 — verdichtet auf **fünf** Punkte,
+> weil zehn Meldungen nur **drei** Ursachen hatten. Fünf davon betrafen denselben
+> Löschriegel, drei denselben Plan-ohne-Zahlung-Mechanismus. **Diese Arbeit war die ganze
+> Zeit da; sie stand nur nicht auf der Liste** — dasselbe Muster wie bei Paket 17
+> (Performance).
+>
+> **Die Spalte „nach v2-24" ist neu eingezogen**, die älteste („vor v2-16") herausgefallen
+> — die Tabelle behält acht Vergleichsstände.
 >
 > **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat
 > **drei** Punkte erledigt (`PF-1`, `PF-2`, `PF-4`) und **zwei** offene eingetragen
@@ -632,6 +643,34 @@ allem anderen.
 
 ---
 
+### Paket 18 · Befunde aus der Jahres-Kuratierung 2026
+**Entsperrt:** dass der Nutzer eine irrtümlich angelegte Karte wieder loswird — und dass
+in der Sparrate keine Beträge stehen, die es nie gegeben hat.
+
+**Aus der Nutzung entstanden**, wie Paket 15, 16 und 17: Der Nutzer hat am 17.08.2026
+**alle Monate 2026 kuratiert** und zehn Punkte gemeldet. Diagnose:
+`V2/befunde_2026-08-17_kuratierung-2026.md`. **Zehn Meldungen, drei Wurzeln** — fünf
+Meldungen betrafen denselben Löschriegel, drei denselben Plan-ohne-Zahlung-Mechanismus.
+
+Die Gestaltung ist **entschieden** (17.08.2026):
+`V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md`, Entscheidungen 1–5.
+Design-Doku **v3.9.0** trägt die Spezifikation; gebaut ist nichts davon.
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| KJ-1 | Der Löschriegel sperrt **78 von 82** Karten | Fehler | **ja** | ⬜ | `HAS_PAST_PLAN` greift, sobald `first_active_month` vor dem laufenden Monat liegt — nach der Kuratierung von Januar bis Juli ist praktisch **alles** unlöschbar; löschbar sind genau **4**. Der Riegel ist nicht sinnlos: Seit v2-20 filtern alle vier Rechenfunktionen `deleted_at IS NULL`, eine gelöschte Karte fällt also aus den Sparraten **aller** Monate, auch der vergangenen. **Entschieden (17.08.): Löschen erlauben, mit angezeigter Folge im bestehenden Toast** — Summe statt Liste, türkis bei Entlastung, rot bei Belastung, leerer Fall zeigt nichts. Verworfen: „nur Karten ohne Zahlung" (wären **3** von 78) und „statt Löschen rückwirkend beenden" (Karteileiche bleibt sichtbar). ⚠️ **`page.tsx` bildet `card_delete_gate` NACH** — wer die Regel in der Datenbank ändert und den Nachbau vergisst, hebt die Änderung stillschweigend auf (LL-26; in v2-20 real passiert). |
+| KJ-2 | Der Plan zählt, auch wenn nichts bezahlt wurde | Fehler | **ja** | ⬜ | Prioritätskette **Realität → Anpassung → Plan**: fehlt beides Erste, gewinnt der Plan. Bei Miete richtig, bei **Audible** (zeitweise pausiert), **Friseur** (nicht jeden Monat) und einer **irrtümlich monatlichen** Fahrradteile-Karte falsch. Gemessen im August: Friseur 45,00 € und Audible 9,95 € zählen ohne Gegenstück; Audible und Friseur haben je 4 Zahlungen bei 8 aktiven Monaten. **Entschieden (17.08.): Ein-Klick-Menüpunkt `Diesen Monat nicht angefallen`** plus `Wieder mitzählen`. Er schreibt **denselben Wert** wie der heutige Weg „Betrag anpassen auf 0 €, nur diesen Monat" — **keine Änderung an `calculate_card_amount_for_month`, kein Anker-Risiko**. Verworfen: eine Karten-Eigenschaft „fällt unregelmäßig an" (greift in die Rechenfunktion **und** macht die Vorschau kaputt — künftige Monate zeigten 0 €, obwohl dafür geplant werden soll). |
+| KJ-3 | Eine Anpassung ist auf der Karte **unsichtbar** | Fehler | nein | ⬜ | `adjustedAmount` steht nur im Typ und wird von **keiner** Kartenkomponente benutzt. Eine Karte mit Plan 45 € und Anpassung 0 zeigt `0,00 €` — nicht unterscheidbar von fehlenden Daten. **Dieser Punkt stand in keiner Meldung**; er kam beim Nachsehen für KJ-2 dazu und macht KJ-2 ohne ihn zu einer stillen Falschaussage. **Entschieden: `nicht angefallen` in der Statuszeile, anstelle des Fälligkeitstags, im Ghost-Ton** — keine zusätzliche Kartenhöhe, kein neues Token. Eine Anpassung auf einen Wert **≠ 0** bleibt bewusst weiterhin unsichtbar. |
+| KJ-4 | Die Monatsnamen überlagern sich an den Chevrons | Fehler | nein | ⬜ | Screenshot vom 17.08.2026: zwei linke Flanken-Beschriftungen übereinander („April 2026" und „Mai 2026", dazu „5" und „8 Fragmente offen"). Geprüft: `.monthLabel` (der **aktive** Monat) trägt `animation: monthFade` und `key={targetMonth}` — die Überlagerung sitzt aber in den **Flanken**, die weder Key noch Animation haben. **Ursache nicht geklärt.** Hypothese: ein Hydrations-Unterschied (zwei Textknoten an derselben Stelle ist dessen typisches Bild; `page.tsx` liest `new Date()`). **Zu diagnostizieren, nicht zu erraten** — braucht einen Blick in die Browser-Konsole beim Monatswechsel. |
+| KJ-5 | Datenpflege 2026 | Aufgabe | nein | ⬜ | **Arbeit in der App, kein Bauauftrag** — hängt an KJ-1 und KJ-2. Aufräumen: acht der **neun** „Fahrradteile"-Karten, die zwei kategorielosen Einnahmen (`Malin Besuch Erstattung` 53,70 € im Januar, `Anteil Essen Aline Marburg` 15,00 € im April — **beide ohne Zahlung, beide blähen die Sparrate auf**), die Doppelten (`Fahrradzubehör`, `Geschenk Lukas`, `Inspektion Auto - Aline`). Neu anlegen: `Kreditkarte-Kosten` (2,49 €/Monat ab Januar, sieben Zahlungen), `Privathaftpflicht` (jährlich, **53,25 € als Plan** — nicht 28,88 €, sonst wird der Anteil zweimal abgezogen —, gemeinsam, ab April), `Google One` (9,99 €/Monat, läuft schon seit Februar). Umbuchen: drei Google-One-Zahlungen von „Privates Budget". Als Umschichtung markieren: die vier ±107,10-Zahlungen im Juli. Alle Werte im Befund. |
+
+> **Was dieses Paket an Wissen zurückgibt, unabhängig von den Punkten:** Zehn Meldungen
+> ergaben **drei** Ursachen. Wer nach Monaten sortiert meldet, meldet dieselbe Ursache
+> mehrfach — und wer nach Monaten sortiert abarbeitet, baut sie mehrfach. Die
+> Verdichtung stand am Anfang der Diagnose, nicht am Ende.
+
+---
+
 ## 2. Hausaufgaben ohne eigenen Sprint
 
 An einen passenden Sprint anhängen, nie als eigenen schneiden.
@@ -720,8 +759,14 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 Ältere Papiere nennen Themen über ihre Buchstaben-Kennung. Hier steht, wo sie heute leben.
 
+> **Belegte Präfixe, damit ein neues Paket nicht kollidiert** (Stand 17.08.2026):
+> `BF` `DA` `GE` `KAT` `KJ` `KU` `LQ` `PA` `PF` `RM` `TP` `ZO` `ZU`.
+> `KJ` ist am 17.08.2026 für Paket 18 dazugekommen — bewusst nicht `KU`, das gehört
+> Paket 16 (August-Kuratierung).
+
 | Kennung | Heute |
 |---|---|
+| KJ-1 … KJ-5 | Paket 18 |
 | A1, A4 · B2, B3, B6 · C1, C2, C3 · H2 · J2 · K1 · M0, M1, M3, M10 · N1–N5 · Init-1–4 | §4 Erledigt |
 | A2, A3 · K2 · L1 | §3 Dauerhaft nicht |
 | B1, B4, B5 | Paket 11 |

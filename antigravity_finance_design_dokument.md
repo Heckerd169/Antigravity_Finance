@@ -1,9 +1,48 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.8.0 (V2 · Sprint v2-24 — Ladezustand, Fehlerseite, dritter Treiber-Platzhalter)
-**Status:** Freigegeben — Schema-Doku v3.10.0; V2-Patches bis Sprint v2-24 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8).
+**Version:** 3.9.0 (V2 · Design-Runde 17.08.2026 — Löschen und „nicht angefallen")
+**Status:** Freigegeben — Schema-Doku v3.10.0; V2-Patches bis Sprint v2-24 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). **Die drei Spezifikationen der Runde vom 17.08.2026 sind entschieden, aber noch nicht gebaut** (Sprint v2-25).
 **Datum:** 17. August 2026
 **Primäres Referenzdokument für Claude Code**
+
+> **Changelog v3.9.0 (17.08.2026, Design-Direktor-Runde · Löschen und „nicht
+> angefallen"):** Drei neue Spezifikationen, **entschieden und noch nicht gebaut**
+> (Sprint v2-25). Anlass ist die vollständige Kuratierung des Jahres 2026: Der Nutzer
+> konnte **78 von 82 Karten nicht löschen** und sah Beträge in der Sparrate, die es nie
+> gegeben hat.
+>
+> §7 **Die Folge des Löschens steht im Toast**, nicht in einem eigenen Dialog. `Karte
+> löschen` bleibt ein Klick; der bestehende Soft-Delete-Toast bekommt eine Zeile mit der
+> **Summe** der Sparraten-Wirkung — türkis bei Entlastung, rot bei Belastung, und im
+> leeren Fall **gar nichts**. Verworfen: das §10-Muster mit `Bisher`/`Künftig`/`Diff.`
+> (es sitzt dort gut, weil der Nutzer schon in einem Popup war — beim Löschen gibt es
+> keins, das man tauschen könnte) und eine Bestätigung vorher (die App kennt **keinen**
+> Bestätigungs-Dialog; der Papierkorb mit `Rückgängig` ist die bewusste Alternative).
+>
+> §7 **Neuer Menüpunkt `Diesen Monat nicht angefallen`** mit dem Gegenstück `Wieder
+> mitzählen` — ein Klick, kein Dialog, kein `…`. Er ist die Abkürzung für „Betrag
+> anpassen auf 0 €, nur diesen Monat", also **keine neue Rechenregel**. Nicht auf
+> BUDGET-Karten (ein Budget *fällt nicht an*, es steht zur Verfügung — dieselbe Grenze
+> wie beim Fälligkeitstag), nicht auf Ghost-/Forecast-Karten, und **nicht, wenn in
+> diesem Monat eine Zahlung verknüpft ist**: Die Prioritätskette ist Realität →
+> Anpassung → Plan, der Punkt wäre dort ein Versprechen ohne Wirkung.
+>
+> §7 **Die Statuszeile zeigt `nicht angefallen`** — am rechten Anschlag, **anstelle** des
+> Fälligkeitstags, im Ghost-Ton. Ein Monat, in dem die Sache nicht angefallen ist, hat
+> keinen Termin mehr, den man erwarten könnte. Ersetzen statt ergänzen heißt: keine
+> zusätzliche Kartenhöhe, kein neues Token, keine neue Farbe.
+>
+> **Warum diese dritte Spezifikation überhaupt entstand:** `adjustedAmount` wird von
+> keiner Kartenkomponente benutzt — eine Anpassung ist auf der Karte heute
+> **unsichtbar**. Ohne den Marker sähe eine bewusste 0 aus wie fehlende Daten, und das
+> ist genau die Verwechslung, vor der LL-20 warnt, nur mit umgekehrtem Vorzeichen.
+>
+> §12.3 · §12.4 · §12.5 um die Copy ergänzt. Zwei Folge-Entscheidungen: „nicht
+> angefallen" und das **Bezahlt-Häkchen schließen sich aus**, und `Wieder mitzählen`
+> hebt **jede** Anpassung des Monats auf, nicht nur die 0.
+>
+> Record: `V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md`
+> (Entscheidungen 1–5). Befund: `V2/befunde_2026-08-17_kuratierung-2026.md`.
 
 > **Changelog v3.8.0 (17.08.2026, Sprint v2-24 · `PF-1` `PF-2`):** Drei neue Copy-Stellen
 > — alle drei entstanden nicht aus einer Gestaltungsrunde, sondern weil ein
@@ -825,6 +864,79 @@ Die Statuszeile bekommt zwei Enden: **links der Zustand, rechts der Termin** —
 **Im Ghost-/Forecast-Zustand dimmt der Termin eigenständig auf `rgba(255,255,255,.20)`.** Die Karten-Opacity (`0.65`) allein ließe ihn lauter wirken als das Status-Label daneben, das zusätzlich auf `--text-ghost` (`.22`) fällt. *Anders als bei der Haushaltsbetrag-Zeile oben, wo ausdrücklich **kein** eigener Ghost-Ton vorgesehen ist — dort wäre ein eigener Ton genau die Unsichtbarkeit, die schon gegen die Alternativvariante sprach; hier stellt er das Verhältnis der beiden Zeilen-Enden wieder her, das in allen anderen Zuständen von selbst stimmt. Der Unterschied ist gewollt.* Wert aus der Entwurfsseite, Variante A1.
 
 Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §2.
+
+### „Diesen Monat nicht angefallen" (neu 17.08.2026) — entschieden, noch nicht gebaut
+
+Ein Kontextmenü-Punkt, der die Karte in **diesem** Monat auf 0 € setzt. Er ist die
+**Abkürzung** für „Betrag anpassen auf 0 €, nur diesen Monat" und schreibt denselben
+Wert — **keine neue Rechenregel, kein Eingriff in die Prioritätskette.** Gegenstück:
+`Wieder mitzählen`.
+
+| | |
+|---|---|
+| Sichtbar auf | `FIXED_COST` und `INCOME` |
+| **Nicht** sichtbar auf | BUDGET-Karten · Ghost-/Forecast-Karten · Karten mit **verknüpfter Zahlung in diesem Monat** |
+| Ort im Menü | direkt unter `Betrag anpassen` — beide sind monatsbezogen |
+| Dialog | keiner. Ein Klick, sofort wirksam, kein `…` |
+
+**Warum nicht auf BUDGET-Karten.** Ein Budget *fällt nicht an* — es steht zur Verfügung.
+„Nicht angefallen" ist die Vokabel eines Kostenpunkts. Dieselbe Grenze zieht der
+Fälligkeitstag oben.
+
+**Warum nicht bei verknüpfter Zahlung.** Die Prioritätskette ist **Realität → Anpassung
+→ Plan**. Liegt eine Zahlung an, gewinnt sie; der Punkt wäre ein Versprechen ohne
+Wirkung. Ein Menüpunkt, der nichts tut, ist schlechter als keiner.
+
+**Warum auf INCOME-Karten schon.** Eine erwartete Einnahme, die nicht kam, ist derselbe
+Fall — und im Bestand liegen zwei davon (Befund vom 17.08.2026).
+
+**Das Bezahlt-Häkchen und „nicht angefallen" schließen sich aus.** „Ist bezahlt" gegen
+„fiel nicht an" ist ein Widerspruch. Wer „nicht angefallen" setzt, verliert das Häkchen;
+wer danach abhakt, hebt die Anpassung auf. Sonst stünde ein Häkchen an einer Karte, die
+0,00 € zeigt.
+
+**`Wieder mitzählen` hebt JEDE Anpassung dieses Monats auf**, nicht nur die 0 — der
+Wortlaut beschreibt, was hinterher gilt, nicht wovon man kommt.
+
+**Die Statuszeile zeigt dann `nicht angefallen`** am rechten Anschlag, **anstelle** des
+Fälligkeitstags, im Ghost-Ton (`--text-ghost`). Ein Monat, in dem die Sache nicht
+angefallen ist, hat keinen Termin, den man erwarten könnte — die Angabe wäre nicht nur
+überflüssig, sondern irreführend. Ersetzen statt ergänzen heißt: **keine zusätzliche
+Kartenhöhe, kein neues Token, keine neue Farbe.**
+
+> **Ohne diesen Marker wäre der Menüpunkt eine stille Falschaussage.**
+> `card_monthly_states.adjusted_amount` wird heute von **keiner** Kartenkomponente
+> angezeigt: Eine Karte mit Plan 45 € und Anpassung 0 zeigt `0,00 €`, und nichts
+> unterscheidet das von fehlenden Daten. LL-20 warnt vor der einen Richtung („ein
+> Referenzwert ohne Daten ist keine Anzeige, nicht 0"); dies ist die andere Richtung und
+> genauso falsch.
+>
+> **Eine Anpassung auf einen Wert ≠ 0 bleibt weiterhin unsichtbar.** Bewusst nicht
+> mitentschieden — eigene Entscheidung, wenn sie ansteht.
+
+### Die Folge des Löschens (neu 17.08.2026) — entschieden, noch nicht gebaut
+
+`Karte löschen` bleibt **ein Klick**. Seit dem Fall des Löschriegels kann eine Löschung
+die Sparrate **vergangener** Monate bewegen — der bestehende Soft-Delete-Toast (§12.5)
+nennt deshalb die **Summe** der Wirkung und die Zahl der betroffenen Monate.
+
+**Held ist die Summe, nicht die Liste** — dieselbe Haltung wie die Konsequenz-Anzeige in
+§10. **Türkis**, wenn die Sparrate steigt (Entlastung), **rot**, wenn sie sinkt
+(Belastung); keine neue Farbe. Ist genau **ein** Monat betroffen, wird er **benannt** —
+das ist nützlicher als „in 1 Monat".
+
+**Bewegt das Löschen keine Zahl, bleibt der Toast wie bisher.** Keine Null-Zeile, kein
+„Keine Änderungen" (§7 Regel 17 / LL-20).
+
+**Kein eigener Dialog, keine Bestätigung vorher.** Verworfen wurde beides mit Begründung:
+Das §10-Muster (`Bisher`/`Künftig`/`Diff.`) sitzt dort gut, weil der Nutzer **bereits in
+einem Popup war** — „Übernehmen tauscht den Inhalt"; beim Löschen gibt es kein Popup, das
+man tauschen könnte, und bei mehreren gleichnamigen Karten wären es mehrere Dialoge
+hintereinander. Und die App kennt **keinen einzigen** Bestätigungs-Dialog: Der Papierkorb
+mit `Rückgängig` ist die bewusste Alternative dazu, gebaut in v2-20.
+
+Beleg der Gestaltung: `V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md`
+(Entscheidungen 1–5).
 
 ### Fixkosten-Karte — 3 Zustände
 
@@ -2011,6 +2123,7 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Attribution GEMEINSAM | `Gemeinsam` |
 | Gemeinsame Karte — Haushaltsbetrag | `von [N] €` *(leer bei ICH, Split-Faktor 1,0 oder Plan 0)* |
 | Fälligkeitstag (rechts in der Statuszeile) | `am [N].` *(leer bei Budget-Karten und Karten ohne Fälligkeitstag)* |
+| Statuszeile — Monat auf 0 angepasst | `nicht angefallen` *(ersetzt den Fälligkeitstag, Ghost-Ton)* |
 
 ### 12.4 Kontextmenü + Overlays
 
@@ -2020,6 +2133,8 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Kontextmenü — Option 2 | `Letzte Zahlung in Monat X` *(X = vom Nutzer gewählter Monat aus Monatspicker)* |
 | Kontextmenü — Option 3 | `Karte löschen` |
 | Kontextmenü — Fälligkeitstag | `Fällig am …` *(nicht auf Budget-Karten)* |
+| Kontextmenü — nicht angefallen | `Diesen Monat nicht angefallen` *(nur FIXED_COST/INCOME, nicht bei verknüpfter Zahlung)* |
+| Kontextmenü — Rücknahme | `Wieder mitzählen` |
 | Betrag anpassen — Option 1 | `Nur dieser Monat` |
 | Betrag anpassen — Option 2 | `Dauerhaft ab diesem Monat` |
 | Fällig am — Overlay-Option | `Kein fester Tag` |
@@ -2046,6 +2161,9 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | CARD_END — Subtext | `Ab [Folgemonat] nicht mehr aktiv` |
 | CARD DELETE — Titel | `[Kartenname] gelöscht` |
 | CARD DELETE — Subtext | `Karte wird dauerhaft entfernt` |
+| CARD DELETE — Folge, mehrere Monate | `Sparrate in [N] Monaten · zusammen [±N] €` |
+| CARD DELETE — Folge, ein Monat | `Sparrate [Monat] · [±N] €` |
+| CARD DELETE — Folge, keine Wirkung | *(entfällt — kein Zusatz, keine Null-Zeile)* |
 | Toast — Aktion | `Rückgängig` |
 | Toast — nach Undo | `Wiederhergestellt ✓` |
 
