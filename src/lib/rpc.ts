@@ -438,6 +438,63 @@ export async function getCategoryAmountsForMonth(
   return (data as unknown as CategoryAmount[]) ?? [];
 }
 
+// ── v2-24 (P3): alle Monatswerte aller Karten in EINER Netzrunde ────────────
+
+/** Die Monatswerte einer im Monat aktiven Karte.
+ *
+ *  Enthält bewusst NUR das, was monatsabhängig ist. Name, Typ, Zuordnung,
+ *  Frequenz, Fälligkeitstag und Kategorie sind Eigenschaften der Karte und
+ *  kommen weiterhin aus dem `cards`-Select — der ohnehin bleiben muss, weil die
+ *  Badge-Auflösung die Namen auch monats-INAKTIVER Karten braucht. */
+export type CardMonthValues = {
+  card_id: string;
+  /** Anzeige-Betrag, Prioritätskette Realität → Anpassung → Plan. Bei GEMEINSAM
+   *  bereits der EIGENE Anteil (v2-13/BF-4) — nicht erneut umrechnen. */
+  amount: number;
+  /** Vergleichsbasis für Budget-Status und „Noch frei": Anpassung > Roh-Plan.
+   *  Bleibt die VOLLE Haushaltsrechnung (§7 Regel 1). */
+  effective_plan: number;
+  manually_paid: boolean;
+  /** `null` = keine Anpassung. Das ist etwas anderes als „Anpassung auf 0 €"
+   *  (§6 Stolperfalle 3), deshalb bleibt `null` hier `null`. */
+  adjusted_amount: number | null;
+};
+
+/** Alle im Monat aktiven Karten mit ihren Monatswerten — EIN Aufruf statt 179.
+ *
+ *  ── Was diese Funktion ersetzt ─────────────────────────────────────────────
+ *  Bis v2-24 lud `page.tsx` alle 77 nicht-gelöschten Karten, rief dann
+ *  `isCardActiveInMonth` EINZELN für jede davon, warf 43 Antworten weg und
+ *  feuerte für die verbleibenden 34 je drei weitere Aufrufe. Zusammen 179 der
+ *  233 Netzrunden eines Dashboard-Aufbaus — für gemessene 17 ms Rechenarbeit.
+ *  Gebündelt kostet dasselbe **7,99 ms in einem Aufruf** (gemessen, warm).
+ *
+ *  ── Die Zusicherung, auf der alles ruht ────────────────────────────────────
+ *  Die RPC **ruft** `is_card_active_in_month`, `calculate_card_amount_for_month`
+ *  und `get_effective_plan_for_month` auf — sie baut sie nicht nach. Belegt über
+ *  byte-identische Prüfsummen aller neun Rechenfunktionen vor und nach der
+ *  Migration (`sprints/sprint_v2-24_anker.md`). Wer hier etwas ändert, prüft das
+ *  erneut: Ein Nachbau der Prioritätskette würde den Split-Anteil ein zweites
+ *  Mal anwenden (§6 Stolperfalle 11), und keine Zahl sähe dabei falsch aus.
+ *
+ *  ── Throw-on-Error, und warum das eine Verhaltensänderung ist ──────────────
+ *  `isCardActiveInMonth` schluckt bewusst jeden Fehler und liefert `false`,
+ *  damit eine einzelne Karte nicht den ganzen Render blockiert (LL-2). Gebündelt
+ *  gibt es diese Vereinzelung nicht mehr: Ein Fehler betrifft alle Karten. Der
+ *  Wrapper wirft deshalb wie alle anderen, und der AUFRUFER fängt ihn ab — dann
+ *  bleibt das Karussell leer statt die Seite mitzunehmen. */
+export async function getCardsForMonth(
+  client: AppSupabaseClient,
+  args: { userId: string; month: string },
+): Promise<CardMonthValues[]> {
+  const { data, error } = await client.rpc("get_cards_for_month", {
+    p_user_id: args.userId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return (data as unknown as CardMonthValues[]) ?? [];
+}
+
 // ── v2-19 (GE-1): das tatsächlich überwiesene Netto ─────────────────────────
 
 /** Antwort beider Netto-RPCs. `actual_net` ist der Stand NACH der Änderung —

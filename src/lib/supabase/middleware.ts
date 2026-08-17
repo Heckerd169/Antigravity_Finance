@@ -6,12 +6,29 @@ import type { Database } from "./types";
 /**
  * Zeitlimit je Auth-Versuch (v2-24 Phase 1).
  *
- * 4 s deckt den gemessenen p95 von `/auth/v1/user` (1,08 s) mit großem Abstand ab.
- * Zwei Versuche bleiben mit ~8 s weit unter Vercels 25-Sekunden-Grenze für
- * Edge-Middleware — und genau diese Grenze zu reißen war der Ausfall vom
- * 16.08.2026 (`V2/befunde_2026-08-16_performance.md` §4).
+ * ── Wie diese Zahl zustande kommt ───────────────────────────────────────────
+ *
+ * Sie ist gegen zwei Fehler gleichzeitig gerichtet, und die ziehen in
+ * entgegengesetzte Richtungen:
+ *
+ *   zu HOCH → Vercel kappt die Edge-Middleware nach 25 s und liefert
+ *             `504 MIDDLEWARE_INVOCATION_TIMEOUT` — eine Fehlerseite ohne Ausweg.
+ *             Das war der Ausfall vom 16.08.2026.
+ *   zu NIEDRIG → eine langsame, aber erfolgreiche Anmeldung wird abgeschnitten
+ *             und der Nutzer auf `/login` geschickt, obwohl seine Sitzung gültig
+ *             ist. Ärgerlich und unnötig.
+ *
+ * Gemessen in Produktion über 24 Stunden: `/auth/v1/user` im Schnitt 329 ms,
+ * p95 1.081 ms, **Maximum 5.205 ms**. Der erste Entwurf stand auf 4 s und hätte
+ * genau diesen Maximalfall abgeschnitten — aufgefallen ist das, weil ein
+ * Prüfstrecken-Lauf unter Last auf der Anmeldeseite endete.
+ *
+ * 8 s liegt damit über allem, was je gemessen wurde, und bleibt mit dem
+ * Wiederholversuch (~16 s im schlechtesten Fall) klar unter 25 s. Der
+ * Wiederholversuch greift ausschließlich bei einem netzwerk-toten Versuch, und
+ * der scheitert sofort statt erneut die Frist auszuschöpfen.
  */
-const AUTH_TIMEOUT_MS = 4000;
+const AUTH_TIMEOUT_MS = 8000;
 
 /**
  * Auth-Gate vor jeder Anfrage.

@@ -3,13 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   calculatePlannedSparrateForMonth,
   calculateSparrateForMonth,
-  calculateCardAmountForMonth,
-  isCardActiveInMonth,
+  getCardsForMonth,
   getCategoryAmountsForMonth,
-  getEffectivePlanForMonth,
   getSplitFactor,
 } from "@/lib/rpc";
-import type { CategoryAmount } from "@/lib/rpc";
+import type { CardMonthValues, CategoryAmount } from "@/lib/rpc";
 import { istVorschlagSichtbar } from "@/lib/suggestion";
 import {
   addMonths,
@@ -267,32 +265,52 @@ export default async function Home({ searchParams }: HomeProps) {
   let enrichedCards: EnrichedCard[] = [];
 
   if (rawCards && rawCards.length > 0) {
-    const activeFlags = await Promise.all(
-      rawCards.map((c) =>
-        isCardActiveInMonth(supabase, { cardId: c.id, month: targetDbDate }),
-      ),
-    );
-    const activeCards = rawCards.filter((_, i) => activeFlags[i]);
+    /* ── v2-24 P3: EIN Aufruf statt 179 ────────────────────────────────────────
+     *
+     * Vorher stand hier ein zweistufiger Fächer: `isCardActiveInMonth` einzeln
+     * für alle 77 Karten (43 Antworten davon weggeworfen), danach DREI weitere
+     * Aufrufe je aktiver Karte. Der Kommentar an dieser Stelle nannte die
+     * Annahme, die längst gebrochen war — „bei <20 Karten in V1 akzeptable
+     * Latenz". Es sind 77.
+     *
+     * Gemessen: `is_card_active_in_month` kostet 0,089 ms in der Datenbank und
+     * im Produktionsschnitt 899 ms über die Leitung. Der gebündelte Aufruf
+     * liefert alle 34 Karten in 7,99 ms.
+     *
+     * Die RPC RUFT die drei Rechenfunktionen auf, sie baut sie nicht nach —
+     * belegt über byte-identische Prüfsummen (LL-26 · §6 Stolperfalle 11).
+     *
+     * ⚠️ VERHALTENSÄNDERUNG, bewusst: `isCardActiveInMonth` schluckte jeden
+     * Fehler und lieferte `false`, damit eine einzelne Karte nicht den ganzen
+     * Render blockiert. Diese Vereinzelung gibt es gebündelt nicht mehr. Fällt
+     * der Aufruf aus, bleibt das Karussell deshalb LEER statt die Seite
+     * mitzunehmen — dieselbe Haltung wie bei `categoryAmounts` und beim
+     * Welle-Loader oben. Der `catch` ist der Ersatz für die weggefallene
+     * Fehlertoleranz pro Karte, nicht Zierde.
+     */
+    let monthValues: CardMonthValues[] = [];
+    try {
+      monthValues = await getCardsForMonth(supabase, {
+        userId: user.id,
+        month: targetDbDate,
+      });
+    } catch (err) {
+      console.error("Karten-Monatswerte fehlgeschlagen", err);
+    }
 
-    enrichedCards = await Promise.all(
-      activeCards.map(async (c) => {
-        // K1.4: 3 parallele Werte pro Karte —
-        //   1) `amount` (Display, RPC-Prioritätskette Realität→Anpassung→Plan)
-        //   2) `effectivePlan` (Vergleichsbasis für Budget-Status + „Noch frei",
-        //      via neue RPC get_effective_plan_for_month: Adjustment > Roh-Plan)
-        //   3) Monthly-State-Row (manually_paid + adjusted_amount).
-        // N+1-Pragmatik: bei <20 Karten in V1 akzeptable Latenz (Briefing §K1.4).
-        const [amount, effectivePlan, stateRow] = await Promise.all([
-          calculateCardAmountForMonth(supabase, { cardId: c.id, month: targetDbDate }),
-          getEffectivePlanForMonth(supabase, { cardId: c.id, month: targetDbDate }),
-          supabase
-            .from("card_monthly_states")
-            .select("manually_paid, adjusted_amount")
-            .eq("card_id", c.id)
-            .eq("month", targetDbDate)
-            .maybeSingle()
-            .then((r) => r.data),
-        ]);
+    const valuesByCardId = new Map(monthValues.map((v) => [v.card_id, v]));
+    // Aktiv ist genau, was die RPC zurückgibt — die Entscheidung fällt in der
+    // Datenbank, nicht hier. Kein Nachbau des Aktiv-Kriteriums im Frontend
+    // (LL-26): Wer `first_active_month`/`frequency` hier auswerten würde, hätte
+    // eine zweite Wahrheit, die beim ersten Frequenz-Sonderfall abweicht.
+    const activeCards = rawCards.filter((c) => valuesByCardId.has(c.id));
+
+    enrichedCards = activeCards.map((c) => {
+        // Non-null: `activeCards` ist genau über `valuesByCardId.has(c.id)`
+        // gefiltert, der Zugriff kann nicht ins Leere gehen.
+        const v = valuesByCardId.get(c.id)!;
+        const amount = v.amount;
+        const effectivePlan = v.effective_plan;
 
         return {
           id: c.id,
@@ -329,8 +347,12 @@ export default async function Home({ searchParams }: HomeProps) {
           // Karte, kein Monats-Zustand. `null` ist ein regulärer Wert
           // („Ohne Kategorie"), keine Lücke (Befund D12).
           categoryId: c.category_id,
-          manuallyPaid: stateRow?.manually_paid ?? false,
-          adjustedAmount: stateRow?.adjusted_amount ?? null,
+          // v2-24 P3: kommen jetzt aus derselben Antwort. Die RPC setzt
+          // `manually_paid` bereits auf `false`, wenn keine Zustands-Zeile
+          // existiert; `adjusted_amount` bleibt dort `null` — „keine Anpassung"
+          // und „Anpassung auf 0 €" sind verschiedene Aussagen (Stolperfalle 3).
+          manuallyPaid: v.manually_paid,
+          adjustedAmount: v.adjusted_amount,
           deleteGate: {
             deletable:
               !cardsWithLinks.has(c.id) &&
@@ -345,8 +367,7 @@ export default async function Home({ searchParams }: HomeProps) {
             ],
           },
         } satisfies EnrichedCard;
-      }),
-    );
+    });
 
     const typeOrder: Record<string, number> = { FIXED_COST: 0, INCOME: 1, BUDGET: 2 };
     enrichedCards.sort(
