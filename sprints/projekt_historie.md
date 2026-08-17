@@ -2272,3 +2272,87 @@ laufen, ist ungeklärt** — es gibt weder `vercel.json` noch eine Einstellung i
 `next.config.mjs`; nur im Vercel-Konto einsehbar. Der **Middleware-Ausweichpfad ist
 nie angesprungen** (0 Warnungen in zwei vollständigen Läufen) — das zeigt, dass er
 nicht im Weg ist, aber nicht, dass er im Ernstfall greift.
+
+**Nachtrag vom selben Tag (17.08.2026) — der teuerste Fund kam nach dem Review.**
+Der Eintrag oben bleibt stehen, wie er geschrieben wurde; dieser Absatz ergänzt ihn.
+
+Punkt ③ der offenen Fragen war *„In welcher Region laufen die Vercel-Funktionen?"* —
+ich konnte es nicht prüfen, es gibt weder `vercel.json` noch eine Einstellung in
+`next.config.mjs`. **Der Nutzer hat nachgesehen: Sie standen auf USA.** Die Datenbank
+liegt in **eu-west-1 (Irland)**. Jede einzelne Anfrage lief über den Atlantik und
+zurück — rund **90 ms** Umweg, bei den damaligen **233 Netzrunden** je Aufbau ein
+erheblicher Anteil der Wartezeit. Umgestellt auf **Frankfurt (`fra1`)**.
+
+**Der eigentliche Befund ist nicht die Region, sondern die Zeile darüber.** CLAUDE.md §2
+behauptete über ein Jahr *„Region matched Supabase (eu-west-1)"*. Sie tat es nicht.
+Weder die Prüfstrecke noch die Verfassung selbst konnte das finden — **eine Behauptung
+prüft sich nicht selbst**, und diese klang so beruhigend, dass niemand nachsah. Dass
+sie überhaupt hinterfragt wurde, lag allein daran, dass dieser Sprint die Frage stellte.
+
+**Das ist LL-22 in seiner allgemeinen Form** — jene Lehre sagt es über *Rechenverhalten*
+(„eine Doku-Zusage ist keine Prüfung"), hier war es die Infrastruktur. Festgeschrieben
+als **LL-30** und **§6 Stolperfalle 20**: Eine Einstellung, die nur in einem Web-Portal
+lebt, ist für das Repo unsichtbar und bei einem neu angelegten Projekt weg.
+
+**Dieselbe Fehlerklasse traf beim Nachziehen eine zweite Zeile derselben Datei.** §9
+nannte als Doku-Versionen „Schema-Doku **v3.6.0**", während die Datei selbst bei
+**v3.9.0** stand — drei Minor-Versionen Rückstand. Beide Zeilen sind korrigiert und
+haben einen **Warnkasten** bekommen, der sagt, dass es passiert ist. Eine
+stillschweigende Korrektur hätte den Lerneffekt weggeworfen; genau das ist der Grund,
+warum dieser Log existiert.
+
+**Wo ich dabei an eine Grenze gestoßen bin:** Die 90 ms tauchen in **keiner** meiner
+Messungen auf. Der Supabase-Log misst mit `response.origin_time` die *eigene*
+Verarbeitungszeit, nicht die Netzstrecke von Vercel dorthin. Ich habe den ganzen Sprint
+über die richtige Zahl gemessen — und eine Fehlerquelle daneben schlicht nicht sehen
+können. **Sichtbar wäre sie nur in der Vercel-Funktionsdauer gewesen**, auf die ich
+keinen Zugriff habe. Wer das nächste Mal Trägheit untersucht: Die Messung endet an der
+Grenze des Systems, in dem man messen kann, und diese Grenze gehört benannt.
+
+**Zwei Reste bleiben offen** (`PF-4`, jetzt 🟡): `fra1` ist gut, aber nicht die genaue
+Entsprechung — Supabase `eu-west-1` ist Irland, Vercel bietet dafür `dub1` (Dublin),
+rund 20 ms näher. Und die Einstellung lebt weiter nur im Portal; sie im Code
+festzunageln (`preferredRegion`, `vercel.json`) ist bewusst **noch nicht** geschehen,
+solange die erste Frage offen ist — der Code würde sonst den Wert festschreiben, der
+gerade zur Prüfung steht, und beim nächsten Portal-Wechsel schweigend gewinnen.
+
+**Ebenfalls an diesem Tag:** Der **Browser-Smoke ist bestanden**, und beide
+Doku-Freigaben sind erteilt und angewendet — Design-Doku **v3.8.0** (§12.8 dritter
+Treiber-Platzhalter mit Bedeutungs-Tabelle, §12.12 neu für Ladezustand und
+Fehlerseite), CLAUDE.md mit den Stolperfallen 18–20, LL-28 bis LL-30 und dem neuen
+**Anker 3**.
+
+**Zweiter Nachtrag vom 17.08.2026 — `PF-4` am Tag seiner Entstehung geschlossen.**
+
+Der Nutzer hat die Regions-Auswahl aufgerufen, und darin stand die Antwort wörtlich:
+**„Dublin, Ireland (West) — `eu-west-1` — `dub1`"**. Das ist dieselbe AWS-Region, in der
+die Supabase-Datenbank liegt — keine Annäherung, sondern die exakte Entsprechung. Erst
+auf Frankfurt umgestellt, am selben Tag auf **Dublin** weitergezogen.
+
+**Die Zahl, die die Entscheidung trägt, hatte ich vorher nicht auf dem Schirm.** Ich habe
+über den ganzen Sprint die **Anfragen** gezählt (233 → ~18) — für die Frage „welche
+Region?" ist aber die Zahl der **Abhängigkeitsstufen** maßgeblich: `page.tsx` hat **13
+`await`-Barrieren**, Stellen, an denen der Render auf eine Antwort warten *muss*, bevor
+er die nächste Frage stellt. Jede kostet eine volle Wegstrecke, unabhängig davon, wie
+viele Anfragen darin parallel laufen. Frankfurt (andere AWS-Region) ~250–320 ms über 13
+Stufen, Dublin (gleiche Region) ~25–40 ms.
+
+Dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist, verliert dagegen
+klar: **Der Browser spricht pro Geste zweimal mit der Funktion, die Funktion
+dreizehnmal mit der Datenbank.** Das Verhältnis 13:2 entscheidet.
+
+**Und der eigentliche Abschluss:** Die Region steht jetzt in **`vercel.json`**
+(`{"regions": ["dub1"]}`) — versioniert, im Diff sichtbar, sie überlebt ein neu
+angelegtes Projekt und **gewinnt gegen das Portal**. Damit ist LL-30 für diesen Fall
+nicht nur beschrieben, sondern behoben. Die Begründung steht in CLAUDE.md §2 und §3,
+weil JSON keine Kommentare trägt — und §3 hält zusätzlich fest, dass diese Datei
+**bewusst kein Sammelbecken** für Deployment-Optionen wird.
+
+**Zwei Dinge, die diesen Nachtrag überleben sollten.** Erstens: **Ich habe die richtige
+Zahl gemessen und die entscheidende nicht gesehen.** Anfragen zählen war richtig und hat
+den Sprint getragen; für die Regions-Frage war es die falsche Kennzahl, und ich bin erst
+darauf gekommen, als der Nutzer die Auswahlliste zeigte. Zweitens: **Die Grenze der
+Messung gehört ins Ergebnis.** Die 13 Stufen sind gezählt, die Millisekunden sind
+geschätzt — die Netzstrecke Vercel→Supabase liegt außerhalb dessen, was
+`response.origin_time` sieht. Eine Schätzung, die als solche gekennzeichnet ist, ist in
+diesem Projekt brauchbar; eine, die als Messung auftritt, wäre es nicht.

@@ -159,7 +159,7 @@ Zahl bewegt sich.** Erfüllt.
 | **S8** | Prüfstrecke grün | ✅ | §2 |
 | **S9** | Middleware-Ausweichpfad erzeugt keinen 504 | 🟡 | Der Pfad ist gebaut und typgeprüft; **künstlich ausgelöst wurde er nicht** (§6) |
 | **S10** | Optischer Render-Smoke | ✅ | 4 Render-Smoke-Tests grün, Bild unverändert |
-| **S11** | **Browser-Smoke des Nutzers** | ⬜ | **steht aus** — Produktiv-Gate, §6 |
+| **S11** | **Browser-Smoke des Nutzers** | ✅ | **bestanden am 17.08.2026** — der Produktiv-Gate ist damit durch |
 
 > **S5 und S6 waren als das Risiko des Sprints benannt** — und die Prüfdaten-Kontrolle
 > nach LL-15 hat dabei etwas Nützliches gezeigt: Der Juli enthält **fünf**
@@ -211,20 +211,41 @@ Gestaltungsentscheidung, die die Design-Doku nicht trifft (§7 Regel 3).
 
 ## 6. Offene Punkte und Fragen
 
-**① Der Browser-Smoke des Nutzers steht aus** (S11) — Produktiv-Gate, nicht ersetzbar.
-Anzuklicken: eine Zahlung auf eine Karte ziehen (soll sich sofort anfühlen) · Monat
-wechseln · über die Welle fahren (Tooltip kommt beim **ersten** Mal mit kurzer
-Verzögerung, danach sofort) · Welle-Popup öffnen (Goldlinie da) · eine Karte antippen.
+> **Nachtrag 17.08.2026 — drei der sechs Punkte sind erledigt.** Der Browser-Smoke ist
+> **bestanden**, die Doku-Freigaben sind **erteilt und angewendet** (Design-Doku
+> v3.8.0, CLAUDE.md), und die Regions-Frage ist **beantwortet — mit dem teuersten Fund
+> dieses Sprints**. Was übrig bleibt, steht als ④ bis ⑥.
 
-**② Zwei Wortlaute sind neue UI-Copy und brauchen die Freigabe für Design-Doku §12:**
-- `"Treiber werden geladen"` — der dritte Zustand der Treiber-Zeile. Ohne ihn wären
-  beide bestehenden Platzhalter während des Ladens eine **falsche Aussage**.
-- Die Fehlerseite: `"Die Ansicht konnte nicht geladen werden"` · `"Deine Daten sind
-  unberührt — es ist nur die Anzeige, die nicht zustande kam."` · `"Nochmal versuchen"`.
+**① ✅ Browser-Smoke bestanden** (17.08.2026).
 
-**③ In welcher Region laufen die Vercel-Funktionen?** Es gibt weder `vercel.json` noch
-eine Einstellung in `next.config.mjs`. Liegen sie nicht in Europa, verteuert das jede
-der verbleibenden ~18 Anfragen um rund 90 ms. **Nur im Vercel-Konto einsehbar.**
+**② ✅ Beide Wortlaute freigegeben und angewendet** — Design-Doku **v3.8.0**: §12.8
+bekommt den dritten Treiber-Platzhalter mit der Bedeutungs-Tabelle, §12.12 ist neu
+(Ladezustand und Fehlerseite).
+
+**③ ✅ Regions-Frage beantwortet — und sie war der teuerste Fund des Sprints.**
+Die Vercel-Funktionen standen auf **USA**, während die Datenbank in **Irland** liegt:
+rund **90 ms** Umweg über den Atlantik, auf **jede** Anfrage. Vom Nutzer geprüft und am
+17.08.2026 auf **Frankfurt (`fra1`)** umgestellt.
+
+**Der eigentliche Befund ist aber nicht die Region, sondern die Zeile darüber.**
+CLAUDE.md §2 behauptete über ein Jahr *„Region matched Supabase (eu-west-1)"* — und
+niemand hat es geprüft, weil die Zeile so beruhigend klang. Weder die Prüfstrecke noch
+die Doku konnte das finden; eine Behauptung prüft sich nicht selbst. **Das ist LL-22 in
+seiner allgemeinen Form**, angewandt auf Infrastruktur statt auf Rechenverhalten, und es
+ist jetzt als **LL-30 / §6 Stolperfalle 20** festgeschrieben. Dieselbe Klasse traf
+übrigens auch die Doku-Versionen-Zeile in §9: Sie nannte Schema-Doku v3.6.0, während die
+Datei bei v3.9.0 stand.
+
+**Warum die Wirkung nicht in meinen Messungen auftaucht:** Der Supabase-Log misst mit
+`response.origin_time` die **eigene** Verarbeitungszeit, nicht die Netzstrecke von
+Vercel dorthin. Die 90 ms lagen also die ganze Zeit außerhalb dessen, was ich sehen
+konnte — sichtbar wären sie nur in der Vercel-Funktionsdauer. Zusammen mit den 233
+Netzrunden vor diesem Sprint war das ein erheblicher, unsichtbarer Anteil der
+Wartezeit.
+
+**② + ③ zusammengenommen ergeben eine Beobachtung, die den Sprint überlebt:** Zwei der
+drei Ursachen dieses Sprints standen in einer Doku-Zeile, die etwas behauptete, was
+niemand nachgesehen hat. Der Code war das kleinere Problem.
 
 **④ Der Middleware-Ausweichpfad ist nicht künstlich ausgelöst worden** (S9 auf 🟡).
 Er ist gebaut, typgeprüft und in zwei vollständigen Prüfläufen **nie angesprungen**
@@ -242,11 +263,60 @@ Fremdschlüssel-Indizes (`card_planned_timeline.user_id`,
 Nach dem Umbau fallen statt ~56.000 Anfragen pro Tag grob 4.000 an; die Empfehlung war
 „erst umbauen, dann messen".
 
+**⑦ ✅ Die Regions-Frage ist vollständig geschlossen** (`PF-4`, noch am selben Tag).
+
+**Dublin statt Frankfurt** — und der Grund war besser als vermutet: Vercel beschriftet
+Dublin selbst mit **`eu-west-1`**, also **derselben AWS-Region**, in der die
+Supabase-Datenbank liegt. Keine Annäherung, sondern eine exakte Entsprechung.
+
+**Die Entscheidung trägt eine Zahl, die ich vorher nicht auf dem Schirm hatte:** nicht
+die **18 Anfragen** je Aufbau, sondern die **13 `await`-Barrieren** in `page.tsx`.
+Jede ist eine Stelle, an der der Render auf eine Antwort warten *muss*, bevor er die
+nächste Frage stellt — und jede kostet eine volle Wegstrecke, egal wie viele Anfragen
+darin parallel laufen.
+
+| | Weg Funktion → Datenbank | × 13 Stufen |
+|---|---|---|
+| Frankfurt (`eu-central-1`) | andere AWS-Region | ~250–320 ms |
+| **Dublin (`eu-west-1`)** | **dieselbe** AWS-Region | **~25–40 ms** |
+
+Dagegen steht, dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist.
+Das verliert klar: Der Browser spricht pro Geste **zweimal** mit der Funktion, die
+Funktion **dreizehnmal hintereinander** mit der Datenbank. **Das Verhältnis 13:2
+entscheidet**, und daran ändern einzelne Millisekunden nichts.
+
+**Festgenagelt in `vercel.json`** (`{"regions": ["dub1"]}`) — versioniert, im Diff
+sichtbar, überlebt ein neu angelegtes Projekt, und **gewinnt gegen das Portal**. Damit
+ist LL-30 für diesen Fall nicht nur beschrieben, sondern behoben. Die Begründung steht
+in CLAUDE.md §2 und §3, weil JSON keine Kommentare trägt.
+
+**Nicht betroffen:** die Edge-Middleware — sie läuft immer am Netzknoten in Nutzernähe,
+ihre eine Anmelde-Abfrage geht weiterhin von Deutschland nach Irland.
+
+> **Was hier gemessen ist und was nicht — die Grenze gehört benannt.** Die 13 Stufen
+> sind aus dem Code gezählt. Die Millisekunden sind **geschätzt**: Sie liegen außerhalb
+> dessen, was ich sehen kann, weil `response.origin_time` im Supabase-Log die *eigene*
+> Verarbeitungszeit misst, nicht die Netzstrecke von Vercel dorthin. Das Argument hängt
+> nicht an den exakten Werten — „gleiche Region" liegt strukturell etwa eine
+> Größenordnung unter „andere Region" —, aber es ist eine Schätzung und keine Messung,
+> und das ist ein Unterschied, der in diesem Projekt zählt.
+
 ---
 
 ## 7. Vorschläge für CLAUDE.md und Roadmap
 
-**Alles hier ist Vorschlag und braucht die Freigabe des Nutzers.**
+> **Nachtrag 17.08.2026: alles hier ist freigegeben und angewendet.** CLAUDE.md trägt
+> die Stolperfallen 18, 19 und **20** (letztere neu hinzugekommen — sie stand nicht in
+> diesem Vorschlag, sondern entstand aus dem Regions-Fund), die Einträge **LL-28,
+> LL-29, LL-30**, den neuen **Anker 3** und die Namensmengen-Regel. Die Roadmap trägt
+> **Paket 17**.
+>
+> **Was über den Vorschlag hinausgeht und deshalb hier benannt gehört:** Der
+> Regions-Fund kam erst nach dem Schreiben dieses Abschnitts und hat **zwei Zeilen
+> dieser Verfassung als falsch entlarvt** — §2 („Region matched Supabase") und die
+> Doku-Versionen-Zeile in §9 (Schema-Doku v3.6.0 statt v3.9.0). Beide sind korrigiert,
+> und beide haben einen Warnkasten bekommen, der sagt, dass es passiert ist. Eine
+> stillschweigende Korrektur hätte den Lerneffekt weggeworfen.
 
 ### Für CLAUDE.md
 

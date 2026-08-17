@@ -36,27 +36,29 @@
 | | Anzahl | nach v2-23 | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 | vor v2-17 |
 |---|---|---|---|---|---|---|---|---|
 | Offene Pakete | **11** | 10 | 10 | 10 | 10 | 10 | 10 | 11 |
-| Themen darin | **35** | 32 | 32 | 30 | 30 | 29 | 28 | 31 |
+| Themen darin | **34** | 32 | 32 | 30 | 30 | 29 | 28 | 31 |
 | Hausaufgaben ohne eigenen Sprint | **4** | 4 | 6 | 5 | 5 | 4 | 4 | 5 |
-| **Offen gesamt** | **39** | 36 | 38 | 35 | 35 | 33 | 32 | 36 |
-| Erledigt | **52** | 50 | 49 | 47 | 47 | 45 | 43 | 41 |
+| **Offen gesamt** | **38** | 36 | 38 | 35 | 35 | 33 | 32 | 36 |
+| Erledigt | **53** | 50 | 49 | 47 | 47 | 45 | 43 | 41 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
 > **Stand nach v2-24, zeilengenau ausgezählt.** Paket-Tabellen **48** Zeilen, davon
-> **13 ✅** → **35** offen (⬜ 31 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **52**
+> **14 ✅** → **34** offen (⬜ 30 · 🟡 4). Hausaufgaben **4**, alle ⬜. §4 Erledigt **53**
 > Zeilen. §3 unverändert **4**. Pakete **17**, davon **6** vollständig erledigt
 > (1, 2, 3, 4, 15, 16) → **11** offen.
 >
-> **Die Zahl steigt, und das ist hier das richtige Ergebnis.** v2-24 hat **zwei** Punkte
-> erledigt (`PF-1`, `PF-2`) und **drei** neue eingetragen (`PF-3` RLS-Feinschliff ·
-> `PF-4` Vercel-Region · `PF-5` Ausweichpfad ungeprüft). Netto +3, plus ein neues Paket.
+> **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat
+> **drei** Punkte erledigt (`PF-1`, `PF-2`, `PF-4`) und **zwei** offene eingetragen
+> (`PF-3` RLS-Feinschliff · `PF-5` Ausweichpfad ungeprüft). Netto +2, plus ein neues
+> Paket. `PF-4` wurde **am Tag seiner Entstehung geschlossen** — es war der Fund, den
+> dieser Sprint erst möglich gemacht hat.
 >
 > **Das neue Paket 17 ist der eigentliche Punkt.** Performance kam in dieser Datei
 > **nirgends** vor — null Treffer für „Performance", „Ladezeit", „langsam", „Latenz",
 > „Reaktion" —, während ein Dashboard-Aufbau 233 Netzrunden machte und die App in
 > Produktion in Zeitüberschreitungen lief. Ein Thema, das nicht in der Liste steht,
 > konkurriert unsichtbar mit allem anderen und verliert gegen das, was gerade lauter
-> ist. Die drei neuen offenen Punkte sind **keine Verschlechterung**, sondern das
+> ist. Die zwei neuen offenen Punkte sind **keine Verschlechterung**, sondern das
 > Sichtbarwerden von Arbeit, die schon vorher da war.
 >
 > **`ZU-1` erhöht nur die Erledigt-Zahl, nicht die offenen.** Der Punkt stand nie in
@@ -619,7 +621,7 @@ allem anderen.
 | PF-1 | Ein Dashboard-Aufbau macht 233 Netzrunden für 490 ms Rechenarbeit | Fehler | **ja** | ✅ | **v2-24, fünf Phasen.** Jetzt **~18** Anfragen je Aufbau, p50 von 500–1.300 ms auf 32–118 ms. Zwei neue LESENDE RPCs (`get_cards_for_month`, `get_sparrate_series`), die die Rechenfunktionen **aufrufen** statt sie nachzubauen — belegt über **byte-identische Prüfsummen** aller neun (9/0). Der Karten-Lader fiel von 179 auf 1 Anfrage, die Welle von 37 auf 1. Kein Zahlenwert bewegt: alle 12 Monate Ist und Plan identisch, Invariante 1 exakt, B2 0 von 12 verletzt. **Der Kommentar, der es erklärt:** „N+1-Pragmatik: bei <20 Karten akzeptable Latenz" — es sind 77 geworden, und jede neue Karte kostete vier Runden. Kein Anker, keine Prüfsumme, keine Invariante fängt das, weil **jede Zahl richtig ist — sie kommt nur zu spät**. |
 | PF-2 | Die Middleware kann einen 504 erzeugen | Fehler | nein | ✅ | **v2-24 P1.** Der Ausfall war bis auf die Minute rückverfolgbar (Zeitstempel in der Vercel-Fehler-ID → 19:10:24 UTC → schlechteste Minute des Tages, Median 20 s). Die Middleware rief `/auth/v1/user` und `/rest/v1/profiles` **nacheinander** auf, ohne Zeitlimit und ohne Ausweichpfad. Der `profiles`-Abruf ist ersatzlos weg (die Information wird in `page.tsx` ohnehin geladen), das Zeitlimit liegt bei 8 s je Versuch. **Die 8 s sind gemessen, nicht geraten:** die langsamste je beobachtete Auth-Antwort lag bei 5.205 ms, ein erster Entwurf mit 4 s hätte eine gültige Sitzung abgeschnitten. |
 | PF-3 | `auth.uid()` wird in elf RLS-Policies pro Zeile neu ausgewertet | Fehler | **ja** | ⬜ | Vom Supabase-Linter als WARN gemeldet für `profiles`, `income_timeline`, `cards`, `card_planned_timeline`, `card_monthly_states`, `fragments`, `card_fragment_links`, `deleted_entities`, `card_categories`, `income_fragment_links`. Abhilfe mechanisch (`auth.uid()` → `(select auth.uid())`) und verbilligt **jede** verbleibende Anfrage. **Bewusst nicht in v2-24:** Es sind Zugriffsregeln auf echte Finanzdaten, und der Sprint trug schon zwei Migrationen. Wenn die Änderung doch nicht semantisch identisch ist, ist der Schaden Datensichtbarkeit, nicht Langsamkeit. Dazu zwei fehlende Fremdschlüssel-Indizes: `card_planned_timeline.user_id`, `fragments.suggested_card_id`. |
-| PF-4 | In welcher Region laufen die Vercel-Funktionen? | Frage | nein | ⬜ | Es gibt weder `vercel.json` noch eine Region-Einstellung in `next.config.mjs`. Die Datenbank liegt in eu-west-1; eine Funktion in Washington verteuerte jede der verbleibenden ~18 Anfragen um rund 90 ms. **Nur im Vercel-Konto einsehbar — Sache des Nutzers.** Ergibt die Prüfung eine falsche Region, ist das Festnageln ein Einzeiler. |
+| PF-4 | Die Vercel-Funktionen standen auf **USA**, die Datenbank liegt in **Irland** | Fehler | nein | ✅ | **v2-24, am 17.08.2026 in zwei Schritten geschlossen.** Erst USA → Frankfurt, dann Frankfurt → **Dublin (`dub1`)**. Dublin ist die exakte Entsprechung: Vercel beschriftet es selbst mit **`eu-west-1`** — dieselbe AWS-Region wie die Supabase-Datenbank. **Die Entscheidung trägt nicht die Zahl der Anfragen, sondern die der Abhängigkeitsstufen:** `page.tsx` hat **13 `await`-Barrieren**, jede kostet eine volle Wegstrecke. Frankfurt (andere Region) ~250–320 ms, Dublin (gleiche Region) ~25–40 ms. Dass Dublin für einen Nutzer in Deutschland ~25 ms weiter weg ist, verliert dagegen: Der Browser spricht pro Geste **zweimal** mit der Funktion, die Funktion **dreizehnmal** mit der Datenbank. **Festgenagelt in `vercel.json`** (`{"regions": ["dub1"]}`) — versioniert, im Diff sichtbar, überlebt ein neu angelegtes Projekt, und **gewinnt gegen das Portal**. Vorher lebte die Einstellung nur dort, und genau deshalb behauptete CLAUDE.md §2 über ein Jahr das Gegenteil, ohne dass es auffiel (LL-30 / §6 Stolperfalle 20). **Nicht betroffen:** die Edge-Middleware — sie läuft immer nutzernah. **Millisekunden sind geschätzt**, die 13 Stufen gezählt; die Netzstrecke Vercel→Supabase liegt außerhalb dessen, was `response.origin_time` sieht. |
 | PF-5 | Der Middleware-Ausweichpfad ist nie ausgelöst worden | Prüfung | nein | ⬜ | Er ist gebaut, typgeprüft und in zwei vollständigen Prüfläufen **nie angesprungen** (0 Warnungen im Server-Log). Das zeigt, dass er nicht im Weg ist — nicht, dass er im Ernstfall greift. Ein Wächter dafür bräuchte einen einspeisbaren Fehlerfall. |
 
 > **Was dieses Paket an Wissen zurückgibt, unabhängig von den Punkten:** Der Anker
@@ -658,6 +660,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| PF-4 | Die Vercel-Funktionen liefen auf **USA**, die Datenbank in **Irland** — rund **90 ms** Umweg auf jede Anfrage. In zwei Schritten auf **Dublin (`dub1`)** gezogen, die exakte Entsprechung (Vercel nennt es selbst `eu-west-1`, dieselbe AWS-Region wie Supabase). Entschieden über die **13 `await`-Barrieren** von `page.tsx`, nicht über die Zahl der Anfragen: Der Browser spricht pro Geste zweimal mit der Funktion, die Funktion dreizehnmal mit der Datenbank. **In `vercel.json` festgenagelt** — vorher lebte die Einstellung nur im Portal, und genau deshalb behauptete CLAUDE.md §2 über ein Jahr das Gegenteil, ohne dass es auffiel (LL-30) | v2-24 |
 | PF-1 | Ein Dashboard-Aufbau kostet **~18** statt **233** Netzrunden. Zwei neue LESENDE RPCs (`get_cards_for_month`: 179 → 1 · `get_sparrate_series`: 24 → 1), die die Rechenfunktionen **aufrufen** statt sie nachzubauen — belegt über byte-identische Prüfsummen aller neun (9/0). Nicht die Datenbank war langsam: `is_card_active_in_month` braucht **0,089 ms** dort und lag bei **899 ms** über die Leitung, und wurde **77-mal einzeln** gerufen. Kein Zahlenwert bewegt, beide Invarianten exakt. **Der Kommentar, der es erklärt:** „N+1-Pragmatik: bei <20 Karten akzeptable Latenz" — es sind 77 geworden | v2-24 |
 | PF-2 | Die Middleware kann keinen 504 mehr erzeugen. Der `profiles`-Abruf ist ersatzlos weg (die Information wird in `page.tsx` ohnehin geladen), der Onboarding-Wächter umgezogen, plus Zeitlimit von 8 s je Auth-Versuch. **Der Ausfall war bis auf die Minute rückverfolgbar:** Zeitstempel in der Vercel-Fehler-ID → 19:10:24 UTC → schlechteste Minute des Tages, Median 20 s; die zwei Aufrufe liefen nacheinander, ohne Zeitlimit. Die 8 s sind gemessen (langsamste je beobachtete Auth-Antwort: 5.205 ms), ein erster Entwurf mit 4 s hätte eine gültige Sitzung abgeschnitten | v2-24 |
 | ZU-1 | Automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte. `page.tsx` filterte mit `status === "ASSIGNED"`, aber die View kennt **zwei** zugeordnete Zustände — `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung, obwohl beides in der Datenbank stand. **Vom Nutzer gemeldet**, Fehler aus v2-07 P0, drei Wochen unentdeckt (nur vier automatische Zuordnungen im ganzen Bestand). Behoben über ein benanntes Prädikat `isLinkedToCard` statt eines zweiten Vergleichs. **Sparrate war nie betroffen** — sie liest `card_fragment_links` direkt | v2-23 |
