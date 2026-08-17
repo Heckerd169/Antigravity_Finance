@@ -338,6 +338,32 @@
    im Forecast lauter wirken als das Status-Label daneben. */
 .ghost .dueDay { color: rgba(255, 255, 255, .20); }
 
+/* v2-25 (KJ-3): „nicht angefallen" — der Monat ist bewusst auf 0 gesetzt.
+ *
+ * Ersetzt das STATUS-Label, nicht den Fälligkeitstag; der verschwindet mit.
+ * Beide Enden der Zeile wären sonst eine Falschaussage: Eine Karte, bei der
+ * nichts anfällt, ist weder „Offen" noch hat sie einen Termin, den man
+ * erwarten könnte.
+ *
+ * Der Record vom 17.08.2026 sah den Text zunächst RECHTS vor. Gemessen passt
+ * er dort in keinem der vier Zustände — 117,8 px („OFFEN") bis 139,3 px
+ * („ERWARTET") bei 110 px Inhaltsbreite. Links allein: 79,7 px.
+ *
+ * KEIN `text-transform: uppercase`, anders als beim Status-Label, das hier
+ * ersetzt wird: §12.3 schreibt den Text klein, der Ghost-Ton unterscheidet ihn
+ * ohnehin — und uppercase wäre 22 px breiter und liefe wieder eng.
+ *
+ * Kein neues Token: `--text-ghost` ist derselbe Ton, den der Fälligkeitstag im
+ * Forecast trägt. Die Zeilenhöhe bleibt bei 9px/500 exakt gleich, es kommt
+ * keine Kartenhöhe dazu. */
+.notIncurred {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .4px;
+  color: var(--text-ghost);
+  white-space: nowrap;
+}
+
 /* Standalone State-Label-Varianten für Budget-done (Sprint 7) */
 .stateLabelTeal {
   font-size: 9px;

@@ -6,6 +6,8 @@ import {
   deleteCardAction,
   endCardAction,
   restoreCardAction,
+  resumeCountingThisMonth,
+  setMonthNotIncurred,
   toggleCardTap,
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
@@ -66,6 +68,16 @@ type CardInteractiveProps = {
   currentLastMonth: string | null;
   /** v2-05: vorberechnetes Lösch-Tor; die RPC prüft autoritativ erneut. */
   deleteGate: DeleteGate;
+  /** v2-25 (KJ-2): Anpassung dieses Monats. `null` = keine, `0` = „nicht
+   *  angefallen", jeder andere Wert = eine gewöhnliche Betragsanpassung.
+   *  Steuert, welcher der beiden Menüpunkte erscheint. */
+  adjustedAmount: number | null;
+  /** v2-25 (KJ-2): Liegt in diesem Monat eine Zahlung an der Karte, erscheint
+   *  „Diesen Monat nicht angefallen" NICHT. Die Prioritätskette ist
+   *  Realität → Anpassung → Plan — die Zahlung gewinnt ohnehin, der Punkt wäre
+   *  ein Versprechen ohne Wirkung. Ein Menüpunkt, der nichts tut, ist
+   *  schlechter als keiner. */
+  hasLinkedFragmentThisMonth: boolean;
   /** v2-15 (LQ-1): steuert, ob „Fällig am …" im Menü erscheint — auf
    *  BUDGET-Karten nicht (ein Budget ist eine Erlaubnis ohne Termin, L7). */
   cardType: CardType;
@@ -89,6 +101,8 @@ export function CardInteractive({
   canEnd,
   currentLastMonth,
   deleteGate,
+  adjustedAmount,
+  hasLinkedFragmentThisMonth,
   cardType,
   currentDueDay,
   currentCategoryId,
@@ -155,6 +169,44 @@ export function CardInteractive({
     e.stopPropagation();
     setMenuOpen(false);
     setOverlayOpen(true);
+  }
+
+  /* ── v2-25 (KJ-2): „Diesen Monat nicht angefallen" / „Wieder mitzählen" ────
+   *
+   * Ein Klick, kein Dialog, kein `…` — das Auslassungszeichen trägt in dieser
+   * App, was einen Dialog öffnet (`Fällig am …`, `Kategorie ändern …`).
+   *
+   * Der Punkt erscheint auf FIXED_COST und INCOME, nicht auf BUDGET (ein
+   * Budget FÄLLT NICHT AN, es steht zur Verfügung — dieselbe Grenze wie beim
+   * Fälligkeitstag), nicht auf Ghost/Forecast, und nicht bei einer verknüpften
+   * Zahlung in diesem Monat.
+   *
+   * WELCHER der beiden erscheint, folgt aus Entscheidung 5 („hebt JEDE
+   * Anpassung dieses Monats auf"):
+   *   · keine Anpassung   → „Diesen Monat nicht angefallen"
+   *   · Anpassung ist 0   → „Wieder mitzählen" (der Zustand ist schon gesetzt)
+   *   · anderer Wert      → BEIDE. „Auf 0 setzen" und „Anpassung aufheben"
+   *                         sind zwei verschiedene Dinge, und der Nutzer kann
+   *                         beides wollen. */
+  const monthActionsAllowed =
+    !endDeleteOnly && cardType !== "BUDGET" && !hasLinkedFragmentThisMonth;
+  const showNotIncurred = monthActionsAllowed && adjustedAmount !== 0;
+  const showResumeCounting = monthActionsAllowed && adjustedAmount !== null;
+
+  function handleNotIncurredClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    void setMonthNotIncurred(cardId, month).catch((err) =>
+      console.error("»Nicht angefallen« fehlgeschlagen", err),
+    );
+  }
+
+  function handleResumeCountingClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    void resumeCountingThisMonth(cardId, month).catch((err) =>
+      console.error("»Wieder mitzählen« fehlgeschlagen", err),
+    );
   }
 
   function handleDueDayClick(e: React.MouseEvent) {
@@ -296,6 +348,29 @@ export function CardInteractive({
               role="menuitem"
             >
               Betrag anpassen
+            </button>
+          )}
+          {/* v2-25 (KJ-2): „Diesen Monat nicht angefallen" steht DIREKT unter
+              „Betrag anpassen" — beide sind monatsbezogen, und der neue Punkt
+              ist die Abkürzung für „auf 0 €, nur diesen Monat" (§12.4). */}
+          {showNotIncurred && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleNotIncurredClick}
+              role="menuitem"
+            >
+              Diesen Monat nicht angefallen
+            </button>
+          )}
+          {showResumeCounting && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleResumeCountingClick}
+              role="menuitem"
+            >
+              Wieder mitzählen
             </button>
           )}
           {/* v2-15 (LQ-1): „Fällig am …" — eigener Eintrag, NICHT in „Betrag

@@ -226,6 +226,78 @@ export async function applyAdjustmentThisMonth(formData: FormData) {
   revalidatePath("/", "page");
 }
 
+/* ── v2-25 (KJ-2): „Diesen Monat nicht angefallen" und die Rücknahme ─────────
+ *
+ * Beide schreiben GENAU DAS, was „Betrag anpassen auf 0 €, nur diesen Monat"
+ * heute schon schreibt — es ist eine Abkürzung, keine neue Rechenregel. An
+ * `calculate_card_amount_for_month` ändert sich nichts, die Prioritätskette
+ * Realität → Anpassung → Plan bleibt unberührt.
+ *
+ * Deshalb auch keine eigene RPC: Es ist nichts zu rechnen und nichts zu
+ * entscheiden, was die Datenbank besser wüsste. Dasselbe Muster wie
+ * `applyAdjustmentThisMonth` oben.
+ *
+ * Die GEGENRICHTUNG von Entscheidung 4 („wer abhakt, hebt die Anpassung auf")
+ * sitzt dagegen in der Datenbank, in `toggle_card_manually_paid` — dort geht es
+ * um zwei Felder, die sich widersprechen können, und der Widerspruch bewegt die
+ * Sparrate. Migration: 20260817_v2_25_kj2_haekchen_und_anpassung.sql */
+
+/** „Diesen Monat nicht angefallen" — Betrag auf 0 für genau diesen Monat.
+ *
+ *  Setzt in EINEM Upsert `adjusted_amount = 0` UND `manually_paid = false`:
+ *  „ist bezahlt" gegen „fiel nicht an" ist ein Widerspruch (Entscheidung 4).
+ *  Zwei getrennte Schreibvorgänge könnten dazwischen scheitern und genau den
+ *  Zustand hinterlassen, den die Entscheidung ausschließt. */
+export async function setMonthNotIncurred(cardId: string, month: string) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Nicht authentifiziert");
+
+  const { error } = await supabase
+    .from("card_monthly_states")
+    .upsert(
+      {
+        card_id: cardId,
+        month,
+        adjusted_amount: 0,
+        manually_paid: false,
+        user_id: user.id,
+      },
+      { onConflict: "card_id,month" },
+    );
+
+  if (error) throw error;
+
+  revalidatePath("/", "page");
+}
+
+/** „Wieder mitzählen" — hebt JEDE Anpassung dieses Monats auf, nicht nur die 0.
+ *
+ *  Der Wortlaut beschreibt, was hinterher gilt („die Karte zählt wieder mit
+ *  ihrem Plan"), nicht wovon man kommt (Entscheidung 5). Ein zweiter Wortlaut
+ *  für den allgemeinen Fall wäre eine Unterscheidung, die der Nutzer im Menü
+ *  treffen müsste, ohne sie treffen zu wollen.
+ *
+ *  UPDATE auf NULL, NIEMALS DELETE: In derselben Zeile steht `manually_paid`,
+ *  und das soll bleiben (§6 Stolperfalle 3). UPDATE auf eine nicht existierende
+ *  Zeile betrifft 0 Zeilen und wirft nicht — das ist hier richtig, denn ohne
+ *  Zustandszeile gibt es auch keine Anpassung aufzuheben. */
+export async function resumeCountingThisMonth(cardId: string, month: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("card_monthly_states")
+    .update({ adjusted_amount: null })
+    .eq("card_id", cardId)
+    .eq("month", month);
+
+  if (error) throw error;
+
+  revalidatePath("/", "page");
+}
+
 export async function applyAdjustmentForward(formData: FormData) {
   const cardId = formData.get("cardId") as string;
   const month = formData.get("month") as string; // effective_month "YYYY-MM-01"

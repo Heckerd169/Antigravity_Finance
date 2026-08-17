@@ -140,14 +140,39 @@ function HouseholdRow({ householdAmount }: { householdAmount: number | null }) {
  *  `due_day` (ein Budget ist eine Erlaubnis ohne Termin, Befund L7) und behält
  *  seine bisherige einzeilige Darstellung samt Teal-/Rot-Varianten.
  *
- *  Gestaltungsrunde: V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md §2 */
+ *  v2-25 (KJ-3): Ist der Monat auf 0 angepasst, ersetzt `nicht angefallen` das
+ *  STATUS-Label, und rechts bleibt die Zeile leer. Beide Enden wären sonst eine
+ *  Falschaussage — die Karte ist weder „Offen" noch hat sie einen Termin, den
+ *  man erwarten könnte.
+ *
+ *  Der Record vom 17.08.2026 sah den Text ursprünglich RECHTS vor, anstelle des
+ *  Fälligkeitstags. Gemessen passt er dort in keinem der vier Zustände: 117,8
+ *  bis 139,3 px bei 110 px Inhaltsbreite. Links allein sind es 79,7 px.
+ *  Begründung im Nachtrag des Records.
+ *
+ *  Gestaltungsrunde: V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md §2
+ *  Nachtrag: V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md */
 function StateRow({
   stateLabel,
   dueDay,
+  notIncurred,
 }: {
   stateLabel: string;
   dueDay: number | null;
+  /** v2-25 (KJ-3): `adjusted_amount === 0` — der Monat ist bewusst auf 0
+   *  gesetzt. NICHT dasselbe wie „keine Daten": `null` heißt keine Anpassung
+   *  (§6 Stolperfalle 3). Eine Anpassung auf einen ANDEREN Wert bleibt
+   *  weiterhin unsichtbar — bewusst nicht mitentschieden. */
+  notIncurred: boolean;
 }) {
+  if (notIncurred) {
+    return (
+      <div className={styles.stateRow}>
+        <span className={styles.notIncurred}>nicht angefallen</span>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.stateRow}>
       <span className={styles.stateLabel}>{stateLabel}</span>
@@ -210,7 +235,11 @@ function FixedCostCard({
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
       <HouseholdRow householdAmount={card.householdAmount} />
-      <StateRow stateLabel={stateLabel} dueDay={card.dueDay} />
+      <StateRow
+        stateLabel={stateLabel}
+        dueDay={card.dueDay}
+        notIncurred={card.adjustedAmount === 0}
+      />
       <MetaRow attribution={card.attribution} />
 
       <CardInteractive
@@ -218,6 +247,8 @@ function FixedCostCard({
         cardName={card.name}
         month={month}
         currentAmount={card.amount}
+        adjustedAmount={card.adjustedAmount}
+        hasLinkedFragmentThisMonth={(card.linkedFragments?.length ?? 0) > 0}
         tappable
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
@@ -285,7 +316,11 @@ function IncomeCard({
       <div className={styles.cardName}>{card.name}</div>
       <div className={styles.cardAmount}>{formatEuro(card.amount)}</div>
       <HouseholdRow householdAmount={card.householdAmount} />
-      <StateRow stateLabel={stateLabel} dueDay={card.dueDay} />
+      <StateRow
+        stateLabel={stateLabel}
+        dueDay={card.dueDay}
+        notIncurred={card.adjustedAmount === 0}
+      />
       <MetaRow attribution={card.attribution} />
 
       <CardInteractive
@@ -293,6 +328,8 @@ function IncomeCard({
         cardName={card.name}
         month={month}
         currentAmount={card.amount}
+        adjustedAmount={card.adjustedAmount}
+        hasLinkedFragmentThisMonth={hasFragment}
         tappable={tappable}
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
@@ -437,6 +474,13 @@ function BudgetCard({
         cardName={card.name}
         month={month}
         currentAmount={card.amount}
+        /* v2-25 (KJ-2): Auf BUDGET erscheint „Diesen Monat nicht angefallen"
+           nie — ein Budget FÄLLT NICHT AN, es steht zur Verfügung. Die Props
+           gehen trotzdem mit, damit die Sichtbarkeits-Regel an EINER Stelle
+           liegt (in `CardInteractive`) und nicht auf drei Kartentypen
+           verteilt ist. */
+        adjustedAmount={card.adjustedAmount}
+        hasLinkedFragmentThisMonth={(card.linkedFragments?.length ?? 0) > 0}
         tappable
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
