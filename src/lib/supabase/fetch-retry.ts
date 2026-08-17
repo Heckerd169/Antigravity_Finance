@@ -60,3 +60,68 @@ export async function fetchWithRetry(
     return fetch(input, init);
   }
 }
+
+/*
+ * ── Zeitlimit-Variante für die Middleware (v2-24 Phase 1) ────────────────────
+ *
+ * Warum die Middleware ein anderes Verhalten braucht als der Server-Client:
+ * Vercel kappt eine Edge-Middleware nach 25 Sekunden und liefert dann
+ * `504 MIDDLEWARE_INVOCATION_TIMEOUT` — eine Fehlerseite, aus der der Nutzer sich
+ * nicht herausklicken kann. Am 16.08.2026 ist genau das passiert: `/auth/v1/user`
+ * brauchte im Median 6,5 s, `/rest/v1/profiles` 14,2 s, beide nacheinander.
+ * Beleg und Messung: `V2/befunde_2026-08-16_performance.md` §4.
+ *
+ * Die Lehre daraus: **Im Auth-Gate ist Hängenbleiben teurer als Scheitern.** Aus
+ * einem Fehler lässt sich ein Redirect machen, aus einer Zeitüberschreitung nicht.
+ *
+ * Bewusst NICHT über `AbortSignal.timeout()` gebaut, sondern über einen eigenen
+ * `AbortController`. Zwei Gründe:
+ *   1. Das Zeitlimit muss PRO VERSUCH neu gestellt werden — ein bereits abgelaufenes
+ *      Signal im wiederverwendeten `init` würde den Wiederholversuch sofort
+ *      mit-abbrechen, und der Retry wäre wirkungslos.
+ *   2. Ein `signal`, das der Aufrufer selbst mitgibt, bleibt so erhalten, statt
+ *      überschrieben zu werden.
+ */
+
+/** Baut ein `fetch` mit hartem Zeitlimit je Versuch — plus demselben Einmal-Retry
+ *  wie `fetchWithRetry` (nur auf idempotenten Lese-Pfaden, siehe oben). */
+export function createTimeoutFetch(
+  timeoutMs: number,
+): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
+  return async function timeoutFetch(input, init) {
+    const attempt = async (): Promise<Response> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => {
+        controller.abort(new Error(`Zeitlimit ${timeoutMs} ms überschritten`));
+      }, timeoutMs);
+
+      // Ein vom Aufrufer mitgegebenes Signal weiterreichen, statt es zu verlieren.
+      const outer = init?.signal;
+      const onOuterAbort = () => controller.abort(outer?.reason);
+      outer?.addEventListener("abort", onOuterAbort, { once: true });
+
+      try {
+        return await fetch(input, { ...init, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+        outer?.removeEventListener("abort", onOuterAbort);
+      }
+    };
+
+    try {
+      return await attempt();
+    } catch (err) {
+      // Nur ein netzwerk-toter Versuch wird wiederholt — eine abgelaufene Frist
+      // NICHT. Ein zweiter Anlauf würde die Wartezeit verdoppeln, und genau die
+      // soll begrenzt werden.
+      if (!(err instanceof TypeError) || !isRetriableRequest(input, init)) {
+        throw err;
+      }
+      console.warn(
+        "[supabase-fetch] Netz-Fehler in der Middleware, ein Wiederholversuch:",
+        urlOf(input).split("?")[0],
+      );
+      return attempt();
+    }
+  };
+}

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   calculatePlannedSparrateForMonth,
@@ -53,29 +54,44 @@ export default async function Home({ searchParams }: HomeProps) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Onboarding-Guard liegt in der Middleware — hier vertrauen wir darauf, dass
-  // user und profiles existieren.
+  // v2-24 Phase 1: Die Middleware prüft die Anmeldung weiterhin, hat seit diesem
+  // Sprint aber ein Zeitlimit und damit einen Ausweichpfad. Diese Seite darf sich
+  // deshalb nicht mehr blind darauf verlassen, dass `user` existiert — vorher stand
+  // hier siebenmal `user.id`, und ein durchgelassener anonymer Aufruf hätte die
+  // Server-Komponente zum Absturz gebracht statt umzuleiten.
+  if (!user) redirect("/login");
+
+  // v2-24 Phase 1: Der Onboarding-Wächter ist aus der Middleware hierher gewandert.
+  // Er kostete dort eine EIGENE Netzrunde auf jeder Anfrage der ganzen App — für
+  // eine Information, die in genau dieser `profiles`-Zeile ohnehin schon geladen
+  // wird. `onboarded_at` ist jetzt die dritte Spalte desselben Selects und damit
+  // gratis. Begründung im Detail: `src/lib/supabase/middleware.ts`.
   const [{ data: profile }, { data: ichRows }, { data: partnerRows }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("tax_class, tax_year")
-      .eq("user_id", user!.id)
+      .select("tax_class, tax_year, onboarded_at")
+      .eq("user_id", user.id)
       .maybeSingle(),
     supabase
       .from("income_timeline")
       .select("gross_annual, net_monthly, effective_month")
-      .eq("user_id", user!.id)
+      .eq("user_id", user.id)
       .eq("person", "ICH")
       .order("effective_month", { ascending: false })
       .limit(1),
     supabase
       .from("income_timeline")
       .select("gross_annual, net_monthly, effective_month")
-      .eq("user_id", user!.id)
+      .eq("user_id", user.id)
       .eq("person", "PARTNER")
       .order("effective_month", { ascending: false })
       .limit(1),
   ]);
+
+  // v2-24 Phase 1: der zweite Teil des umgezogenen Wächters. Bewusst HIER und nicht
+  // weiter unten: Ein noch nicht eingerichteter Nutzer verlässt die Funktion, bevor
+  // irgendeine der teuren Ladungen anläuft.
+  if (!profile?.onboarded_at) redirect("/onboarding");
 
   const ichLatest = ichRows && ichRows.length > 0
     ? { grossAnnual: Number(ichRows[0].gross_annual), netMonthly: Number(ichRows[0].net_monthly) }
@@ -94,9 +110,9 @@ export default async function Home({ searchParams }: HomeProps) {
   let splitFactor = 1.0;
   try {
     [realCurrent, realPlanned, splitFactor] = await Promise.all([
-      calculateSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
-      calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
-      getSplitFactor(supabase, { userId: user!.id, month: targetDbDate }),
+      calculateSparrateForMonth(supabase, { userId: user.id, month: targetDbDate }),
+      calculatePlannedSparrateForMonth(supabase, { userId: user.id, month: targetDbDate }),
+      getSplitFactor(supabase, { userId: user.id, month: targetDbDate }),
     ]);
   } catch (err) {
     console.error("Sparrate-RPCs fehlgeschlagen", err);
@@ -124,7 +140,7 @@ export default async function Home({ searchParams }: HomeProps) {
   let welleData: WelleData | null = null;
   try {
     welleData = await loadWelleData(supabase, {
-      userId: user!.id,
+      userId: user.id,
       activeYear: tmYear,
       currentCalendarYear: activeMonth.year,
     });
@@ -182,7 +198,7 @@ export default async function Home({ searchParams }: HomeProps) {
   let categoryAmounts: CategoryAmount[] = [];
   try {
     categoryAmounts = await getCategoryAmountsForMonth(supabase, {
-      userId: user!.id,
+      userId: user.id,
       month: targetDbDate,
     });
   } catch (err) {
