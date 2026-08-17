@@ -1,9 +1,28 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.7.0 (V2 · Sprint v2-19 — „Realität gewinnt" auch für das Netto)
-**Status:** Freigegeben — Schema-Doku v3.5.0; V2-Patches bis Sprint v2-18 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8).
-**Datum:** 25. Juli 2026
+**Version:** 3.8.0 (V2 · Sprint v2-24 — Ladezustand, Fehlerseite, dritter Treiber-Platzhalter)
+**Status:** Freigegeben — Schema-Doku v3.10.0; V2-Patches bis Sprint v2-24 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8).
+**Datum:** 17. August 2026
 **Primäres Referenzdokument für Claude Code**
+
+> **Changelog v3.8.0 (17.08.2026, Sprint v2-24 · `PF-1` `PF-2`):** Drei neue Copy-Stellen
+> — alle drei entstanden nicht aus einer Gestaltungsrunde, sondern weil ein
+> Leistungs-Umbau **Zustände sichtbar machte, die es vorher nicht gab**.
+>
+> **§12.8** bekommt den **dritten** Treiber-Platzhalter `Treiber werden geladen`. Seit
+> v2-24 werden die Treiber erst beim Anfassen der Welle geladen (sie kosten 357 ms und
+> wurden vorher bei jeder Geste bezahlt, auch bei geschlossenem Popup). Damit existiert
+> ein Zustand „noch nicht gefragt", für den **beide bisherigen Platzhalter eine falsche
+> Aussage** wären. Die Tabelle nennt jetzt alle drei mit ihrer Bedeutung.
+>
+> **§12.12 neu** — Ladezustand und Fehlerseite. Der Ladezustand zeigt absichtlich
+> keinen Text; die Fehlerseite ersetzt Vercels englische Fehlerseite, die am 16.08.2026
+> tatsächlich zu sehen war.
+>
+> **Minor-Bump statt Patch-Bump**, weil §12 einen neuen Unterabschnitt bekommt und die
+> Tooltip-Copy eine Bedeutungs-Unterscheidung dazugewinnt, die vorher nicht existierte.
+> Aufgehoben wird keine Regel. Beleg: `sprints/sprint_v2-24_doku_patches.md` Teil B,
+> freigegeben am 17.08.2026.
 
 > **Hinweis zu v2:** Diese Version wurde nach der Implementierung des Datenbank-Schemas überarbeitet. Sie ist konsistent mit `antigravity_finance_schema_summary.md`. Beide Dokumente zusammen bilden die vollständige Wissensbasis für die Frontend-Implementierung.
 >
@@ -2088,7 +2107,33 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 |---|---|
 | Welle-Tooltip — Kopf | `[Monat] [Jahr] · IST` bzw. `· Forecast` |
 | Welle-Tooltip — Zeilen | `IST` / `Plan` (€-Werte) |
-| Welle-Tooltip — Treiber | `Treiber: [Top-1]` (B2-Heuristik offen) |
+| Welle-Tooltip — Treiber | `Treiber: [Top-1]` |
+| Welle-Tooltip — Treiber, **drei** Platzhalter (gedimmt) | `Treiber werden geladen` · `Keine Abweichungen` · `Treiber nicht verfügbar` |
+
+> **Die drei Platzhalter sind DREI verschiedene Aussagen und müssen es bleiben**
+> (neu mit v2-24):
+>
+> | Zustand | Text | heißt |
+> |---|---|---|
+> | noch nicht angefordert / unterwegs | `Treiber werden geladen` | es ist noch nichts gefragt worden |
+> | angefordert und gescheitert | `Treiber nicht verfügbar` | die Abfrage ist fehlgeschlagen |
+> | da, Monat ohne Abweichung | `Keine Abweichungen` | geprüft, es gibt keine |
+>
+> **Warum der erste seit v2-24 gebraucht wird:** Die Treiber werden erst geladen, wenn
+> der Nutzer die Welle anfasst — sie kosten **357 ms**, rund drei Viertel der
+> Rechenzeit eines Seitenaufbaus, und wurden vorher bei jeder Geste bezahlt, auch bei
+> geschlossenem Popup. In dem Moment, in dem der Tooltip erscheint, können sie noch
+> unterwegs sein. **Beide älteren Platzhalter wären dann eine falsche Aussage:**
+> „Keine Abweichungen" behauptet einen geprüften Befund, „Treiber nicht verfügbar" ein
+> Scheitern. Zutreffend ist keins von beidem.
+>
+> **Kein Auslassungszeichen.** `…` bedeutet in dieser Anwendung durchgängig „öffnet
+> einen Dialog" (§12.3/§12.4). Ein Ladezustand ist kein Dialog.
+>
+> **Wächter:** `tests/e2e/welle-driver-states.spec.ts` nagelt fest, dass die drei Texte
+> **paarweise verschieden** sind. Fiele einer auf den Text eines anderen zurück, wäre
+> die Anzeige eine stille Falschaussage — und **keine Zahl im Projekt würde sich
+> bewegen**.
 | Popup — Titel | `Kumulierte Sparrate [Jahr]` |
 | Popup — Held | Jahressumme (€) |
 | Popup — Unterzeile | `IST (teal), Plan (grau), Vorjahr (gold) · Klick auf einen Monat zeigt die größten Treiber` |
@@ -2223,6 +2268,40 @@ diesem Moment hat. Die Antwort steht deshalb im selben Satz.
 Füllwörter.** Sie beantworten die Frage „gilt das nur für diesen Monat?", bevor sie
 entsteht — dasselbe Muster wie im „Fällig am …"-Overlay (§12.4). Fielen sie einer
 späteren Straffung zum Opfer, kehrte genau diese Frage zurück.
+
+### 12.12 Ladezustand und Fehlerseite (neu mit v2-24, 17.08.2026)
+
+| Kontext | Text |
+|---|---|
+| Dashboard, Ladezustand | **kein Text.** Nur die Fläche in `--bg-primary`, in der Höhe des Single-Surface-Layouts |
+| Fehlerseite — Titel | `Die Ansicht konnte nicht geladen werden` |
+| Fehlerseite — Hinweis | `Deine Daten sind unberührt — es ist nur die Anzeige, die nicht zustande kam.` |
+| Fehlerseite — Knopf | `Nochmal versuchen` |
+
+**Der Ladezustand zeigt absichtlich nichts.** Ein Skelett — angedeutete Karten,
+pulsierende Balken, ein Platzhalter-Ring — wäre eine Gestaltungsentscheidung, und diese
+Doku trifft sie nicht. Was hier steht, ist das Minimum, das ein weißes Aufblitzen
+verhindert, ohne ein Bild zu erfinden. Am sichtbarsten ist es beim **Monatswechsel**:
+Der läuft als Soft-Navigation über `?month=…`, und bis v2-24 fror dabei die alte
+Ansicht ein, bis der Server fertig war.
+
+**Die Fehlerseite lässt drei Dinge bewusst weg:**
+
+- **keinen Fehlercode und keine Ursache im Text.** Der Grund ist selten der, den ein
+  Text raten würde, und eine falsche Ursache ist schlimmer als keine. Die technische
+  Meldung geht mit dem Next.js-Digest in die Server-Logs.
+- **eine Handlung, nicht zwei.** Der Knopf ruft `reset()` und versucht denselben Render
+  erneut. Bei einer Überlast ist das genau das Richtige und braucht kein Neuladen.
+- **keine Zahl.** Eine Fehlerseite, die Beträge zeigt, zeigt womöglich veraltete.
+
+**Formensprache: identisch zur Anmeldeseite** — gleiche Kachel, gleicher Radius,
+gleiche Ränder, gleiche Schriftgrade, gleicher Knopf. Es sind die beiden einzigen
+Seiten außerhalb des Dashboards, sie erscheinen in derselben Lage (mittig auf leerer
+Fläche), und eine zweite Formensprache für denselben Fall wäre erfunden.
+
+**Wozu sie überhaupt da ist:** Bis v2-24 gab es keine. Scheiterte der Render, sah der
+Nutzer die Fehlerseite von Vercel — englisch, mit Fehlercode, ohne Weg zurück. Genau
+das ist am 16.08.2026 passiert.
 
 ---
 

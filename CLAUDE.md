@@ -8,10 +8,37 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 16. August 2026 · **nach:** Sprint **v2-23**
-> (automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte — `ZU-1`;
-> Design-Doku **v3.7.0**, Schema-Doku **v3.9.0**). **Alle Pull Requests bis #35 sind
-> gemerged, der Browser-Smoke ist am 16.08.2026 bestanden.** Nichts hängt mehr.
+> **Letzte Aktualisierung:** 17. August 2026 · **nach:** Sprint **v2-24**
+> (die App reagiert sofort — `PF-1` `PF-2` `PF-4`; Design-Doku **v3.8.0**, Schema-Doku
+> **v3.10.0**). **PR #38 offen**, Browser-Smoke bestanden. Alles bis #36 ist in `main`.
+>
+> **v2-24 hat die Fehlerklasse geöffnet, die dieses Projekt bis dahin nicht kannte:
+> eine, die KEIN Wächter fängt.** Ein Dashboard-Aufbau machte **233 Netzrunden** zu
+> Supabase für rund **490 ms** Rechenarbeit — jetzt **~18**. Anker, Prüfsummen und beide
+> Invarianten waren die ganze Zeit grün, weil **jede Zahl richtig war; sie kam nur zu
+> spät.** Deshalb gibt es jetzt **Anker 3** in §9.
+>
+> **Der teuerste Fund dieser Runde ist kein Fehler im Code, sondern eine Zeile in DIESER
+> Datei.** §2 behauptete über ein Jahr *„Region matched Supabase (eu-west-1)"* — die
+> Vercel-Funktionen standen auf **USA**, die Datenbank liegt in **Irland**. Rund **90 ms**
+> Umweg auf jede Anfrage. Jetzt **Dublin**, festgenagelt in `vercel.json`. Neuer Eintrag
+> **LL-30**, neue Stolperfalle **20**. Dieselbe Klasse traf die Doku-Versionen-Zeile in
+> §9 — sie nannte Schema-Doku v3.6.0, während die Datei bei v3.9.0 stand.
+>
+> **Diese Runde berührt sechs Stellen**, alle nach ausdrücklicher Freigabe: **§2**
+> Regions-Zeile plus Warnkasten · **§3** Dateibaum um `vercel.json` · **§6** neue
+> Stolperfallen **18, 19, 20** sowie die Namensmengen-Regel beim Typen-Neuaufbau ·
+> **§8** neue Einträge **LL-28, LL-29, LL-30** · **§9** Sprint-Stand, Doku-Versionen,
+> Roadmap-Zahlen und **neuer Anker 3**.
+> **Die Sparraten-Momentaufnahme in §9 bleibt unverändert** — der Sprint hat keine Zahl
+> bewegt, und das ist hier das erwartete Ergebnis.
+>
+> ---
+>
+> Davor Sprint **v2-23**
+> (automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte — `ZU-1`).
+> **Alle Pull Requests bis #35 waren gemerged, der Browser-Smoke am 16.08.2026
+> bestanden.**
 >
 > **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
 > v2-22 noch v2-23 bewegt eine Zahl; die Anker-Werte sind bei allen dreien vor und
@@ -115,10 +142,71 @@ Finanzdaten** des Users — das schärft jede Test- und Migrations-Regel (§4).
 | Package Manager | pnpm | 11.x |
 | ESLint | `next/core-web-vitals` | 8.x |
 | E2E-/Visual-Tests | Playwright (`@playwright/test`) | 1.61.x |
-| Deployment | Vercel | Region matched Supabase (eu-west-1) |
+| Deployment | Vercel | Region **Dublin (`dub1`)** — festgenagelt in `vercel.json`, siehe unten |
 
 **Major-Versions sind eingefroren.** Keine Bumps von Next/React/ESLint ohne
 expliziten Sprint-Auftrag.
+
+> ### ⚠️ Die Regions-Zeile stand hier über ein Jahr FALSCH — und niemand hat es geprüft
+>
+> Bis zum 17.08.2026 behauptete diese Tabelle *„Region matched Supabase (eu-west-1)"*.
+> **Sie tat es nicht.** Die Vercel-Funktionen standen auf **USA**, die Datenbank liegt
+> in **eu-west-1 (Irland)** — jede einzelne Anfrage lief über den Atlantik und zurück,
+> rund **90 ms** Umweg. Bei den 233 Netzrunden, die ein Dashboard-Aufbau vor v2-24
+> machte, war das ein erheblicher Anteil der Wartezeit.
+>
+> **Gefunden hat es nicht die Prüfstrecke und nicht diese Datei, sondern der Nutzer** —
+> weil v2-24 die Frage überhaupt erst gestellt hat (`PF-4`).
+>
+> **Das ist LL-22 in seiner allgemeinen Form:** Eine Zusage in einer Doku ist keine
+> Prüfung. LL-22 sagt das über **Rechenverhalten** — hier war es die Infrastruktur, und
+> die Zeile war umso wirksamer, weil sie so beruhigend klang, dass niemand nachsah.
+>
+> ### Warum Dublin und nicht Frankfurt
+>
+> Am 17.08.2026 zunächst auf Frankfurt umgestellt, am selben Tag auf **Dublin**
+> weitergezogen. Der Grund steht in Vercels eigener Beschriftung: Dublin heißt dort
+> **`eu-west-1`** — dieselbe AWS-Region, in der die Supabase-Datenbank liegt. Die
+> Funktion läuft damit **in** der Region der Datenbank, nicht daneben.
+>
+> **Die Zahl, die die Entscheidung trägt, ist nicht die Zahl der Anfragen, sondern die
+> der Abhängigkeitsstufen.** `src/app/page.tsx` hat **13 `await`-Barrieren** — Stellen,
+> an denen der Render auf eine Antwort warten *muss*, bevor er die nächste Frage stellt.
+> Jede kostet eine volle Wegstrecke, egal wie viele Anfragen darin parallel laufen.
+>
+> | | Weg Funktion → Datenbank | × 13 Stufen |
+> |---|---|---|
+> | Frankfurt (`eu-central-1`) | andere AWS-Region | ~250–320 ms |
+> | **Dublin (`eu-west-1`)** | **dieselbe** AWS-Region | **~25–40 ms** |
+>
+> Dagegen steht, dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist
+> als Frankfurt. Das verliert: Der Browser spricht pro Geste **zweimal** mit der
+> Funktion, die Funktion **dreizehnmal hintereinander** mit der Datenbank. Das
+> Verhältnis 13:2 entscheidet, und daran ändern einzelne Millisekunden nichts.
+>
+> **Was gemessen ist und was nicht:** Die 13 Stufen sind aus dem Code gezählt. Die
+> Millisekunden sind **geschätzt** — sie liegen außerhalb dessen, was die Supabase-Logs
+> sehen (`response.origin_time` misst Supabases eigene Verarbeitung, **nicht** die
+> Netzstrecke von Vercel dorthin). Das Argument hängt nicht an den exakten Werten:
+> „gleiche Region" liegt strukturell etwa eine Größenordnung unter „andere Region".
+>
+> ### Die Einstellung ist jetzt festgenagelt
+>
+> **`vercel.json` trägt `{"regions": ["dub1"]}`** — versioniert, im Diff sichtbar, und
+> sie überlebt ein neu angelegtes Projekt. Vorher lebte sie **nur im Vercel-Portal** und
+> war damit für dieses Repo unsichtbar; genau das ist der Grund, warum die falsche Zeile
+> so lange überlebt hat (**LL-30 / §6 Stolperfalle 20**).
+>
+> **Zwei Dinge, die man dazu wissen muss:**
+> - **Die Datei gewinnt gegen das Portal.** Wer die Region ändern will, ändert
+>   `vercel.json` — eine Umstellung im Portal allein wird beim nächsten Deployment
+>   überschrieben. Das ist gewollt.
+> - **Die Middleware ist davon NICHT betroffen.** Sie läuft als Edge-Middleware immer am
+>   Netzknoten in der Nähe des Nutzers; ihre eine Anmelde-Abfrage geht also weiterhin von
+>   Deutschland nach Irland. Diese Einstellung steuert ausschließlich die
+>   Server-Funktionen.
+>
+> **Der Hobby-Plan erlaubt genau eine Region** — „beides" gibt es nicht.
 
 **Was NICHT verwendet wird:** kein Tailwind · keine Component-Library ·
 kein State-Manager · keine ORM.
@@ -169,8 +257,21 @@ Antigravity_Finance/
 ├── supabase/test_projekt/                     ← Übungs-DB-Runbook + Init-2-Seed
 ├── public/prototypes/                         ← HTML-Prototypen als Referenz
 ├── import_data/                               ← Konto-Abzüge, gitignored, NIE committen
-└── playwright.config.ts                       ← Projekte: visual · unauth · setup · render-smoke
+├── playwright.config.ts                       ← Projekte: visual · unauth · setup · render-smoke
+└── vercel.json                                ← NUR die Funktions-Region (§2)
 ```
+
+> **Warum `vercel.json` nur eine einzige Zeile enthält.** Es gibt sie seit dem
+> 17.08.2026 und ausschließlich für `{"regions": ["dub1"]}` — die AWS-Region, in der
+> auch die Supabase-Datenbank liegt. Der Anlass steht in **§2**: Die Region stand über
+> ein Jahr auf **USA**, während diese Datei das Gegenteil behauptete, und sie lebte nur
+> im Vercel-Portal, wo kein Diff sie prüfen konnte (LL-30).
+>
+> **JSON kann keine Begründung tragen** — deshalb steht sie in §2 und nicht in der
+> Datei. Wer `vercel.json` erweitern will, prüft zuerst, ob die Einstellung nicht
+> besser in `next.config.mjs` gehört: Diese Datei ist bewusst **kein** Sammelbecken für
+> Deployment-Optionen, sondern trägt genau die eine Sache, die Next.js nicht selbst
+> versioniert.
 
 ### Wohin gehört etwas Neues?
 
@@ -528,6 +629,47 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Konstante im Zähler verschiebt den ganzen Wertebereich, ohne dass irgendeine Zahl
     falsch *aussieht* — und keine der bestehenden Prüfungen schlägt an. Offen als
     `ZO-1`. (v2-21)
+18. **Ein N+1 mit Datumsstempel: eine Aufwands-Entscheidung verfällt mit der
+    Datenmenge, die sie begründet hat.** In `page.tsx` stand
+    *„N+1-Pragmatik: bei <20 Karten in V1 akzeptable Latenz (Briefing §K1.4)"* — und
+    das war **richtig, als es geschrieben wurde**. Bei **77** Karten waren daraus
+    **179 Netzrunden je Dashboard-Aufbau** geworden, und jede neue Karte kostete vier
+    weitere.
+    **Kein Wächter dieses Projekts fängt das.** Anker, Prüfsummen und beide
+    Invarianten sind grün, weil **jede Zahl richtig ist** — sie kommt nur zu spät.
+    Gefunden hat es der Nutzer beim Benutzen.
+    **Regel:** Wer eine Mengen-Annahme in einen Kommentar schreibt, schreibt die
+    **heutige Zahl** dazu. Dann ist die Annahme prüfbar statt bloß plausibel.
+    (v2-24, LL-28)
+19. **Die Antwort ist winzig, der Weg ist teuer — bei Trägheit zuerst die
+    Netzrunden zählen, nicht die Abfragen optimieren.**
+    `is_card_active_in_month` braucht **0,089 ms** in der Datenbank und lag im
+    Produktionsschnitt bei **899 ms** über die Leitung. Faktor ~10.000, und nichts
+    davon ist Rechnen: Für jede Anfrage muss eine verschlüsselte Verbindung stehen,
+    ein Ausweis geprüft und eine eigene Transaktion geöffnet werden.
+    Am 16.08.2026 transportierten **55.881 Anfragen** insgesamt **0,4 MB** — im
+    Schnitt **8 Bytes je Antwort**.
+    **Und die Folge reicht weiter als Trägheit:** Die Dauerlast aus dem Fächer trieb
+    die kostenlose Datenbank-Instanz über Stunden in die CPU-Drosselung. In diesem
+    Zustand brauchten die zwei Aufrufe der Middleware zusammen über 25 Sekunden, und
+    Vercel lieferte `504 MIDDLEWARE_INVOCATION_TIMEOUT`. **Ein Leistungsproblem war
+    hier ein Verfügbarkeitsproblem.** (v2-24, LL-29)
+20. **Eine Einstellung, die nur in einem Web-Portal lebt, ist für dieses Repo
+    unsichtbar — und deshalb über ein Jahr falsch geblieben.** §2 behauptete
+    *„Region matched Supabase (eu-west-1)"*; die Vercel-Funktionen standen auf
+    **USA**, während die Datenbank in **Irland** liegt. Rund **90 ms** Umweg über den
+    Atlantik, auf **jede** der damals 233 Netzrunden.
+    Weder die Prüfstrecke noch diese Datei konnte das finden — eine Behauptung prüft
+    sich nicht selbst, und diese klang so beruhigend, dass niemand nachsah. Gefunden
+    hat es der Nutzer, nachdem v2-24 die Frage überhaupt gestellt hatte.
+    **Regel:** Was das Verhalten in Produktion bestimmt, gehört in den Code — dann
+    prüft der Diff mit. **Erledigt für diesen Fall:** `vercel.json` trägt seit dem
+    17.08.2026 `{"regions": ["dub1"]}` und gewinnt gegen das Portal.
+    **Was daraus für den nächsten Fall folgt:** Solange eine Einstellung nur im Portal
+    steht, ist jede Zeile über sie in dieser Datei eine **Vermutung** und muss als
+    solche gekennzeichnet werden. Die Umkehrung ist genauso wichtig: Wer sie in den
+    Code holt, muss es **hier** vermerken — sonst sucht die nächste Sitzung im Portal
+    und findet einen Wert, der längst überschrieben wird. (v2-24, LL-30)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -537,6 +679,19 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
 
 > **Stolperfalle:** Danach prüfen, ob am Dateiende ein `<claude-code-hint>`-Tag hängt.
 > Falls ja: entfernen — sonst schlägt `tsc` fehl.
+
+> **Und danach die NAMENSMENGEN vergleichen, nicht den Zeilen-Diff lesen.** In v2-24
+> war `types.ts` **seit v2-21 veraltet** — fünf RPCs fehlten (`af_normalize_text`,
+> `af_word_in_text`, `history_match`, `name_similarity_scoped`,
+> `refresh_fragment_suggestions`), weil dieser Schritt damals übersprungen worden war.
+> Aufgefallen ist es nur, weil `tsc` eine **neue** RPC nicht kannte; ohne diesen Zufall
+> läge es noch da.
+>
+> Der Zeilen-Diff war **288+/267−** und praktisch unlesbar — die generierte Datei
+> sortiert alphabetisch, ein Einschub verschiebt also alles darunter. Ein Vergleich der
+> Funktionsnamen **als Menge** beantwortete dieselbe Frage in einer Zeile: „nichts
+> verloren, sechs dazu". **Verschwundene Namen sind das, was hier wehtut**, nicht
+> verschobene Zeilen.
 
 ---
 
@@ -749,6 +904,22 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-25 | Eine Aggregation über Teilmengen bildet die Schlussrundung nicht nach — Ziel aus der Rechenfunktion holen, Rest verteilen | §6 Stolperfalle 13 | v2-17 (KAT-3) |
 | LL-26 | Ein Frontend kann eine Datenbank-Entscheidung stillschweigend aufheben — durch **Kürzen**, **Nachbauen** oder **Filtern auf einen Wert**. Jede Zahl bleibt dabei richtig, nur sichtbar ist sie nicht | §6 Stolperfalle 16 | v2-19 (GE-2) · v2-20 (KU-1) · v2-23 (ZU-1) |
 | LL-27 | Eine Ähnlichkeitsfunktion braucht ein Prüfset aus echten Entscheidungen — die naive Verbesserung war messbar **schlechter** als gar keine | §7 Regel 25 · §6 Stolperfalle 17 | v2-21 (M6) |
+| LL-28 | Ein N+1 mit Datumsstempel — die Mengen-Annahme im Kommentar verfällt mit der Menge, und **kein Wächter merkt es**, weil jede Zahl richtig ist | §6 Stolperfalle 18 | v2-24 (PF-1) |
+| LL-29 | Die Antwort ist winzig, der Weg ist teuer — Netzrunden zählen, nicht Abfragen optimieren. Und die Dauerlast daraus wurde zum **Ausfall** | §6 Stolperfalle 19 · §9 Anker 3 | v2-24 (PF-1) |
+| LL-30 | Eine Einstellung, die nur in einem Web-Portal lebt, ist für das Repo unsichtbar — die Regions-Zeile stand über ein Jahr falsch | §2 · §6 Stolperfalle 20 | v2-24 (PF-4) |
+
+> **Warum LL-28 und LL-29 zusammengehören und trotzdem zwei Einträge sind.** LL-28 ist
+> die **Entstehung**: eine Entscheidung, die mit ihrer Begründung veraltet, ohne dass
+> jemand es merkt. LL-29 ist die **Diagnose-Reihenfolge**: bei Trägheit zuerst zählen,
+> wie oft gefragt wird, nicht wie lange eine Frage dauert. Wer nur LL-28 kennt, sucht
+> die veraltete Annahme und findet sie nicht, weil sie plausibel klingt. Wer nur LL-29
+> kennt, zählt richtig und versteht nicht, wie es so weit kam.
+>
+> **Und warum LL-29 nicht in LL-21 aufgeht:** LL-21 warnt vor einer **stillen Kürzung**
+> durch die Infrastruktur — PostgREST liefert 1000 Zeilen und schweigt. LL-29 betrifft
+> Abfragen, die **vollständig und korrekt** antworten; es sind nur zu viele. Das eine
+> ist ein Datenverlust, das andere eine Kostenfrage — und **nur bei LL-29 wurde daraus
+> ein Ausfall**.
 
 > **Warum LL-26 neben LL-21 steht und nicht darin aufgeht.** LL-21 warnt vor einer
 > **stillen Kürzung durch die Infrastruktur** — PostgREST liefert 1000 Zeilen und
@@ -771,12 +942,30 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** v2-23 (automatisch zugeordnete Zahlungen zählen wieder an ihrer
-Karte — `ZU-1`, 16.08.2026) · **davor:** v2-22 (der Cent und die
-Prüfbarkeit, `B2-R` `ZO-2`), v2-21 (automatische Zuordnung, `M6`), v2-20 (Papierkorb
-und Lösch-Tor, `KU-1` `KU-2`) und v2-19 (Netto, `GE-1` `GE-2`) — **alle gemerged, der
-Browser-Smoke ist am 16.08.2026 für alle fünf in einem Durchgang bestanden.**
+**Letzter Sprint:** **v2-24** (die App reagiert sofort — `PF-1` `PF-2` `PF-4`,
+17.08.2026, PR **#38** offen, Browser-Smoke **bestanden**) · **davor:** v2-23 (`ZU-1`),
+v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`), v2-20 (`KU-1` `KU-2`) und v2-19 (`GE-1` `GE-2`) —
+**alles bis #36 ist in `main`.**
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+
+> **⚠️ v2-24 in drei Sätzen, weil die Zahlen den Rest erklären.** Ein Dashboard-Aufbau
+> machte **233 Netzrunden** zu Supabase für rund **490 ms** Rechenarbeit — jetzt
+> **~18**. `is_card_active_in_month` braucht **0,089 ms** in der Datenbank und lag bei
+> **899 ms** über die Leitung; die App rief sie **77-mal einzeln** auf. Am 16.08.2026
+> transportierten **55.881 Anfragen** insgesamt **0,4 MB** (Ø 8 Bytes je Antwort).
+>
+> **Zwei neue LESENDE RPCs** — `get_cards_for_month` (179 → 1) und
+> `get_sparrate_series` (24 → 1). Beide **rufen** die Rechenfunktionen **auf** und bauen
+> sie nicht nach; belegt über **byte-identische Prüfsummen** aller neun (9/0). Wer sie
+> erweitert, prüft das erneut: Ein Nachbau würde den Split-Anteil ein zweites Mal
+> anwenden (§6 Stolperfalle 11, der Fehler aus v2-13), und **keine Zahl sähe falsch
+> aus**. Protokoll: `sprints/sprint_v2-24_anker.md`.
+>
+> **Die Migrationen liegen auf Produktion** (Freigabe je Migration einzeln eingeholt).
+> Die Übungs-Datenbank-Probe wurde nach Nutzer-Entscheidung **übersprungen** — beide
+> Funktionen sind `STABLE` und tragen neue Namen, und dem synthetischen Bestand fehlt der
+> gefährlichste Fall: eine GEMEINSAM-Karte mit verknüpfter Zahlung gibt es dort nicht, in
+> den echten Daten fünfmal. Begründung: `sprints/sprint_v2-24_review.md` §5.
 
 > **`ZO-3` ist damit entscheidungsreif — und das ist der nächste Schritt.** v2-21 hatte
 > festgelegt: *erst sehen, dann entscheiden.* Der Nutzer hat gesehen. Offen ist die
@@ -873,7 +1062,14 @@ gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
 v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
 
-**Doku-Versionen:** Design-Doku **v3.7.0** · Schema-Doku **v3.6.0**.
+**Doku-Versionen:** Design-Doku **v3.8.0** · Schema-Doku **v3.10.0**.
+
+> **Diese Zeile stand am 17.08.2026 falsch** — sie nannte Schema-Doku „v3.6.0", während
+> die Datei selbst bei **v3.9.0** stand. Drei Minor-Versionen Rückstand, entstanden weil
+> die Zeile bei mehreren Sprints nicht mitgezogen wurde. **Sie ist eine Abschrift, keine
+> Quelle** — im Zweifel gilt der Header der jeweiligen Datei. Dieselbe Fehlerklasse wie
+> die Regions-Zeile in §2 (LL-30): eine Behauptung, die niemand gegenprüft, weil sie
+> beruhigend aussieht.
 
 ### Die Prüfanker
 
@@ -902,6 +1098,37 @@ SELECT sum((e->>'amount')::numeric)
 Pro Monat, in **allen zwölf**, nicht stichprobenartig (§6 Stolperfalle 9, Regel 23).
 Ebenfalls datenunabhängig: Die Gleichung muss gelten, wie viel auch immer zugeordnet
 ist.
+
+#### Anker 3 — Anfragen je Dashboard-Aufbau *(seit v2-24)*
+
+**Die beiden anderen Anker messen Richtigkeit. Dieser misst, ob die App benutzbar
+bleibt.** Ein N+1 kann beliebig wachsen, während Anker 1, Anker 2 und alle Prüfsummen
+grün bleiben — jede Zahl ist richtig, sie kommt nur zu spät. Genau so ist v2-24
+entstanden: 233 Netzrunden je Aufbau, und **kein Wächter dieses Projekts hat es
+gemerkt**.
+
+Zählbar im Supabase-Edge-Log. `app_config` wird **genau einmal je Dashboard-Aufbau**
+abgefragt und ist damit der Zähler für die Zahl der Aufbauten:
+
+```sql
+-- ClickHouse (Supabase-Log-Abfrage), Fenster nach Bedarf
+select count() as anfragen,
+       countIf(log_attributes['request.path'] = '/rest/v1/app_config') as aufbauten,
+       round(count() / countIf(log_attributes['request.path'] = '/rest/v1/app_config'), 1)
+         as je_aufbau
+from logs where source = 'edge_logs' and timestamp >= <start>;
+```
+
+**Stand nach v2-24: ~18.** Vor v2-24: **233**. Steigt die Zahl deutlich, ist ein N+1
+zurück — und zwar ohne dass irgendeine Zahl falsch wird.
+
+> **Zwei Fallen bei der Auswertung, beide haben in v2-24 Zeit gekostet.**
+> Die Edge-Logs haben eine **Ingestion-Verzögerung von Minuten** — wer sofort nach dem
+> Messlauf zählt, zählt zu wenig und diagnostiziert einen Fehler, den es nicht gibt (in
+> v2-24 fehlte eine RPC komplett und erschien erst später). Und: **`pnpm build` nie bei
+> laufendem dev-Server starten**, beide teilen `.next`; das Symptom ist `ERR_ABORTED`
+> beim Navigieren und die **Anmeldeseite** im Test-Abbild — was nach einem Auth-Fehler
+> aussieht und keiner ist.
 
 #### Die Messregel — und sie ist der eigentliche Wächter
 
@@ -965,9 +1192,18 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**16.08.2026, nach v2-23**: **10 offene Pakete · 32 Themen · 4 Hausaufgaben ·
-36 offen gesamt · 50 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**17.08.2026, nach v2-24**: **11 offene Pakete · 34 Themen · 4 Hausaufgaben ·
+38 offen gesamt · 53 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
+
+> **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat drei
+> Punkte erledigt (`PF-1`, `PF-2`, `PF-4`) und **zwei offene eingetragen**, plus ein
+> neues **Paket 17 „Die App reagiert sofort"**. Performance kam in der Roadmap vorher
+> **nirgends** vor — null Treffer für „Performance", „Ladezeit", „langsam", „Latenz",
+> „Reaktion" —, während die App in Produktion in Zeitüberschreitungen lief. Ein Thema,
+> das nicht in der Liste steht, konkurriert unsichtbar mit allem anderen und verliert
+> gegen das, was gerade lauter ist. Die zwei neuen offenen Punkte sind **keine
+> Verschlechterung**, sondern das Sichtbarwerden von Arbeit, die schon vorher da war.
 
 > **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
 > Cent neben `Ist − Plan`; `get_year_deviation_drivers` rundete **je Zeile**, die
