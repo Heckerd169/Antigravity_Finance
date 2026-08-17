@@ -1,7 +1,27 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.10.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen)
+**Version:** 3.11.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen")
+
+> **Changelog v3.11.0 (17.08.2026, Sprint v2-25):** Drei geänderte Funktionen, **keine
+> neue Tabelle, keine neue Spalte** — und **keine Zahl bewegt** (die vier
+> Rechenfunktionen sind byte-identisch geblieben, Prüfsummen vorher/nachher).
+>
+> **`card_delete_gate`** — `HAS_PAST_PLAN` ist **kein Sperrgrund mehr**. Es bleiben
+> `HAS_LINKS` und `HAS_STATES`. Gemessen am 17.08.2026: mit dem Riegel waren **0 von
+> 82** Karten löschbar, ohne ihn **3**.
+>
+> **`delete_card`** — neue Signatur `(p_card_id, p_year default null)`, alte
+> Ein-Parameter-Form **gedroppt**. Gibt zusätzlich `sparrate_effect` zurück und misst
+> es, indem sie `calculate_sparrate_for_month` **zweimal aufruft** (vor und nach dem
+> eigenen UPDATE, in derselben Transaktion).
+>
+> **`toggle_card_manually_paid`** — löscht eine Anpassung von **genau 0**, wenn das
+> Häkchen gesetzt wird. Nur die 0, nur beim Setzen.
+>
+> **Die §2.1-Begründung in §7 ist damit überholt** und dort ausdrücklich als solche
+> markiert — nicht gelöscht: Der Satz *„`card_delete_gate` lässt keine Karte mit
+> Vergangenheit löschen"* war jahrelang richtig und ist es seit v2-25 nicht mehr.
 **Datum:** 17. August 2026
 
 > **Changelog v3.10.0 (17.08.2026, Sprint v2-24 · `PF-1` `PF-2`):** **Zwei neue
@@ -364,8 +384,8 @@ delta := round( vorzeichen × ( calculate_card_amount_for_month(karte, M)
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `end_card(p_card_id uuid, p_last_month date)` | Setzt `cards.last_active_month`. `p_last_month = NULL` hebt das Ende auf. Validierung: Monatserster (22023), `≥ first_active_month` (22023); ONCE-Karten werden abgelehnt (22023, first=last-Constraint). Ownership-Verstoß 42704 | `jsonb` |
-| `card_delete_gate(p_card_id uuid)` | STABLE. Lösch-Gate-Prüfung fürs UI (ausgegrauter Lösch-Menüpunkt mit Klartext-Grund). Grund-Codes `HAS_LINKS` (Fragment-Links in irgendeinem Monat), `HAS_STATES` (**seit v2-20 nur noch Zustände aus VERGANGENEN Monaten**, `month < date_trunc('month', now())`), `HAS_PAST_PLAN` (`first_active_month` in der Vergangenheit). **Warum die Eingrenzung (`KU-2`):** Vorher blockierte jeder Zustand — eine frisch angelegte Karte wurde unlöschbar, sobald man einmal den Betrag angepasst oder auf „bezahlt" getippt hatte, und bei einer `ONCE`-Karte gab es keinen Ausweg („Beenden" existiert dort nicht). ⚠️ **`src/app/page.tsx` bildet dieses Tor nach** (Vorberechnung statt 31 RPC-Aufrufe) — wer die Regel hier ändert, muss sie dort mitziehen, sonst graut das Menü aus, was die Datenbank erlaubt | `jsonb` (`{deletable boolean, reasons text[]}`) |
-| `delete_card(p_card_id uuid)` | Prüft `card_delete_gate` (Verstoß → 23514 mit Gründen), setzt `deleted_at = now()`, legt via bestehendem `schedule_deletion('CARD', id, row-snapshot)` den `deleted_entities`-Eintrag an (`expires_at = now() + trash.retention_seconds`) | `jsonb` (`{card_id, trash_id, expires_at}`) |
+| `card_delete_gate(p_card_id uuid)` | STABLE. Lösch-Gate-Prüfung fürs UI (ausgegrauter Lösch-Menüpunkt mit Klartext-Grund). **Seit v2-25 (`KJ-1`) noch ZWEI Grund-Codes:** `HAS_LINKS` (Fragment-Links in irgendeinem Monat) und `HAS_STATES` (**seit v2-20 nur Zustände aus VERGANGENEN Monaten**, `month < date_trunc('month', now())`). **`HAS_PAST_PLAN` ist ENTFALLEN** — eine Karte, die in einem vergangenen Monat eingeplant war, ist löschbar; was das mit den Sparraten jener Monate macht, zeigt `delete_card` im Toast an, statt es zu verhindern. **Gemessen am 17.08.2026:** mit dem Riegel waren **0 von 82** Karten löschbar, ohne ihn sind es **3** — die übrigen 79 tragen eine Zahlung und bleiben durch `HAS_LINKS` gesperrt (bewusste Nutzer-Entscheidung: Wer löscht, muss entscheiden, wohin die Zahlung gehört). ⚠️ **`src/app/page.tsx` bildet dieses Tor nach** (Vorberechnung statt 82 RPC-Aufrufe) — wer die Regel hier ändert, muss sie dort mitziehen, sonst graut das Menü aus, was die Datenbank erlaubt. Wächter: `tests/e2e/loesch-tor.spec.ts` | `jsonb` (`{deletable boolean, reasons text[]}`) |
+| `delete_card(p_card_id uuid, p_year integer default null)` | Prüft `card_delete_gate` (Verstoß → 23514 mit Gründen), setzt `deleted_at = now()`, legt via bestehendem `schedule_deletion('CARD', id, row-snapshot)` den `deleted_entities`-Eintrag an. **Seit v2-25 (`KJ-1`) misst sie zusätzlich ihre eigene Wirkung:** alle zwölf Monate von `p_year` vor dem UPDATE, dieselben danach, in **derselben Transaktion**. Sie **ruft** `calculate_sparrate_for_month` zweimal auf und baut sie **nicht** nach — ein Nachbau müsste Prioritätskette, Split-Anteil (§6 Stolperfalle 11) und Schlussrundung (LL-25) nachbilden, und keine Zahl sähe falsch aus. Dass eine `STABLE`-Funktion das UPDATE derselben Transaktion sieht, ist auf der Übungs-DB **belegt** (2.200 → 3.200), nicht angenommen. `p_year` ist das Kalenderjahr des angezeigten Monats; ohne Angabe das laufende. **Die alte Ein-Parameter-Signatur ist gedroppt** — `create or replace` hätte sonst eine Überladung angelegt. Kosten: 24 Aufrufe, ~370 ms, nur beim Löschen | `jsonb` (`{card_id, trash_id, expires_at, sparrate_effect {months, total, single_month}}`) |
 | `restore_card(p_card_id uuid)` | Findet den jüngsten offenen Trash-Eintrag der Karte, validiert über bestehendes `restore_deletion` (Ablauf/Row-Lock), setzt `deleted_at = NULL` | `boolean` |
 | `cleanup_expired_card_trash()` | Opportunistischer Hard-Delete-Vollzug (Beschluss E3 Option b), vom Frontend vor jeder Lebenszyklus-Aktion aufgerufen: löscht abgelaufene, nicht wiederhergestellte eigene Trash-Karten hart (DB-Kaskade entfernt `card_planned_timeline`/`card_monthly_states`/`card_fragment_links`; Fragmente bleiben, `suggested_card_id` → `NULL`) und entfernt die vollzogenen Trash-Zeilen; wiederhergestellte Trash-Zeilen bleiben dauerhaft (§2.4) | `integer` (Anzahl hart gelöschter Karten) |
 
@@ -469,7 +489,7 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 
 | Funktion | Wofür | Returns |
 |---|---|---|
-| `toggle_card_manually_paid(card_id, month)` | Karte als „bezahlt" markieren oder zurücknehmen. Idempotent in der Hinsicht, dass mehrfacher Aufruf deterministisch togglet. Verweigert Toggle, wenn `card_monthly_states.closed_at IS NOT NULL` | `boolean` (Wert **nach** dem Toggle) |
+| `toggle_card_manually_paid(card_id, month)` | Karte als „bezahlt" markieren oder zurücknehmen. Idempotent in der Hinsicht, dass mehrfacher Aufruf deterministisch togglet. Verweigert Toggle, wenn `card_monthly_states.closed_at IS NOT NULL`. **Seit v2-25 (`KJ-2`, Entscheidung 4): Wird das Häkchen GESETZT und steht dort eine Anpassung von genau `0`, fällt sie auf `NULL`.** „Ist bezahlt" gegen „fiel nicht an" ist ein Widerspruch — und er bewegt die Sparrate, weil `adjusted_amount = 0` den Plan schlägt. **Nur die 0**: Eine Anpassung auf einen anderen Wert bleibt (das heißt „kostet ausnahmsweise mehr, und ich habe es bezahlt"). **Nur beim Setzen**: Wer abhakt und das Häkchen wieder entfernt, behält die 0. Atomar in der Datenbank statt in zwei Schreibvorgängen, zwischen denen einer scheitern kann | `boolean` (Wert **nach** dem Toggle) |
 
 ### Beim CSV-Import (Sprint 8 + Sprint 9)
 
@@ -670,8 +690,26 @@ diesem Monat aktiv". Konsumenten filtern explizit in ihrer eigenen Query.
 `process_csv_import` (Match-Loop) und `toggle_card_manually_paid` (Ownership-Check).
 Der frühere Satz *„Die Sparrate-RPCs dürfen nicht filtern"* ist damit **abgelöst**: Er
 stammte aus der Zeit des Verbergens. Seit v2-05 ist `deleted_at` reiner
-Papierkorb-Marker, und was im Papierkorb liegt, soll nicht mitrechnen. §2.1 bleibt
-gewahrt, weil `card_delete_gate` keine Karte mit Vergangenheit löschen lässt.
+Papierkorb-Marker, und was im Papierkorb liegt, soll nicht mitrechnen.
+
+> ### ⚠️ Die Begründung dieses Absatzes gilt seit v2-25 NICHT MEHR
+>
+> Hier stand: *„§2.1 bleibt gewahrt, weil `card_delete_gate` keine Karte mit
+> Vergangenheit löschen lässt."* Seit **v2-25 (`KJ-1`) lässt es genau das zu** —
+> `HAS_PAST_PLAN` ist entfallen. Eine Löschung kann die Sparrate **vergangener Monate
+> bewegen**, und das ist der Zweck: Sie korrigiert eine irrtümlich angelegte Karte,
+> statt sie zu konservieren.
+>
+> **§2.1 ist damit nicht verletzt, sondern anders gewahrt.** Die Snapshot-Integrität
+> schützt davor, dass sich eine vergangene Zahl **unbemerkt** ändert — nicht davor,
+> dass der Nutzer sie bewusst korrigiert. Deshalb ist die Sperre durch eine **Anzeige**
+> ersetzt worden: `delete_card` misst die Wirkung und `§12.5` nennt sie im Toast, mit
+> `Rückgängig` für fünf Sekunden.
+>
+> **Was daraus für neue Aufrufer folgt:** Wer `deleted_at` setzt, ohne über
+> `delete_card` zu gehen, umgeht sowohl die Torprüfung als auch die Anzeige — und
+> bewegt vergangene Sparraten schweigend. Das ist die Stelle, an der §2.1 tatsächlich
+> bricht.
 
 ---
 

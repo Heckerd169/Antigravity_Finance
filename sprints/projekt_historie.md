@@ -2356,3 +2356,125 @@ Messung gehört ins Ergebnis.** Die 13 Stufen sind gezählt, die Millisekunden s
 geschätzt — die Netzstrecke Vercel→Supabase liegt außerhalb dessen, was
 `response.origin_time` sieht. Eine Schätzung, die als solche gekennzeichnet ist, ist in
 diesem Projekt brauchbar; eine, die als Messung auftritt, wäre es nicht.
+
+---
+
+### Sprint v2-25 · DONE 17. August 2026
+
+**Komponente:** Der Löschriegel fällt, und ein Monat lässt sich als „nicht angefallen"
+markieren — `KJ-1`, `KJ-2`, `KJ-3` aus Paket 18. Der Auftrag kam aus der
+Jahres-Kuratierung 2026: zehn Meldungen, drei Ursachen. Die Gestaltung war am selben
+Vormittag entschieden; dieser Sprint hat sie gebaut. **`KJ-4` ist nicht gebaut worden,
+weil er sich nicht reproduzieren ließ.**
+
+#### Die Zahl, die den Sprint erklärt
+
+**Von 82 Karten waren null löschbar.** Der Befund vom Vormittag sagte vier — der Nutzer
+hatte in der Zwischenzeit weiter kuratiert, und genau das ist das Muster, das dieses
+Projekt seit dem 13.08. keine eingefrorenen Anker-Tabellen mehr führen lässt.
+
+#### Die tragenden Entscheidungen
+
+**① Nur der Vergangenheits-Riegel fällt, `HAS_LINKS` bleibt.** Das war die wichtigste
+Klärung vor dem Bauen, und sie hat den Schnitt korrigiert: `HAS_PAST_PLAN` sperrte 78
+Karten, `HAS_LINKS` aber **79**. Nach dem Sprint sind **3** Karten löschbar, nicht 78 —
+alle neun „Fahrradteile" tragen je eine Zahlung und bleiben gesperrt.
+
+Der Befund hatte diesen Punkt gemacht („nur Karten ohne Zahlung freigeben wären 3 von
+78"), aber nur als Argument **gegen die verworfene Variante**. Dass er genauso für die
+**gewählte** gilt, stand nirgends. Die Nutzer-Entscheidung: Wer eine Karte löscht, an
+der eine echte Zahlung hängt, muss entscheiden, wohin die Zahlung gehört — bei den
+Doppelten ist genau das die eigentliche Arbeit, sie sollen umziehen, nicht verschwinden.
+
+Und die 3, die sofort fallen, sind die wichtigsten: zwei Einnahmen ohne Zahlung, die
+Januar um +53,70 € und April um +15,00 € zu gut ausweisen.
+
+**② Die Folge des Löschens wird gemessen, nicht gerechnet.** Die Wirkung über N Monate
+ist eine Sparraten-Rechnung; Arbeitsregel 1 verbietet die im Frontend, und ein Nachbau in
+der Datenbank wäre dasselbe eine Ebene tiefer gewesen — er hätte Prioritätskette,
+Split-Anteil und Schlussrundung mitbilden müssen, und **keine Zahl hätte falsch
+ausgesehen**. Genau diese Fehlerklasse hat v2-13 gekostet.
+
+`delete_card` misst deshalb selbst: alle Monate des Jahres vor dem eigenen UPDATE,
+dieselben danach, in **derselben Transaktion**, mit zwei Aufrufen der echten Funktion.
+
+**Dass das überhaupt geht, war die offene technische Frage des Sprints.** Sieht eine
+`STABLE`-Funktion die Änderung eines vorangegangenen `UPDATE` derselben Transaktion? Nach
+der Command-ID-Regel ja — aber LL-22 verlangt einen Beleg statt einer Herleitung. Auf der
+Übungs-Datenbank gemessen: **2.200,00 → 3.200,00**, exakt der Betrag der Seed-Fixkosten.
+Wäre es anders ausgegangen, wäre der RAISE-Rollback der Ersatzweg gewesen.
+
+**③ Die Statuszeile hat den Ort gewechselt, nicht den Wortlaut.** Der Record legte
+`nicht angefallen` an den rechten Anschlag, anstelle des Fälligkeitstags. **Gemessen
+passt der Text dort in keinem der vier Zustände** — `OFFEN` braucht 117,8 px, `ERWARTET`
+139,3 px, verfügbar sind 110 px. Links allein sind es 79,7 px.
+
+Entschieden wurde in der Rolle `design-direktor` für den **Wortlaut**: `entfällt` hätte
+rechts gepasst (74,6 px) und die Kette zum Menüpunkt `Diesen Monat nicht angefallen`
+zerrissen — dazu ist es Verwaltungssprache, die derselbe Record bei „übersprungen" und
+„auf 0 €" schon einmal verworfen hatte.
+
+Der Text ersetzt jetzt das **Status-Label**, und der Fälligkeitstag verschwindet mit. Das
+ist nicht die Notlösung, sondern das stärkere Argument: Der Record begründet das Ersetzen
+des Termins damit, dass es keinen mehr gibt, den man erwarten könnte — **und eine Karte,
+bei der nichts anfällt, ist auch nicht „Offen".** Beide Enden der Zeile wären eine
+Falschaussage gewesen.
+
+**④ Entscheidung 4 sitzt in der Datenbank.** „Ist bezahlt" gegen „fiel nicht an" ist ein
+Widerspruch, und er **bewegt die Sparrate**: `manually_paid` ändert nur die Anzeige, aber
+`adjusted_amount = 0` schlägt den Plan. `toggle_card_manually_paid` löscht deshalb eine
+Anpassung von **genau 0**, wenn abgehakt wird — atomar, nicht in zwei Schreibvorgängen,
+zwischen denen einer scheitern kann. Nur die 0; eine Anpassung auf 504,95 bleibt.
+
+#### Verifikation
+
+**Keine einzige Zahl bewegt.** Alle zwölf Monate Ist und Plan identisch vor und nach dem
+Eingriff, beide Invarianten 0,00 in allen zwölf. Die **vier Rechenfunktionen
+byte-identisch** (dazu `get_cards_for_month`, `get_category_amounts_for_month` und
+`restore_card`). Übungs-DB-Anker 2.200,00 € vorher und nachher, nichts hinterlassen.
+
+Prüfstrecke: `tsc` 0 · ESLint 0/0 · Build 0 (Route `/` 36,3 kB, First Load 188 kB) ·
+`test:visual` **119/119** (113 → 119) · `test:e2e` **128/128** inkl. Render-Smoke.
+
+Zwölf Trockenlauf-Prüfungen auf der Übungs-DB, alle grün — darunter die drei
+Anzeigefälle aus §12.5: `+12000,00 in 12 Monaten`, `77,00 in 1 Monat ("2026-04")` und
+`0 Monate → der Toast zeigt nichts`.
+
+#### Was schiefging und hier stehen bleiben soll
+
+**① Ich habe auf der Übungs-Datenbank eine gekürzte Fassung eingespielt.** Der
+ausführbare Code war identisch, nur die Kommentare im Funktionsrumpf waren kürzer.
+`pg_get_functiondef` schließt Kommentare **ein** — der in `db-eingriff` Schritt 5.4
+vorgesehene Prüfsummen-Vergleich Übung ↔ Produktion trägt für diesen Sprint deshalb
+**nicht**. Der Ablauf warnt wörtlich davor („kein ‚auf der Übungs-DB reicht die
+Kurzfassung'"), und ich habe es trotzdem getan. Ersatzbeleg ist die Testreihe gegen
+exakt diese Logik plus die byte-identischen Prüfsummen der vier Rechenfunktionen.
+
+**② Zwei meiner eigenen neuen Wächter waren beim ersten Lauf rot — zu Recht streng, aber
+falsch gebaut.** Sie prüften `not.toContain("HAS_PAST_PLAN")` auf `page.tsx` und
+`cards.types.ts`. Der Name steht dort weiterhin — in den Kommentaren, die **erklären**,
+warum er entfallen ist. Ein solcher Test bestraft gute Kommentare und prüft das Gegenteil
+dessen, was gemeint ist. Behoben durch eine Hilfsfunktion, die Kommentare entfernt, bevor
+verglichen wird.
+
+**③ Die Hypothese des Befunds zu `KJ-4` war falsch, und das festzustellen hat gereicht.**
+Vermutet war ein Hydrations-Unterschied. Gemessen in **zwei** Browser-Engines: null
+Konsolenmeldungen, nie mehr als ein Header im DOM — auch nicht 60 ms nach dem Klick, auch
+nicht nach vier schnellen Klicks, auch nicht bei Zurück/Vorwärts, auch nicht zwischen
+1680 und 560 px Fensterbreite. **Kein Patch ohne reproduzierten Fehler** (§7 Regel 10),
+also kein Patch. Der Punkt steht auf 🔎 mit vollständiger Ausschlussliste.
+
+**Nebenbefund dabei:** `loading.tsx` aus v2-24 P5 greift beim **Monatswechsel nicht** —
+310 ms nach dem Klick steht noch vollständig die alte Ansicht. Next.js öffnet bei einer
+Änderung nur des Suchparameters keine neue Suspense-Grenze. Die Datei begründet sich
+ausdrücklich mit diesem Fall.
+
+#### Offen nach v2-25
+
+- **`KJ-4`** — nicht reproduzierbar. Die eine Frage an den Nutzer: *Siehst du es noch?*
+- **`KJ-5`** (Datenpflege) — jetzt möglich, für zwölf der ~14 Karten mit dem
+  Zwischenschritt „Verknüpfte Fragmente → Alle Verknüpfungen lösen".
+- **Der Toast weicht seit v2-05 von §12.5 ab** — Titel `Karte »X« gelöscht` statt
+  `X gelöscht`, Subtext `Karte wird dauerhaft entfernt` fehlt ganz. Altbefund, nicht
+  angefasst.
+- **`ZO-3`** bleibt der nächste inhaltliche Schritt (rückwirkendes Verlinken ab 95 %).

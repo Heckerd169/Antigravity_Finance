@@ -2,9 +2,12 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 17. August 2026 (nach v2-24 — die App reagiert sofort: 233 → ~18
-> Netzrunden je Dashboard-Aufbau, kein 504 mehr, keine bewegte Zahl; **neues Paket 17**,
-> weil Performance in dieser Datei bis dahin nirgends vorkam). Davor:
+> **Stand:** 17. August 2026 (nach **v2-25** — der Löschriegel ist gefallen und ein Monat
+> lässt sich als „nicht angefallen" markieren; `KJ-1` `KJ-2` `KJ-3` erledigt, `KJ-4`
+> **nicht reproduzierbar** und deshalb auf 🔎). Davor am selben Tag: v2-24 (die App
+> reagiert sofort: 233 → ~18 Netzrunden je Dashboard-Aufbau, kein 504 mehr, keine bewegte
+> Zahl; **neues Paket 17**, weil Performance in dieser Datei bis dahin nirgends vorkam)
+> und die Design-Runde (**neues Paket 18**). Davor:
 > 13. August 2026 (nach v2-18 — zwei Befunde aus der Nutzung behoben;
 > davor v2-17 mit `KAT-1`/`KAT-2`/`KAT-3` und der Hausaufgabe `J1`, **Paket 4
 > abgeschlossen**) · **Vorgänger-Struktur:** bis zum
@@ -31,22 +34,36 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 17.08.2026 zeilengenau nachgezählt — nach der Design-Runde vom 17.08.2026
-(Paket 18 neu). Der Stand „nach v2-24" steht als Vergleichsspalte daneben.*
+*Alle Zahlen am 17.08.2026 zeilengenau nachgezählt — nach Sprint **v2-25**. Der Stand
+direkt nach der Design-Runde desselben Tages steht als Vergleichsspalte daneben.*
 
-| | Anzahl | nach v2-24 | nach v2-23 | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 | vor v2-18 |
+| | Anzahl | nach DD 17.08. | nach v2-24 | nach v2-23 | nach v2-21 | nach v2-20 | nach v2-19 | nach v2-18 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 11 | 10 | 10 | 10 | 10 | 10 | 10 |
-| Themen darin | **39** | 34 | 32 | 32 | 30 | 30 | 29 | 28 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 6 | 5 | 5 | 4 | 4 |
-| **Offen gesamt** | **43** | 38 | 36 | 38 | 35 | 35 | 33 | 32 |
-| Erledigt | **53** | 53 | 50 | 49 | 47 | 47 | 45 | 43 |
+| Offene Pakete | **12** | 12 | 11 | 10 | 10 | 10 | 10 | 10 |
+| Themen darin | **36** | 39 | 34 | 32 | 32 | 30 | 30 | 29 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 6 | 5 | 5 | 4 |
+| **Offen gesamt** | **40** | 43 | 38 | 36 | 38 | 35 | 35 | 33 |
+| Erledigt | **56** | 53 | 53 | 50 | 49 | 47 | 47 | 45 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach der Design-Runde vom 17.08.2026, zeilengenau ausgezählt.** Paket-Tabellen
-> **53** Zeilen, davon **14 ✅** → **39** offen (⬜ 35 · 🟡 4). Hausaufgaben **4**, alle ⬜.
-> §4 Erledigt **53** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
+> **Stand nach Sprint v2-25, zeilengenau ausgezählt.** Paket-Tabellen **53** Zeilen, davon
+> **17 ✅** → **36** offen (⬜ 29 · ⬜🔎 3 · 🟡 4). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **56** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
 > erledigt (1, 2, 3, 4, 15, 16) → **12** offen.
+>
+> **v2-25 hat drei Punkte erledigt und keinen neuen erzeugt** — `KJ-1`, `KJ-2`, `KJ-3`.
+> Das ist in dieser Datei die Ausnahme: v2-24 trug zwei neue ein, die Design-Runde fünf.
+> Der Grund ist, dass die Diagnose der Arbeit **vorausging**: Die zehn Meldungen waren am
+> Vormittag auf drei Ursachen verdichtet und die Gestaltung entschieden, bevor gebaut
+> wurde.
+>
+> **`KJ-4` steht jetzt auf 🔎 statt ⬜, und das ist eine Aussage, keine Verlegenheit.**
+> Der Fehler ließ sich in zwei Browser-Engines nicht reproduzieren — die Hypothese des
+> Befunds (Hydrations-Unterschied) ist dabei **widerlegt** worden. Was fehlt, ist nicht
+> Arbeit, sondern die Antwort des Nutzers auf eine einzige Frage: *Siehst du es noch?*
+>
+> **Die Paket-Zahl bleibt bei 12**: Paket 18 ist trotz dreier erledigter Punkte nicht
+> vollständig, weil `KJ-4` offen ist und `KJ-5` (Datenpflege) Arbeit in der App bleibt.
 >
 > **Die Zahl springt um fünf, und das ist kein Rückschritt.** Das neue **Paket 18** trägt
 > die zehn Meldungen aus der Jahres-Kuratierung 2026 — verdichtet auf **fünf** Punkte,
@@ -658,10 +675,10 @@ Design-Doku **v3.9.0** trägt die Spezifikation; gebaut ist nichts davon.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| KJ-1 | Der Löschriegel sperrt **78 von 82** Karten | Fehler | **ja** | ⬜ | `HAS_PAST_PLAN` greift, sobald `first_active_month` vor dem laufenden Monat liegt — nach der Kuratierung von Januar bis Juli ist praktisch **alles** unlöschbar; löschbar sind genau **4**. Der Riegel ist nicht sinnlos: Seit v2-20 filtern alle vier Rechenfunktionen `deleted_at IS NULL`, eine gelöschte Karte fällt also aus den Sparraten **aller** Monate, auch der vergangenen. **Entschieden (17.08.): Löschen erlauben, mit angezeigter Folge im bestehenden Toast** — Summe statt Liste, türkis bei Entlastung, rot bei Belastung, leerer Fall zeigt nichts. Verworfen: „nur Karten ohne Zahlung" (wären **3** von 78) und „statt Löschen rückwirkend beenden" (Karteileiche bleibt sichtbar). ⚠️ **`page.tsx` bildet `card_delete_gate` NACH** — wer die Regel in der Datenbank ändert und den Nachbau vergisst, hebt die Änderung stillschweigend auf (LL-26; in v2-20 real passiert). |
-| KJ-2 | Der Plan zählt, auch wenn nichts bezahlt wurde | Fehler | **ja** | ⬜ | Prioritätskette **Realität → Anpassung → Plan**: fehlt beides Erste, gewinnt der Plan. Bei Miete richtig, bei **Audible** (zeitweise pausiert), **Friseur** (nicht jeden Monat) und einer **irrtümlich monatlichen** Fahrradteile-Karte falsch. Gemessen im August: Friseur 45,00 € und Audible 9,95 € zählen ohne Gegenstück; Audible und Friseur haben je 4 Zahlungen bei 8 aktiven Monaten. **Entschieden (17.08.): Ein-Klick-Menüpunkt `Diesen Monat nicht angefallen`** plus `Wieder mitzählen`. Er schreibt **denselben Wert** wie der heutige Weg „Betrag anpassen auf 0 €, nur diesen Monat" — **keine Änderung an `calculate_card_amount_for_month`, kein Anker-Risiko**. Verworfen: eine Karten-Eigenschaft „fällt unregelmäßig an" (greift in die Rechenfunktion **und** macht die Vorschau kaputt — künftige Monate zeigten 0 €, obwohl dafür geplant werden soll). |
-| KJ-3 | Eine Anpassung ist auf der Karte **unsichtbar** | Fehler | nein | ⬜ | `adjustedAmount` steht nur im Typ und wird von **keiner** Kartenkomponente benutzt. Eine Karte mit Plan 45 € und Anpassung 0 zeigt `0,00 €` — nicht unterscheidbar von fehlenden Daten. **Dieser Punkt stand in keiner Meldung**; er kam beim Nachsehen für KJ-2 dazu und macht KJ-2 ohne ihn zu einer stillen Falschaussage. **Entschieden: `nicht angefallen` in der Statuszeile, anstelle des Fälligkeitstags, im Ghost-Ton** — keine zusätzliche Kartenhöhe, kein neues Token. Eine Anpassung auf einen Wert **≠ 0** bleibt bewusst weiterhin unsichtbar. |
-| KJ-4 | Die Monatsnamen überlagern sich an den Chevrons | Fehler | nein | ⬜ | Screenshot vom 17.08.2026: zwei linke Flanken-Beschriftungen übereinander („April 2026" und „Mai 2026", dazu „5" und „8 Fragmente offen"). Geprüft: `.monthLabel` (der **aktive** Monat) trägt `animation: monthFade` und `key={targetMonth}` — die Überlagerung sitzt aber in den **Flanken**, die weder Key noch Animation haben. **Ursache nicht geklärt.** Hypothese: ein Hydrations-Unterschied (zwei Textknoten an derselben Stelle ist dessen typisches Bild; `page.tsx` liest `new Date()`). **Zu diagnostizieren, nicht zu erraten** — braucht einen Blick in die Browser-Konsole beim Monatswechsel. |
+| KJ-1 | Der Löschriegel sperrt **78 von 82** Karten | Fehler | **ja** | ✅ | `HAS_PAST_PLAN` greift, sobald `first_active_month` vor dem laufenden Monat liegt — nach der Kuratierung von Januar bis Juli ist praktisch **alles** unlöschbar; löschbar sind genau **4**. Der Riegel ist nicht sinnlos: Seit v2-20 filtern alle vier Rechenfunktionen `deleted_at IS NULL`, eine gelöschte Karte fällt also aus den Sparraten **aller** Monate, auch der vergangenen. **Entschieden (17.08.): Löschen erlauben, mit angezeigter Folge im bestehenden Toast** — Summe statt Liste, türkis bei Entlastung, rot bei Belastung, leerer Fall zeigt nichts. Verworfen: „nur Karten ohne Zahlung" (wären **3** von 78) und „statt Löschen rückwirkend beenden" (Karteileiche bleibt sichtbar). ⚠️ **`page.tsx` bildet `card_delete_gate` NACH** — wer die Regel in der Datenbank ändert und den Nachbau vergisst, hebt die Änderung stillschweigend auf (LL-26; in v2-20 real passiert). **✅ v2-25:** Der Riegel ist gefallen — beide Seiten in EINEM Commit (Datenbank **und** der Nachbau in `page.tsx`), der Wächter um drei Prüfungen erweitert. Der Toast nennt jetzt die Folge: Summe und Zahl der Monate, türkis/rot, leerer Fall zeigt nichts. Die Wirkung wird **gemessen, nicht gerechnet** — `delete_card` ruft `calculate_sparrate_for_month` vor und nach dem eigenen UPDATE in derselben Transaktion auf. **Was die Überschrift korrigiert:** Löschbar sind jetzt **3** Karten, nicht 78 — `HAS_LINKS` sperrt 79 und bleibt bewusst stehen (Nutzer-Entscheidung 17.08.: Wer löscht, muss entscheiden, wohin die Zahlung gehört; bei den neun „Fahrradteilen“ ist genau das die eigentliche Arbeit). Die 3 sind trotzdem die wichtigsten: zwei Einnahmen ohne Zahlung, die Januar um +53,70 € und April um +15,00 € zu gut ausweisen. |
+| KJ-2 | Der Plan zählt, auch wenn nichts bezahlt wurde | Fehler | **ja** | ✅ | Prioritätskette **Realität → Anpassung → Plan**: fehlt beides Erste, gewinnt der Plan. Bei Miete richtig, bei **Audible** (zeitweise pausiert), **Friseur** (nicht jeden Monat) und einer **irrtümlich monatlichen** Fahrradteile-Karte falsch. Gemessen im August: Friseur 45,00 € und Audible 9,95 € zählen ohne Gegenstück; Audible und Friseur haben je 4 Zahlungen bei 8 aktiven Monaten. **Entschieden (17.08.): Ein-Klick-Menüpunkt `Diesen Monat nicht angefallen`** plus `Wieder mitzählen`. Er schreibt **denselben Wert** wie der heutige Weg „Betrag anpassen auf 0 €, nur diesen Monat" — **keine Änderung an `calculate_card_amount_for_month`, kein Anker-Risiko**. Verworfen: eine Karten-Eigenschaft „fällt unregelmäßig an" (greift in die Rechenfunktion **und** macht die Vorschau kaputt — künftige Monate zeigten 0 €, obwohl dafür geplant werden soll). **✅ v2-25:** Menüpunkt `Diesen Monat nicht angefallen` mit Gegenstück `Wieder mitzählen` — ein Klick, kein Dialog, kein `…`. Schreibt denselben Wert wie „Betrag anpassen auf 0 €, nur diesen Monat“; keine Zahl bewegt, die vier Rechenfunktionen byte-identisch. Entscheidung 4 sitzt in der **Datenbank**: `toggle_card_manually_paid` löscht eine Anpassung von **genau 0**, wenn das Häkchen gesetzt wird — nur die 0, nur beim Setzen. |
+| KJ-3 | Eine Anpassung ist auf der Karte **unsichtbar** | Fehler | nein | ✅ | `adjustedAmount` steht nur im Typ und wird von **keiner** Kartenkomponente benutzt. Eine Karte mit Plan 45 € und Anpassung 0 zeigt `0,00 €` — nicht unterscheidbar von fehlenden Daten. **Dieser Punkt stand in keiner Meldung**; er kam beim Nachsehen für KJ-2 dazu und macht KJ-2 ohne ihn zu einer stillen Falschaussage. **Entschieden: `nicht angefallen` in der Statuszeile, anstelle des Fälligkeitstags, im Ghost-Ton** — keine zusätzliche Kartenhöhe, kein neues Token. Eine Anpassung auf einen Wert **≠ 0** bleibt bewusst weiterhin unsichtbar. **✅ v2-25 — mit einer gemessenen Korrektur an der Spezifikation.** Der Record sah `nicht angefallen` am rechten Anschlag vor; gemessen passt es dort in **keinem** der vier Zustände (117,8–139,3 px bei 110 px Inhaltsbreite). Entschieden wurde für den **Wortlaut** und gegen den Ort: Der Text ersetzt jetzt das **Status-Label**, der Fälligkeitstag verschwindet mit — beide Enden wären sonst eine Falschaussage. Design-Doku **v3.9.1**. |
+| KJ-4 | Die Monatsnamen überlagern sich an den Chevrons | Fehler | nein | ⬜ 🔎 | Screenshot vom 17.08.2026: zwei linke Flanken-Beschriftungen übereinander („April 2026" und „Mai 2026", dazu „5" und „8 Fragmente offen"). Geprüft: `.monthLabel` (der **aktive** Monat) trägt `animation: monthFade` und `key={targetMonth}` — die Überlagerung sitzt aber in den **Flanken**, die weder Key noch Animation haben. **Ursache nicht geklärt.** Hypothese: ein Hydrations-Unterschied (zwei Textknoten an derselben Stelle ist dessen typisches Bild; `page.tsx` liest `new Date()`). **Zu diagnostizieren, nicht zu erraten** — braucht einen Blick in die Browser-Konsole beim Monatswechsel. **🔎 v2-25 — NICHT REPRODUZIERBAR, deshalb bewusst kein Patch** (§7 Regel 10). Ausgeschlossen: **Hydrations-Unterschied** — die Hypothese des Befunds, **0** Konsolenmeldungen in Chromium *und* WebKit · Übergangsbild beim Monatswechsel (nie mehr als **ein** Header im DOM, beide Engines) · vier schnelle Klicks hintereinander · Browser-Zurück/Vorwärts, auch 3× schnell · Fensterbreiten 1680 → 560 px (keine Überlappung, kein h-Scroll). **Vor dem nächsten Schnitt zu klären:** Tritt es nach v2-24 überhaupt noch auf? Der Screenshot könnte aus der Zeit stammen, als ein Aufbau **233** Netzrunden brauchte und das Übergangsfenster Sekunden lang war; er liegt selbst nicht mehr vor. |
 | KJ-5 | Datenpflege 2026 | Aufgabe | nein | ⬜ | **Arbeit in der App, kein Bauauftrag** — hängt an KJ-1 und KJ-2. Aufräumen: acht der **neun** „Fahrradteile"-Karten, die zwei kategorielosen Einnahmen (`Malin Besuch Erstattung` 53,70 € im Januar, `Anteil Essen Aline Marburg` 15,00 € im April — **beide ohne Zahlung, beide blähen die Sparrate auf**), die Doppelten (`Fahrradzubehör`, `Geschenk Lukas`, `Inspektion Auto - Aline`). Neu anlegen: `Kreditkarte-Kosten` (2,49 €/Monat ab Januar, sieben Zahlungen), `Privathaftpflicht` (jährlich, **53,25 € als Plan** — nicht 28,88 €, sonst wird der Anteil zweimal abgezogen —, gemeinsam, ab April), `Google One` (9,99 €/Monat, läuft schon seit Februar). Umbuchen: drei Google-One-Zahlungen von „Privates Budget". Als Umschichtung markieren: die vier ±107,10-Zahlungen im Juli. Alle Werte im Befund. |
 
 > **Was dieses Paket an Wissen zurückgibt, unabhängig von den Punkten:** Zehn Meldungen
@@ -699,6 +716,9 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| KJ-1 | Der Löschriegel ist gefallen — `HAS_PAST_PLAN` sperrt nicht mehr, **auf beiden Seiten** (Datenbank und der Nachbau in `page.tsx`, ein Commit, Wächter erweitert). Der Toast nennt die Folge: Summe und Zahl der Monate, türkis bei Entlastung, rot bei Belastung, leerer Fall zeigt **nichts**. Die Wirkung wird **gemessen statt gerechnet** — `delete_card` ruft `calculate_sparrate_for_month` vor und nach dem eigenen UPDATE in derselben Transaktion auf; dass eine `STABLE`-Funktion das sieht, ist auf der Übungs-DB belegt (2.200 → 3.200). **Die Überschrift „78 von 82“ war zu optimistisch:** löschbar sind **3** — `HAS_LINKS` sperrt 79 und bleibt bewusst stehen | v2-25 |
+| KJ-2 | `Diesen Monat nicht angefallen` plus `Wieder mitzählen` — ein Klick, kein Dialog. Schreibt denselben Wert wie der bisherige Weg über „Betrag anpassen“, deshalb **keine Zahl bewegt** und die vier Rechenfunktionen byte-identisch. Entscheidung 4 sitzt in der Datenbank: `toggle_card_manually_paid` löscht eine Anpassung von **genau 0**, wenn abgehakt wird — nur die 0, nur beim Setzen | v2-25 |
+| KJ-3 | `nicht angefallen` in der Statuszeile, im Ghost-Ton, ohne zusätzliche Kartenhöhe. **Mit einer gemessenen Korrektur an der Spezifikation:** Der Record legte den Text an den rechten Anschlag — dort passt er in **keinem** der vier Zustände (117,8–139,3 px bei 110 px). Er ersetzt jetzt das **Status-Label**, der Fälligkeitstag verschwindet mit. Design-Doku **v3.9.1** | v2-25 |
 | PF-4 | Die Vercel-Funktionen liefen auf **USA**, die Datenbank in **Irland** — rund **90 ms** Umweg auf jede Anfrage. In zwei Schritten auf **Dublin (`dub1`)** gezogen, die exakte Entsprechung (Vercel nennt es selbst `eu-west-1`, dieselbe AWS-Region wie Supabase). Entschieden über die **13 `await`-Barrieren** von `page.tsx`, nicht über die Zahl der Anfragen: Der Browser spricht pro Geste zweimal mit der Funktion, die Funktion dreizehnmal mit der Datenbank. **In `vercel.json` festgenagelt** — vorher lebte die Einstellung nur im Portal, und genau deshalb behauptete CLAUDE.md §2 über ein Jahr das Gegenteil, ohne dass es auffiel (LL-30) | v2-24 |
 | PF-1 | Ein Dashboard-Aufbau kostet **~18** statt **233** Netzrunden. Zwei neue LESENDE RPCs (`get_cards_for_month`: 179 → 1 · `get_sparrate_series`: 24 → 1), die die Rechenfunktionen **aufrufen** statt sie nachzubauen — belegt über byte-identische Prüfsummen aller neun (9/0). Nicht die Datenbank war langsam: `is_card_active_in_month` braucht **0,089 ms** dort und lag bei **899 ms** über die Leitung, und wurde **77-mal einzeln** gerufen. Kein Zahlenwert bewegt, beide Invarianten exakt. **Der Kommentar, der es erklärt:** „N+1-Pragmatik: bei <20 Karten akzeptable Latenz" — es sind 77 geworden | v2-24 |
 | PF-2 | Die Middleware kann keinen 504 mehr erzeugen. Der `profiles`-Abruf ist ersatzlos weg (die Information wird in `page.tsx` ohnehin geladen), der Onboarding-Wächter umgezogen, plus Zeitlimit von 8 s je Auth-Versuch. **Der Ausfall war bis auf die Minute rückverfolgbar:** Zeitstempel in der Vercel-Fehler-ID → 19:10:24 UTC → schlechteste Minute des Tages, Median 20 s; die zwei Aufrufe liefen nacheinander, ohne Zeitlimit. Die 8 s sind gemessen (langsamste je beobachtete Auth-Antwort: 5.205 ms), ein erster Entwurf mit 4 s hätte eine gültige Sitzung abgeschnitten | v2-24 |

@@ -197,6 +197,43 @@ Fälligkeitstag genau das fest.
 **Kein neues Token, keine neue Farbe.** `--text-ghost` ist der Ton, den der
 Fälligkeitstag ohnehin trägt.
 
+> ### ⚠️ Nachtrag vom 17.08.2026 (Bauphase v2-25): Der Text steht LINKS, nicht rechts
+>
+> **Entscheidung 3 sagte „am rechten Anschlag, anstelle des Fälligkeitstags". Gemessen
+> passt er dort nicht — in keinem einzigen Zustand.** Die Karte ist 136 px breit, die
+> Statuszeile hat 110 px Inhalt:
+>
+> | Statuszeile | braucht | verfügbar |
+> |---|---|---|
+> | `OFFEN` + `nicht angefallen` | 117,8 px | 110 px |
+> | `BEZAHLT` + `nicht angefallen` | 130,3 px | 110 px |
+> | `ERWARTET` + `nicht angefallen` | 139,3 px | 110 px |
+> | `FORECAST` + `nicht angefallen` | 138,3 px | 110 px |
+> | *(`OFFEN` + `am 1.`, heutiger Stand)* | 71,0 px | passt |
+>
+> **Entschieden: Der Wortlaut bleibt, der Ort gibt nach.** `nicht angefallen` ersetzt
+> das **Status-Label links**; rechts bleibt die Zeile leer. Gemessen 79,7 px — passt
+> bequem, ohne neue Zeile und ohne Höhenänderung.
+>
+> **Das ist keine Notlösung, sondern das stärkere Argument.** Entscheidung 3 begründet
+> das Ersetzen des Termins so: *„Ein Monat, in dem die Sache nicht angefallen ist, hat
+> keinen Termin mehr, den man erwarten könnte."* Genau dasselbe gilt für den Zustand —
+> eine Karte, bei der nichts anfällt, ist weder `Offen` noch `Erwartet`. **Beide Enden
+> der Zeile wären eine Falschaussage; jetzt verschwinden beide.**
+>
+> **Verworfen: `entfällt` am rechten Anschlag** (passt mit 74,6 px). Es hätte den Ort
+> gerettet und den Wortlaut gekostet — und damit die Kette zwischen Menü
+> (`Diesen Monat nicht angefallen`) und Karte (`nicht angefallen`), die genau deshalb
+> so gewählt wurde. Dazu ist „entfällt" Verwaltungssprache; Entscheidung 2 hat
+> `übersprungen` und `auf 0 €` aus demselben Grund verworfen.
+>
+> **Kein `text-transform: uppercase`.** Das Status-Label, das ersetzt wird, trägt es —
+> `nicht angefallen` nicht: §12.3 schreibt den Text klein, und der Ghost-Ton
+> unterscheidet ihn ohnehin. Uppercase wäre auch 22 px breiter und liefe wieder eng.
+>
+> Doku-Folge: §7 und §12.3 (der Zusatz *„ersetzt den Fälligkeitstag"* wird zu
+> *„ersetzt das Status-Label"*).
+
 ### Variante B — nichts, die `0,00 €` genügt
 
 **Kosten:** Sie genügt nicht. Zwei sehr verschiedene Sachverhalte sehen identisch aus,
