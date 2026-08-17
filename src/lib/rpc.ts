@@ -438,6 +438,46 @@ export async function getCategoryAmountsForMonth(
   return (data as unknown as CategoryAmount[]) ?? [];
 }
 
+// ── v2-24 (P4): die Jahres-Reihe der Sparrate in EINER Netzrunde ────────────
+
+/** Ist- und Plan-Sparrate eines Monats innerhalb einer Jahres-Reihe.
+ *
+ *  `null` heißt „kein Wert", nicht „0,00 €" — beide RPCs liefern `null`, wenn für
+ *  den Monat kein Gehalt hinterlegt ist. Eine 0 daraus zu machen wäre eine
+ *  Falschaussage („nichts gespart" ≠ „keine Daten", LL-20); die Umrechnung auf 0
+ *  passiert erst beim Kumulieren im Welle-Loader, genau wie vorher. */
+export type SparrateSeriesPoint = {
+  /** 0 = Januar … 11 = Dezember. */
+  month_index: number;
+  ist: number | null;
+  plan: number | null;
+};
+
+/** Zwölf Monate Ist und Plan in EINEM Aufruf statt in 24.
+ *
+ *  Gemessen: die Schleife kostet in der Datenbank **50,3 ms** für alle zwölf
+ *  Monate. Über die Leitung lagen die 24 Einzelaufrufe in Produktion bei
+ *  durchschnittlich 1.298 ms (Ist) bzw. 1.305 ms (Plan) — **je Aufruf**.
+ *
+ *  Die RPC **ruft** `calculate_sparrate_for_month` und
+ *  `calculate_planned_sparrate_for_month` auf und rechnet nicht selbst. Das ist
+ *  hier besonders scharf: Beide runden **einmal ganz am Ende über alles** (§6
+ *  Stolperfalle 13 / LL-25). Jede eigene Summierung oder Zwischenrundung würde
+ *  die Sparrate um Cent-Beträge verschieben — und damit den schärfsten
+ *  Regressions-Wächter des Projekts (LL-24). Deshalb wird dort nichts summiert;
+ *  die Kumulation bleibt im Loader. */
+export async function getSparrateSeries(
+  client: AppSupabaseClient,
+  args: { userId: string; year: number },
+): Promise<SparrateSeriesPoint[]> {
+  const { data, error } = await client.rpc("get_sparrate_series", {
+    p_user_id: args.userId,
+    p_year: args.year,
+  });
+  if (error) throw error;
+  return (data as unknown as SparrateSeriesPoint[]) ?? [];
+}
+
 // ── v2-24 (P3): alle Monatswerte aller Karten in EINER Netzrunde ────────────
 
 /** Die Monatswerte einer im Monat aktiven Karte.

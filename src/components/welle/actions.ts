@@ -1,12 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import {
-  calculateSparrateForMonth,
-  getYearDeviationDrivers,
-} from "@/lib/rpc";
+import { getSparrateSeries, getYearDeviationDrivers } from "@/lib/rpc";
 import { parseYearDrivers } from "./drivers";
-import { dbDate } from "./loader";
 import type { WelleExtras } from "./welle.types";
 
 /** Top-N je Monat — Tooltip zeigt 1, Popup 3 plus ggf. die Gehalts-Zeile (§9). */
@@ -69,17 +65,11 @@ export async function loadWelleExtras(activeYear: number): Promise<WelleExtras> 
       return null;
     });
 
-  // 12 Einzelaufrufe — bewusst vorerst so gelassen: Sie liegen jetzt außerhalb des
-  // kritischen Pfads und laufen nur noch auf Anfrage. Phase 4 bündelt sie
-  // zusammen mit den 24 Aufrufen der Kurve zu einer einzigen Netzrunde.
+  // v2-24 P4: EIN Aufruf statt zwölf. Nur die Ist-Werte werden gebraucht — die
+  // Goldlinie ist ein Ist-Jahresendwert, kein Plan.
   const prevPromise: Promise<(number | null)[]> = hasPrevYear
-    ? Promise.all(
-        Array.from({ length: 12 }, (_, i) =>
-          calculateSparrateForMonth(supabase, {
-            userId: user.id,
-            month: dbDate(prevYear, i),
-          }),
-        ),
+    ? getSparrateSeries(supabase, { userId: user.id, year: prevYear }).then(
+        (s) => s.map((p) => p.ist),
       )
     : Promise.resolve([]);
 

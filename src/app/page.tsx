@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  calculatePlannedSparrateForMonth,
-  calculateSparrateForMonth,
   getCardsForMonth,
   getCategoryAmountsForMonth,
   getSplitFactor,
@@ -103,23 +101,27 @@ export default async function Home({ searchParams }: HomeProps) {
   const taxYear = profile?.tax_year ?? activeMonth.year;
   const taxClass = profile?.tax_class ?? 1;
 
-  let realCurrent: number | null = null;
-  let realPlanned: number | null = null;
+  const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
+  const targetActiveMonth = { year: tmYear, month: tmMonth };
+
+  // v2-24 P4: Der Split-Faktor bleibt ein eigener Aufruf — er hängt am Monat,
+  // nicht am Jahr, und passt in keine der beiden Reihen. Die zwei
+  // Sparrate-Aufrufe für den Ring sind dagegen ENTFALLEN: Sie holten genau die
+  // Werte, die die Jahres-Reihe für die Welle ohnehin mitbringt (Fundstelle
+  // weiter unten). Zwei Quellen für dieselbe Zahl können auseinanderlaufen —
+  // jetzt gibt es nur noch eine.
   let splitFactor = 1.0;
   try {
-    [realCurrent, realPlanned, splitFactor] = await Promise.all([
-      calculateSparrateForMonth(supabase, { userId: user.id, month: targetDbDate }),
-      calculatePlannedSparrateForMonth(supabase, { userId: user.id, month: targetDbDate }),
-      getSplitFactor(supabase, { userId: user.id, month: targetDbDate }),
-    ]);
+    splitFactor = await getSplitFactor(supabase, {
+      userId: user.id,
+      month: targetDbDate,
+    });
   } catch (err) {
-    console.error("Sparrate-RPCs fehlgeschlagen", err);
+    console.error("Split-Faktor fehlgeschlagen", err);
   }
 
   const ichPercent = Math.round(splitFactor * 100);
   const partnerPercent = 100 - ichPercent;
-  const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
-  const targetActiveMonth = { year: tmYear, month: tmMonth };
 
   // ── Jahres-Welle (§9, v2-02) — Loop über bestehende RPCs (Briefing §3).
   // Ersetzt seit v2-02 P5 das V1-Inline-Treppen-Layout: die kumulierte Sicht
@@ -147,6 +149,23 @@ export default async function Home({ searchParams }: HomeProps) {
   } catch (err) {
     console.error("Welle-Daten-Load fehlgeschlagen", err);
   }
+
+  /* v2-24 P4: Die beiden Ring-Zahlen kommen aus der Jahres-Reihe, die die Welle
+   * gerade geladen hat — statt aus zwei eigenen Aufrufen für denselben Monat.
+   *
+   * Zwei Wirkungen, und die zweite ist die wichtigere:
+   *   · zwei Netzrunden weniger
+   *   · Ring und Welle können für denselben Monat nicht mehr auseinanderlaufen.
+   *     Vorher waren es zwei getrennte Abfragen derselben Funktion; zwischen
+   *     ihnen lag ein Zeitfenster, in dem sich der Datenstand ändern konnte.
+   *
+   * Bleibt die Welle aus (Ladefehler), bleiben auch die Ring-Zahlen `null` und
+   * der Ring zeigt nichts — dasselbe Verhalten wie vorher, wenn die
+   * Sparrate-Aufrufe scheiterten. `?? null` und nicht `?? 0`: „keine Anzeige"
+   * ist nicht 0,00 € (LL-20). */
+  const ringPoint = welleData?.points[activeMonthIndex] ?? null;
+  const realCurrent: number | null = ringPoint?.istMonthly ?? null;
+  const realPlanned: number | null = ringPoint?.planMonthly ?? null;
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
 

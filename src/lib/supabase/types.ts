@@ -625,6 +625,10 @@ export type Database = {
         Args: { p_card_id: string; p_month: string }
         Returns: number
       }
+      get_sparrate_series: {
+        Args: { p_user_id: string; p_year: number }
+        Returns: Json
+      }
       get_split_factor: {
         Args: { p_month: string; p_user_id: string }
         Returns: number

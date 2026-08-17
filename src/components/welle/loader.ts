@@ -1,19 +1,5 @@
-import {
-  calculatePlannedSparrateForMonth,
-  calculateSparrateForMonth,
-  type AppSupabaseClient,
-} from "@/lib/rpc";
+import { getSparrateSeries, type AppSupabaseClient } from "@/lib/rpc";
 import type { WelleData, WelleMonthPoint } from "./welle.types";
-
-/** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9).
- *
- *  Exportiert seit v2-24 P2: `actions.ts` baut die Vorjahres-Monate nach derselben
- *  Regel. Zwei Fassungen derselben Datums-Bildung wären genau die Art von Dublette,
- *  die irgendwann auseinanderläuft. */
-export function dbDate(year: number, monthIndex: number): string {
-  const mm = String(monthIndex + 1).padStart(2, "0");
-  return `${year}-${mm}-01`;
-}
 
 /**
  * Lädt die Datengrundlage der Jahres-Welle (§9): 12× Ist + 12× Plan des aktiven
@@ -21,24 +7,33 @@ export function dbDate(year: number, monthIndex: number): string {
  * Monats-RPC-Ergebnisse (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim
  * Summieren).
  *
- * ── Was diese Funktion seit v2-24 P2 NICHT mehr tut ─────────────────────────
+ * ── Was sich in v2-24 geändert hat, in zwei Schritten ───────────────────────
  *
- * Sie lädt **weder die Abweichungs-Treiber noch die zwölf Vorjahres-Werte**.
- * Beides wandert in `loadWelleExtras` und wird erst geholt, wenn der Nutzer die
- * Welle anfasst.
+ * **P2 — was hier nicht mehr geladen wird.** Weder die Abweichungs-Treiber noch
+ * die zwölf Vorjahres-Werte. Beides liegt in `loadWelleExtras` und wird erst
+ * geholt, wenn der Nutzer die Welle anfasst. `get_year_deviation_drivers` kostet
+ * gemessen **357 ms** — rund drei Viertel der gesamten Rechenzeit eines
+ * Dashboard-Aufbaus — und wurde bei jeder Geste bezahlt, auch wenn das Popup zu
+ * war.
  *
- * Der Grund ist gemessen, nicht vermutet: `get_year_deviation_drivers` kostet
- * **357 ms** in der Datenbank — rund **drei Viertel** der gesamten Rechenzeit
- * eines Dashboard-Aufbaus. Gebraucht wird das Ergebnis ausschließlich im
- * Hover-Tooltip und im Popup. Beim Ziehen einer Zahlung auf eine Karte ist das
- * Popup zu, und `revalidatePath` löst trotzdem den vollständigen Neu-Aufbau aus —
- * es wurde also bei jeder Geste bezahlt und nie angesehen. Die zwölf
- * Vorjahres-Aufrufe speisen allein die gold-gestrichelte Linie im Popup.
+ * **P4 — wie die verbleibenden Werte kommen.** Vorher waren es 24 einzelne
+ * Netzrunden (12× Ist, 12× Plan). Jetzt ist es **eine**: `get_sparrate_series`.
+ * In der Datenbank kostet die Schleife 50,3 ms; über die Leitung lagen die
+ * Einzelaufrufe in Produktion bei durchschnittlich rund 1.300 ms **je Aufruf**.
  *
- * Beleg und Messung: `V2/befunde_2026-08-16_performance.md` §6 ①.
+ * Aus 37 Netzrunden dieses Loaders ist damit **eine** geworden.
  *
- * Aus 37 Netzrunden werden damit 24 — und die 357 ms verlassen den kritischen
- * Pfad vollständig. Die verbleibenden 24 bündelt Phase 4 zu einer.
+ * ── Was bewusst UNVERÄNDERT bleibt ──────────────────────────────────────────
+ *
+ * Die Kumulation. Sie läuft weiter hier, über die zurückgegebenen Monatswerte,
+ * und nicht in der Datenbank. Grund: Beide Sparrate-Funktionen runden **einmal
+ * ganz am Ende über alles** (§6 Stolperfalle 13 / LL-25). Eine Summierung in der
+ * RPC hätte eine zweite Rundungsstelle eingeführt und die Sparrate um
+ * Cent-Beträge verschoben — genau die Fehlerklasse, die LL-24 beschreibt.
+ * `null = 0` gilt weiterhin nur beim Kumulieren, nicht im Monatswert selbst
+ * (LL-20).
+ *
+ * Beleg und Messung: `V2/befunde_2026-08-16_performance.md` §2, §6 ①.
  */
 export async function loadWelleData(
   client: AppSupabaseClient,
@@ -49,25 +44,20 @@ export async function loadWelleData(
 ): Promise<WelleData> {
   const { userId, activeYear } = args;
 
-  const activeDates = Array.from({ length: 12 }, (_, i) => dbDate(activeYear, i));
+  const series = await getSparrateSeries(client, { userId, year: activeYear });
 
-  const [istMonthly, planMonthly] = await Promise.all([
-    Promise.all(
-      activeDates.map((month) =>
-        calculateSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-    Promise.all(
-      activeDates.map((month) =>
-        calculatePlannedSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-  ]);
+  // Über den Index adressiert statt über die Array-Position: Die RPC sortiert
+  // zwar (`ORDER BY month_index`), aber eine Anzeige, die zwölf Monate zeigt,
+  // soll nicht davon abhängen. Fehlt ein Index, bleibt der Monat leer statt
+  // einen fremden Wert zu erben.
+  const byIndex = new Map(series.map((p) => [p.month_index, p]));
 
   let istCum = 0;
   let planCum = 0;
-  const points: WelleMonthPoint[] = istMonthly.map((ist, i) => {
-    const plan = planMonthly[i];
+  const points: WelleMonthPoint[] = Array.from({ length: 12 }, (_, i) => {
+    const p = byIndex.get(i);
+    const ist = p?.ist ?? null;
+    const plan = p?.plan ?? null;
     istCum += ist ?? 0;
     planCum += plan ?? 0;
     return {
