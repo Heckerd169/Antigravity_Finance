@@ -61,6 +61,28 @@ const NOT_LOADED: DriverEntry = {
   isPlaceholder: true,
 };
 
+/**
+ * Dritter Zustand, neu mit v2-24 P2: die Treiber sind noch nicht angefordert
+ * oder gerade unterwegs.
+ *
+ * **Warum es diesen Zustand geben MUSS.** Seit v2-24 werden die Treiber erst beim
+ * Anfassen der Welle geladen. In dem Moment, in dem der Tooltip erscheint, sind
+ * sie unter Umständen noch nicht da. Beide bisherigen Platzhalter wären dann eine
+ * **falsche Aussage**: „Keine Abweichungen" behauptet einen geprüften Befund,
+ * „Treiber nicht verfügbar" behauptet ein Scheitern. Zutreffend ist keins von
+ * beidem — es ist einfach noch nichts gefragt worden.
+ *
+ * ⚠️ **Dieser Wortlaut ist neue UI-Copy und gehört nach §12.** Die Design-Doku
+ * kennt bisher keinen Ladezustand; der Text ist an den beiden bestehenden
+ * Platzhaltern ausgerichtet (gleiche Satzform, gedimmte Darstellung) und
+ * ausdrücklich zur Freigabe gestellt. Kein Auslassungszeichen: `…` bedeutet in
+ * dieser Anwendung durchgängig „öffnet einen Dialog" (§12.3/§12.4).
+ */
+const LOADING: DriverEntry = {
+  label: "Treiber werden geladen",
+  isPlaceholder: true,
+};
+
 /** `−40,00 €` / `+12,50 €` — 2 Dezimalen (Karten-Format), NBSP wie im Tooltip. */
 function fmtDelta(delta: number): string {
   const sign = delta >= 0 ? "+" : MINUS;
@@ -119,11 +141,17 @@ export function parseYearDrivers(raw: unknown): DriversByMonth {
   return byMonth;
 }
 
-/** Top-1-Treiber für den Welle-Hover-Tooltip (§9). */
+/** Top-1-Treiber für den Welle-Hover-Tooltip (§9).
+ *
+ *  Drei Eingangszustände, drei verschiedene Aussagen (v2-24 P2):
+ *    `undefined` → noch nicht angefordert/unterwegs → „werden geladen"
+ *    `null`      → angefordert und gescheitert      → „nicht verfügbar"
+ *    Map        → da; leerer Monat                 → „Keine Abweichungen" */
 export function getTop1Driver(
-  drivers: DriversByMonth | null,
+  drivers: DriversByMonth | null | undefined,
   monthIndex: number,
 ): DriverEntry {
+  if (drivers === undefined) return LOADING;
   if (drivers === null) return NOT_LOADED;
   const first = drivers[monthIndex]?.[0];
   return first ? toEntry(first) : NO_DEVIATION;
@@ -146,9 +174,10 @@ const MAX_POPUP_DRIVERS = 4;
 /** Die größten Treiber für den Popup-Monatsklick (§9). Die Begrenzung macht
  *  bereits die RPC — der slice ist Defense-in-Depth. */
 export function getTop3Drivers(
-  drivers: DriversByMonth | null,
+  drivers: DriversByMonth | null | undefined,
   monthIndex: number,
 ): DriverEntry[] {
+  if (drivers === undefined) return [LOADING];
   if (drivers === null) return [NOT_LOADED];
   const monthDrivers = drivers[monthIndex];
   if (!monthDrivers || monthDrivers.length === 0) return [NO_DEVIATION];

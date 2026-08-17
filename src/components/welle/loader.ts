@@ -1,68 +1,57 @@
 import {
   calculatePlannedSparrateForMonth,
   calculateSparrateForMonth,
-  getYearDeviationDrivers,
   type AppSupabaseClient,
 } from "@/lib/rpc";
-import { parseYearDrivers, type DriversByMonth } from "./drivers";
 import type { WelleData, WelleMonthPoint } from "./welle.types";
 
-/** Top-N je Monat — Tooltip zeigt 1, Popup 3 (§9). */
-const DRIVER_LIMIT = 3;
-
-/** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9). */
-function dbDate(year: number, monthIndex: number): string {
+/** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9).
+ *
+ *  Exportiert seit v2-24 P2: `actions.ts` baut die Vorjahres-Monate nach derselben
+ *  Regel. Zwei Fassungen derselben Datums-Bildung wären genau die Art von Dublette,
+ *  die irgendwann auseinanderläuft. */
+export function dbDate(year: number, monthIndex: number): string {
   const mm = String(monthIndex + 1).padStart(2, "0");
   return `${year}-${mm}-01`;
 }
 
 /**
- * Lädt die Datengrundlage der Jahres-Welle + Popup-Treppe (§9) über den
- * bestehenden RPC-Loop (Briefing v2-02 §3, Option A — KEIN neuer RPC/B5):
- * 12× Ist + 12× Plan des aktiven Jahres, plus — sofern das Vorjahr abgeschlossen
- * ist — den kumulierten Vorjahres-Jahresendwert (Σ Jan–Dez X-1) für die
- * gold-gestrichelte B6-Linie im Popup.
+ * Lädt die Datengrundlage der Jahres-Welle (§9): 12× Ist + 12× Plan des aktiven
+ * Jahres. Die kumulierten Treppen-Werte sind reine Aufsummierung der
+ * Monats-RPC-Ergebnisse (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim
+ * Summieren).
  *
- * Die kumulierten Treppen-Werte sind reine Aufsummierung der Monats-RPC-Ergebnisse
- * (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim Summieren).
+ * ── Was diese Funktion seit v2-24 P2 NICHT mehr tut ─────────────────────────
  *
- * Vorjahres-Referenz-Regel (§9 B6): Linie nur, wenn das Vorjahr vollständig in der
- * Vergangenheit liegt — also `activeYear <= currentCalendarYear`. Im Zukunftsjahr
- * (activeYear > currentCalendarYear) ist das Vorjahr (= laufendes Jahr) noch nicht
- * abgeschlossen → keine Linie.
+ * Sie lädt **weder die Abweichungs-Treiber noch die zwölf Vorjahres-Werte**.
+ * Beides wandert in `loadWelleExtras` und wird erst geholt, wenn der Nutzer die
+ * Welle anfasst.
+ *
+ * Der Grund ist gemessen, nicht vermutet: `get_year_deviation_drivers` kostet
+ * **357 ms** in der Datenbank — rund **drei Viertel** der gesamten Rechenzeit
+ * eines Dashboard-Aufbaus. Gebraucht wird das Ergebnis ausschließlich im
+ * Hover-Tooltip und im Popup. Beim Ziehen einer Zahlung auf eine Karte ist das
+ * Popup zu, und `revalidatePath` löst trotzdem den vollständigen Neu-Aufbau aus —
+ * es wurde also bei jeder Geste bezahlt und nie angesehen. Die zwölf
+ * Vorjahres-Aufrufe speisen allein die gold-gestrichelte Linie im Popup.
+ *
+ * Beleg und Messung: `V2/befunde_2026-08-16_performance.md` §6 ①.
+ *
+ * Aus 37 Netzrunden werden damit 24 — und die 357 ms verlassen den kritischen
+ * Pfad vollständig. Die verbleibenden 24 bündelt Phase 4 zu einer.
  */
 export async function loadWelleData(
   client: AppSupabaseClient,
   args: {
     userId: string;
     activeYear: number;
-    currentCalendarYear: number;
   },
 ): Promise<WelleData> {
-  const { userId, activeYear, currentCalendarYear } = args;
-  const hasPrevYear = activeYear <= currentCalendarYear;
-  const prevYear = activeYear - 1;
+  const { userId, activeYear } = args;
 
   const activeDates = Array.from({ length: 12 }, (_, i) => dbDate(activeYear, i));
-  const prevDates = hasPrevYear
-    ? Array.from({ length: 12 }, (_, i) => dbDate(prevYear, i))
-    : [];
 
-  // B2 (v2-06): EIN Jahres-Call für alle 12 Monate — läuft parallel zu den
-  // Sparrate-Loops (Konzept-Papier Option c, bewusst KEIN Call pro Monat).
-  // Ein Treiber-Fehler darf die Kurve nicht mitreißen: er landet als null in
-  // `drivers`, die Welle rendert vollständig, der Tooltip sagt es ehrlich.
-  const driversPromise: Promise<DriversByMonth | null> = getYearDeviationDrivers(
-    client,
-    { year: activeYear, limit: DRIVER_LIMIT },
-  )
-    .then(parseYearDrivers)
-    .catch((err: unknown) => {
-      console.error("B2-Treiber-Load fehlgeschlagen", err);
-      return null;
-    });
-
-  const [istMonthly, planMonthly, prevIstMonthly, drivers] = await Promise.all([
+  const [istMonthly, planMonthly] = await Promise.all([
     Promise.all(
       activeDates.map((month) =>
         calculateSparrateForMonth(client, { userId, month }),
@@ -73,12 +62,6 @@ export async function loadWelleData(
         calculatePlannedSparrateForMonth(client, { userId, month }),
       ),
     ),
-    Promise.all(
-      prevDates.map((month) =>
-        calculateSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-    driversPromise,
   ]);
 
   let istCum = 0;
@@ -96,21 +79,9 @@ export async function loadWelleData(
     };
   });
 
-  // B6 (§9): Vorjahres-Endwert nur, wenn das Vorjahr abgeschlossen ist UND überhaupt
-  // Daten hat. Liefern alle 12 RPCs null → keine Referenz → keine Linie. Eine
-  // Gold-Linie bei 0 € wäre irreführend („nichts gespart" ≠ „keine Daten").
-  // Ein echtes Teiljahr mit einzelnen null-Monaten summiert dagegen normal (null = 0).
-  const prevHasData = prevIstMonthly.some((v) => v !== null);
-  const prevYearEndCumulative =
-    hasPrevYear && prevHasData
-      ? prevIstMonthly.reduce<number>((sum, v) => sum + (v ?? 0), 0)
-      : null;
-
   return {
     activeYear,
-    prevYear,
+    prevYear: activeYear - 1,
     points,
-    prevYearEndCumulative,
-    drivers,
   };
 }

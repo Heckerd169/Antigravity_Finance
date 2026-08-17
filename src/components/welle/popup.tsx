@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MONTHS_FULL, drawPopupStair, fmtSignedEuro, type WavePoint } from "./draw";
 import { getTop3Drivers } from "./drivers";
-import type { WelleData } from "./welle.types";
+import type { WelleData, WelleExtras } from "./welle.types";
 import styles from "./welle.module.css";
 
 const POPUP_CHART_HEIGHT = 200;
@@ -12,6 +12,11 @@ const CLICK_TOLERANCE = 40;
 
 type WellePopupProps = {
   data: WelleData;
+  /** v2-24 P2: Goldlinie und Treiber-Zeile kommen nachgeladen.
+   *  `null` = noch unterwegs — die Treppe zeichnet dann ohne Vorjahres-Linie und
+   *  füllt sie nach, sobald die Daten da sind. Die Treppe selbst ist vollständig;
+   *  es fehlt nur die Referenz. */
+  extras: WelleExtras | null;
   onClose: () => void;
 };
 
@@ -21,7 +26,7 @@ type WellePopupProps = {
  * IST (teal) + Plan (grau), Jahressumme als Held, B6-Vorjahres-Linie,
  * Monatsklick → Top-3-Treiber (B2-Platzhalter, Briefing §4).
  */
-export function WellePopup({ data, onClose }: WellePopupProps) {
+export function WellePopup({ data, extras, onClose }: WellePopupProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [chartWidth, setChartWidth] = useState<number>(0);
@@ -63,11 +68,15 @@ export function WellePopup({ data, onClose }: WellePopupProps) {
       height: POPUP_CHART_HEIGHT,
       istCum: data.points.map((p) => p.istCumulative),
       planCum: data.points.map((p) => p.planCumulative),
-      prevYearEnd: data.prevYearEndCumulative,
+      // v2-24 P2: `null` solange nicht geladen — `drawPopupStair` behandelt das
+      // bereits als „keine Referenz, keine Linie" (§9 B6). Kommen die Daten an,
+      // ändert sich `extras` und dieser Effekt zeichnet die Linie nach; deshalb
+      // steht `extras` in der Abhängigkeitsliste.
+      prevYearEnd: extras?.prevYearEndCumulative ?? null,
       selectedIndex: selIdx,
     });
     setPts(nextPts);
-  }, [data, chartWidth, selIdx]);
+  }, [data, extras, chartWidth, selIdx]);
 
   function handleCanvasClick(e: React.MouseEvent<HTMLCanvasElement>): void {
     if (pts.length === 0) return;
@@ -88,7 +97,12 @@ export function WellePopup({ data, onClose }: WellePopupProps) {
   }
 
   const yearTotal = data.points[11]?.istCumulative ?? 0;
-  const drivers = selIdx >= 0 ? getTop3Drivers(data.drivers, selIdx) : [];
+  // Drei Zustände wie im Tooltip: `undefined` = noch nicht geladen,
+  // `null` = geladen und gescheitert, Map = echte Treiber (v2-24 P2).
+  const drivers =
+    selIdx >= 0
+      ? getTop3Drivers(extras === null ? undefined : extras.drivers, selIdx)
+      : [];
 
   return (
     <div

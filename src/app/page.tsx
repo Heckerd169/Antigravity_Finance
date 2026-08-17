@@ -139,10 +139,12 @@ export default async function Home({ searchParams }: HomeProps) {
 
   let welleData: WelleData | null = null;
   try {
+    // v2-24 P2: `currentCalendarYear` entfällt hier. Es diente allein der Frage,
+    // ob die Vorjahres-Goldlinie gezeichnet wird — und die wird jetzt erst beim
+    // Öffnen des Popups beantwortet, server-seitig in `welle/actions.ts`.
     welleData = await loadWelleData(supabase, {
       userId: user.id,
       activeYear: tmYear,
-      currentCalendarYear: activeMonth.year,
     });
   } catch (err) {
     console.error("Welle-Daten-Load fehlgeschlagen", err);
