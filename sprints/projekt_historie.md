@@ -2272,3 +2272,52 @@ laufen, ist ungeklärt** — es gibt weder `vercel.json` noch eine Einstellung i
 `next.config.mjs`; nur im Vercel-Konto einsehbar. Der **Middleware-Ausweichpfad ist
 nie angesprungen** (0 Warnungen in zwei vollständigen Läufen) — das zeigt, dass er
 nicht im Weg ist, aber nicht, dass er im Ernstfall greift.
+
+**Nachtrag vom selben Tag (17.08.2026) — der teuerste Fund kam nach dem Review.**
+Der Eintrag oben bleibt stehen, wie er geschrieben wurde; dieser Absatz ergänzt ihn.
+
+Punkt ③ der offenen Fragen war *„In welcher Region laufen die Vercel-Funktionen?"* —
+ich konnte es nicht prüfen, es gibt weder `vercel.json` noch eine Einstellung in
+`next.config.mjs`. **Der Nutzer hat nachgesehen: Sie standen auf USA.** Die Datenbank
+liegt in **eu-west-1 (Irland)**. Jede einzelne Anfrage lief über den Atlantik und
+zurück — rund **90 ms** Umweg, bei den damaligen **233 Netzrunden** je Aufbau ein
+erheblicher Anteil der Wartezeit. Umgestellt auf **Frankfurt (`fra1`)**.
+
+**Der eigentliche Befund ist nicht die Region, sondern die Zeile darüber.** CLAUDE.md §2
+behauptete über ein Jahr *„Region matched Supabase (eu-west-1)"*. Sie tat es nicht.
+Weder die Prüfstrecke noch die Verfassung selbst konnte das finden — **eine Behauptung
+prüft sich nicht selbst**, und diese klang so beruhigend, dass niemand nachsah. Dass
+sie überhaupt hinterfragt wurde, lag allein daran, dass dieser Sprint die Frage stellte.
+
+**Das ist LL-22 in seiner allgemeinen Form** — jene Lehre sagt es über *Rechenverhalten*
+(„eine Doku-Zusage ist keine Prüfung"), hier war es die Infrastruktur. Festgeschrieben
+als **LL-30** und **§6 Stolperfalle 20**: Eine Einstellung, die nur in einem Web-Portal
+lebt, ist für das Repo unsichtbar und bei einem neu angelegten Projekt weg.
+
+**Dieselbe Fehlerklasse traf beim Nachziehen eine zweite Zeile derselben Datei.** §9
+nannte als Doku-Versionen „Schema-Doku **v3.6.0**", während die Datei selbst bei
+**v3.9.0** stand — drei Minor-Versionen Rückstand. Beide Zeilen sind korrigiert und
+haben einen **Warnkasten** bekommen, der sagt, dass es passiert ist. Eine
+stillschweigende Korrektur hätte den Lerneffekt weggeworfen; genau das ist der Grund,
+warum dieser Log existiert.
+
+**Wo ich dabei an eine Grenze gestoßen bin:** Die 90 ms tauchen in **keiner** meiner
+Messungen auf. Der Supabase-Log misst mit `response.origin_time` die *eigene*
+Verarbeitungszeit, nicht die Netzstrecke von Vercel dorthin. Ich habe den ganzen Sprint
+über die richtige Zahl gemessen — und eine Fehlerquelle daneben schlicht nicht sehen
+können. **Sichtbar wäre sie nur in der Vercel-Funktionsdauer gewesen**, auf die ich
+keinen Zugriff habe. Wer das nächste Mal Trägheit untersucht: Die Messung endet an der
+Grenze des Systems, in dem man messen kann, und diese Grenze gehört benannt.
+
+**Zwei Reste bleiben offen** (`PF-4`, jetzt 🟡): `fra1` ist gut, aber nicht die genaue
+Entsprechung — Supabase `eu-west-1` ist Irland, Vercel bietet dafür `dub1` (Dublin),
+rund 20 ms näher. Und die Einstellung lebt weiter nur im Portal; sie im Code
+festzunageln (`preferredRegion`, `vercel.json`) ist bewusst **noch nicht** geschehen,
+solange die erste Frage offen ist — der Code würde sonst den Wert festschreiben, der
+gerade zur Prüfung steht, und beim nächsten Portal-Wechsel schweigend gewinnen.
+
+**Ebenfalls an diesem Tag:** Der **Browser-Smoke ist bestanden**, und beide
+Doku-Freigaben sind erteilt und angewendet — Design-Doku **v3.8.0** (§12.8 dritter
+Treiber-Platzhalter mit Bedeutungs-Tabelle, §12.12 neu für Ladezustand und
+Fehlerseite), CLAUDE.md mit den Stolperfallen 18–20, LL-28 bis LL-30 und dem neuen
+**Anker 3**.
