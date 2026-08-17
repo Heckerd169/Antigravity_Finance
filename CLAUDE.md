@@ -25,6 +25,16 @@
 > **LL-30**, neue Stolperfalle **20**. Dieselbe Klasse traf die Doku-Versionen-Zeile in
 > §9 — sie nannte Schema-Doku v3.6.0, während die Datei bei v3.9.0 stand.
 >
+> **Danach, am selben Tag: die Jahres-Kuratierung 2026 und eine Design-Runde.** Der
+> Nutzer hat alle Monate 2026 kuratiert und zehn Punkte gemeldet — **zehn Meldungen,
+> drei Ursachen.** Fünf betrafen denselben **Löschriegel** (`HAS_PAST_PLAN` sperrt **78
+> von 82** Karten, löschbar sind **4**), drei denselben Mechanismus **Plan ohne
+> Zahlung** (Audible, Friseur und eine irrtümlich monatliche Karte — es gibt **neun**
+> namens „Fahrradteile"). Diagnose: `V2/befunde_2026-08-17_kuratierung-2026.md`.
+> Gestaltung entschieden: `V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md`
+> (Entscheidungen 1–5), Design-Doku **v3.9.0**, neues Roadmap-**Paket 18**. **Gebaut ist
+> davon nichts** — das ist Sprint v2-25.
+>
 > **Diese Runde berührt sechs Stellen**, alle nach ausdrücklicher Freigabe: **§2**
 > Regions-Zeile plus Warnkasten · **§3** Dateibaum um `vercel.json` · **§6** neue
 > Stolperfallen **18, 19, 20** sowie die Namensmengen-Regel beim Typen-Neuaufbau ·
@@ -1062,7 +1072,7 @@ gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
 v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
 
-**Doku-Versionen:** Design-Doku **v3.8.0** · Schema-Doku **v3.10.0**.
+**Doku-Versionen:** Design-Doku **v3.9.0** · Schema-Doku **v3.10.0**.
 
 > **Diese Zeile stand am 17.08.2026 falsch** — sie nannte Schema-Doku „v3.6.0", während
 > die Datei selbst bei **v3.9.0** stand. Drei Minor-Versionen Rückstand, entstanden weil
@@ -1192,8 +1202,8 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**17.08.2026, nach v2-24**: **11 offene Pakete · 34 Themen · 4 Hausaufgaben ·
-38 offen gesamt · 53 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**17.08.2026, nach der Design-Runde vom 17.08.**: **12 offene Pakete · 39 Themen ·
+4 Hausaufgaben · 43 offen gesamt · 53 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
 > **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat drei
