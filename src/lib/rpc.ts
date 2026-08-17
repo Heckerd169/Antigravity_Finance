@@ -180,14 +180,52 @@ export async function endCard(
   if (error) throw error;
 }
 
+/** v2-25 (KJ-1): Was eine Löschung mit der Sparrate macht — gemessen in der
+ *  Datenbank, nicht im Browser.
+ *
+ *  Die Wirkung über N Monate ist eine Sparraten-Rechnung, und Arbeitsregel 1
+ *  verbietet die im Frontend. `delete_card` misst deshalb vor und nach dem
+ *  eigenen UPDATE in derselben Transaktion und RUFT dabei
+ *  `calculate_sparrate_for_month` auf, statt sie nachzubauen.
+ *
+ *  `months` zählt nur Monate, in denen sich die Zahl TATSÄCHLICH bewegt —
+ *  eine Karte, die ab März gilt, ergibt zehn und nicht zwölf.
+ *  `singleMonth` ist gesetzt, wenn es genau einer ist; dann nennt der Toast
+ *  ihn beim Namen (Record, Entscheidung 1). */
+export type DeleteEffect = {
+  months: number;
+  /** Sparrate nachher − vorher, summiert. Positiv = Entlastung (türkis). */
+  total: number;
+  /** `"YYYY-MM"` genau dann, wenn `months === 1`. */
+  singleMonth: string | null;
+};
+
 /** Karte in den Papierkorb (deleted_at + deleted_entities). Nur bei grünem
- *  Lösch-Gate — sonst wirft die RPC 23514 mit Grund-Codes. */
+ *  Lösch-Gate — sonst wirft die RPC 23514 mit Grund-Codes.
+ *
+ *  v2-25 (KJ-1): `year` ist das Kalenderjahr des angezeigten Monats — das
+ *  Fenster, über das die Wirkung gemessen wird. Es ist dasselbe Fenster, das
+ *  die App überall sonst benutzt (Welle §9, `get_year_deviation_drivers`);
+ *  eine unbefristete monatliche Karte wirkt sonst unendlich weit. */
 export async function deleteCard(
   client: AppSupabaseClient,
-  args: { cardId: string },
-): Promise<void> {
-  const { error } = await client.rpc("delete_card", { p_card_id: args.cardId });
+  args: { cardId: string; year: number },
+): Promise<DeleteEffect> {
+  const { data, error } = await client.rpc("delete_card", {
+    p_card_id: args.cardId,
+    p_year: args.year,
+  });
   if (error) throw error;
+
+  const effect = (data as { sparrate_effect?: unknown } | null)?.sparrate_effect as
+    | { months?: number; total?: number; single_month?: string | null }
+    | undefined;
+
+  return {
+    months: Number(effect?.months ?? 0),
+    total: Number(effect?.total ?? 0),
+    singleMonth: effect?.single_month ?? null,
+  };
 }
 
 /** Rückgängig aus dem Papierkorb (innerhalb der Retention). */

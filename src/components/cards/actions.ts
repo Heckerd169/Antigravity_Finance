@@ -14,7 +14,7 @@ import {
   setCardCategory,
   toggleCardManuallyPaid,
 } from "@/lib/rpc";
-import type { DeletedCategoryPayload } from "@/lib/rpc";
+import type { DeleteEffect, DeletedCategoryPayload } from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
@@ -50,12 +50,25 @@ export async function endCardAction(
   revalidatePath("/", "page");
 }
 
-/** Karte in den Papierkorb (nur bei grünem Lösch-Gate, sonst RPC-23514). */
-export async function deleteCardAction(cardId: string): Promise<void> {
+/** Karte in den Papierkorb (nur bei grünem Lösch-Gate, sonst RPC-23514).
+ *
+ *  v2-25 (KJ-1): Gibt zurück, was die Löschung mit der Sparrate gemacht hat —
+ *  gemessen in der Datenbank, nicht hier (Arbeitsregel 1). `year` ist das
+ *  Kalenderjahr des angezeigten Monats und bestimmt das Messfenster.
+ *
+ *  Seit dem Fall des Vergangenheits-Riegels kann eine Löschung die Sparrate
+ *  VERGANGENER Monate bewegen. Das ist gewollt — sie korrigiert eine irrtümlich
+ *  angelegte Karte, statt die Vergangenheit zu konservieren. Sichtbar wird es
+ *  im Toast (§7 „Die Folge des Löschens"). */
+export async function deleteCardAction(
+  cardId: string,
+  year: number,
+): Promise<DeleteEffect> {
   const supabase = createClient();
   await opportunisticTrashCleanup(supabase);
-  await deleteCard(supabase, { cardId });
+  const effect = await deleteCard(supabase, { cardId, year });
   revalidatePath("/", "page");
+  return effect;
 }
 
 /** Rückgängig aus dem Papierkorb (vom Undo-Toast, innerhalb der Retention). */

@@ -575,7 +575,7 @@ export type Database = {
         Args: { p_card_id: string; p_name: string }
         Returns: string
       }
-      delete_card: { Args: { p_card_id: string }; Returns: Json }
+      delete_card: { Args: { p_card_id: string; p_year?: number }; Returns: Json }
       delete_card_category: { Args: { p_category_id: string }; Returns: Json }
       end_card: {
         Args: { p_card_id: string; p_last_month: string }

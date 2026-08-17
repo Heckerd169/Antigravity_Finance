@@ -9,6 +9,10 @@ import {
   toggleCardTap,
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
+import type { CardActionToastFollowUp } from "./card-action-toast-provider";
+import type { DeleteEffect } from "@/lib/rpc";
+import { formatEuroSigned } from "@/lib/format";
+import { formatMonthNameOnly } from "@/lib/months";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
 import { CategoryOverlay } from "./category-overlay";
 import { DueDayOverlay } from "./due-day-overlay";
@@ -32,11 +36,14 @@ import styles from "./cards.module.css";
  *  ins Leere — und Karten aus einer Zahlung sind typischerweise einmalig.
  *
  *  `HAS_STATES` meint seit v2-20 nur noch Zustände aus VERGANGENEN Monaten;
- *  der Text nennt deshalb den Grund und nicht mehr die Mechanik. */
+ *  der Text nennt deshalb den Grund und nicht mehr die Mechanik.
+ *
+ *  v2-25 (KJ-1): `HAS_PAST_PLAN` ist ENTFALLEN — der Riegel ist gefallen.
+ *  Von den beiden verbliebenen Gründen ist der erste auflösbar, und sein Text
+ *  sagt genau, wie. */
 const GATE_REASON_TEXT: Record<DeleteGate["reasons"][number], string> = {
   HAS_LINKS: "Erst die zugeordnete Zahlung lösen",
   HAS_STATES: "Sie trägt vergangene Monate",
-  HAS_PAST_PLAN: "Sie war in vergangenen Monaten eingeplant",
 };
 
 type CardInteractiveProps = {
@@ -196,13 +203,44 @@ export function CardInteractive({
     });
   }
 
+  /** v2-25 (KJ-1): Die Folgen-Zeile des Lösch-Toasts (§12.5).
+   *
+   *  Der WORTLAUT entsteht hier, die ZAHL kommt aus der Datenbank — der
+   *  Toast-Provider kennt weder Sparraten noch Monate, und das Frontend rechnet
+   *  nichts nach (Arbeitsregel 1).
+   *
+   *  Drei Fälle, und der dritte ist der, den man leicht vergisst:
+   *    · mehrere Monate → Summe und Anzahl
+   *    · genau einer    → der Monat wird BENANNT, das ist nützlicher als „in 1
+   *                       Monat" (Record, Entscheidung 1)
+   *    · keine Wirkung  → `null`, der Toast bleibt einzeilig. Keine Null-Zeile,
+   *                       kein „Keine Änderungen" (§7 Regel 17 / LL-20).
+   *
+   *  Der Ton folgt der Richtung der Sparrate, nicht der Art der Karte: Türkis,
+   *  wenn sie steigt (eine Kostenkarte fällt weg), rot, wenn sie sinkt (eine
+   *  Einnahme fällt weg). Dieselbe Regel wie in §10. */
+  function toFollowUp(effect: DeleteEffect): CardActionToastFollowUp | undefined {
+    if (effect.months === 0) return undefined;
+
+    const betrag = formatEuroSigned(effect.total);
+    const text =
+      effect.singleMonth !== null
+        ? `Sparrate ${formatMonthNameOnly(effect.singleMonth)} · ${betrag}`
+        : `Sparrate in ${effect.months} Monaten · zusammen ${betrag}`;
+
+    return { text, tone: effect.total >= 0 ? "positive" : "negative" };
+  }
+
   function handleDeleteClick(e: React.MouseEvent) {
     e.stopPropagation();
     if (!deleteGate.deletable) return;
     setMenuOpen(false);
+    // Das Messfenster ist das Kalenderjahr des angezeigten Monats — `month` ist
+    // „YYYY-MM-01“, die ersten vier Zeichen sind das Jahr.
+    const year = Number(month.slice(0, 4));
     showToast({
       text: `Karte »${cardName}« gelöscht`,
-      run: () => deleteCardAction(cardId),
+      run: () => deleteCardAction(cardId, year).then(toFollowUp),
       undo: () => restoreCardAction(cardId),
     });
   }
