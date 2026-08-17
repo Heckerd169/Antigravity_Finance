@@ -1,0 +1,10 @@
+/* v2-24 P5: Ladefläche des Dashboards.
+ *
+ * Bewusst nur Geometrie, keine Gestaltung. Die Höhe spiegelt das
+ * Single-Surface-Layout aus `page.module.css` (`height: 100dvh`), damit beim
+ * Übergang nichts springt; die Farbe kommt von `body` (`--bg-primary`, gesetzt in
+ * `globals.css`) und wird hier NICHT wiederholt — ein zweiter Ort für dieselbe
+ * Farbe wäre eine Stelle, an der sie auseinanderlaufen kann. */
+.main {
+  height: 100dvh;
+}

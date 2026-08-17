@@ -1,0 +1,62 @@
+/* v2-24 P5: Fehlerseite des Dashboards.
+ *
+ * Die Formensprache ist ZEICHEN FÜR ZEICHEN von `login/login.module.css`
+ * übernommen — gleiche Kachel, gleicher Radius, gleiche Ränder, gleiche
+ * Schriftgrade, gleicher Knopf. Das ist Absicht und keine Faulheit: Es sind die
+ * beiden einzigen Seiten der Anwendung außerhalb des Dashboards, sie erscheinen
+ * in derselben Lage (mittig auf leerer Fläche), und eine zweite Formensprache für
+ * denselben Fall wäre eine erfundene Gestaltungsentscheidung (§7 Regel 3).
+ *
+ * Alle Farben kommen aus `tokens.css` (§7 Regel 4) — kein Hex-Code inline. */
+
+.main {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.button {
+  margin-top: 8px;
+  background: var(--color-teal);
+  color: var(--bg-primary);
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font: inherit;
+  font-family: var(--font-stack-system);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  filter: brightness(1.05);
+}
