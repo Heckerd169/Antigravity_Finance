@@ -263,18 +263,43 @@ Fremdschlüssel-Indizes (`card_planned_timeline.user_id`,
 Nach dem Umbau fallen statt ~56.000 Anfragen pro Tag grob 4.000 an; die Empfehlung war
 „erst umbauen, dann messen".
 
-**⑦ Zwei Reste aus der Regions-Frage** (`PF-4`, jetzt 🟡 statt ⬜):
-- **`fra1` ist gut, aber nicht die genaue Entsprechung.** Supabase `eu-west-1` ist
-  **Irland**; Vercel bietet dafür `dub1` (Dublin). Frankfurt liegt rund 20 ms entfernt,
-  Dublin wären wenige Millisekunden. Bei ~18 Anfragen je Aufbau, die überwiegend
-  parallel laufen, ist der Effekt auf die gefühlte Reaktion klein — es ist eine
-  Feinjustierung, kein Fehler mehr.
-- **Die Einstellung lebt nur im Vercel-Portal** und ist damit für dieses Repo unsichtbar
-  und bei einem neu angelegten Projekt weg. Festnageln ginge über
-  `export const preferredRegion` oder `vercel.json`. **Bewusst noch nicht getan:**
-  Solange der erste Punkt offen ist, würde der Code den Wert festschreiben, der gerade
-  noch zur Prüfung steht — und beim nächsten Portal-Wechsel schweigend gewinnen. Das
-  ist genau die Verwirrung, die LL-30 vermeiden will, nur mit umgekehrtem Vorzeichen.
+**⑦ ✅ Die Regions-Frage ist vollständig geschlossen** (`PF-4`, noch am selben Tag).
+
+**Dublin statt Frankfurt** — und der Grund war besser als vermutet: Vercel beschriftet
+Dublin selbst mit **`eu-west-1`**, also **derselben AWS-Region**, in der die
+Supabase-Datenbank liegt. Keine Annäherung, sondern eine exakte Entsprechung.
+
+**Die Entscheidung trägt eine Zahl, die ich vorher nicht auf dem Schirm hatte:** nicht
+die **18 Anfragen** je Aufbau, sondern die **13 `await`-Barrieren** in `page.tsx`.
+Jede ist eine Stelle, an der der Render auf eine Antwort warten *muss*, bevor er die
+nächste Frage stellt — und jede kostet eine volle Wegstrecke, egal wie viele Anfragen
+darin parallel laufen.
+
+| | Weg Funktion → Datenbank | × 13 Stufen |
+|---|---|---|
+| Frankfurt (`eu-central-1`) | andere AWS-Region | ~250–320 ms |
+| **Dublin (`eu-west-1`)** | **dieselbe** AWS-Region | **~25–40 ms** |
+
+Dagegen steht, dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist.
+Das verliert klar: Der Browser spricht pro Geste **zweimal** mit der Funktion, die
+Funktion **dreizehnmal hintereinander** mit der Datenbank. **Das Verhältnis 13:2
+entscheidet**, und daran ändern einzelne Millisekunden nichts.
+
+**Festgenagelt in `vercel.json`** (`{"regions": ["dub1"]}`) — versioniert, im Diff
+sichtbar, überlebt ein neu angelegtes Projekt, und **gewinnt gegen das Portal**. Damit
+ist LL-30 für diesen Fall nicht nur beschrieben, sondern behoben. Die Begründung steht
+in CLAUDE.md §2 und §3, weil JSON keine Kommentare trägt.
+
+**Nicht betroffen:** die Edge-Middleware — sie läuft immer am Netzknoten in Nutzernähe,
+ihre eine Anmelde-Abfrage geht weiterhin von Deutschland nach Irland.
+
+> **Was hier gemessen ist und was nicht — die Grenze gehört benannt.** Die 13 Stufen
+> sind aus dem Code gezählt. Die Millisekunden sind **geschätzt**: Sie liegen außerhalb
+> dessen, was ich sehen kann, weil `response.origin_time` im Supabase-Log die *eigene*
+> Verarbeitungszeit misst, nicht die Netzstrecke von Vercel dorthin. Das Argument hängt
+> nicht an den exakten Werten — „gleiche Region" liegt strukturell etwa eine
+> Größenordnung unter „andere Region" —, aber es ist eine Schätzung und keine Messung,
+> und das ist ein Unterschied, der in diesem Projekt zählt.
 
 ---
 

@@ -2321,3 +2321,38 @@ Doku-Freigaben sind erteilt und angewendet — Design-Doku **v3.8.0** (§12.8 dr
 Treiber-Platzhalter mit Bedeutungs-Tabelle, §12.12 neu für Ladezustand und
 Fehlerseite), CLAUDE.md mit den Stolperfallen 18–20, LL-28 bis LL-30 und dem neuen
 **Anker 3**.
+
+**Zweiter Nachtrag vom 17.08.2026 — `PF-4` am Tag seiner Entstehung geschlossen.**
+
+Der Nutzer hat die Regions-Auswahl aufgerufen, und darin stand die Antwort wörtlich:
+**„Dublin, Ireland (West) — `eu-west-1` — `dub1`"**. Das ist dieselbe AWS-Region, in der
+die Supabase-Datenbank liegt — keine Annäherung, sondern die exakte Entsprechung. Erst
+auf Frankfurt umgestellt, am selben Tag auf **Dublin** weitergezogen.
+
+**Die Zahl, die die Entscheidung trägt, hatte ich vorher nicht auf dem Schirm.** Ich habe
+über den ganzen Sprint die **Anfragen** gezählt (233 → ~18) — für die Frage „welche
+Region?" ist aber die Zahl der **Abhängigkeitsstufen** maßgeblich: `page.tsx` hat **13
+`await`-Barrieren**, Stellen, an denen der Render auf eine Antwort warten *muss*, bevor
+er die nächste Frage stellt. Jede kostet eine volle Wegstrecke, unabhängig davon, wie
+viele Anfragen darin parallel laufen. Frankfurt (andere AWS-Region) ~250–320 ms über 13
+Stufen, Dublin (gleiche Region) ~25–40 ms.
+
+Dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist, verliert dagegen
+klar: **Der Browser spricht pro Geste zweimal mit der Funktion, die Funktion
+dreizehnmal mit der Datenbank.** Das Verhältnis 13:2 entscheidet.
+
+**Und der eigentliche Abschluss:** Die Region steht jetzt in **`vercel.json`**
+(`{"regions": ["dub1"]}`) — versioniert, im Diff sichtbar, sie überlebt ein neu
+angelegtes Projekt und **gewinnt gegen das Portal**. Damit ist LL-30 für diesen Fall
+nicht nur beschrieben, sondern behoben. Die Begründung steht in CLAUDE.md §2 und §3,
+weil JSON keine Kommentare trägt — und §3 hält zusätzlich fest, dass diese Datei
+**bewusst kein Sammelbecken** für Deployment-Optionen wird.
+
+**Zwei Dinge, die diesen Nachtrag überleben sollten.** Erstens: **Ich habe die richtige
+Zahl gemessen und die entscheidende nicht gesehen.** Anfragen zählen war richtig und hat
+den Sprint getragen; für die Regions-Frage war es die falsche Kennzahl, und ich bin erst
+darauf gekommen, als der Nutzer die Auswahlliste zeigte. Zweitens: **Die Grenze der
+Messung gehört ins Ergebnis.** Die 13 Stufen sind gezählt, die Millisekunden sind
+geschätzt — die Netzstrecke Vercel→Supabase liegt außerhalb dessen, was
+`response.origin_time` sieht. Eine Schätzung, die als solche gekennzeichnet ist, ist in
+diesem Projekt brauchbar; eine, die als Messung auftritt, wäre es nicht.

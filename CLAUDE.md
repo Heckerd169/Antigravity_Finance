@@ -141,7 +141,7 @@ Finanzdaten** des Users — das schärft jede Test- und Migrations-Regel (§4).
 | Package Manager | pnpm | 11.x |
 | ESLint | `next/core-web-vitals` | 8.x |
 | E2E-/Visual-Tests | Playwright (`@playwright/test`) | 1.61.x |
-| Deployment | Vercel | Region **Frankfurt (`fra1`)** — seit 17.08.2026, siehe unten |
+| Deployment | Vercel | Region **Dublin (`dub1`)** — festgenagelt in `vercel.json`, siehe unten |
 
 **Major-Versions sind eingefroren.** Keine Bumps von Next/React/ESLint ohne
 expliziten Sprint-Auftrag.
@@ -155,21 +155,57 @@ expliziten Sprint-Auftrag.
 > machte, war das ein erheblicher Anteil der Wartezeit.
 >
 > **Gefunden hat es nicht die Prüfstrecke und nicht diese Datei, sondern der Nutzer** —
-> weil v2-24 die Frage überhaupt erst gestellt hat (`PF-4`). Umgestellt auf
-> **Frankfurt (`fra1`)** am 17.08.2026.
+> weil v2-24 die Frage überhaupt erst gestellt hat (`PF-4`).
 >
 > **Das ist LL-22 in seiner allgemeinen Form:** Eine Zusage in einer Doku ist keine
 > Prüfung. LL-22 sagt das über **Rechenverhalten** — hier war es die Infrastruktur, und
 > die Zeile war umso wirksamer, weil sie so beruhigend klang, dass niemand nachsah.
 >
-> **Zwei Dinge, die daraus folgen:**
-> - **Eine Einstellung, die nur in einem Web-Portal lebt, ist für dieses Repo
->   unsichtbar** und bei einem neu angelegten Projekt weg. Wer sie festnageln will,
->   schreibt sie in den Code (`export const preferredRegion` je Route-Segment oder
->   `vercel.json`) — dann prüft der Diff mit, nicht das Gedächtnis.
-> - **`fra1` ist gut, aber nicht die genaue Entsprechung.** Supabase `eu-west-1` ist
->   **Irland**; Vercel bietet dafür `dub1` (Dublin). Frankfurt liegt rund 20 ms
->   entfernt, Dublin wären wenige Millisekunden. Offen als `PF-4`.
+> ### Warum Dublin und nicht Frankfurt
+>
+> Am 17.08.2026 zunächst auf Frankfurt umgestellt, am selben Tag auf **Dublin**
+> weitergezogen. Der Grund steht in Vercels eigener Beschriftung: Dublin heißt dort
+> **`eu-west-1`** — dieselbe AWS-Region, in der die Supabase-Datenbank liegt. Die
+> Funktion läuft damit **in** der Region der Datenbank, nicht daneben.
+>
+> **Die Zahl, die die Entscheidung trägt, ist nicht die Zahl der Anfragen, sondern die
+> der Abhängigkeitsstufen.** `src/app/page.tsx` hat **13 `await`-Barrieren** — Stellen,
+> an denen der Render auf eine Antwort warten *muss*, bevor er die nächste Frage stellt.
+> Jede kostet eine volle Wegstrecke, egal wie viele Anfragen darin parallel laufen.
+>
+> | | Weg Funktion → Datenbank | × 13 Stufen |
+> |---|---|---|
+> | Frankfurt (`eu-central-1`) | andere AWS-Region | ~250–320 ms |
+> | **Dublin (`eu-west-1`)** | **dieselbe** AWS-Region | **~25–40 ms** |
+>
+> Dagegen steht, dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist
+> als Frankfurt. Das verliert: Der Browser spricht pro Geste **zweimal** mit der
+> Funktion, die Funktion **dreizehnmal hintereinander** mit der Datenbank. Das
+> Verhältnis 13:2 entscheidet, und daran ändern einzelne Millisekunden nichts.
+>
+> **Was gemessen ist und was nicht:** Die 13 Stufen sind aus dem Code gezählt. Die
+> Millisekunden sind **geschätzt** — sie liegen außerhalb dessen, was die Supabase-Logs
+> sehen (`response.origin_time` misst Supabases eigene Verarbeitung, **nicht** die
+> Netzstrecke von Vercel dorthin). Das Argument hängt nicht an den exakten Werten:
+> „gleiche Region" liegt strukturell etwa eine Größenordnung unter „andere Region".
+>
+> ### Die Einstellung ist jetzt festgenagelt
+>
+> **`vercel.json` trägt `{"regions": ["dub1"]}`** — versioniert, im Diff sichtbar, und
+> sie überlebt ein neu angelegtes Projekt. Vorher lebte sie **nur im Vercel-Portal** und
+> war damit für dieses Repo unsichtbar; genau das ist der Grund, warum die falsche Zeile
+> so lange überlebt hat (**LL-30 / §6 Stolperfalle 20**).
+>
+> **Zwei Dinge, die man dazu wissen muss:**
+> - **Die Datei gewinnt gegen das Portal.** Wer die Region ändern will, ändert
+>   `vercel.json` — eine Umstellung im Portal allein wird beim nächsten Deployment
+>   überschrieben. Das ist gewollt.
+> - **Die Middleware ist davon NICHT betroffen.** Sie läuft als Edge-Middleware immer am
+>   Netzknoten in der Nähe des Nutzers; ihre eine Anmelde-Abfrage geht also weiterhin von
+>   Deutschland nach Irland. Diese Einstellung steuert ausschließlich die
+>   Server-Funktionen.
+>
+> **Der Hobby-Plan erlaubt genau eine Region** — „beides" gibt es nicht.
 
 **Was NICHT verwendet wird:** kein Tailwind · keine Component-Library ·
 kein State-Manager · keine ORM.
@@ -220,8 +256,21 @@ Antigravity_Finance/
 ├── supabase/test_projekt/                     ← Übungs-DB-Runbook + Init-2-Seed
 ├── public/prototypes/                         ← HTML-Prototypen als Referenz
 ├── import_data/                               ← Konto-Abzüge, gitignored, NIE committen
-└── playwright.config.ts                       ← Projekte: visual · unauth · setup · render-smoke
+├── playwright.config.ts                       ← Projekte: visual · unauth · setup · render-smoke
+└── vercel.json                                ← NUR die Funktions-Region (§2)
 ```
+
+> **Warum `vercel.json` nur eine einzige Zeile enthält.** Es gibt sie seit dem
+> 17.08.2026 und ausschließlich für `{"regions": ["dub1"]}` — die AWS-Region, in der
+> auch die Supabase-Datenbank liegt. Der Anlass steht in **§2**: Die Region stand über
+> ein Jahr auf **USA**, während diese Datei das Gegenteil behauptete, und sie lebte nur
+> im Vercel-Portal, wo kein Diff sie prüfen konnte (LL-30).
+>
+> **JSON kann keine Begründung tragen** — deshalb steht sie in §2 und nicht in der
+> Datei. Wer `vercel.json` erweitern will, prüft zuerst, ob die Einstellung nicht
+> besser in `next.config.mjs` gehört: Diese Datei ist bewusst **kein** Sammelbecken für
+> Deployment-Optionen, sondern trägt genau die eine Sache, die Next.js nicht selbst
+> versioniert.
 
 ### Wohin gehört etwas Neues?
 
@@ -592,10 +641,14 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Weder die Prüfstrecke noch diese Datei konnte das finden — eine Behauptung prüft
     sich nicht selbst, und diese klang so beruhigend, dass niemand nachsah. Gefunden
     hat es der Nutzer, nachdem v2-24 die Frage überhaupt gestellt hatte.
-    **Regel:** Was das Verhalten in Produktion bestimmt, gehört in den Code
-    (`export const preferredRegion`, `vercel.json`) — dann prüft der Diff mit. Steht
-    es nur im Portal, ist die Zeile in dieser Datei eine **Vermutung** und muss als
-    solche gekennzeichnet werden. (v2-24, LL-30)
+    **Regel:** Was das Verhalten in Produktion bestimmt, gehört in den Code — dann
+    prüft der Diff mit. **Erledigt für diesen Fall:** `vercel.json` trägt seit dem
+    17.08.2026 `{"regions": ["dub1"]}` und gewinnt gegen das Portal.
+    **Was daraus für den nächsten Fall folgt:** Solange eine Einstellung nur im Portal
+    steht, ist jede Zeile über sie in dieser Datei eine **Vermutung** und muss als
+    solche gekennzeichnet werden. Die Umkehrung ist genauso wichtig: Wer sie in den
+    Code holt, muss es **hier** vermerken — sonst sucht die nächste Sitzung im Portal
+    und findet einen Wert, der längst überschrieben wird. (v2-24, LL-30)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -1084,13 +1137,13 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**17.08.2026, nach v2-24**: **11 offene Pakete · 35 Themen · 4 Hausaufgaben ·
-39 offen gesamt · 52 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**17.08.2026, nach v2-24**: **11 offene Pakete · 34 Themen · 4 Hausaufgaben ·
+38 offen gesamt · 53 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
-> **Die Zahl STEIGT, und das ist hier das richtige Ergebnis.** v2-24 hat zwei Punkte
-> erledigt und **drei neue eingetragen**, plus ein neues **Paket 17 „Die App reagiert
-> sofort"**. Performance kam in der Roadmap vorher **nirgends** vor — null Treffer für
+> **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat drei
+> Punkte erledigt (`PF-1`, `PF-2`, `PF-4`) und **zwei offene eingetragen**, plus ein
+> neues **Paket 17 „Die App reagiert sofort"**. Performance kam in der Roadmap vorher **nirgends** vor — null Treffer für
 > „Performance", „Ladezeit", „langsam", „Latenz", „Reaktion" —, während die App in
 > Produktion in Zeitüberschreitungen lief. Ein Thema, das nicht in der Liste steht,
 > konkurriert unsichtbar mit allem anderen und verliert gegen das, was gerade lauter
