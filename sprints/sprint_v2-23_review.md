@@ -142,7 +142,16 @@ dieselbe Bauart kann anderswo auftreten (Enums aus `link_origin`, `card_type`,
 
 ## 7. Vorschläge für CLAUDE.md und Roadmap
 
-**Für CLAUDE.md: ein Vorschlag, nicht angewendet** (§7 Regel 14 — braucht Freigabe).
+**Für CLAUDE.md: ✅ am 16.08.2026 freigegeben und angewendet.** Verfahren und Umfang in
+`sprints/sprint_v2-23_doku_patches.md`.
+
+> **Der Umfang wurde beim Anwenden größer als der freigegebene Satz** — und das ist
+> benannt, nicht stillschweigend passiert: Die **zweite** Ausprägung (Nachbau, v2-20)
+> stand gar nicht in CLAUDE.md. Der v2-20-Review hatte sie vorgeschlagen, aber für
+> jenen Sprint wurde nie eine CLAUDE.md-Freigabe erteilt. Eine „dritte Ausprägung"
+> ohne die zweite wäre unverständlich gewesen, deshalb sind beide eingetragen.
+> Zusätzlich ist die **LL-26-Registerzeile verallgemeinert** worden: Sie nannte nur
+> das Limit, die Lehre hat aber inzwischen drei Gestalten.
 
 > **§6 Stolperfalle 16 erweitern** (nicht neu anlegen — es ist dieselbe Lehre, jetzt
 > in dritter Ausprägung):
