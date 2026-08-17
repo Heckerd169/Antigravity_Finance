@@ -518,6 +518,11 @@ export type Database = {
       }
     }
     Functions: {
+      af_normalize_text: { Args: { p_text: string }; Returns: string }
+      af_word_in_text: {
+        Args: { p_text: string; p_word: string }
+        Returns: boolean
+      }
       amount_match: {
         Args: { p_fragment_amount: number; p_planned_amount: number }
         Returns: number
@@ -596,6 +601,10 @@ export type Database = {
         }
         Returns: number
       }
+      get_cards_for_month: {
+        Args: { p_month: string; p_user_id: string }
+        Returns: Json
+      }
       get_category_amounts_for_month: {
         Args: { p_month: string; p_user_id: string }
         Returns: Json
@@ -616,6 +625,10 @@ export type Database = {
         Args: { p_card_id: string; p_month: string }
         Returns: number
       }
+      get_sparrate_series: {
+        Args: { p_user_id: string; p_year: number }
+        Returns: Json
+      }
       get_split_factor: {
         Args: { p_month: string; p_user_id: string }
         Returns: number
@@ -623,6 +636,10 @@ export type Database = {
       get_year_deviation_drivers: {
         Args: { p_limit?: number; p_year: number }
         Returns: Json
+      }
+      history_match: {
+        Args: { p_card_id: string; p_fragment_id: string }
+        Returns: number
       }
       is_card_active_in_month: {
         Args: { p_card_id: string; p_month: string }
@@ -636,8 +653,16 @@ export type Database = {
         Args: { p_card_name: string; p_description: string }
         Returns: number
       }
+      name_similarity_scoped: {
+        Args: { p_card_id: string; p_description: string }
+        Returns: number
+      }
       process_csv_import: {
         Args: { p_format_hint?: string; p_rows: Json }
+        Returns: Json
+      }
+      refresh_fragment_suggestions: {
+        Args: { p_from_month: string; p_to_month: string }
         Returns: Json
       }
       rename_card_category: {

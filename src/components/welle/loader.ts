@@ -1,90 +1,63 @@
-import {
-  calculatePlannedSparrateForMonth,
-  calculateSparrateForMonth,
-  getYearDeviationDrivers,
-  type AppSupabaseClient,
-} from "@/lib/rpc";
-import { parseYearDrivers, type DriversByMonth } from "./drivers";
+import { getSparrateSeries, type AppSupabaseClient } from "@/lib/rpc";
 import type { WelleData, WelleMonthPoint } from "./welle.types";
 
-/** Top-N je Monat — Tooltip zeigt 1, Popup 3 (§9). */
-const DRIVER_LIMIT = 3;
-
-/** "YYYY-MM-01" für (year, monthIndex 0..11). Kein new Date() — Timezone-Risiko (§7 Regel 9). */
-function dbDate(year: number, monthIndex: number): string {
-  const mm = String(monthIndex + 1).padStart(2, "0");
-  return `${year}-${mm}-01`;
-}
-
 /**
- * Lädt die Datengrundlage der Jahres-Welle + Popup-Treppe (§9) über den
- * bestehenden RPC-Loop (Briefing v2-02 §3, Option A — KEIN neuer RPC/B5):
- * 12× Ist + 12× Plan des aktiven Jahres, plus — sofern das Vorjahr abgeschlossen
- * ist — den kumulierten Vorjahres-Jahresendwert (Σ Jan–Dez X-1) für die
- * gold-gestrichelte B6-Linie im Popup.
+ * Lädt die Datengrundlage der Jahres-Welle (§9): 12× Ist + 12× Plan des aktiven
+ * Jahres. Die kumulierten Treppen-Werte sind reine Aufsummierung der
+ * Monats-RPC-Ergebnisse (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim
+ * Summieren).
  *
- * Die kumulierten Treppen-Werte sind reine Aufsummierung der Monats-RPC-Ergebnisse
- * (§2.1: keine eigene Sparrate-Berechnung; null = 0 beim Summieren).
+ * ── Was sich in v2-24 geändert hat, in zwei Schritten ───────────────────────
  *
- * Vorjahres-Referenz-Regel (§9 B6): Linie nur, wenn das Vorjahr vollständig in der
- * Vergangenheit liegt — also `activeYear <= currentCalendarYear`. Im Zukunftsjahr
- * (activeYear > currentCalendarYear) ist das Vorjahr (= laufendes Jahr) noch nicht
- * abgeschlossen → keine Linie.
+ * **P2 — was hier nicht mehr geladen wird.** Weder die Abweichungs-Treiber noch
+ * die zwölf Vorjahres-Werte. Beides liegt in `loadWelleExtras` und wird erst
+ * geholt, wenn der Nutzer die Welle anfasst. `get_year_deviation_drivers` kostet
+ * gemessen **357 ms** — rund drei Viertel der gesamten Rechenzeit eines
+ * Dashboard-Aufbaus — und wurde bei jeder Geste bezahlt, auch wenn das Popup zu
+ * war.
+ *
+ * **P4 — wie die verbleibenden Werte kommen.** Vorher waren es 24 einzelne
+ * Netzrunden (12× Ist, 12× Plan). Jetzt ist es **eine**: `get_sparrate_series`.
+ * In der Datenbank kostet die Schleife 50,3 ms; über die Leitung lagen die
+ * Einzelaufrufe in Produktion bei durchschnittlich rund 1.300 ms **je Aufruf**.
+ *
+ * Aus 37 Netzrunden dieses Loaders ist damit **eine** geworden.
+ *
+ * ── Was bewusst UNVERÄNDERT bleibt ──────────────────────────────────────────
+ *
+ * Die Kumulation. Sie läuft weiter hier, über die zurückgegebenen Monatswerte,
+ * und nicht in der Datenbank. Grund: Beide Sparrate-Funktionen runden **einmal
+ * ganz am Ende über alles** (§6 Stolperfalle 13 / LL-25). Eine Summierung in der
+ * RPC hätte eine zweite Rundungsstelle eingeführt und die Sparrate um
+ * Cent-Beträge verschoben — genau die Fehlerklasse, die LL-24 beschreibt.
+ * `null = 0` gilt weiterhin nur beim Kumulieren, nicht im Monatswert selbst
+ * (LL-20).
+ *
+ * Beleg und Messung: `V2/befunde_2026-08-16_performance.md` §2, §6 ①.
  */
 export async function loadWelleData(
   client: AppSupabaseClient,
   args: {
     userId: string;
     activeYear: number;
-    currentCalendarYear: number;
   },
 ): Promise<WelleData> {
-  const { userId, activeYear, currentCalendarYear } = args;
-  const hasPrevYear = activeYear <= currentCalendarYear;
-  const prevYear = activeYear - 1;
+  const { userId, activeYear } = args;
 
-  const activeDates = Array.from({ length: 12 }, (_, i) => dbDate(activeYear, i));
-  const prevDates = hasPrevYear
-    ? Array.from({ length: 12 }, (_, i) => dbDate(prevYear, i))
-    : [];
+  const series = await getSparrateSeries(client, { userId, year: activeYear });
 
-  // B2 (v2-06): EIN Jahres-Call für alle 12 Monate — läuft parallel zu den
-  // Sparrate-Loops (Konzept-Papier Option c, bewusst KEIN Call pro Monat).
-  // Ein Treiber-Fehler darf die Kurve nicht mitreißen: er landet als null in
-  // `drivers`, die Welle rendert vollständig, der Tooltip sagt es ehrlich.
-  const driversPromise: Promise<DriversByMonth | null> = getYearDeviationDrivers(
-    client,
-    { year: activeYear, limit: DRIVER_LIMIT },
-  )
-    .then(parseYearDrivers)
-    .catch((err: unknown) => {
-      console.error("B2-Treiber-Load fehlgeschlagen", err);
-      return null;
-    });
-
-  const [istMonthly, planMonthly, prevIstMonthly, drivers] = await Promise.all([
-    Promise.all(
-      activeDates.map((month) =>
-        calculateSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-    Promise.all(
-      activeDates.map((month) =>
-        calculatePlannedSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-    Promise.all(
-      prevDates.map((month) =>
-        calculateSparrateForMonth(client, { userId, month }),
-      ),
-    ),
-    driversPromise,
-  ]);
+  // Über den Index adressiert statt über die Array-Position: Die RPC sortiert
+  // zwar (`ORDER BY month_index`), aber eine Anzeige, die zwölf Monate zeigt,
+  // soll nicht davon abhängen. Fehlt ein Index, bleibt der Monat leer statt
+  // einen fremden Wert zu erben.
+  const byIndex = new Map(series.map((p) => [p.month_index, p]));
 
   let istCum = 0;
   let planCum = 0;
-  const points: WelleMonthPoint[] = istMonthly.map((ist, i) => {
-    const plan = planMonthly[i];
+  const points: WelleMonthPoint[] = Array.from({ length: 12 }, (_, i) => {
+    const p = byIndex.get(i);
+    const ist = p?.ist ?? null;
+    const plan = p?.plan ?? null;
     istCum += ist ?? 0;
     planCum += plan ?? 0;
     return {
@@ -96,21 +69,9 @@ export async function loadWelleData(
     };
   });
 
-  // B6 (§9): Vorjahres-Endwert nur, wenn das Vorjahr abgeschlossen ist UND überhaupt
-  // Daten hat. Liefern alle 12 RPCs null → keine Referenz → keine Linie. Eine
-  // Gold-Linie bei 0 € wäre irreführend („nichts gespart" ≠ „keine Daten").
-  // Ein echtes Teiljahr mit einzelnen null-Monaten summiert dagegen normal (null = 0).
-  const prevHasData = prevIstMonthly.some((v) => v !== null);
-  const prevYearEndCumulative =
-    hasPrevYear && prevHasData
-      ? prevIstMonthly.reduce<number>((sum, v) => sum + (v ?? 0), 0)
-      : null;
-
   return {
     activeYear,
-    prevYear,
+    prevYear: activeYear - 1,
     points,
-    prevYearEndCumulative,
-    drivers,
   };
 }

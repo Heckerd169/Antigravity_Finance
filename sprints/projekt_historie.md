@@ -2150,3 +2150,125 @@ Wert prüft, wo die Datenbank **mehrere** kennt.
 „Bezahlt" zeigen). Und: Ob es weitere Aufzählungen gibt, die einen Enum-Wert vergessen
 (`link_origin`, `card_type`, `transfer_type`), ist **nicht** geprüft — eine eigene
 Hausaufgabe.
+
+---
+
+### Sprint v2-24 · DONE 17. August 2026
+
+**Komponente:** Die App reagierte zu langsam auf Eingaben — ein Zug einer Zahlung auf
+eine Karte dauerte mehrere Sekunden, und in einem Fall endete es in Vercels
+Fehlerseite (`504 MIDDLEWARE_INVOCATION_TIMEOUT`). **Vom Nutzer gemeldet, mit
+Screenshot.** Fünf Phasen, zwei Migrationen, keine bewegte Zahl.
+
+**Der Befund in einem Satz:** Ein Dashboard-Aufbau machte **233 einzelne HTTP-Anfragen**
+an die Datenbank, um darin **rund 490 ms** Rechenarbeit zu erledigen. Nicht die
+Datenbank war langsam — der Transport war es. Diagnose vollständig in
+`V2/befunde_2026-08-16_performance.md`.
+
+**Die Zahl, die alles erklärt:** `is_card_active_in_month` braucht **0,089 ms** in der
+Datenbank und lag im Produktionsschnitt bei **899 ms** über die Leitung — Faktor
+~10.000. Die App rief sie **77-mal einzeln** auf, einmal pro Karte; alle 77 Antworten
+zusammen zu berechnen kostet **1,2 ms**. Am 16.08.2026 transportierten **55.881
+Anfragen** insgesamt **0,4 MB** — im Schnitt **8 Bytes je Antwort**.
+
+**Der 504 ließ sich bis auf die Minute zurückverfolgen.** Der Zeitstempel in der
+Vercel-Fehler-ID (`1786907424392`) ist auflösbar: 16.08.2026, **19:10:24 UTC**. Die
+Minute 19:10 ist die schlechteste des Tages im Datenbank-Log — **Median-Antwortzeit
+20.023 ms**. `/auth/v1/user` brauchte dort im Median 6,5 s, `/rest/v1/profiles` 14,2 s,
+und die Middleware rief beide **nacheinander** auf, ohne Zeitlimit und ohne
+Ausweichpfad (71 Zeilen ohne ein einziges `try`).
+
+**Und es war keine Momentaufnahme.** Ein 10-Sekunden-Fenster mit **drei** Anfragen
+zeigte einen Median von **22,7 s** — das schließt eine reine Warteschlange aus. Der
+Tagesverlauf zeigt das Muster einer Instanz mit CPU-Guthaben: drei schwere Stunden
+hintereinander (~44.000 Anfragen), dann Einbruch, und um 20:00 bei nachlassender Last
+sofort wieder **64 ms**. **Die Dauerlast aus dem Anfrage-Fächer war die Ursache, die
+Middleware ihr Opfer.**
+
+**Die tragende Entscheidung: bündeln durch AUFRUFEN, nicht durch Nachbauen.** Beide
+neuen RPCs (`get_cards_for_month`, `get_sparrate_series`) rufen die bestehenden
+Rechenfunktionen auf. Die Alternative — die Prioritätskette im Bündel wiederholen —
+wäre schneller gewesen (ein Query-Plan statt verschachtelter plpgsql-Aufrufe) und
+hätte den Split-Anteil ein **zweites Mal** angewandt: „Miete" zeigte dann 619 € statt
+1.089 €, und **das sieht plausibel aus**. Genau dieser Fehler war v2-13 (`BF-4`). Der
+Preis der sicheren Variante ist messbar klein: **7,99 ms** für 34 Karten.
+
+**Belegt wurde das über Prüfsummen, nicht über Zusicherungen.** `md5(pg_get_functiondef())`
+aller neun Rechenfunktionen vor und nach beiden Migrationen: **9 identisch, 0 geändert.**
+Das ist der eigentliche Anker dieses Sprints — dass die Sparrate gleich bleibt, wäre
+auch bei einem zufällig übereinstimmenden Nachbau möglich; byte-identische
+Funktionsrümpfe beweisen, dass keine angefasst wurde.
+
+**Zweite tragende Entscheidung: die Kumulation der Welle bleibt im Frontend.** Die
+Reihe hätte die kumulierten Werte gleich mitliefern können. Verworfen wegen LL-25:
+Beide Sparrate-Funktionen runden **einmal ganz am Ende über alles**; eine Summierung in
+der RPC wäre eine zweite Rundungsstelle und hätte den Anker um Cent-Beträge bewegt.
+`get_sparrate_series` enthält deshalb **kein `sum()` und kein `round()`**.
+
+**Wo eine Annahme falsch war — die teuerste Stelle des Sprints:** Zwei Prüfläufe
+hintereinander endeten mit Fehlschlägen, deren Test-Abbild die **Anmeldeseite** zeigte.
+Das las sich wie ein Auth-Fehler durch das neue Middleware-Zeitlimit, und die Suche
+lief zwei Runden in diese Richtung. Die Ursache war banal und lag bei mir: **`pnpm
+build` bei laufendem dev-Server** — beide teilen `.next`, und der Build zog dem Server
+den Boden weg. Ein sauberer Lauf war sofort grün (122/122). **Ein Symptom, das nach dem
+gerade geänderten Bauteil aussieht, ist der bequemste falsche Verdacht.**
+
+**Was der Fehlschlag trotzdem eingebracht hat:** Er zwang zur Frage, ob das
+Auth-Zeitlimit von 4 s tragfähig ist. Die in Produktion gemessene **langsamste**
+Auth-Antwort liegt bei **5.205 ms** — 4 s hätten eine gültige Sitzung abgeschnitten und
+den Nutzer abgemeldet. Auf **8 s** angehoben; mit Wiederholversuch ~16 s und damit klar
+unter Vercels 25-s-Grenze.
+
+**Eine geplante Phase wurde bewusst nicht gebaut.** Die Suspense-Grenzen um Welle und
+Karussell standen im Plan, begründet mit „233 Anfragen blockieren die Anzeige". Nach
+P3/P4 sind es ~18 mit p50 32–118 ms. Die Begründung war weg, die Grenzen wären eine
+bewegliche Stelle mehr gewesen. **Eine Maßnahme, deren Anlass entfallen ist, gehört
+gestrichen und nicht trotzdem gebaut, weil sie im Plan stand.**
+
+**Nebenfund:** `src/lib/supabase/types.ts` war **seit v2-21 veraltet** — fünf RPCs
+fehlten (`af_normalize_text`, `af_word_in_text`, `history_match`,
+`name_similarity_scoped`, `refresh_fragment_suggestions`). Der Neu-Erzeugungs-Schritt
+war damals übersprungen worden. Aufgefallen ist es nur, weil `tsc` die neue RPC nicht
+kannte. Der Zeilen-Diff war 288+/267− und unlesbar; ein **Namensmengen-Vergleich**
+beantwortete die Frage in einer Zeile: nichts verloren, sechs dazu.
+
+**Verifikation:** tsc 0 · ESLint (kanonisch, `src`) 0/0 · Build 0, Route `/` 35,8 kB
+(vorher 35,6), geteiltes Bundle 87,3 kB unverändert · `test:visual` **113/113**
+(100 + 13 neue) · `test:e2e` **122/122** inkl. Render-Smoke.
+
+**Anker:** Alle zwölf Monate Ist und Plan **identisch**, Ist 2025 weiter 4.037,11 €,
+Invariante 1 **0,00 € in allen zwölf**, B2 **0 von 12 verletzt**, Prüfsummen **9/0**.
+Zusätzlich Wert-für-Wert-Gleichheit der neuen Funktionen gegen die alten Wege:
+**304 = 304** über 24 Monate (Karten) und **36 = 36** über drei Jahre (Reihe), jeweils
+`EXCEPT` in **beide** Richtungen. Protokoll: `sprints/sprint_v2-24_anker.md`.
+
+**Wirkung, aus dem Produktions-Log gemessen:**
+
+| | vorher | nachher |
+|---|---|---|
+| Anfragen je Dashboard-Aufbau | **233** | **~18** |
+| p50 je Anfrage | 500–1.300 ms | **32–118 ms** |
+| `is_card_active_in_month` je Aufbau | 77 | **0** |
+| `calculate_sparrate_for_month` je Aufbau | 25 | **0** |
+| `get_year_deviation_drivers` | 1 je Aufbau (357 ms) | **1× je geöffnetes Popup** |
+| Netzrunden je Middleware-Durchlauf | 2, nacheinander | **1** |
+| ECONNRESET-Wiederholungen im Prüflauf | dutzende | **0** |
+| Laufzeit der Prüfstrecke | 2,3–3,2 min | **34,7 s** |
+
+**Verfahrens-Abweichung, ausdrücklich benannt:** Die Übungs-Datenbank-Probe wurde nach
+Nutzer-Entscheidung übersprungen. Ausschlaggebend: Die neuen Funktionen sind `STABLE`
+und tragen neue Namen, können also strukturell nichts überschreiben oder verändern;
+und dem synthetischen Bestand fehlt der gefährlichste Fall — **eine GEMEINSAM-Karte
+mit verknüpfter Zahlung gibt es dort nicht, in den echten Daten fünfmal** (davon eine
+vierteljährlich). Verifiziert wurde stattdessen rein lesend gegen Produktion.
+
+**Offen nach v2-24:** Der **Browser-Smoke des Nutzers** steht aus. **Zwei Wortlaute
+sind neue UI-Copy** und brauchen die §12-Freigabe („Treiber werden geladen" plus die
+drei Zeilen der Fehlerseite). Der **RLS-Feinschliff** bleibt liegen — `auth.uid()` wird
+in **elf** Policies pro Zeile neu ausgewertet, mechanisch behebbar, aber es sind
+Zugriffsregeln auf echte Finanzdaten und der Sprint trug schon zwei Migrationen; dazu
+zwei fehlende Fremdschlüssel-Indizes. Und **in welcher Region die Vercel-Funktionen
+laufen, ist ungeklärt** — es gibt weder `vercel.json` noch eine Einstellung in
+`next.config.mjs`; nur im Vercel-Konto einsehbar. Der **Middleware-Ausweichpfad ist
+nie angesprungen** (0 Warnungen in zwei vollständigen Läufen) — das zeigt, dass er
+nicht im Weg ist, aber nicht, dass er im Ernstfall greift.

@@ -58,7 +58,9 @@ export default defineConfig({
     // muss hier eingetragen werden, sonst bleibt sie unbemerkt liegen und die
     // Gesamtzahl der Prüfungen verrät den Unterschied nicht.
     // v2-17: `kategorien` kommt dazu (Gruppierungs-Regeln aus KAT-2).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung)\.spec\.ts/, use: DESKTOP },
+    // v2-24: `welle-driver-states` kommt dazu (die drei Zustände der
+    //        Treiber-Anzeige, seit die Treiber erst auf Anfrage geladen werden).
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

@@ -1,14 +1,11 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  calculatePlannedSparrateForMonth,
-  calculateSparrateForMonth,
-  calculateCardAmountForMonth,
-  isCardActiveInMonth,
+  getCardsForMonth,
   getCategoryAmountsForMonth,
-  getEffectivePlanForMonth,
   getSplitFactor,
 } from "@/lib/rpc";
-import type { CategoryAmount } from "@/lib/rpc";
+import type { CardMonthValues, CategoryAmount } from "@/lib/rpc";
 import { istVorschlagSichtbar } from "@/lib/suggestion";
 import {
   addMonths,
@@ -53,29 +50,44 @@ export default async function Home({ searchParams }: HomeProps) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Onboarding-Guard liegt in der Middleware — hier vertrauen wir darauf, dass
-  // user und profiles existieren.
+  // v2-24 Phase 1: Die Middleware prüft die Anmeldung weiterhin, hat seit diesem
+  // Sprint aber ein Zeitlimit und damit einen Ausweichpfad. Diese Seite darf sich
+  // deshalb nicht mehr blind darauf verlassen, dass `user` existiert — vorher stand
+  // hier siebenmal `user.id`, und ein durchgelassener anonymer Aufruf hätte die
+  // Server-Komponente zum Absturz gebracht statt umzuleiten.
+  if (!user) redirect("/login");
+
+  // v2-24 Phase 1: Der Onboarding-Wächter ist aus der Middleware hierher gewandert.
+  // Er kostete dort eine EIGENE Netzrunde auf jeder Anfrage der ganzen App — für
+  // eine Information, die in genau dieser `profiles`-Zeile ohnehin schon geladen
+  // wird. `onboarded_at` ist jetzt die dritte Spalte desselben Selects und damit
+  // gratis. Begründung im Detail: `src/lib/supabase/middleware.ts`.
   const [{ data: profile }, { data: ichRows }, { data: partnerRows }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("tax_class, tax_year")
-      .eq("user_id", user!.id)
+      .select("tax_class, tax_year, onboarded_at")
+      .eq("user_id", user.id)
       .maybeSingle(),
     supabase
       .from("income_timeline")
       .select("gross_annual, net_monthly, effective_month")
-      .eq("user_id", user!.id)
+      .eq("user_id", user.id)
       .eq("person", "ICH")
       .order("effective_month", { ascending: false })
       .limit(1),
     supabase
       .from("income_timeline")
       .select("gross_annual, net_monthly, effective_month")
-      .eq("user_id", user!.id)
+      .eq("user_id", user.id)
       .eq("person", "PARTNER")
       .order("effective_month", { ascending: false })
       .limit(1),
   ]);
+
+  // v2-24 Phase 1: der zweite Teil des umgezogenen Wächters. Bewusst HIER und nicht
+  // weiter unten: Ein noch nicht eingerichteter Nutzer verlässt die Funktion, bevor
+  // irgendeine der teuren Ladungen anläuft.
+  if (!profile?.onboarded_at) redirect("/onboarding");
 
   const ichLatest = ichRows && ichRows.length > 0
     ? { grossAnnual: Number(ichRows[0].gross_annual), netMonthly: Number(ichRows[0].net_monthly) }
@@ -89,23 +101,27 @@ export default async function Home({ searchParams }: HomeProps) {
   const taxYear = profile?.tax_year ?? activeMonth.year;
   const taxClass = profile?.tax_class ?? 1;
 
-  let realCurrent: number | null = null;
-  let realPlanned: number | null = null;
+  const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
+  const targetActiveMonth = { year: tmYear, month: tmMonth };
+
+  // v2-24 P4: Der Split-Faktor bleibt ein eigener Aufruf — er hängt am Monat,
+  // nicht am Jahr, und passt in keine der beiden Reihen. Die zwei
+  // Sparrate-Aufrufe für den Ring sind dagegen ENTFALLEN: Sie holten genau die
+  // Werte, die die Jahres-Reihe für die Welle ohnehin mitbringt (Fundstelle
+  // weiter unten). Zwei Quellen für dieselbe Zahl können auseinanderlaufen —
+  // jetzt gibt es nur noch eine.
   let splitFactor = 1.0;
   try {
-    [realCurrent, realPlanned, splitFactor] = await Promise.all([
-      calculateSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
-      calculatePlannedSparrateForMonth(supabase, { userId: user!.id, month: targetDbDate }),
-      getSplitFactor(supabase, { userId: user!.id, month: targetDbDate }),
-    ]);
+    splitFactor = await getSplitFactor(supabase, {
+      userId: user.id,
+      month: targetDbDate,
+    });
   } catch (err) {
-    console.error("Sparrate-RPCs fehlgeschlagen", err);
+    console.error("Split-Faktor fehlgeschlagen", err);
   }
 
   const ichPercent = Math.round(splitFactor * 100);
   const partnerPercent = 100 - ichPercent;
-  const [tmYear, tmMonth] = targetMonth.split("-").map(Number);
-  const targetActiveMonth = { year: tmYear, month: tmMonth };
 
   // ── Jahres-Welle (§9, v2-02) — Loop über bestehende RPCs (Briefing §3).
   // Ersetzt seit v2-02 P5 das V1-Inline-Treppen-Layout: die kumulierte Sicht
@@ -123,14 +139,33 @@ export default async function Home({ searchParams }: HomeProps) {
 
   let welleData: WelleData | null = null;
   try {
+    // v2-24 P2: `currentCalendarYear` entfällt hier. Es diente allein der Frage,
+    // ob die Vorjahres-Goldlinie gezeichnet wird — und die wird jetzt erst beim
+    // Öffnen des Popups beantwortet, server-seitig in `welle/actions.ts`.
     welleData = await loadWelleData(supabase, {
-      userId: user!.id,
+      userId: user.id,
       activeYear: tmYear,
-      currentCalendarYear: activeMonth.year,
     });
   } catch (err) {
     console.error("Welle-Daten-Load fehlgeschlagen", err);
   }
+
+  /* v2-24 P4: Die beiden Ring-Zahlen kommen aus der Jahres-Reihe, die die Welle
+   * gerade geladen hat — statt aus zwei eigenen Aufrufen für denselben Monat.
+   *
+   * Zwei Wirkungen, und die zweite ist die wichtigere:
+   *   · zwei Netzrunden weniger
+   *   · Ring und Welle können für denselben Monat nicht mehr auseinanderlaufen.
+   *     Vorher waren es zwei getrennte Abfragen derselben Funktion; zwischen
+   *     ihnen lag ein Zeitfenster, in dem sich der Datenstand ändern konnte.
+   *
+   * Bleibt die Welle aus (Ladefehler), bleiben auch die Ring-Zahlen `null` und
+   * der Ring zeigt nichts — dasselbe Verhalten wie vorher, wenn die
+   * Sparrate-Aufrufe scheiterten. `?? null` und nicht `?? 0`: „keine Anzeige"
+   * ist nicht 0,00 € (LL-20). */
+  const ringPoint = welleData?.points[activeMonthIndex] ?? null;
+  const realCurrent: number | null = ringPoint?.istMonthly ?? null;
+  const realPlanned: number | null = ringPoint?.planMonthly ?? null;
 
   // ── Karten-Loading (Sprint 4, unverändert in der Struktur) ───────────────
 
@@ -182,7 +217,7 @@ export default async function Home({ searchParams }: HomeProps) {
   let categoryAmounts: CategoryAmount[] = [];
   try {
     categoryAmounts = await getCategoryAmountsForMonth(supabase, {
-      userId: user!.id,
+      userId: user.id,
       month: targetDbDate,
     });
   } catch (err) {
@@ -249,32 +284,52 @@ export default async function Home({ searchParams }: HomeProps) {
   let enrichedCards: EnrichedCard[] = [];
 
   if (rawCards && rawCards.length > 0) {
-    const activeFlags = await Promise.all(
-      rawCards.map((c) =>
-        isCardActiveInMonth(supabase, { cardId: c.id, month: targetDbDate }),
-      ),
-    );
-    const activeCards = rawCards.filter((_, i) => activeFlags[i]);
+    /* ── v2-24 P3: EIN Aufruf statt 179 ────────────────────────────────────────
+     *
+     * Vorher stand hier ein zweistufiger Fächer: `isCardActiveInMonth` einzeln
+     * für alle 77 Karten (43 Antworten davon weggeworfen), danach DREI weitere
+     * Aufrufe je aktiver Karte. Der Kommentar an dieser Stelle nannte die
+     * Annahme, die längst gebrochen war — „bei <20 Karten in V1 akzeptable
+     * Latenz". Es sind 77.
+     *
+     * Gemessen: `is_card_active_in_month` kostet 0,089 ms in der Datenbank und
+     * im Produktionsschnitt 899 ms über die Leitung. Der gebündelte Aufruf
+     * liefert alle 34 Karten in 7,99 ms.
+     *
+     * Die RPC RUFT die drei Rechenfunktionen auf, sie baut sie nicht nach —
+     * belegt über byte-identische Prüfsummen (LL-26 · §6 Stolperfalle 11).
+     *
+     * ⚠️ VERHALTENSÄNDERUNG, bewusst: `isCardActiveInMonth` schluckte jeden
+     * Fehler und lieferte `false`, damit eine einzelne Karte nicht den ganzen
+     * Render blockiert. Diese Vereinzelung gibt es gebündelt nicht mehr. Fällt
+     * der Aufruf aus, bleibt das Karussell deshalb LEER statt die Seite
+     * mitzunehmen — dieselbe Haltung wie bei `categoryAmounts` und beim
+     * Welle-Loader oben. Der `catch` ist der Ersatz für die weggefallene
+     * Fehlertoleranz pro Karte, nicht Zierde.
+     */
+    let monthValues: CardMonthValues[] = [];
+    try {
+      monthValues = await getCardsForMonth(supabase, {
+        userId: user.id,
+        month: targetDbDate,
+      });
+    } catch (err) {
+      console.error("Karten-Monatswerte fehlgeschlagen", err);
+    }
 
-    enrichedCards = await Promise.all(
-      activeCards.map(async (c) => {
-        // K1.4: 3 parallele Werte pro Karte —
-        //   1) `amount` (Display, RPC-Prioritätskette Realität→Anpassung→Plan)
-        //   2) `effectivePlan` (Vergleichsbasis für Budget-Status + „Noch frei",
-        //      via neue RPC get_effective_plan_for_month: Adjustment > Roh-Plan)
-        //   3) Monthly-State-Row (manually_paid + adjusted_amount).
-        // N+1-Pragmatik: bei <20 Karten in V1 akzeptable Latenz (Briefing §K1.4).
-        const [amount, effectivePlan, stateRow] = await Promise.all([
-          calculateCardAmountForMonth(supabase, { cardId: c.id, month: targetDbDate }),
-          getEffectivePlanForMonth(supabase, { cardId: c.id, month: targetDbDate }),
-          supabase
-            .from("card_monthly_states")
-            .select("manually_paid, adjusted_amount")
-            .eq("card_id", c.id)
-            .eq("month", targetDbDate)
-            .maybeSingle()
-            .then((r) => r.data),
-        ]);
+    const valuesByCardId = new Map(monthValues.map((v) => [v.card_id, v]));
+    // Aktiv ist genau, was die RPC zurückgibt — die Entscheidung fällt in der
+    // Datenbank, nicht hier. Kein Nachbau des Aktiv-Kriteriums im Frontend
+    // (LL-26): Wer `first_active_month`/`frequency` hier auswerten würde, hätte
+    // eine zweite Wahrheit, die beim ersten Frequenz-Sonderfall abweicht.
+    const activeCards = rawCards.filter((c) => valuesByCardId.has(c.id));
+
+    enrichedCards = activeCards.map((c) => {
+        // Non-null: `activeCards` ist genau über `valuesByCardId.has(c.id)`
+        // gefiltert, der Zugriff kann nicht ins Leere gehen.
+        const v = valuesByCardId.get(c.id)!;
+        const amount = v.amount;
+        const effectivePlan = v.effective_plan;
 
         return {
           id: c.id,
@@ -311,8 +366,12 @@ export default async function Home({ searchParams }: HomeProps) {
           // Karte, kein Monats-Zustand. `null` ist ein regulärer Wert
           // („Ohne Kategorie"), keine Lücke (Befund D12).
           categoryId: c.category_id,
-          manuallyPaid: stateRow?.manually_paid ?? false,
-          adjustedAmount: stateRow?.adjusted_amount ?? null,
+          // v2-24 P3: kommen jetzt aus derselben Antwort. Die RPC setzt
+          // `manually_paid` bereits auf `false`, wenn keine Zustands-Zeile
+          // existiert; `adjusted_amount` bleibt dort `null` — „keine Anpassung"
+          // und „Anpassung auf 0 €" sind verschiedene Aussagen (Stolperfalle 3).
+          manuallyPaid: v.manually_paid,
+          adjustedAmount: v.adjusted_amount,
           deleteGate: {
             deletable:
               !cardsWithLinks.has(c.id) &&
@@ -327,8 +386,7 @@ export default async function Home({ searchParams }: HomeProps) {
             ],
           },
         } satisfies EnrichedCard;
-      }),
-    );
+    });
 
     const typeOrder: Record<string, number> = { FIXED_COST: 0, INCOME: 1, BUDGET: 2 };
     enrichedCards.sort(

@@ -1,8 +1,34 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.9.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung)
-**Datum:** 15. August 2026
+**Version:** 3.10.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen)
+**Datum:** 17. August 2026
+
+> **Changelog v3.10.0 (17.08.2026, Sprint v2-24 · `PF-1` `PF-2`):** **Zwei neue
+> LESENDE Funktionen**, die je einen N+1-Fächer des Frontends zu einer Netzrunde
+> bündeln — `get_cards_for_month` (179 → 1) und `get_sparrate_series` (24 → 1).
+>
+> **Beide RUFEN die bestehenden Rechenfunktionen AUF und bauen sie nicht nach.** Das
+> ist die ganze Sicherheit des Eingriffs, und es ist belegt statt zugesichert: Die
+> Prüfsummen `md5(pg_get_functiondef(...))` aller **neun** Rechenfunktionen sind vor
+> und nach beiden Migrationen **byte-identisch** (9/0). Ein Nachbau der
+> Prioritätskette hätte den Split-Anteil ein zweites Mal angewandt (CLAUDE.md §6
+> Stolperfalle 11, der Fehler aus v2-13) — und keine Zahl hätte falsch ausgesehen.
+>
+> **`get_sparrate_series` enthält bewusst kein `sum()` und kein `round()`.** Beide
+> Sparrate-Funktionen runden einmal ganz am Ende über alles; eine Summierung hier wäre
+> eine zweite Rundungsstelle und hätte die Sparrate um Cent-Beträge verschoben (LL-25).
+> Die Kumulation der Welle bleibt deshalb im Frontend.
+>
+> **Keine Schema-Änderung** — keine Tabelle, keine Spalte, kein Constraint, kein
+> Trigger. Die Sparrate bewegt sich in keinem der zwölf Monate; beide Invarianten
+> gelten exakt. Protokoll: `sprints/sprint_v2-24_anker.md`.
+>
+> **§4 ändert seine Grundaussage:** Fünf Funktionen, die dort unter „Im Hot-Path (bei
+> jedem Render)" stehen, werden vom Frontend **nicht mehr direkt** gerufen — sie laufen
+> jetzt innerhalb der beiden Bündel. Der Abschnitt ist entsprechend gekennzeichnet.
+> Minor-Bump und nicht Patch-Bump genau deswegen: Es kommen nicht nur zwei Funktionen
+> dazu, es verschiebt sich auch, wer wen ruft.
 
 > **Changelog v3.9.0 (15.08.2026, Sprint v2-22 · `B2-R`):** `get_year_deviation_drivers`
 > rundet **nicht mehr je Zeile**. Sie holt das Ziel aus den Sparrate-Funktionen und
@@ -276,6 +302,18 @@ Damit sind **alle drei Zeiträume** (Vergangenheit, Gegenwart, Forecast) durch d
 
 ### Im Hot-Path (bei jedem Render)
 
+> **⚠️ Seit v2-24 ruft das Frontend fünf dieser Funktionen NICHT MEHR DIREKT.**
+> `calculate_sparrate_for_month`, `calculate_planned_sparrate_for_month`,
+> `calculate_card_amount_for_month`, `get_effective_plan_for_month` und
+> `is_card_active_in_month` laufen jetzt **innerhalb** von `get_cards_for_month` bzw.
+> `get_sparrate_series` (siehe „Gebündelte Lese-Funktionen" weiter unten). Sie sind
+> unverändert und bleiben die Wahrheitsquelle — nur der Aufrufer ist nicht mehr der
+> Anwendungs-Server, sondern die Datenbank selbst.
+>
+> **Wer eine dieser Funktionen ändert, muss die zwei Bündel mitdenken.** Direkt aus dem
+> Frontend gerufen wird von den Hot-Path-Funktionen nur noch `get_split_factor` — sie
+> hängt am Monat und passt in keine der beiden Reihen.
+
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `calculate_sparrate_for_month(user_id, month)` | Ring-Zentrum-Wert (Ist) | `numeric` (NULL falls Onboarding offen) — **seit v2-13 ohne eigene Split-Anwendung**: der Anteil steckt bereits im Rückgabewert von `calculate_card_amount_for_month`. **Seit v2-19 (`GE-1`) bevorzugt sie das tatsächlich überwiesene Netto**: `COALESCE(get_actual_net_for_month(…), get_net_monthly_for_month(…))`; der NULL-Fall wird **vorher** abgefangen, damit „Onboarding offen" weiterhin NULL liefert. ⚠️ Der Eingriff sitzt **hier** und NICHT in `get_net_monthly_for_month` — jene liest auch die Plan-Funktion; beide Seiten der Differenz verschöben sich gleich weit und die Abweichung wäre danach unsichtbarer als vorher (LL-23). **Seit v2-20 (`KU-1`) filtert sie `deleted_at IS NULL`** — eine Karte im Papierkorb zählt nicht mehr mit. Das ist **keine** Verletzung von §2.1: `card_delete_gate` lässt über `HAS_PAST_PLAN` keine Karte mit Vergangenheit löschen, der Filter kann historische Sparraten also strukturell nicht bewegen |
@@ -348,6 +386,42 @@ Trockenlauf ist er die einzige Absicherung.
 | `get_category_amounts_for_month(p_user_id uuid, p_month date)` | **STABLE.** Alle Ordner eines Monats mit ihrem vorzeichenrichtigen Beitrag zur Sparrate, in EINEM Aufruf. Leeres Array, wenn kein Gehalt hinterlegt ist. **Seit v2-19** benutzt sie denselben Ist-Netto-Wert wie `calculate_sparrate_for_month`; liefe hier der Plan und dort die Wirklichkeit, bräche Prüfanker 1 sofort. **Seit v2-20 filtert sie `deleted_at IS NULL`** — sonst bräche Anker 1 in die andere Richtung. Die Posten-Zahl stimmt dadurch wieder mit den sichtbaren Karten überein; vorher konnte die Kachel „4 Posten" bei drei Karten melden | `jsonb` (Array aus `{key, category_id, name, sort_order, amount, posten, planned}`) — **`planned` neu in v2-19**: der Planwert des Monats, nur beim `INCOME`-Eintrag gesetzt, sonst `null` |
 
 **Signatur mit `p_user_id`**, wie die beiden Sparrate-RPCs — nicht `auth.uid()`-basiert.
+
+### Gebündelte Lese-Funktionen (Sprint v2-24 · `PF-1`)
+
+Beide `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, mit `p_user_id` in
+der Signatur (Konvention für Funktionen, die über den Nutzer aggregieren — CLAUDE.md §6
+Stolperfalle 4). `STABLE` ist hier nicht Kosmetik: Es verbietet schreibende
+Anweisungen, die Funktionen können strukturell nichts verändern.
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `get_cards_for_month(p_user_id uuid, p_month date)` | Alle im Monat **aktiven** Karten mit ihren Monatswerten in EINEM Aufruf — ersetzt 179 Netzrunden (77× `is_card_active_in_month` plus drei je aktiver Karte). **Ruft** `is_card_active_in_month`, `calculate_card_amount_for_month` und `get_effective_plan_for_month` auf; liest `card_monthly_states` per LEFT JOIN (kann nicht doppeln — `UNIQUE (card_id, month)`, gegen `pg_constraint` geprüft). `manually_paid` kommt als `false` statt `NULL`, wenn keine Zustands-Zeile existiert; `adjusted_amount` bleibt `NULL` — „keine Anpassung" und „Anpassung auf 0 €" sind verschiedene Aussagen (§6 Stolperfalle 3 der CLAUDE.md). Der Monatsbereich steht **zusätzlich** als inline-Vorfilter: `is_card_active_in_month` erzwingt ihn selbst und verengt danach über die Frequenz, der Vorfilter ist also eine echte Obermenge und erlaubt nur den Index-Zugriff statt 77 Funktionsaufrufe. Rein lesend gegen Produktion belegt: über 24 Monate **304 gegen 304 Zeilen, 0 Unterschied in beide Richtungen**. Gemessen **7,99 ms** für 34 Karten. **Liefert NICHT** Name, Typ, Zuordnung, Frequenz, Fälligkeitstag oder Kategorie — das sind Eigenschaften der Karte, und der `cards`-Select bleibt ohnehin, weil die Badge-Auflösung die Namen auch monats-**inaktiver** Karten braucht | `jsonb` (Array aus `{card_id, amount, effective_plan, manually_paid, adjusted_amount}`, sortiert nach `card_id`) |
+| `get_sparrate_series(p_user_id uuid, p_year int)` | Zwölf Monate Ist und Plan in EINEM Aufruf — ersetzt 24 Netzrunden, plus zwei weitere, weil der Ring seinen Monatswert jetzt aus der Reihe liest statt ihn erneut zu holen (dadurch können Ring und Welle für denselben Monat auch nicht mehr auseinanderlaufen). **Ruft** `calculate_sparrate_for_month` und `calculate_planned_sparrate_for_month` auf. **Enthält bewusst kein `sum()` und kein `round()`** — beide runden einmal ganz am Ende über alles, eine Summierung hier wäre eine zweite Rundungsstelle (LL-25); die Kumulation der Welle bleibt im Frontend. `NULL` bleibt `NULL` (kein Gehalt hinterlegt ≠ 0,00 €, LL-20): für ein Jahr ohne Daten kommen 12 von 12 `NULL` durch den jsonb-Umlauf zurück. `p_year` außerhalb 1900–2200 → **22023**. Immer genau 12 Einträge, aufsteigend nach `month_index`. Gemessen **50,3 ms** für zwölf Monate. Gegen die 24 Einzelaufrufe belegt: drei Jahre, **36 gegen 36 Zeilen, 0 Unterschied** | `jsonb` (Array aus `{month_index, ist, plan}`) |
+
+**Return-Form:**
+
+```jsonc
+// get_cards_for_month
+[{ "card_id": "…", "amount": 1052.65, "effective_plan": 1904.00,
+   "manually_paid": false, "adjusted_amount": null }, …]
+
+// get_sparrate_series — immer genau 12 Einträge
+[{ "month_index": 0, "ist": 1374.95, "plan": 1521.55 }, …]
+```
+
+> **Warum das Bündeln überhaupt so viel bringt — die Zahl, um die es geht.**
+> `is_card_active_in_month` braucht **0,089 ms** in der Datenbank und lag im
+> Produktionsschnitt bei **899 ms** über die Leitung. Faktor ~10.000, und nichts davon
+> ist Rechnen: Für jede Anfrage muss eine verschlüsselte Verbindung stehen, ein JWT
+> geprüft und eine eigene Transaktion geöffnet werden. Am 16.08.2026 transportierten
+> **55.881 Anfragen** insgesamt **0,4 MB** — im Schnitt **8 Bytes je Antwort**. Ein
+> Dashboard-Aufbau machte **233** Netzrunden für rund **490 ms** Rechenarbeit; danach
+> sind es **~18**.
+>
+> **Wer eine dieser beiden Funktionen erweitert, prüft die Prüfsummen erneut.** Sie
+> stehen in `sprints/sprint_v2-24_anker.md`. Der Anker der Sparrate allein genügt
+> nicht: Ein Nachbau, der zufällig dasselbe liefert, wäre dort unsichtbar.
 
 ### Netto-Zuordnung (v2-19, `GE-1`)
 

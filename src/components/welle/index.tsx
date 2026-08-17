@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   MONTHS_FULL,
   drawWave,
@@ -10,9 +10,10 @@ import {
   tealS,
   type WavePoint,
 } from "./draw";
-import { getTop1Driver } from "./drivers";
+import { loadWelleExtras } from "./actions";
+import { getTop1Driver, type DriversByMonth } from "./drivers";
 import { WellePopup } from "./popup";
-import type { WelleData, WelleStageProps } from "./welle.types";
+import type { WelleData, WelleExtras, WelleStageProps } from "./welle.types";
 import styles from "./welle.module.css";
 
 const DEFAULT_WAVE_OPACITY = 0.8;
@@ -54,6 +55,16 @@ export function WelleStage({
   const [hovIdx, setHovIdx] = useState<number>(-1);
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
 
+  /* v2-24 P2: Treiber und Vorjahres-Linie werden erst geholt, wenn der Nutzer die
+     Welle anfasst. `null` = noch nicht geladen (davon zu unterscheiden:
+     `extras.drivers === null` = geladen und gescheitert). */
+  const [extras, setExtras] = useState<WelleExtras | null>(null);
+  /* Verhindert, dass jede Mausbewegung eine neue Anfrage auslöst. Ein Ref und
+     kein State: Eine Änderung darf keinen Render nach sich ziehen, und der Wert
+     muss SOFORT gelten — zwei Ereignisse im selben Batch würden bei State sonst
+     beide denselben alten Wert sehen und doppelt laden. */
+  const extrasRequested = useRef(false);
+
   useLayoutEffect(() => {
     const el = fieldRef.current;
     if (!el) return;
@@ -66,9 +77,36 @@ export function WelleStage({
 
   // LL-5: Soft-Navigation un-mountet nicht — Hover- und Popup-State beim
   // Jahres-/Datenwechsel explizit zurücksetzen.
+  //
+  // v2-24 P2: Die nachgeladenen Zusatzdaten werden hier MIT zurückgesetzt, und das
+  // ist der Kern der Korrektheit dieser Phase. Ein neues `data` heißt: Der Server
+  // hat neu gerechnet — also hat sich womöglich eine Zuordnung geändert, und damit
+  // sind die Treiber von vorhin überholt. Sie stehenzulassen wäre schneller und
+  // falsch; die Welle zeigte dann eine Abweichung, die die Datenbank nicht mehr
+  // hergibt (LL-26 in seiner allgemeinen Form).
+  //
+  // Der Preis ist ehrlich benannt: Nach jeder Zuordnung ist beim nächsten
+  // Überfahren wieder ein kurzer Ladezustand zu sehen. Der Gewinn ist, dass die
+  // 357 ms nur noch anfallen, wenn wirklich jemand hinsieht.
   useEffect(() => {
     setHovIdx(-1);
     setIsPopupOpen(false);
+    setExtras(null);
+    extrasRequested.current = false;
+  }, [data]);
+
+  /** Holt die Zusatzdaten genau einmal je Datenstand. */
+  const ensureExtras = useCallback(() => {
+    if (extrasRequested.current || !data) return;
+    extrasRequested.current = true;
+    loadWelleExtras(data.activeYear)
+      .then(setExtras)
+      .catch((err: unknown) => {
+        console.error("Welle-Zusatzdaten fehlgeschlagen", err);
+        // Geladen und gescheitert — der Tooltip sagt das ehrlich, statt weiter
+        // „werden geladen" zu behaupten.
+        setExtras({ prevYearEndCumulative: null, drivers: null });
+      });
   }, [data]);
 
   // Redraw bei Daten-/Monats-/Größen-Wechsel. Der aktive-Monat-Kreis wandert
@@ -122,16 +160,31 @@ export function WelleStage({
     if (!data) return;
     const target = e.target as HTMLElement;
     if (target.closest("[data-wave-block]")) return;
+    // Zweiter Auslöser neben dem Überfahren: Wer direkt klickt, ohne vorher über
+    // dem Feld zu verweilen, braucht Goldlinie und Treiber-Zeile sofort.
+    ensureExtras();
     setIsPopupOpen(true);
   }
 
   const hovPoint = hovIdx >= 0 ? pts[hovIdx] : undefined;
+
+  /* Drei Zustände, sauber getrennt (siehe `drivers.ts`):
+       extras === null        → `undefined` → „werden geladen"
+       extras.drivers === null → `null`      → „nicht verfügbar"
+       sonst                   → die Map      → echte Treiber */
+  const driversForUi: DriversByMonth | null | undefined =
+    extras === null ? undefined : extras.drivers;
 
   return (
     <>
       <div
         className={`${styles.field} ${data ? styles.fieldInteractive : ""}`}
         ref={fieldRef}
+        /* v2-24 P2: Der Ladevorgang startet beim BETRETEN des Feldes, nicht erst
+           beim ersten Tooltip. Das ist der früheste ehrliche Zeitpunkt — vorher
+           weiß niemand, dass die Welle interessiert — und verschafft der Anfrage
+           den Vorlauf einer Mausbewegung. */
+        onMouseEnter={ensureExtras}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setHovIdx(-1)}
         onClick={handleClick}
@@ -159,6 +212,7 @@ export function WelleStage({
             <div className={styles.guide} style={{ left: hovPoint.x }} />
             <WelleTooltip
               data={data}
+              drivers={driversForUi}
               idx={hovIdx}
               point={hovPoint}
               fieldWidth={size.w}
@@ -170,7 +224,11 @@ export function WelleStage({
 
       {/* Popup als Sibling — Klicks im Popup bubblen nicht in den Feld-Handler. */}
       {data && isPopupOpen && (
-        <WellePopup data={data} onClose={() => setIsPopupOpen(false)} />
+        <WellePopup
+          data={data}
+          extras={extras}
+          onClose={() => setIsPopupOpen(false)}
+        />
       )}
     </>
   );
@@ -178,6 +236,8 @@ export function WelleStage({
 
 type TooltipProps = {
   data: WelleData;
+  /** `undefined` = noch nicht geladen · `null` = geladen und gescheitert (v2-24 P2). */
+  drivers: DriversByMonth | null | undefined;
   idx: number;
   point: WavePoint;
   fieldWidth: number;
@@ -188,12 +248,19 @@ type TooltipProps = {
 // rechten Feldrand nach links; oberhalb des Punkts, unterhalb wenn zu hoch.
 const TT_W = 220;
 
-function WelleTooltip({ data, idx, point, fieldWidth, realizedMonthIndex }: TooltipProps) {
+function WelleTooltip({
+  data,
+  drivers,
+  idx,
+  point,
+  fieldWidth,
+  realizedMonthIndex,
+}: TooltipProps) {
   const monthPoint = data.points[idx];
   const ist = monthPoint.istMonthly ?? 0;
   const plan = monthPoint.planMonthly ?? 0;
   const realized = realizedMonthIndex >= 0 && idx <= realizedMonthIndex;
-  const driver = getTop1Driver(data.drivers, idx);
+  const driver = getTop1Driver(drivers, idx);
 
   const valueColor = ist < 0 ? redS(1) : realized ? tealS(1) : graS(0.65);
 
