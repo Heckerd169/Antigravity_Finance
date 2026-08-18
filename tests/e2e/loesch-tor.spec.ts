@@ -24,8 +24,12 @@ import path from "node:path";
 
 const ROOT = path.join(__dirname, "..", "..");
 
+// v2-25 (KJ-1): Maßgeblich ist die JÜNGSTE Migration, die `card_delete_gate`
+// neu schreibt — sie ist die Fassung, die in der Datenbank steht. Die
+// v2-20-Datei bleibt als Historie liegen, prüft aber nichts mehr über den
+// heutigen Zustand.
 const MIGRATION = fs.readFileSync(
-  path.join(ROOT, "supabase", "migrations", "20260815_v2_20_ku2_loesch_tor.sql"),
+  path.join(ROOT, "supabase", "migrations", "20260817_v2_25_kj1_loeschriegel.sql"),
   "utf8",
 );
 const PAGE = fs.readFileSync(path.join(ROOT, "src", "app", "page.tsx"), "utf8");
@@ -33,12 +37,44 @@ const CARD_INTERACTIVE = fs.readFileSync(
   path.join(ROOT, "src", "components", "cards", "card-interactive.tsx"),
   "utf8",
 );
+const CARDS_TYPES = fs.readFileSync(
+  path.join(ROOT, "src", "components", "cards", "cards.types.ts"),
+  "utf8",
+);
+
+/** Nur der Rumpf von `card_delete_gate` — `delete_card` steht in derselben
+ *  Datei und darf hier nicht mitgelesen werden. */
+const GATE_FN = MIGRATION.slice(
+  MIGRATION.indexOf("function public.card_delete_gate"),
+  MIGRATION.indexOf("drop function if exists public.delete_card"),
+);
+
+/** Kommentare raus, bevor auf ein VERSCHWUNDENES Konstrukt geprüft wird.
+ *
+ *  Sonst prüft der Test das Gegenteil dessen, was er soll: Eine gute Erklärung,
+ *  WARUM etwas entfallen ist, nennt zwangsläufig den entfallenen Namen — und
+ *  ließe den Wächter rot werden, obwohl der Code sauber ist. Beim ersten Lauf
+ *  in v2-25 ist genau das passiert.
+ *
+ *  Bewusst simpel: `//`-Zeilen, `/* … *\/`-Blöcke und `--`-SQL-Kommentare. Es
+ *  geht nicht um einen Parser, sondern darum, dass Prosa nicht als Code zählt. */
+function ohneKommentare(quelle: string): string {
+  return quelle
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .split("\n")
+    .map((z) => z.replace(/\/\/.*$/, "").replace(/--.*$/, ""))
+    .join("\n");
+}
+
+const GATE_FN_CODE = ohneKommentare(GATE_FN);
+const PAGE_CODE = ohneKommentare(PAGE);
+const CARDS_TYPES_CODE = ohneKommentare(CARDS_TYPES);
 
 test.describe("Lösch-Tor (v2-20, KU-2)", () => {
   test("die Datenbank blockiert nur Zustände aus vergangenen Monaten", () => {
     // Der Kern der Migration: `card_monthly_states` wird gegen den Monatsanfang
     // geprüft. Fällt diese Bedingung weg, ist die Sackgasse zurück.
-    const gate = MIGRATION.slice(MIGRATION.indexOf("card_monthly_states"));
+    const gate = GATE_FN.slice(GATE_FN.indexOf("card_monthly_states"));
     expect(gate).toContain("month < date_trunc('month', now())::date");
   });
 
@@ -69,14 +105,84 @@ test.describe("Lösch-Tor (v2-20, KU-2)", () => {
     expect(CARD_INTERACTIVE).toContain('!canEnd && " Sie bleibt als Beleg erhalten."');
   });
 
-  test("die drei Sperrgründe nennen jeweils einen Grund oder eine Handlung", () => {
+  test("die verbliebenen Sperrgründe nennen jeweils einen Grund oder eine Handlung", () => {
     // Reine Mechanik-Begriffe („hat Monats-Änderungen") sagen dem Nutzer nicht,
     // was er tun soll. Nach v2-20 tun sie das.
+    // v2-25 (KJ-1): Es sind noch ZWEI — `HAS_PAST_PLAN` ist gefallen.
     expect(CARD_INTERACTIVE).toContain('HAS_LINKS: "Erst die zugeordnete Zahlung lösen"');
     expect(CARD_INTERACTIVE).toContain('HAS_STATES: "Sie trägt vergangene Monate"');
-    expect(CARD_INTERACTIVE).toContain(
-      'HAS_PAST_PLAN: "Sie war in vergangenen Monaten eingeplant"',
-    );
+  });
+});
+
+/*
+ * v2-25 (KJ-1): Der Riegel ist gefallen — und zwar auf BEIDEN Seiten.
+ *
+ * Die drei Tests hier sind das Gegenstück zu denen oben: Dort wird geprüft, dass
+ * die verbliebenen Regeln übereinstimmen, hier, dass die gefallene wirklich
+ * überall gefallen ist. Bliebe sie an einer Stelle stehen, wäre der Widerspruch
+ * genau der, den v2-20 schon einmal fast produziert hätte — nur in die andere
+ * Richtung: Die Datenbank ließe durch, was das Menü ausgraut (LL-26).
+ *
+ * Gemessen am 17.08.2026 waren mit dem Riegel NULL von 82 Karten löschbar.
+ */
+test.describe("Der Vergangenheits-Riegel ist gefallen (v2-25, KJ-1)", () => {
+  test("die Datenbank kennt HAS_PAST_PLAN nicht mehr als Sperrgrund", () => {
+    // Der Name darf im Kommentar-Kopf vorkommen — er erklärt, was entfiel.
+    // Im CODE darf er nirgends mehr stehen.
+    expect(GATE_FN_CODE).not.toContain("HAS_PAST_PLAN");
+  });
+
+  test("das Frontend vergleicht first_active_month nicht mehr gegen den Monatsanfang", () => {
+    // Der Nachbau in `page.tsx` muss dieselbe Regel führen wie die Datenbank.
+    // Bliebe der Vergleich stehen, zeigte das Menü einen ausgegrauten Punkt,
+    // den `card_delete_gate` längst durchlässt.
+    expect(PAGE_CODE).not.toContain("first_active_month >= nowMonthDb");
+    expect(PAGE_CODE).not.toContain("first_active_month < nowMonthDb");
+    expect(PAGE_CODE).not.toContain("HAS_PAST_PLAN");
+  });
+
+  test("der Typ lässt HAS_PAST_PLAN gar nicht mehr zu", () => {
+    // Der Compiler ist hier der eigentliche Wächter: Solange der Wert im Typ
+    // steht, kann ihn jede neue Stelle wieder setzen, ohne aufzufallen.
+    expect(CARDS_TYPES_CODE).not.toContain("HAS_PAST_PLAN");
+  });
+});
+
+/*
+ * v2-25 (KJ-1): Die Folge des Löschens wird GEMESSEN, nicht gerechnet.
+ *
+ * Die Wirkung einer Löschung über N Monate ist eine Sparraten-Rechnung, und
+ * Arbeitsregel 1 verbietet die im Frontend. Ein Nachbau in der Datenbank wäre
+ * dasselbe eine Ebene tiefer: Er müsste Prioritätskette, Split-Anteil (§6
+ * Stolperfalle 11) und Schlussrundung (LL-25) nachbilden — und keine Zahl sähe
+ * dabei falsch aus. Genau diese Fehlerklasse hat v2-13 gekostet.
+ */
+test.describe("Die Folge des Löschens (v2-25, KJ-1)", () => {
+  const DELETE_FN = MIGRATION.slice(
+    MIGRATION.indexOf("drop function if exists public.delete_card"),
+  );
+
+  test("delete_card RUFT die Sparrate-Funktion auf, statt sie nachzubauen", () => {
+    expect(DELETE_FN).toContain("calculate_sparrate_for_month(v_user_id");
+    // Zweimal: einmal vor, einmal nach dem UPDATE. Nur ein Aufruf hieße, dass
+    // eine der beiden Seiten der Differenz gerechnet statt geholt wird.
+    const aufrufe = DELETE_FN.match(/calculate_sparrate_for_month\(/g) ?? [];
+    expect(aufrufe.length).toBe(2);
+  });
+
+  test("die alte Ein-Parameter-Signatur wird explizit entfernt", () => {
+    // `create or replace` mit neuer Signatur legt sonst eine ÜBERLADUNG an:
+    // Beide Fassungen existierten nebeneinander und PostgREST könnte weiter
+    // die alte treffen, ohne dass es auffällt.
+    expect(DELETE_FN).toContain("drop function if exists public.delete_card(uuid)");
+  });
+
+  test("der Frontend-Text kennt alle drei Fälle aus §12.5", () => {
+    // Mehrere Monate, genau einer (benannt), und keiner — der dritte zeigt
+    // NICHTS statt einer Null-Zeile (LL-20).
+    expect(CARD_INTERACTIVE).toContain("Sparrate in ${effect.months} Monaten · zusammen");
+    expect(CARD_INTERACTIVE).toContain("formatMonthNameOnly(effect.singleMonth)");
+    expect(CARD_INTERACTIVE).toMatch(/effect\.months === 0\)\s*return undefined/);
   });
 });
 

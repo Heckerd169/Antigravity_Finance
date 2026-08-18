@@ -54,12 +54,47 @@
   }
 }
 
-.toastText {
+/* v2-25 (KJ-1): Der Titel bekommt eine zweite Zeile unter sich — die Folge der
+   Löschung für die Sparrate. `Rückgängig` bleibt rechts daneben, deshalb wandert
+   `flex: 1` vom Text auf diesen Wrapper.
+
+   Die Zeile ist optional und erscheint erst, wenn die Datenbank geantwortet hat.
+   Bewegt die Löschung keine Zahl, bleibt sie WEG — keine Null-Zeile, kein
+   „Keine Änderungen" (§7 Regel 17 / LL-20). */
+.toastLines {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.toastText {
   font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   letter-spacing: -0.1px;
+}
+
+/* Kleiner als der Titel: Held ist die Aussage „gelöscht", die Folge erklärt sie.
+   Dieselbe Rangfolge wie in §10, wo die Summe zwar prominent steht, aber unter
+   der Überschrift. */
+.toastEffect {
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: -0.05px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Keine neue Farbe: Türkis heißt Entlastung (die Sparrate steigt), Rot
+   Belastung. Exakt die Tokens der Konsequenz-Anzeige aus §10
+   (`income-split.module.css`, .consequenceHeroUp/.consequenceHeroDown). */
+.toastEffectPositive {
+  color: var(--color-teal);
+}
+
+.toastEffectNegative {
+  color: var(--color-red);
 }
 
 .undoButton {

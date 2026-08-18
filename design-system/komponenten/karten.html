@@ -94,6 +94,10 @@
 .dueDay { font-size:9px; font-weight:500; letter-spacing:.4px;
           color:rgba(255,255,255,.30); white-space:nowrap; }
 .ghost .dueDay { color:rgba(255,255,255,.20); }
+/* KJ-3 (v2-25): „nicht angefallen“ ersetzt das STATUS-Label, nicht den Termin.
+   Kein uppercase — anders als .stateLabel, das hier ersetzt wird. */
+.notIncurred { font-size:9px; font-weight:500; letter-spacing:.4px;
+               color:var(--text-ghost); white-space:nowrap; }
 
   .restAmount { font-size:11px; font-weight:500; margin-top:3px; }
   .restPos { color:rgba(62,207,175,.40); }
@@ -173,7 +177,30 @@
     <div class="cap"><b>Forecast</b>Zukünftiger Monat. Farblos und nicht antippbar — es gibt noch nichts zu bestätigen. Rand solid, nicht gestrichelt. Der Termin dimmt hier eigenständig auf <code>.20</code> mit.</div>
   </div>
 
+  <div class="slot">
+    <div class="card open">
+      <div class="cardTop"><div class="cardLabel">Fixkosten</div>
+        <div class="icon iconOpen"><svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="2.5" fill="rgba(255,69,58,.55)"/></svg></div></div>
+      <div class="cardName">Friseur</div>
+      <div class="cardAmount">0,00 €</div>
+      <div class="householdAmount"></div>
+      <div class="stateRow"><div class="notIncurred">nicht angefallen</div></div>
+      <div class="cardMeta"><div class="metaDot metaDotIch"></div><div class="metaText">Ich</div></div>
+    </div>
+    <div class="cap"><b>Nicht angefallen</b> (v2-25) Der Nutzer hat gesagt, dass es diesen Monat nicht anfiel — die Karte zählt mit 0 €. Der Text ersetzt <b>das Status-Label</b>, und der Termin verschwindet mit: Beides wäre eine Falschaussage, denn die Karte ist weder „Offen“ noch hat sie einen Tag, den man erwarten könnte. Ohne diesen Marker sähe eine gewollte 0 aus wie fehlende Daten.</div>
+  </div>
+
 </div>
+
+<p class="sub" style="margin-top:-6px">
+  <b>Warum der Text links steht und nicht rechts.</b> Der Entscheidungs-Record vom
+  17.08.2026 sah ihn zunächst am rechten Anschlag vor, anstelle des Fälligkeitstags.
+  Gemessen passt er dort in <b>keinem</b> der vier Zustände: <code>OFFEN</code> braucht
+  117,8 px, <code>ERWARTET</code> sogar 139,3 px — verfügbar sind 110 px. Links allein
+  sind es 79,7 px. Der Wortlaut hat Vorrang bekommen, weil er die Kette zum Menüpunkt
+  <code>Diesen Monat nicht angefallen</code> hält; verworfen wurde das kürzere
+  <code>entfällt</code>.
+</p>
 
 <h2>Budget · vier Zustände</h2>
 <p class="sub">

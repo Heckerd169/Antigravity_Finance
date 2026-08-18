@@ -6,9 +6,15 @@ import {
   deleteCardAction,
   endCardAction,
   restoreCardAction,
+  resumeCountingThisMonth,
+  setMonthNotIncurred,
   toggleCardTap,
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
+import type { CardActionToastFollowUp } from "./card-action-toast-provider";
+import type { DeleteEffect } from "@/lib/rpc";
+import { formatEuroSigned } from "@/lib/format";
+import { formatMonthNameOnly } from "@/lib/months";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
 import { CategoryOverlay } from "./category-overlay";
 import { DueDayOverlay } from "./due-day-overlay";
@@ -32,11 +38,14 @@ import styles from "./cards.module.css";
  *  ins Leere — und Karten aus einer Zahlung sind typischerweise einmalig.
  *
  *  `HAS_STATES` meint seit v2-20 nur noch Zustände aus VERGANGENEN Monaten;
- *  der Text nennt deshalb den Grund und nicht mehr die Mechanik. */
+ *  der Text nennt deshalb den Grund und nicht mehr die Mechanik.
+ *
+ *  v2-25 (KJ-1): `HAS_PAST_PLAN` ist ENTFALLEN — der Riegel ist gefallen.
+ *  Von den beiden verbliebenen Gründen ist der erste auflösbar, und sein Text
+ *  sagt genau, wie. */
 const GATE_REASON_TEXT: Record<DeleteGate["reasons"][number], string> = {
   HAS_LINKS: "Erst die zugeordnete Zahlung lösen",
   HAS_STATES: "Sie trägt vergangene Monate",
-  HAS_PAST_PLAN: "Sie war in vergangenen Monaten eingeplant",
 };
 
 type CardInteractiveProps = {
@@ -59,6 +68,16 @@ type CardInteractiveProps = {
   currentLastMonth: string | null;
   /** v2-05: vorberechnetes Lösch-Tor; die RPC prüft autoritativ erneut. */
   deleteGate: DeleteGate;
+  /** v2-25 (KJ-2): Anpassung dieses Monats. `null` = keine, `0` = „nicht
+   *  angefallen", jeder andere Wert = eine gewöhnliche Betragsanpassung.
+   *  Steuert, welcher der beiden Menüpunkte erscheint. */
+  adjustedAmount: number | null;
+  /** v2-25 (KJ-2): Liegt in diesem Monat eine Zahlung an der Karte, erscheint
+   *  „Diesen Monat nicht angefallen" NICHT. Die Prioritätskette ist
+   *  Realität → Anpassung → Plan — die Zahlung gewinnt ohnehin, der Punkt wäre
+   *  ein Versprechen ohne Wirkung. Ein Menüpunkt, der nichts tut, ist
+   *  schlechter als keiner. */
+  hasLinkedFragmentThisMonth: boolean;
   /** v2-15 (LQ-1): steuert, ob „Fällig am …" im Menü erscheint — auf
    *  BUDGET-Karten nicht (ein Budget ist eine Erlaubnis ohne Termin, L7). */
   cardType: CardType;
@@ -82,6 +101,8 @@ export function CardInteractive({
   canEnd,
   currentLastMonth,
   deleteGate,
+  adjustedAmount,
+  hasLinkedFragmentThisMonth,
   cardType,
   currentDueDay,
   currentCategoryId,
@@ -150,6 +171,44 @@ export function CardInteractive({
     setOverlayOpen(true);
   }
 
+  /* ── v2-25 (KJ-2): „Diesen Monat nicht angefallen" / „Wieder mitzählen" ────
+   *
+   * Ein Klick, kein Dialog, kein `…` — das Auslassungszeichen trägt in dieser
+   * App, was einen Dialog öffnet (`Fällig am …`, `Kategorie ändern …`).
+   *
+   * Der Punkt erscheint auf FIXED_COST und INCOME, nicht auf BUDGET (ein
+   * Budget FÄLLT NICHT AN, es steht zur Verfügung — dieselbe Grenze wie beim
+   * Fälligkeitstag), nicht auf Ghost/Forecast, und nicht bei einer verknüpften
+   * Zahlung in diesem Monat.
+   *
+   * WELCHER der beiden erscheint, folgt aus Entscheidung 5 („hebt JEDE
+   * Anpassung dieses Monats auf"):
+   *   · keine Anpassung   → „Diesen Monat nicht angefallen"
+   *   · Anpassung ist 0   → „Wieder mitzählen" (der Zustand ist schon gesetzt)
+   *   · anderer Wert      → BEIDE. „Auf 0 setzen" und „Anpassung aufheben"
+   *                         sind zwei verschiedene Dinge, und der Nutzer kann
+   *                         beides wollen. */
+  const monthActionsAllowed =
+    !endDeleteOnly && cardType !== "BUDGET" && !hasLinkedFragmentThisMonth;
+  const showNotIncurred = monthActionsAllowed && adjustedAmount !== 0;
+  const showResumeCounting = monthActionsAllowed && adjustedAmount !== null;
+
+  function handleNotIncurredClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    void setMonthNotIncurred(cardId, month).catch((err) =>
+      console.error("»Nicht angefallen« fehlgeschlagen", err),
+    );
+  }
+
+  function handleResumeCountingClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    void resumeCountingThisMonth(cardId, month).catch((err) =>
+      console.error("»Wieder mitzählen« fehlgeschlagen", err),
+    );
+  }
+
   function handleDueDayClick(e: React.MouseEvent) {
     e.stopPropagation();
     setMenuOpen(false);
@@ -196,13 +255,44 @@ export function CardInteractive({
     });
   }
 
+  /** v2-25 (KJ-1): Die Folgen-Zeile des Lösch-Toasts (§12.5).
+   *
+   *  Der WORTLAUT entsteht hier, die ZAHL kommt aus der Datenbank — der
+   *  Toast-Provider kennt weder Sparraten noch Monate, und das Frontend rechnet
+   *  nichts nach (Arbeitsregel 1).
+   *
+   *  Drei Fälle, und der dritte ist der, den man leicht vergisst:
+   *    · mehrere Monate → Summe und Anzahl
+   *    · genau einer    → der Monat wird BENANNT, das ist nützlicher als „in 1
+   *                       Monat" (Record, Entscheidung 1)
+   *    · keine Wirkung  → `null`, der Toast bleibt einzeilig. Keine Null-Zeile,
+   *                       kein „Keine Änderungen" (§7 Regel 17 / LL-20).
+   *
+   *  Der Ton folgt der Richtung der Sparrate, nicht der Art der Karte: Türkis,
+   *  wenn sie steigt (eine Kostenkarte fällt weg), rot, wenn sie sinkt (eine
+   *  Einnahme fällt weg). Dieselbe Regel wie in §10. */
+  function toFollowUp(effect: DeleteEffect): CardActionToastFollowUp | undefined {
+    if (effect.months === 0) return undefined;
+
+    const betrag = formatEuroSigned(effect.total);
+    const text =
+      effect.singleMonth !== null
+        ? `Sparrate ${formatMonthNameOnly(effect.singleMonth)} · ${betrag}`
+        : `Sparrate in ${effect.months} Monaten · zusammen ${betrag}`;
+
+    return { text, tone: effect.total >= 0 ? "positive" : "negative" };
+  }
+
   function handleDeleteClick(e: React.MouseEvent) {
     e.stopPropagation();
     if (!deleteGate.deletable) return;
     setMenuOpen(false);
+    // Das Messfenster ist das Kalenderjahr des angezeigten Monats — `month` ist
+    // „YYYY-MM-01“, die ersten vier Zeichen sind das Jahr.
+    const year = Number(month.slice(0, 4));
     showToast({
       text: `Karte »${cardName}« gelöscht`,
-      run: () => deleteCardAction(cardId),
+      run: () => deleteCardAction(cardId, year).then(toFollowUp),
       undo: () => restoreCardAction(cardId),
     });
   }
@@ -258,6 +348,29 @@ export function CardInteractive({
               role="menuitem"
             >
               Betrag anpassen
+            </button>
+          )}
+          {/* v2-25 (KJ-2): „Diesen Monat nicht angefallen" steht DIREKT unter
+              „Betrag anpassen" — beide sind monatsbezogen, und der neue Punkt
+              ist die Abkürzung für „auf 0 €, nur diesen Monat" (§12.4). */}
+          {showNotIncurred && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleNotIncurredClick}
+              role="menuitem"
+            >
+              Diesen Monat nicht angefallen
+            </button>
+          )}
+          {showResumeCounting && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleResumeCountingClick}
+              role="menuitem"
+            >
+              Wieder mitzählen
             </button>
           )}
           {/* v2-15 (LQ-1): „Fällig am …" — eigener Eintrag, NICHT in „Betrag

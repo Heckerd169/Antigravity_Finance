@@ -90,3 +90,19 @@ export function formatMonthLabel(ym: string): string {
   const date = new Date(Date.UTC(year, month - 1, 1));
   return MONTH_FORMATTER.format(date);
 }
+
+const MONTH_NAME_FORMATTER = new Intl.DateTimeFormat("de-DE", { month: "long" });
+
+/** UI-Label ohne Jahr: "2026-01" → "Januar" (de-DE).
+ *
+ *  v2-25 (KJ-1) für die Folgen-Zeile im Lösch-Toast: `Sparrate Januar · −53,70 €`.
+ *  Das Jahr fehlt bewusst — die Wirkung wird über das Kalenderjahr des gerade
+ *  angezeigten Monats gemessen, es kann also gar kein anderes sein. Ein „2026"
+ *  dahinter wäre eine Angabe ohne Unterscheidungswert in einer Zeile, die kurz
+ *  genug bleiben muss, um in fünf Sekunden gelesen zu werden. */
+export function formatMonthNameOnly(ym: string): string {
+  const m = YM_REGEX.exec(ym);
+  if (!m) return ym;
+  const date = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1));
+  return MONTH_NAME_FORMATTER.format(date);
+}

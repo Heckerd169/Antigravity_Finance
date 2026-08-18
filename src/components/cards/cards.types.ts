@@ -9,10 +9,18 @@ export type IncomeState = "expected" | "received" | "ghost";
 export type BudgetState = "running" | "over" | "done" | "ghost";
 
 /** v2-05: Lösch-Tor fürs Kontextmenü — „Karte löschen" nur bei deletable=true,
- *  sonst ausgegraut mit Grund. Autoritativ prüft die RPC delete_card erneut. */
+ *  sonst ausgegraut mit Grund. Autoritativ prüft die RPC delete_card erneut.
+ *
+ *  v2-25 (KJ-1): `HAS_PAST_PLAN` ist ENTFALLEN. Eine Karte, die in einem
+ *  vergangenen Monat eingeplant war, ist löschbar; was das mit den Sparraten
+ *  jener Monate macht, sagt der Toast (§7 „Die Folge des Löschens"). Mit dem
+ *  Riegel waren am 17.08.2026 NULL von 82 Karten löschbar.
+ *
+ *  Die beiden verbliebenen Gründe sind AUFLÖSBAR bzw. eng: `HAS_LINKS` durch
+ *  „Alle Verknüpfungen lösen", `HAS_STATES` betrifft 9 Karten. */
 export type DeleteGate = {
   deletable: boolean;
-  reasons: ("HAS_LINKS" | "HAS_STATES" | "HAS_PAST_PLAN")[];
+  reasons: ("HAS_LINKS" | "HAS_STATES")[];
 };
 
 /** Sprint 5: im targetMonth verknüpftes Fragment (für „Verknüpfte Fragmente"-Menüoption). */

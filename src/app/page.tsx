@@ -372,17 +372,17 @@ export default async function Home({ searchParams }: HomeProps) {
           // und „Anpassung auf 0 €" sind verschiedene Aussagen (Stolperfalle 3).
           manuallyPaid: v.manually_paid,
           adjustedAmount: v.adjusted_amount,
+          // v2-25 (KJ-1): Der Vergangenheits-Plan zählt NICHT mehr. Die Zeile
+          // `c.first_active_month >= nowMonthDb` ist hier ersatzlos gefallen,
+          // zusammen mit dem `HAS_PAST_PLAN`-Block in `card_delete_gate` —
+          // beide Seiten in EINEM Commit, sonst graut das Menü aus, was die
+          // Datenbank längst durchlässt (LL-26; in v2-20 real passiert).
           deleteGate: {
             deletable:
-              !cardsWithLinks.has(c.id) &&
-              !cardsWithStates.has(c.id) &&
-              c.first_active_month >= nowMonthDb,
+              !cardsWithLinks.has(c.id) && !cardsWithStates.has(c.id),
             reasons: [
               ...(cardsWithLinks.has(c.id) ? (["HAS_LINKS"] as const) : []),
               ...(cardsWithStates.has(c.id) ? (["HAS_STATES"] as const) : []),
-              ...(c.first_active_month < nowMonthDb
-                ? (["HAS_PAST_PLAN"] as const)
-                : []),
             ],
           },
         } satisfies EnrichedCard;
