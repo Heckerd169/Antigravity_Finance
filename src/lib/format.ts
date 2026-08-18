@@ -57,3 +57,22 @@ export function formatEuroRounded(amount: number): string {
   const safe = Object.is(rounded, -0) ? 0 : rounded;
   return `${safe.toLocaleString("de-DE", { maximumFractionDigits: 0 }).replace("-", "−")}${NBSP}€`;
 }
+
+/** Liest einen eingetippten Geldbetrag — deutsch („1.234,56") wie englisch
+ *  („1234.56"). `null` bei ungültiger Eingabe oder ≤ 0.
+ *
+ *  v2-26 aus `direct-create-overlay.tsx` HIERHER gezogen, unverändert. Der
+ *  Grund ist der zweite Aufrufer: Seit diesem Sprint hat auch das Popup „Karte
+ *  aus Zahlung" ein Betragsfeld. Zwei Kopien derselben Parse-Regel liefen genau
+ *  so lange synchron, bis jemand eine davon anfasst — dieselbe Überlegung, die
+ *  `card-state.ts` in v2-17 aus `card.tsx` herausgelöst hat. */
+export function parseAmount(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const normalized = trimmed.replace(/\./g, "").replace(/,/g, ".");
+  if (/e/i.test(normalized)) return null;
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  const n = Number(normalized);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n;
+}

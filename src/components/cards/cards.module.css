@@ -736,3 +736,49 @@
   font-size: 11px;
   color: rgba(255, 255, 255, .45);
 }
+
+/* v2-26: Auswahlraster im „Wiederholung"-Overlay.
+ *
+ * Bewusst dieselbe Formensprache wie die Optionsknöpfe der Anlage-Overlays
+ * (`interaction-zone.module.css` .optionButton): Es ist dieselbe Auswahl, nur
+ * an einer zweiten Stelle. Eine eigene Gestaltung dafür wäre erfunden.
+ *
+ * Fünf Werte in zwei Spalten — bei drei Spalten bliebe „Einmalig" allein in der
+ * letzten Zeile und sähe aus wie ein Sonderfall, der es nicht ist. */
+.overlayFrequencyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 4px 0 10px;
+}
+
+.overlayFrequencyButton {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .03);
+  color: var(--text-muted);
+  font-family: var(--font-stack-system);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.overlayFrequencyButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .06);
+  color: var(--text-primary);
+}
+
+.overlayFrequencyButton:disabled {
+  cursor: default;
+  opacity: .5;
+}
+
+/* Türkis heißt hier „ausgewählt", nicht „erledigt" — dieselbe Bedeutung, die
+   die Optionsknöpfe beim Anlegen tragen. Keine neue Farbe. */
+.overlayFrequencyButtonSelected {
+  background: rgba(62, 207, 175, .1);
+  border-color: var(--border-teal);
+  color: var(--text-primary);
+}

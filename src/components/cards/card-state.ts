@@ -15,6 +15,26 @@ import type {
  * Die Funktionen sind unverändert übernommen; einzige Ergänzung ist
  * `isCardOpen` am Ende. */
 
+/** v2-26: „Nicht angefallen" ist ein ERLEDIGTER Zustand.
+ *
+ *  Eine Karte, bei der in diesem Monat nichts anfiel, ist nicht „Offen" — an ihr
+ *  ist nichts mehr zu tun. Sie trug bis v2-26 trotzdem den offenen Zustand: rot,
+ *  und im Ordner darüber zählte sie als eine der offenen Karten. Der Nutzer sah
+ *  ein „3 offen", von denen zwei gar nicht mehr offen waren.
+ *
+ *  `adjustedAmount === 0` ist die Bedingung, NICHT `amount === 0`: Eine Karte
+ *  kann aus anderen Gründen 0 anzeigen (Plan 0, kein Fragment), und die ist
+ *  weiterhin offen. Nur die BEWUSSTE Null zählt (§6 Stolperfalle 3 — `null` und
+ *  `0` sind verschiedene Aussagen).
+ *
+ *  Die Statuszeile sagt weiterhin `nicht angefallen` statt „Bezahlt": Die Karte
+ *  sieht erledigt aus und nennt trotzdem den Grund. Ohne das wären „bezahlt" und
+ *  „fiel nicht an" wieder ununterscheidbar — genau die Verwechslung, die KJ-3
+ *  in v2-25 behoben hat. */
+export function isNotIncurred(card: EnrichedCard): boolean {
+  return card.adjustedAmount === 0;
+}
+
 export function resolveFixedCostState(
   card: EnrichedCard,
   isFuture: boolean,
@@ -23,7 +43,7 @@ export function resolveFixedCostState(
   // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
   // entweder reicht für Bezahlt-Status (Sprint 6 K1).
   const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
-  return card.manuallyPaid || hasFragment ? "paid" : "open";
+  return card.manuallyPaid || hasFragment || isNotIncurred(card) ? "paid" : "open";
 }
 
 export function resolveIncomeState(
@@ -34,7 +54,12 @@ export function resolveIncomeState(
   // §7 Konflikt 6: Fragment-Link und manually_paid sind unabhängige Indikatoren —
   // entweder reicht für Erhalten-Status (Sprint 6 K1).
   const hasFragment = (card.linkedFragments?.length ?? 0) > 0;
-  return card.manuallyPaid || hasFragment ? "received" : "expected";
+  // v2-26: „nicht angefallen" gilt auch hier als erledigt — eine erwartete
+  // Einnahme, die der Nutzer als ausgefallen markiert hat, ist nicht mehr
+  // „Erwartet".
+  return card.manuallyPaid || hasFragment || isNotIncurred(card)
+    ? "received"
+    : "expected";
 }
 
 export function resolveBudgetState(
@@ -76,6 +101,11 @@ export function sumLinkedFragments(card: EnrichedCard): number {
  *  „Offen" heißt: an dieser Karte ist in diesem Monat noch etwas zu tun. Das
  *  sind genau die Zustände `open` (Fixkosten), `expected` (Einnahmen) sowie
  *  `running` und `over` (Budget).
+ *
+ *  v2-26: Eine Karte mit „nicht angefallen" zählt NICHT mehr mit. Das folgt
+ *  automatisch aus den drei Resolver oben — genau deshalb liegen sie hier und
+ *  nicht ein zweites Mal in der Kachel. Wer die Regel ändern will, ändert sie an
+ *  EINER Stelle, und Karte wie Ordner ziehen zusammen mit.
  *
  *  Ghost zählt NICHT — und das ist der Grund für die Regel aus Record C3: Im
  *  Zukunftsmonat sind alle Kinder Ghost, die Zahl wäre also 0, und ein Ordner,

@@ -12,16 +12,18 @@ import {
 } from "./actions";
 import { useCardActionToast } from "./card-action-toast-provider";
 import type { CardActionToastFollowUp } from "./card-action-toast-provider";
-import type { DeleteEffect } from "@/lib/rpc";
+import type { DeleteEffect, FrequencyEffect } from "@/lib/rpc";
 import { formatEuroSigned } from "@/lib/format";
-import { formatMonthNameOnly } from "@/lib/months";
+import { formatMonthLabel, formatMonthNameOnly } from "@/lib/months";
 import { AdjustAmountOverlay } from "./adjust-amount-overlay";
 import { CategoryOverlay } from "./category-overlay";
 import { DueDayOverlay } from "./due-day-overlay";
 import { EndCardOverlay } from "./end-card-overlay";
+import { FrequencyOverlay } from "./frequency-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
 import type {
   CardCategory,
+  CardFrequency,
   CardType,
   DeleteGate,
   LinkedFragmentRef,
@@ -64,6 +66,9 @@ type CardInteractiveProps = {
   endDeleteOnly?: boolean;
   /** v2-05: false bei ONCE-Karten (haben per Constraint ein festes Ende). */
   canEnd: boolean;
+  /** v2-26: aktuelle Wiederholung — Vorbelegung für „Wiederholung ändern …".
+   *  Bis v2-26 war sie nach dem Anlegen endgültig. */
+  currentFrequency: CardFrequency;
   /** v2-05: aktuelles Karten-Ende (für Undo + „Ende aufheben"). */
   currentLastMonth: string | null;
   /** v2-05: vorberechnetes Lösch-Tor; die RPC prüft autoritativ erneut. */
@@ -99,6 +104,7 @@ export function CardInteractive({
   linkedFragments,
   endDeleteOnly = false,
   canEnd,
+  currentFrequency,
   currentLastMonth,
   deleteGate,
   adjustedAmount,
@@ -115,6 +121,7 @@ export function CardInteractive({
   const [dueDayOverlayOpen, setDueDayOverlayOpen] = useState(false);
   const [categoryOverlayOpen, setCategoryOverlayOpen] = useState(false);
   const [endOverlayOpen, setEndOverlayOpen] = useState(false);
+  const [frequencyOverlayOpen, setFrequencyOverlayOpen] = useState(false);
   const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -227,18 +234,51 @@ export function CardInteractive({
     setLinkedOverlayOpen(true);
   }
 
+  function handleFrequencyClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setFrequencyOverlayOpen(true);
+  }
+
+  /** v2-26: Die Frequenz-Änderung meldet ihre Sparraten-Wirkung genauso wie das
+   *  Löschen — dieselbe Zeile, dieselben Farben, dieselbe Regel für den leeren
+   *  Fall. Sie ist nur nicht zurücknehmbar: `Rückgängig` setzt die alte
+   *  Frequenz zurück, und das ist eine echte zweite Änderung, kein Undo. */
+  function handleFrequencyDone(effect: FrequencyEffect) {
+    if (effect.unchanged || effect.months === 0) return;
+    const betrag = formatEuroSigned(effect.total);
+    const text =
+      effect.singleMonth !== null
+        ? `Sparrate ${formatMonthNameOnly(effect.singleMonth)} · ${betrag}`
+        : `Sparrate in ${effect.months} Monaten · zusammen ${betrag}`;
+    showToast({
+      text: `${cardName} — Wiederholung geändert`,
+      run: async () => ({
+        text,
+        tone: effect.total >= 0 ? ("positive" as const) : ("negative" as const),
+      }),
+      undo: async () => {},
+    });
+  }
+
   function handleEndClick(e: React.MouseEvent) {
     e.stopPropagation();
     setMenuOpen(false);
     setEndOverlayOpen(true);
   }
 
-  /** Beenden bestätigt: Aktion sofort + 5s-Undo (setzt das vorherige Ende zurück). */
+  /** Beenden bestätigt: Aktion sofort + 5s-Undo (setzt das vorherige Ende zurück).
+   *
+   *  v2-26: Der Wortlaut folgt jetzt §12.5 — `[Kartenname] — Endet in [Monat
+   *  Jahr]`. Vorher stand hier `Karte »X« endet im 04/2026`: eine Zahlenform,
+   *  die in dieser App sonst nirgends vorkommt (Monate heißen überall „April
+   *  2026", siehe `formatMonthLabel`) und die man beim Überfliegen erst
+   *  entziffern muss. Der Toast steht fünf Sekunden. */
   function handleEndConfirm(lastMonth: string) {
     setEndOverlayOpen(false);
     const prev = currentLastMonth;
     showToast({
-      text: `Karte »${cardName}« endet im ${lastMonth.slice(5, 7)}/${lastMonth.slice(0, 4)}`,
+      text: `${cardName} — Endet in ${formatMonthLabel(lastMonth.slice(0, 7))}`,
       run: () => endCardAction(cardId, lastMonth),
       undo: () => endCardAction(cardId, prev),
     });
@@ -388,6 +428,23 @@ export function CardInteractive({
               Fällig am …
             </button>
           )}
+          {/* v2-26: „Wiederholung ändern …" — bis zu diesem Sprint gab es KEINEN
+              Weg, die Frequenz nach dem Anlegen zu korrigieren. Der Default ist
+              „Monatlich", man vertut sich also durch Nichtstun, und danach half
+              nur Löschen und Neuanlegen.
+              Mit `…`, weil ein Dialog aufgeht (§12.4) — und der geht auf, weil
+              die Änderung die Sparrate bewegt und das vorher zu sagen ist.
+              Nicht auf Ghost-Karten: Sie zeigen nur die Lebenszyklus-Verben. */}
+          {!endDeleteOnly && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleFrequencyClick}
+              role="menuitem"
+            >
+              Wiederholung ändern …
+            </button>
+          )}
           {/* v2-17 (KAT-1): „Kategorie ändern …" — der einzige Ort, an dem eine
               Karte ihren Ordner wechselt und an dem neue Ordner entstehen
               (Record B8). Bewusst NICHT durch Ziehen: Das kollidierte mit dem
@@ -458,6 +515,18 @@ export function CardInteractive({
           month={month}
           onConfirm={handleEndConfirm}
           onClose={() => setEndOverlayOpen(false)}
+        />
+      )}
+
+      {/* Wiederholung-Overlay (v2-26) */}
+      {frequencyOverlayOpen && (
+        <FrequencyOverlay
+          cardId={cardId}
+          cardName={cardName}
+          currentFrequency={currentFrequency}
+          month={month}
+          onDone={handleFrequencyDone}
+          onClose={() => setFrequencyOverlayOpen(false)}
         />
       )}
 

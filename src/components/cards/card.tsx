@@ -252,6 +252,7 @@ function FixedCostCard({
         tappable
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
+        currentFrequency={card.frequency}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
         cardType={card.type}
@@ -333,6 +334,7 @@ function IncomeCard({
         tappable={tappable}
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
+        currentFrequency={card.frequency}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
         cardType={card.type}
@@ -484,6 +486,7 @@ function BudgetCard({
         tappable
         endDeleteOnly={isGhost}
         canEnd={card.frequency !== "ONCE"}
+        currentFrequency={card.frequency}
         currentLastMonth={card.last_active_month}
         deleteGate={card.deleteGate}
         cardType={card.type}
