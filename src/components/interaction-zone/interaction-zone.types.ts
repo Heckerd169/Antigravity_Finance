@@ -170,6 +170,10 @@ export type InteractionZoneProps = {
   /** v2-19 (GE-1): die diesem Monat zugeordnete Gehaltszahlung, falls es eine
    *  gibt. `null` heißt: Es gilt der Plan. */
   incomeAssignment: IncomeAssignment | null;
+  /** v2-26: Anteil des Nutzers am Haushalt (§4.5) — ausschließlich für die
+   *  Vorschau „dein Anteil davon" in den beiden Anlage-Overlays. Gerechnet wird
+   *  weiterhin nur in der Datenbank (§7 Regel 1). */
+  splitFactor: number;
   /** "YYYY-MM" — der aktuell angezeigte Monat. */
   targetMonth: string;
   /** "YYYY-MM-01" — Datenbank-Variante für RPC-Aufrufe / link_month. */

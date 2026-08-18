@@ -267,9 +267,22 @@ export default async function Home({ searchParams }: HomeProps) {
   // Monat liegen — server-seitig gefiltert, nicht nachgelagert in JS
   // (§7 Regel 18). Vorher lud die Abfrage alle Zustände über alle Monate und
   // machte damit jede frisch angepasste Karte unlöschbar.
+  //
+  // v2-26: Zusätzlich zählen nur noch Zustände, die tatsächlich etwas AUSSAGEN.
+  // Eine Zeile mit `manually_paid = false` und `adjusted_amount IS NULL` ist der
+  // Rückstand eines zurückgenommenen Tap — sie trägt keine Historie, sperrte die
+  // Karte aber dauerhaft. Genau das ist bei `Privathaftpflicht` passiert,
+  // unmittelbar nachdem v2-25 den Vergangenheits-Riegel entfernt hatte.
+  //
+  // Die Einschränkung steht SERVER-seitig (§7 Regel 18 / LL-21): Ein
+  // nachgelagerter JS-Filter sähe nur, was PostgREST übrig ließ.
   const [{ data: linkCardRows }, { data: stateCardRows }] = await Promise.all([
     supabase.from("card_fragment_links").select("card_id"),
-    supabase.from("card_monthly_states").select("card_id").lt("month", nowMonthDb),
+    supabase
+      .from("card_monthly_states")
+      .select("card_id")
+      .lt("month", nowMonthDb)
+      .or("manually_paid.eq.true,adjusted_amount.not.is.null"),
   ]);
   const cardsWithLinks = new Set((linkCardRows ?? []).map((r) => r.card_id));
   const cardsWithStates = new Set((stateCardRows ?? []).map((r) => r.card_id));
@@ -678,6 +691,11 @@ export default async function Home({ searchParams }: HomeProps) {
             taxYear,
           }}
           incomeAssignment={incomeAssignment}
+          /* v2-26: nur für die Vorschau „dein Anteil davon" in den beiden
+             Anlage-Overlays. Der Wert ist hier ohnehin schon geladen (Ring und
+             Flanken brauchen ihn); gerechnet wird weiterhin nur in der
+             Datenbank (§7 Regel 1). */
+          splitFactor={splitFactor}
         />
       </CardActionToastProvider>
 

@@ -27,6 +27,7 @@ export function InteractionZone({
   targetMonth,
   targetDbMonth,
   currentMonth,
+  splitFactor,
 }: InteractionZoneProps) {
   const isFuture = compareMonths(targetMonth, currentMonth) === 1;
   const isPast = compareMonths(targetMonth, currentMonth) === -1;
@@ -93,6 +94,7 @@ export function InteractionZone({
       <Portal targetMonth={targetMonth} />
       <Carousel
         groups={groups}
+        splitFactor={splitFactor}
         isFuture={isFuture}
         targetMonth={targetMonth}
         targetDbMonth={targetDbMonth}

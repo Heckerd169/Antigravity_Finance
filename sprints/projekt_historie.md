@@ -2478,3 +2478,104 @@ ausdrücklich mit diesem Fall.
   `X gelöscht`, Subtext `Karte wird dauerhaft entfernt` fehlt ganz. Altbefund, nicht
   angefasst.
 - **`ZO-3`** bleibt der nächste inhaltliche Schritt (rückwirkendes Verlinken ab 95 %).
+
+---
+
+### Sprint v2-26 · DONE 18. August 2026
+
+**Komponente:** Fünf Nachbesserungen aus der Benutzung von v2-25, am Tag nach dem Merge
+gemeldet. Vier betreffen etwas, das v2-25 gebaut oder freigelegt hat.
+
+#### Der Befund, der den Sprint trägt
+
+**Der Fall des Löschriegels hat eine zweite Sperre freigelegt, die niemand kannte — weil
+sie nie erreichbar war.**
+
+Der Nutzer legte `Privathaftpflicht` an und konnte sie nicht löschen, obwohl v2-25 den
+Vergangenheits-Riegel gerade entfernt hatte. `card_delete_gate` meldete `HAS_STATES`. Die
+Karte hatte **genau eine** Zeile in `card_monthly_states`, für April:
+`manually_paid = false`, `adjusted_amount = NULL`.
+
+**Diese Zeile sagt nichts aus.** Sie ist der Rückstand eines Tap, der zurückgenommen
+wurde: Der erste legt sie mit `true` an, der zweite setzt `false`, liegen bleibt sie.
+`toggle_card_manually_paid` löscht sie bewusst nicht — in derselben Zeile kann eine
+Betragsanpassung stehen.
+
+`HAS_STATES` zählte solche Zeilen seit v2-20 mit. **Das fiel nie auf, weil
+`HAS_PAST_PLAN` ohnehin fast alles sperrte** — von 82 Karten waren null löschbar, die
+Reihenfolge der Sperrgründe spielte keine Rolle. Erst als die erste fiel, wurde die
+zweite sichtbar. Das ist dieselbe Klasse wie LL-26, aber in der Tiefe statt in der
+Breite: **Wer eine Sperre entfernt, prüft, was darunter liegt.**
+
+#### Die zweite Sackgasse
+
+Dieselbe Karte stand auf `MONTHLY`, obwohl quartalsweise gedacht — und es gab **keinen
+Weg**, das zu korrigieren. Weder Kontextmenü noch Overlay kannten die Frequenz nach der
+Anlage. Der Vorgabewert ist `Monatlich`, man vertut sich also durch **Nichtstun**, und
+danach half nur Löschen und Neuanlegen.
+
+**Genau deshalb wollte der Nutzer überhaupt löschen.** Er wollte die Karte nicht
+loswerden, er wollte sie reparieren — und der einzige angebotene Weg dorthin war
+Zerstörung. Dass auch der versperrt war, machte aus einem Ärgernis eine Sackgasse.
+
+`set_card_frequency` schließt die Lücke und wiederholt dabei bewusst das Muster von
+`delete_card` aus v2-25: dieselbe Messmechanik (vorher/nachher in derselben Transaktion,
+zwei Aufrufe der echten Rechenfunktion), dieselbe Rückgabeform, dieselbe Toast-Zeile.
+Eine zweite Art, dieselbe Sache zu melden, wäre eine zweite Stelle zum Pflegen gewesen.
+
+#### Die tragenden Entscheidungen
+
+**① Die Regel für „erledigt" bleibt an EINER Stelle.** „Nicht angefallen" blieb rot und
+„Offen", und der Ordner meldete `3 offen`, von denen zwei erledigt waren. Der
+naheliegende Weg wäre gewesen, die Farbe in `card.tsx` und die Zählung in
+`category-tile.tsx` zu ändern — zwei Formulierungen derselben Regel, genau das, was
+`card-state.ts` in v2-17 abgeschafft hat. Stattdessen eine Zeile in den Resolvern; teal,
+Häkchen und die Ordner-Zählung folgen daraus von selbst.
+
+Die Statuszeile sagt weiterhin `nicht angefallen`. Die Karte sieht erledigt aus und nennt
+trotzdem den Grund — sonst wären „bezahlt" und „fiel nicht an" wieder ununterscheidbar,
+die Verwechslung, die `KJ-3` gerade behoben hatte.
+
+**② Der Betrag beim Anlegen aus einer Zahlung war gar nicht eingebbar.** Fest verdrahtet
+auf `Math.abs(fragment.amount)`. Bei GEMEINSAM ist das falsch: Der Plan ist der
+**Haushaltsbetrag**, die Zahlung dagegen bereits der eigene Anteil. Wer 28,88 € überweist
+und daraus eine gemeinsame Karte macht, bekam 28,88 € als Plan — und der Anteil wurde
+beim Rechnen ein **zweites Mal** abgezogen. Exakt der Fall, den der Befund vom 17.08. an
+der Privathaftpflicht beschreibt (53,25 € Haushalt, 28,88 € abgebucht).
+
+Beide Anlage-Wege sagen jetzt, was gemeint ist, und zeigen den Anteil zur Kontrolle —
+aber nur, wenn es einen Partner gibt.
+
+**③ Die Frequenz-Änderung ist nicht zurücknehmbar über den Toast.** Beim Löschen setzt
+`Rückgängig` den vorherigen Zustand zurück. Bei der Frequenz wäre das eine **zweite
+Änderung** mit eigener Sparraten-Wirkung, kein Undo. Der Toast zeigt deshalb nur die
+Wirkung.
+
+#### Verifikation
+
+**Keine Zahl bewegt.** Alle zwölf Monate identisch vor und nach dem Eingriff, beide
+Invarianten 0,00, **sieben** Funktionen byte-identisch (die vier Rechenfunktionen plus
+`delete_card`, `restore_card`, `toggle_card_manually_paid`).
+
+**Der Wortgleichheits-Beleg trägt diesmal** — Übungs-Datenbank und Produktion tragen
+identische Prüfsummen. In v2-25 war das nicht so, weil dort eine gekürzte
+Kommentar-Fassung geprobt wurde; `pg_get_functiondef` schließt Kommentare ein. Die Lehre
+ist hier angewandt: Datei gelesen, 1:1 an beide Projekte übergeben.
+
+Übungs-DB-Anker 2.200,00 € vorher und nachher, nichts hinterlassen. **14 Prüfungen**,
+davon drei als Baseline **vor** der Migration — B1 hat den Fehler des Nutzers exakt
+reproduziert, bevor er behoben wurde.
+
+Prüfstrecke: `tsc` 0 · ESLint 0/0 · Build 0 · `test:visual` **121/121** (119 → 121) ·
+`test:e2e` **130/130** inkl. Render-Smoke.
+
+#### Was offen bleibt
+
+- **Wie die falsche Frequenz entstanden ist**, ließ sich nicht klären. Beide Anlage-Wege
+  reichen sie sauber durch. Der Vorgabewert `Monatlich` ist der wahrscheinlichere
+  Kandidat — und als Falle bemerkenswert: unauffällig, unbegrenzt in die Zukunft wirkend,
+  bis v2-26 nicht korrigierbar. **Als Gestaltungsfrage vermerkt, nicht stillschweigend
+  geändert.**
+- **`KJ-4`** (Monatsnamen) bleibt aus v2-25 unbeantwortet.
+- **Der Lösch-Toast weicht weiter von §12.5 ab.** Der Beenden-Toast ist mit diesem Sprint
+  korrigiert, der Lösch-Toast nicht — er war nicht Teil der Meldung.

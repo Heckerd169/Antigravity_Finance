@@ -24,12 +24,12 @@ import path from "node:path";
 
 const ROOT = path.join(__dirname, "..", "..");
 
-// v2-25 (KJ-1): Maßgeblich ist die JÜNGSTE Migration, die `card_delete_gate`
-// neu schreibt — sie ist die Fassung, die in der Datenbank steht. Die
-// v2-20-Datei bleibt als Historie liegen, prüft aber nichts mehr über den
-// heutigen Zustand.
+// v2-25 (KJ-1) / v2-26: Maßgeblich ist die JÜNGSTE Migration, die
+// `card_delete_gate` neu schreibt — sie ist die Fassung, die in der Datenbank
+// steht. Ältere Dateien bleiben als Historie liegen, prüfen aber nichts mehr
+// über den heutigen Zustand.
 const MIGRATION = fs.readFileSync(
-  path.join(ROOT, "supabase", "migrations", "20260817_v2_25_kj1_loeschriegel.sql"),
+  path.join(ROOT, "supabase", "migrations", "20260818_v2_26_loeschtor_und_frequenz.sql"),
   "utf8",
 );
 const PAGE = fs.readFileSync(path.join(ROOT, "src", "app", "page.tsx"), "utf8");
@@ -46,7 +46,7 @@ const CARDS_TYPES = fs.readFileSync(
  *  Datei und darf hier nicht mitgelesen werden. */
 const GATE_FN = MIGRATION.slice(
   MIGRATION.indexOf("function public.card_delete_gate"),
-  MIGRATION.indexOf("drop function if exists public.delete_card"),
+  MIGRATION.indexOf("function public.set_card_frequency"),
 );
 
 /** Kommentare raus, bevor auf ein VERSCHWUNDENES Konstrukt geprüft wird.
@@ -158,8 +158,16 @@ test.describe("Der Vergangenheits-Riegel ist gefallen (v2-25, KJ-1)", () => {
  * dabei falsch aus. Genau diese Fehlerklasse hat v2-13 gekostet.
  */
 test.describe("Die Folge des Löschens (v2-25, KJ-1)", () => {
-  const DELETE_FN = MIGRATION.slice(
-    MIGRATION.indexOf("drop function if exists public.delete_card"),
+  // `delete_card` ist seit v2-25 unverändert — die Datei von damals bleibt die
+  // maßgebliche Fassung. Sie hier zu lesen statt in der v2-26-Migration ist
+  // Absicht: Ein Test, der eine Regel in der jeweils NEUESTEN Datei sucht,
+  // wird bei jedem Sprint rot, der die Regel gar nicht anfasst.
+  const V25 = fs.readFileSync(
+    path.join(ROOT, "supabase", "migrations", "20260817_v2_25_kj1_loeschriegel.sql"),
+    "utf8",
+  );
+  const DELETE_FN = V25.slice(
+    V25.indexOf("drop function if exists public.delete_card"),
   );
 
   test("delete_card RUFT die Sparrate-Funktion auf, statt sie nachzubauen", () => {
@@ -217,5 +225,39 @@ test.describe("Papierkorb-Filter (v2-20, KU-1)", () => {
         `${fn} filtert deleted_at nicht`,
       ).toMatch(/deleted_at IS NULL/);
     }
+  });
+});
+
+/*
+ * v2-26: Eine LEERE Zustandszeile sperrt nicht mehr.
+ *
+ * `manually_paid = false` und `adjusted_amount IS NULL` ist der Rückstand eines
+ * zurückgenommenen Tap — die Zeile trägt keine Historie. Sie sperrte die Karte
+ * trotzdem dauerhaft, und es gab keinen Weg, sie loszuwerden. Genau das ist dem
+ * Nutzer mit `Privathaftpflicht` passiert, unmittelbar nachdem v2-25 den
+ * Vergangenheits-Riegel entfernt hatte.
+ *
+ * Wie bei v2-20 und v2-25 lebt die Regel an ZWEI Orten und muss an beiden
+ * dieselbe sein (LL-26).
+ */
+test.describe("Leere Zustandszeilen sperren nicht (v2-26)", () => {
+  test("die Datenbank verlangt einen AUSSAGEKRÄFTIGEN Zustand", () => {
+    // Ohne diese Bedingung zählt jede Zeile, auch die leere.
+    expect(GATE_FN_CODE).toMatch(
+      /manually_paid\s+OR\s+adjusted_amount\s+IS\s+NOT\s+NULL/,
+    );
+  });
+
+  test("das Frontend lädt nur aussagekräftige Zustände", () => {
+    // Der Nachbau in `page.tsx` muss dieselbe Einschränkung server-seitig
+    // führen — ein nachgelagerter JS-Filter sähe nur, was PostgREST übrig
+    // ließ (§7 Regel 18 / LL-21).
+    const abfrage = PAGE.slice(
+      PAGE.indexOf('from("card_monthly_states")'),
+      PAGE.indexOf('from("card_monthly_states")') + 320,
+    );
+    expect(abfrage).toContain('.or(');
+    expect(abfrage).toContain("manually_paid.eq.true");
+    expect(abfrage).toContain("adjusted_amount.not.is.null");
   });
 });

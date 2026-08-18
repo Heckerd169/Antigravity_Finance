@@ -46,6 +46,10 @@ type CarouselProps = {
   /** v2-19 (GE-1): die zugeordnete Gehaltszahlung dieses Monats, falls es eine
    *  gibt — sie wird im Einkommens-Fenster zum Lösen angeboten. */
   incomeAssignment: IncomeAssignment | null;
+  /** v2-26: Anteil des Nutzers am Haushalt (§4.5) — ausschließlich für die
+   *  Vorschau „dein Anteil davon" in den beiden Anlage-Overlays. Gerechnet wird
+   *  weiterhin nur in der Datenbank (§7 Regel 1). */
+  splitFactor: number;
 };
 
 const SCROLL_STEP = 146; // 136 Karten-Breite + 10 Gap
@@ -59,6 +63,7 @@ export function Carousel({
   liquidity,
   incomeSlot,
   incomeAssignment,
+  splitFactor,
 }: CarouselProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scrollState, setScrollState] = useState({
@@ -311,6 +316,7 @@ export function Carousel({
           fragment={recurrenceFragment}
           targetMonth={targetMonth}
           targetDbMonth={targetDbMonth}
+          splitFactor={splitFactor}
           onClose={() => setRecurrenceFragment(null)}
         />
       )}
@@ -319,6 +325,7 @@ export function Carousel({
         <DirectCreateOverlay
           targetMonth={targetMonth}
           targetDbMonth={targetDbMonth}
+          splitFactor={splitFactor}
           onClose={() => setDirectCreateOpen(false)}
         />
       )}

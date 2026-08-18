@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { formatMonthLabel } from "@/lib/months";
-import { formatAmount } from "@/lib/format";
+import { formatAmount, formatEuro, parseAmount } from "@/lib/format";
 import {
   ATTRIBUTION_OPTIONS,
   FREQUENCY_OPTIONS,
@@ -28,6 +28,10 @@ type RecurrencePopupProps = {
   targetMonth: string;
   /** "YYYY-MM-01" für Server Action. */
   targetDbMonth: string;
+  /** v2-26: Anteil des Nutzers am Haushalt (§4.5). Nur für die VORSCHAU des
+   *  eigenen Anteils bei GEMEINSAM — gerechnet wird weiterhin ausschließlich
+   *  in der Datenbank (§7 Regel 1). 1,0 heißt „kein Partner-Einkommen". */
+  splitFactor: number;
   onClose: () => void;
 };
 
@@ -35,9 +39,23 @@ export function RecurrencePopup({
   fragment,
   targetMonth,
   targetDbMonth,
+  splitFactor,
   onClose,
 }: RecurrencePopupProps) {
   const [name, setName] = useState(fragment.description);
+  /* v2-26: Der Betrag ist EINGEBBAR, vorbelegt mit dem Zahlungsbetrag.
+   *
+   * Vorher stand hier `Math.abs(fragment.amount)` fest verdrahtet — bei einer
+   * GEMEINSAM-Karte war das falsch und nicht korrigierbar: Der Plan einer
+   * gemeinsamen Karte ist der HAUSHALTSBETRAG, die Zahlung dagegen bereits der
+   * eigene Anteil. Wer 28,88 € überweist und daraus eine gemeinsame Karte
+   * macht, bekam 28,88 € als Plan — und der Anteil wurde beim Rechnen ein
+   * ZWEITES Mal abgezogen (§6 Stolperfalle 11). Genau dieser Fall stand im
+   * Befund vom 17.08.2026 zur Privathaftpflicht: 53,25 € Haushalt, 28,88 €
+   * abgebucht. */
+  const [amountStr, setAmountStr] = useState(
+    formatAmount(Math.abs(fragment.amount)),
+  );
   const [type, setType] = useState<CardType>("FIXED_COST");
   const [frequency, setFrequency] = useState<CardFrequency>("MONTHLY");
   const [attribution, setAttribution] = useState<CardAttribution>("ICH");
@@ -60,13 +78,28 @@ export function RecurrencePopup({
     }
   }, [type, attribution]);
 
-  const plannedAmount = Math.abs(fragment.amount);
+  const plannedAmount = parseAmount(amountStr);
   const isNameValid = name.trim().length > 0;
-  const isValid = isNameValid && plannedAmount > 0;
+  const isValid = isNameValid && plannedAmount !== null;
+
+  /* v2-26: Vorschau des eigenen Anteils. Reine ANZEIGE — die verbindliche
+   * Rechnung macht `calculate_card_amount_for_month` (§7 Regel 1). Sie steht
+   * nur bei GEMEINSAM und nur, wenn es einen Partner gibt: Bei Split-Faktor 1,0
+   * wären Anteil und Haushalt identisch, und die Zeile erklärte nichts —
+   * dieselbe Regel, nach der die Karte selbst die `von X €`-Zeile leer lässt. */
+  const zeigeAnteil =
+    type !== "BUDGET" &&
+    attribution === "GEMEINSAM" &&
+    splitFactor < 1 &&
+    plannedAmount !== null;
 
   function handleSubmit() {
-    if (!isValid) {
-      setSubmitError("Bitte Kartennamen angeben.");
+    if (!isValid || plannedAmount === null) {
+      setSubmitError(
+        !isNameValid
+          ? "Bitte Kartennamen angeben."
+          : "Bitte gültigen Betrag > 0 eingeben.",
+      );
       return;
     }
     setSubmitError(null);
@@ -110,7 +143,7 @@ export function RecurrencePopup({
         </div>
         {/* K1.5a: einzeilige Kopf-Sub-Zeile <Beschr> · <Betrag> · <Datum>. */}
         <div className={styles.overlayMetaLine}>
-          {fragment.description} · {formatAmount(plannedAmount)} € ·{" "}
+          {fragment.description} · {formatAmount(plannedAmount ?? 0)} € ·{" "}
           {formatDateLong(fragment.transaction_date)}
         </div>
 
@@ -125,6 +158,22 @@ export function RecurrencePopup({
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isPending}
+          />
+        </div>
+
+        <div className={styles.overlayFieldGroup}>
+          <label className={styles.overlayFieldLabel} htmlFor="recur-amount">
+            Betrag (€)
+          </label>
+          <input
+            id="recur-amount"
+            type="text"
+            inputMode="decimal"
+            className={styles.overlayInput}
+            value={amountStr}
+            onChange={(e) => setAmountStr(e.target.value)}
+            disabled={isPending}
+            placeholder="0,00"
           />
         </div>
 
@@ -184,6 +233,18 @@ export function RecurrencePopup({
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* v2-26: Bei GEMEINSAM ist der Plan der HAUSHALTSBETRAG, nicht der
+            eigene Anteil — sonst wird der Anteil beim Rechnen ein zweites Mal
+            abgezogen (§6 Stolperfalle 11). Das stand nirgends, und man konnte
+            es der Eingabemaske nicht ansehen. Die Vorschau ist reine ANZEIGE;
+            verbindlich rechnet die Datenbank (§7 Regel 1). */}
+        {zeigeAnteil && (
+          <div className={styles.overlayMetaLine}>
+            Voller Haushaltsbetrag — dein Anteil davon:{" "}
+            <b>{formatEuro((plannedAmount ?? 0) * splitFactor)}</b>
           </div>
         )}
 
