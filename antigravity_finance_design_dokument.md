@@ -1,9 +1,35 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.9.1 (V2 · Sprint v2-25 — gebaut, mit einer gemessenen Korrektur an §7)
-**Status:** Freigegeben — Schema-Doku v3.11.0; V2-Patches bis Sprint v2-25 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). **Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut** (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+**Version:** 3.10.0 (V2 · Sprint v2-26 — Nachbesserungen aus der Benutzung)
+**Status:** Freigegeben — Schema-Doku v3.12.0; V2-Patches bis Sprint v2-26 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). **Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut** (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
 **Datum:** 17. August 2026
 **Primäres Referenzdokument für Claude Code**
+
+> **Changelog v3.10.0 (18.08.2026, Sprint v2-26):** Fünf Nachbesserungen, alle aus der
+> Benutzung von v2-25 gemeldet. **Minor, weil zwei davon neue Spezifikation sind** — der
+> Menüpunkt `Wiederholung ändern …` und der Hinweis auf den Haushaltsbetrag beim Anlegen.
+>
+> §7 — **„nicht angefallen" ist ein ERLEDIGTER Zustand**: türkis, Häkchen, und der Ordner
+> zählt die Karte nicht mehr als offen. Die Statuszeile nennt weiterhin den Grund, damit
+> „bezahlt" und „fiel nicht an" unterscheidbar bleiben. Bis v2-26 blieb die Karte rot und
+> der Ordner meldete `3 offen`, von denen zwei erledigt waren.
+>
+> §7 · §12.4 — **neuer Block „Die Wiederholung ändern"**. Die Frequenz war nach dem
+> Anlegen endgültig; der Vorgabewert ist `Monatlich`, man vertut sich also durch
+> Nichtstun. Sie gilt für alle Monate, rückwirkend wie künftig, und die Änderung bewegt
+> die Sparrate — deshalb ein Dialog und ein Toast mit der Wirkung.
+>
+> §7 · §12.4 — **beim Anlegen einer gemeinsamen Karte ist der Betrag der
+> HAUSHALTSBETRAG**, und die Oberfläche sagt es jetzt. Im Popup „Karte aus Zahlung" war
+> er zuvor gar nicht eingebbar, sondern fest der Zahlungsbetrag — also der bereits
+> überwiesene Anteil, der beim Rechnen ein zweites Mal gekürzt wurde.
+>
+> §12.5 — der Beenden-Toast folgt jetzt der seit jeher gültigen Spezifikation
+> `[Kartenname] — Endet in [Monat Jahr]`. **Die Doku hatte recht, der Code nicht.**
+>
+> **Was dieser Sprint über den letzten sagt:** Vier der fünf Punkte betreffen etwas, das
+> v2-25 gebaut oder freigelegt hat. Der Löschriegel fiel — und darunter kam eine zweite
+> Sperre zum Vorschein, die niemand kannte, weil sie nie erreichbar war.
 
 > **Changelog v3.9.1 (17.08.2026, Sprint v2-25):** **Patch, keine neue Spezifikation.**
 > Die drei Spezifikationen von v3.9.0 sind gebaut; eine davon hat sich beim Bauen als
@@ -850,6 +876,22 @@ Eine gemeinsame Karte zeigt als große Zahl den **eigenen Anteil** (§4.5) und d
 
 **Die Zuordnung entsteht durch Nähe, nicht durch ein Label.** Der Qualifizierer steht unmittelbar unter der Zahl, die er qualifiziert; die Gruppierung macht der Weißraum.
 
+> **Beim ANLEGEN einer gemeinsamen Karte ist der eingegebene Betrag der
+> Haushaltsbetrag** — nicht der eigene Anteil. Beide Anlage-Wege sagen das seit v2-26
+> ausdrücklich und zeigen den Anteil zur Kontrolle:
+> `Voller Haushaltsbetrag — dein Anteil davon: [N] €`.
+>
+> **Der Hinweis erscheint nur, wenn es einen Partner gibt** (Split-Faktor < 1). Bei 1,0
+> wären Anteil und Haushalt identisch und die Zeile erklärte nichts — dieselbe Regel,
+> nach der die Karte selbst die `von X €`-Zeile leer lässt.
+>
+> **Warum das nötig wurde:** Im Popup „Karte aus Zahlung" war der Betrag bis v2-26 fest
+> auf den Zahlungsbetrag verdrahtet und **gar nicht eingebbar**. Eine Zahlung ist aber
+> bereits der überwiesene **Anteil**. Wer daraus eine gemeinsame Karte machte, bekam den
+> Anteil als Plan — und beim Rechnen wurde er ein **zweites Mal** abgezogen (§6
+> Stolperfalle 11). Der Befund vom 17.08.2026 beschreibt genau diesen Fall an der
+> Privathaftpflicht: 53,25 € Haushalt, 28,88 € abgebucht.
+
 **Die Höhe schaltet nie, nur der Inhalt.** Auf ICH-Karten bleibt die Zeile leer, die Höhe bleibt reserviert — alle Karten behalten dieselben Maße. Das ist kein neues Muster: §6 (M3) schreibt es für die Ausreißer-Subzeile im Header bereits so fest.
 
 **Leer bleibt die Zeile in drei Fällen:**
@@ -923,9 +965,28 @@ wer danach abhakt, hebt die Anpassung auf. Sonst stünde ein Häkchen an einer K
 **`Wieder mitzählen` hebt JEDE Anpassung dieses Monats auf**, nicht nur die 0 — der
 Wortlaut beschreibt, was hinterher gilt, nicht wovon man kommt.
 
-**Die Statuszeile zeigt dann `nicht angefallen`** — im Ghost-Ton (`--text-ghost`),
-**anstelle des Status-Labels**, und der Fälligkeitstag verschwindet mit. Ersetzen statt
-ergänzen heißt: **keine zusätzliche Kartenhöhe, kein neues Token, keine neue Farbe.**
+**Die Karte nimmt den Zustand „erledigt" an** — türkiser Grund, Häkchen-Icon, genau wie
+`Bezahlt` bzw. `Erhalten`. **An ihr ist nichts mehr zu tun**, und der Ordner darüber zählt
+sie folgerichtig nicht mehr in sein `[N] offen`.
+
+> **Bis v2-26 war das anders, und es war eine Falschaussage.** Eine Karte, bei der nichts
+> anfiel, blieb rot und „Offen"; der Ordner meldete `3 offen`, von denen zwei erledigt
+> waren. Die Regel sitzt in `card-state.ts` an **einer** Stelle — Karte und
+> Ordner-Kachel benutzen dieselben Resolver, genau dafür wurden sie in v2-17
+> herausgelöst.
+>
+> **Auslöser ist `adjusted_amount === 0`, nicht `amount === 0`.** Eine Karte kann aus
+> anderen Gründen 0 anzeigen (Plan 0, kein Fragment) und ist dann weiterhin offen. Nur
+> die **bewusste** Null zählt (§6 Stolperfalle 3).
+
+**Die Statuszeile zeigt trotzdem weiter `nicht angefallen`** — im Ghost-Ton
+(`--text-ghost`), **anstelle des Status-Labels**, und der Fälligkeitstag verschwindet mit.
+Ersetzen statt ergänzen heißt: **keine zusätzliche Kartenhöhe, kein neues Token, keine
+neue Farbe.**
+
+**Die Karte sieht also erledigt aus und nennt den Grund.** Stünde dort `Bezahlt`, wären
+„ich habe gezahlt" und „es fiel nichts an" wieder ununterscheidbar — genau die
+Verwechslung, die `KJ-3` behoben hat. Der Zustand ist derselbe, die Begründung nicht.
 
 **Beide Enden der Zeile wären sonst eine Falschaussage.** Ein Monat, in dem die Sache
 nicht angefallen ist, hat keinen Termin, den man erwarten könnte — und die Karte ist
@@ -968,6 +1029,39 @@ auch nicht `Offen` oder `Erwartet`. Sie ist genau das, was dort steht.
 >
 > **Eine Anpassung auf einen Wert ≠ 0 bleibt weiterhin unsichtbar.** Bewusst nicht
 > mitentschieden — eigene Entscheidung, wenn sie ansteht.
+
+### Die Wiederholung ändern (neu 18.08.2026, v2-26)
+
+Ein Kontextmenü-Punkt `Wiederholung ändern …` öffnet ein Overlay mit den fünf Werten aus
+§12.4 (`Monatlich` · `Quartalsweise` · `Halbjährlich` · `Jährlich` · `Einmalig`).
+
+| | |
+|---|---|
+| Sichtbar auf | allen Kartentypen |
+| **Nicht** sichtbar auf | Ghost-/Forecast-Karten (sie zeigen nur die Lebenszyklus-Verben) |
+| Ort im Menü | direkt über `Kategorie ändern …` — beide sind Eigenschaften der Karte, keine Monats-Zustände |
+| Dialog | **ja**, deshalb `…` |
+| Unterzeile | `[Kartenname] · gilt für alle Monate` |
+
+**Warum es das überhaupt geben muss.** Bis v2-26 war die Frequenz nach dem Anlegen
+**endgültig**. Der Vorgabewert beim Anlegen ist `Monatlich` — man vertut sich also durch
+Nichtstun —, und danach half nur Löschen und Neuanlegen. Genau das ist am 18.08.2026
+passiert: eine als quartalsweise gedachte Karte stand auf monatlich, erschien in jedem
+Monat, und ließ sich zusätzlich nicht löschen. Zwei Sackgassen hintereinander für eine
+Karte, die nur falsch stand.
+
+**Warum ein Dialog und kein Untermenü.** Die Änderung **bewegt die Sparrate**, und zwar
+erheblich: monatlich → jährlich nimmt elf Monate aus dem Jahr. Das `…` ist in dieser App
+das Zeichen für „öffnet einen Dialog" (§12.4), und der Dialog ist hier richtig, weil eine
+Auswahl mit dieser Tragweite nicht im Vorbeigehen passieren soll.
+
+**Die Wirkung erscheint danach im Toast** — dieselbe Zeile, dieselben Farben und dieselbe
+Regel für den leeren Fall wie beim Löschen (§12.5). Bewegt sich nichts, erscheint nichts.
+
+**Sie gilt für alle Monate, rückwirkend wie künftig.** `cards.frequency` ist eine
+Eigenschaft der Karte, keine Zeitreihe — dieselbe Natur wie `due_day` und `category_id`.
+Genau deshalb steht sie **nicht** in „Betrag anpassen", wo alles entweder *nur dieser
+Monat* oder *dauerhaft ab diesem Monat* ist.
 
 ### Die Folge des Löschens (neu 17.08.2026) — entschieden, noch nicht gebaut
 
@@ -2190,6 +2284,11 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | Kontextmenü — Fälligkeitstag | `Fällig am …` *(nicht auf Budget-Karten)* |
 | Kontextmenü — nicht angefallen | `Diesen Monat nicht angefallen` *(nur FIXED_COST/INCOME, nicht bei verknüpfter Zahlung)* |
 | Kontextmenü — Rücknahme | `Wieder mitzählen` |
+| Kontextmenü — Wiederholung | `Wiederholung ändern …` *(nicht auf Ghost-Karten)* |
+| Wiederholung — Overlay-Titel | `Wiederholung` |
+| Wiederholung — Unterzeile | `[Kartenname] · gilt für alle Monate` |
+| Wiederholung — Hinweis | `Gilt auch für vergangene Monate. Wie sich die Sparrate dadurch ändert, steht gleich in der Meldung.` |
+| Anlegen — Hinweis bei GEMEINSAM | `Voller Haushaltsbetrag — dein Anteil davon: [N] €` |
 | Betrag anpassen — Option 1 | `Nur dieser Monat` |
 | Betrag anpassen — Option 2 | `Dauerhaft ab diesem Monat` |
 | Fällig am — Overlay-Option | `Kein fester Tag` |
@@ -2219,6 +2318,9 @@ Alle deutschsprachigen UI-Texte der App. Englische Ausnahmen sind explizit marki
 | CARD DELETE — Folge, mehrere Monate | `Sparrate in [N] Monaten · zusammen [±N] €` |
 | CARD DELETE — Folge, ein Monat | `Sparrate [Monat] · [±N] €` |
 | CARD DELETE — Folge, keine Wirkung | *(entfällt — kein Zusatz, keine Null-Zeile)* |
+| CARD FREQUENCY — Titel | `[Kartenname] — Wiederholung geändert` |
+| CARD FREQUENCY — Folge | wie CARD DELETE (`Sparrate in [N] Monaten · zusammen [±N] €`) |
+| CARD FREQUENCY — ohne Wirkung | *(entfällt — es erscheint gar kein Toast)* |
 | Toast — Aktion | `Rückgängig` |
 | Toast — nach Undo | `Wiederhergestellt ✓` |
 
