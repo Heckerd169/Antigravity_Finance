@@ -14,7 +14,12 @@ import {
   setCardCategory,
   toggleCardManuallyPaid,
 } from "@/lib/rpc";
-import type { DeleteEffect, DeletedCategoryPayload } from "@/lib/rpc";
+import { setCardFrequency } from "@/lib/rpc";
+import type {
+  DeleteEffect,
+  DeletedCategoryPayload,
+  FrequencyEffect,
+} from "@/lib/rpc";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
@@ -67,6 +72,26 @@ export async function deleteCardAction(
   const supabase = createClient();
   await opportunisticTrashCleanup(supabase);
   const effect = await deleteCard(supabase, { cardId, year });
+  revalidatePath("/", "page");
+  return effect;
+}
+
+/** v2-26: Die Wiederholung einer bestehenden Karte ändern.
+ *
+ *  Bis zu diesem Sprint gab es dafür KEINEN Weg — die Frequenz war nach dem
+ *  Anlegen endgültig, und der Default ist „Monatlich". Wer sich vertat, musste
+ *  löschen und neu anlegen; genau das wollte der Nutzer bei `Privathaftpflicht`
+ *  und scheiterte dann auch noch am Lösch-Tor.
+ *
+ *  Gibt die Sparraten-Wirkung zurück — gemessen in der Datenbank, nicht hier
+ *  (Arbeitsregel 1). `year` ist das Kalenderjahr des angezeigten Monats. */
+export async function setCardFrequencyAction(
+  cardId: string,
+  frequency: string,
+  year: number,
+): Promise<FrequencyEffect> {
+  const supabase = createClient();
+  const effect = await setCardFrequency(supabase, { cardId, frequency, year });
   revalidatePath("/", "page");
   return effect;
 }

@@ -688,6 +688,10 @@ export type Database = {
         }
         Returns: string
       }
+      set_card_frequency: {
+        Args: { p_card_id: string; p_frequency: Database["public"]["Enums"]["card_frequency"]; p_year?: number }
+        Returns: Json
+      }
       set_card_category: {
         Args: { p_card_id: string; p_category_id?: string }
         Returns: undefined

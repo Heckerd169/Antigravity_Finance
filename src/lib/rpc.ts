@@ -228,6 +228,60 @@ export async function deleteCard(
   };
 }
 
+/** v2-26: Was eine Frequenz-Änderung mit der Sparrate macht.
+ *
+ *  Dieselbe Form wie `DeleteEffect` und aus demselben Grund gemessen statt
+ *  gerechnet: Eine Frequenz-Änderung nimmt Monate aus dem Jahr heraus oder
+ *  fügt welche hinzu, und das ist eine Sparraten-Rechnung (Arbeitsregel 1).
+ *
+ *  `unchanged` unterscheidet „nichts gewählt" von „gewählt, aber ohne
+ *  Wirkung" — nur beim zweiten Fall lohnt eine Meldung. */
+export type FrequencyEffect = {
+  months: number;
+  /** Sparrate nachher − vorher, summiert. Positiv = Entlastung (türkis). */
+  total: number;
+  /** `"YYYY-MM"` genau dann, wenn `months === 1`. */
+  singleMonth: string | null;
+  unchanged: boolean;
+};
+
+/** v2-26: Die Wiederholung einer bestehenden Karte ändern.
+ *
+ *  `cards.frequency` gilt IMMER — die Änderung wirkt rückwirkend wie künftig.
+ *  Der `year`-Parameter bestimmt nur, über welches Kalenderjahr die WIRKUNG
+ *  gemessen wird (dasselbe Fenster wie bei `deleteCard`).
+ *
+ *  Die RPC führt den Constraint `once_is_single_month` mit: Wechsel zu `ONCE`
+ *  setzt das Ende auf den Startmonat, Wechsel davon weg räumt es ab. */
+export async function setCardFrequency(
+  client: AppSupabaseClient,
+  args: { cardId: string; frequency: string; year: number },
+): Promise<FrequencyEffect> {
+  const { data, error } = await client.rpc("set_card_frequency", {
+    p_card_id: args.cardId,
+    p_frequency: args.frequency as never,
+    p_year: args.year,
+  });
+  if (error) throw error;
+
+  const row = data as {
+    unchanged?: boolean;
+    sparrate_effect?: {
+      months?: number;
+      total?: number;
+      single_month?: string | null;
+    };
+  } | null;
+  const effect = row?.sparrate_effect;
+
+  return {
+    months: Number(effect?.months ?? 0),
+    total: Number(effect?.total ?? 0),
+    singleMonth: effect?.single_month ?? null,
+    unchanged: Boolean(row?.unchanged),
+  };
+}
+
 /** Rückgängig aus dem Papierkorb (innerhalb der Retention). */
 export async function restoreCard(
   client: AppSupabaseClient,
