@@ -236,3 +236,72 @@ stünde dort rund 604 €.
 
 **Erst Phase 4 stellt den Anker auf die Probe**, denn dann ersetzen echte Zahlungen den
 Plan und Ist und Plan laufen auseinander.
+
+---
+
+## 6. Nach Phase 4 — `ZO-3`, 41 Zahlungen rückwirkend verlinkt
+
+Migration `v2_27_zo3_rueckwirkend_verlinken`, angewendet am 19.08.2026 nach eigener
+Freigabe. Erwartung stand vorher fest (Trockenlauf, `sprint_v2-27_zuordnung.md` §6).
+
+| Monat 2025 | nach Phase 2 | erwartet nach P4 | **gemessen** | |
+|---|---|---|---|---|
+| Januar | 1.849,12 | 1.854,61 | **1.854,61** | ✅ |
+| Februar | 1.890,50 | 1.891,42 | **1.891,42** | ✅ |
+| März | 1.890,50 | 1.891,42 | **1.891,42** | ✅ |
+| April | 1.829,39 | 1.830,31 | **1.830,31** | ✅ |
+| Mai | 1.870,65 | 1.871,57 | **1.871,57** | ✅ |
+| Juni | 1.880,55 | 1.881,47 | **1.881,47** | ✅ |
+| Juli | 1.849,12 | 1.850,04 | **1.850,04** | ✅ |
+| August | 1.890,50 | 1.891,42 | **1.891,42** | ✅ |
+| September | 1.890,50 | 1.888,02 | **1.888,02** | ✅ |
+| Oktober | 1.859,07 | 1.856,59 | **1.856,59** | ✅ |
+| November | 1.880,55 | 1.878,07 | **1.878,07** | ✅ |
+| Dezember | 1.880,55 | 1.877,90 | **1.877,90** | ✅ |
+| **Summe** | 22.461,00 | 22.462,84 | **22.462,84** | ✅ |
+
+**2026: alle zwölf Monate weiterhin identisch zu §1.**
+
+| Prüfung | Ergebnis |
+|---|---|
+| Anker 1 über 24 Monate | **24/24 exakt** ✅ |
+| Anker 2 (B2) über 24 Monate | **0 Abweichungen** ✅ |
+| Neun Prüfsummen | **jede trifft ihren eigenen Vorher-Wert** ✅ |
+| Verknüpfungen | 411 → **452** (+41, wie geplant) |
+| 2025 noch offen | **710** |
+
+### Endstand der Zahlungen
+
+| Jahr | Zustand | Anzahl | trägt Vorschlag |
+|---|---|---|---|
+| 2025 | offen | 710 | 212 |
+| 2025 | verlinkt | 41 | 41 |
+| 2026 | offen | 7 (nur Gehalt) | 1 |
+| 2026 | verlinkt | 411 | 128 |
+
+Dass verlinkte Zahlungen weiterhin einen Vorschlagsrest tragen, ist der **normale
+Zustand** der App — in 2026 gilt es für 128 von 411. Kein Handlungsbedarf.
+
+---
+
+## 7. Ein Fund aus dem Betrieb: ein Client-Timeout ist kein Rollback
+
+**Real passiert in diesem Sprint.** Der Aufruf
+`refresh_fragment_suggestions('2025-01-01','2025-12-01')` lief in einen Timeout der
+MCP-Verbindung. Die unmittelbar folgende Kontrollabfrage meldete **0 Konfidenzwerte** —
+also augenscheinlich ein sauberer Rollback.
+
+**Er war keiner.** Die Datenbank arbeitete weiter und committete; die Kontrollabfrage kam
+nur zu früh und sah einen Zwischenstand. Später standen exakt die **253** Vorschläge da,
+die auch die unabhängige Messung ergeben hatte. Aufgefallen ist es erst, weil ein
+anschließender Monatslauf `vorschlag_gesetzt: 0` meldete — die Werte standen ja bereits.
+
+**Warum es hier harmlos war und trotzdem festgehalten gehört:** Die Funktion schreibt
+ausschließlich Anzeige-Spalten, und ihre eingebaute Invariante (Links vorher == Links
+nachher) hat gehalten. Bei einer mutierenden Funktion wäre dieselbe Fehlannahme teuer
+gewesen: Man hielte einen durchgeführten Eingriff für abgebrochen und führte ihn erneut aus.
+
+**Regel:** Nach einem Timeout ist der Zustand **unbekannt**, nicht „zurückgerollt". Wer
+ihn feststellen will, misst nicht sofort, sondern mit Abstand — und prüft die Wirkung, nicht
+die Fehlermeldung. Verwandt mit der Log-Ingestion-Falle aus v2-24: Beide Male sieht ein zu
+früher Blick wie ein Befund aus.

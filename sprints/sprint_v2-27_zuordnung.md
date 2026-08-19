@@ -136,3 +136,26 @@ jede fünfte Zuordnung falsch (49 von 230), und ein falscher Link geht rückwirk
 Sparrate ein. Diese 253 Vorschläge gehören angezeigt, nicht ausgeführt.
 
 **Offen und dem Nutzer vorgelegt:** ob die 41 verlinkt werden.
+
+---
+
+## 8. Die Entscheidung und ihr Ergebnis
+
+**Der Nutzer hat am 19.08.2026 entschieden:** die 41 verlinken, die 253 anzeigen.
+
+Migration `v2_27_zo3_rueckwirkend_verlinken`, `origin = 'AUTO_ABSORBED'`,
+Link-Monat = Buchungsmonat.
+
+| | erwartet | gemessen |
+|---|---|---|
+| Verknüpfungen | 411 → 452 | **452** ✅ |
+| 2025 Jahressumme | 22.462,84 € | **22.462,84 €** ✅ |
+| 2025, jeder einzelne Monat | Tabelle §6 | **alle zwölf exakt** ✅ |
+| 2026, alle zwölf Monate | unverändert | **unverändert** ✅ |
+| Anker 1 / Anker 2 | 24/24 | **24/24, 0 Abweichungen** ✅ |
+| Neun Prüfsummen | byte-identisch | **byte-identisch** ✅ |
+
+**Endstand 2025:** 41 verlinkt, 710 offen, davon 212 mit sichtbarem Kartenvorschlag.
+
+Der Nachrechen-Lauf für die Anzeige-Spalten war zu diesem Zeitpunkt bereits erfolgt —
+siehe `sprint_v2-27_anker.md` §7 zum Timeout, der keiner war.
