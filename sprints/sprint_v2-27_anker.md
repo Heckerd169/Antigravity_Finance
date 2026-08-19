@@ -156,4 +156,83 @@ dieses Sprints.**
 
 ## 4. Nachher — nach Anwendung auf Produktion
 
-*(wird nach der Anwendung ausgefüllt)*
+**Angewendet am 19.08.2026** als Migration `v2_27_da1_karten_2025`, nach ausdrücklicher
+Freigabe des Nutzers. Gemessen unmittelbar danach, in derselben Sitzung.
+
+### S1 — 2026 darf sich nicht bewegen
+
+| Monat | Ist | Plan | | Monat | Ist | Plan |
+|---|---|---|---|---|---|---|
+| 01 | 1.318,76 | 1.465,36 | | 07 | −8,84 | 21,44 |
+| 02 | 1.667,90 | 1.651,10 | | 08 | 629,34 | 404,46 |
+| 03 | 1.053,42 | 1.381,43 | | 09 | 1.821,59 | 1.821,59 |
+| 04 | 1.753,14 | 1.729,58 | | 10 | 1.790,08 | 1.790,08 |
+| 05 | −239,10 | −96,40 | | 11 | 1.821,59 | 1.821,59 |
+| 06 | 3.509,75 | 3.799,90 | | 12 | 1.821,59 | 1.821,59 |
+
+**Alle 24 Werte identisch zu §1. Kein Monat hat sich bewegt.** ✅
+
+### S2 — 2025 soll sich bewegen
+
+| Monat | Ist = Plan | erwartet | | Monat | Ist = Plan | erwartet |
+|---|---|---|---|---|---|---|
+| Januar | 1.849,12 | 1.849,12 ✅ | | Juli | 1.849,12 | 1.849,12 ✅ |
+| Februar | 1.890,50 | 1.890,50 ✅ | | August | 1.890,50 | 1.890,50 ✅ |
+| März | 1.890,50 | 1.890,50 ✅ | | September | 1.890,50 | 1.890,50 ✅ |
+| April | 1.829,39 | 1.829,39 ✅ | | Oktober | 1.859,07 | 1.859,07 ✅ |
+| Mai | 1.870,65 | 1.870,65 ✅ | | November | 1.880,55 | 1.880,55 ✅ |
+| Juni | 1.880,55 | 1.880,55 ✅ | | Dezember | 1.880,55 | 1.880,55 ✅ |
+
+**Jahressumme 22.461,00 €** — auf den Cent wie vorhergesagt.
+**Bewegung: 48.445,32 → 22.461,00 €, also −25.984,32 €.**
+
+### S3 bis S8
+
+| # | Prüfung | Ergebnis |
+|---|---|---|
+| **S3** | Anker 1 — Σ Ordner == Sparrate | **24/24 exakt** ✅ |
+| **S4** | Anker 2 — Σ delta == Ist − Plan (B2) | **24/24 exakt, 0 Abweichungen** ✅ |
+| **S5** | Neun Prüfsummen | **byte-identisch zu §1, alle neun** ✅ |
+| **S6** | Dubletten je `(card_id, effective_month)` | **0** ✅ |
+| **S6** | Plan-Zeilen 2025 neu | 27 |
+| **S6** | Plan-Zeilen ab 2026 | **85, unverändert** ✅ |
+| **S7** | Fälligkeitsmonate 2026 | **alle unverändert** ✅ |
+| **S8** | Audible | **6 × 9,95 € · 6 × 0,00 €** ✅ |
+
+### S7 im Einzelnen — der Beleg für Falle ③
+
+| Karte | aktiv 2026 vorher | nachher | |
+|---|---|---|---|
+| ADAC Mitgliedsbeitrag | 07 | 07 | nicht zurückdatiert |
+| Aline Geburtstag | 07 | 07 | nicht zurückdatiert |
+| Mitgliedschaftsbeitrag BuMs-NDQ | 04 | 04 | nicht zurückdatiert |
+| **Privathaftpflicht** | 04 | **04** | **zurückdatiert, Monat gehalten** |
+| **Reisekrankenversicherung – DKV** | 05 | **05** | **zurückdatiert, Monat gehalten** |
+| **Rundfunkbeitrag** | 01,04,07,10 | **01,04,07,10** | **zurückdatiert, alle vier gehalten** |
+
+### S8 im Einzelnen
+
+| Monat 2025 | 01 | 02 | 03 | 04 | 05 | 06 | 07 | 08 | 09 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Audible | 9,95 | 0,00 | 0,00 | 0,00 | 9,95 | 9,95 | 9,95 | 0,00 | 0,00 | 0,00 | 9,95 | 9,95 |
+
+Sechs Zahlungen, sechs Lücken — exakt die Monate, in denen 2025 gezahlt wurde.
+
+---
+
+## 5. Was dieser Eingriff NICHT belegt
+
+**Ein grüner Anker ist hier ein schwächerer Beweis als sonst.** 2025 war vorher in allen
+zwölf Monaten identisch (4.037,11 €) und ist es nachher wieder — nur auf anderem Niveau,
+und Ist = Plan, weil noch nichts verlinkt ist. Was der Anker zeigt: Die Plan-Zeilen
+greifen und 2026 blieb unberührt. Was er **nicht** zeigt: ob die Plan-Beträge inhaltlich
+richtig sind.
+
+**Der eigentliche Beleg dafür ist die Split-Rechnung**, und sie ist nachprüfbar: Die Miete
+plant 1.817,49 € (Jan–Mär) bzw. 1.888,91 € (ab April) als Haushaltsbetrag, und der eigene
+Anteil ergibt in **allen zwölf Monaten** 1.068,44 € — genau den gemessenen Jahresdurchschnitt
+der tatsächlichen Zahlungen (12.821,24 € / 12). Wäre der Anteil doppelt angewandt worden,
+stünde dort rund 604 €.
+
+**Erst Phase 4 stellt den Anker auf die Probe**, denn dann ersetzen echte Zahlungen den
+Plan und Ist und Plan laufen auseinander.
