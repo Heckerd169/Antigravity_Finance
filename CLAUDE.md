@@ -44,6 +44,15 @@
 > **21–25** (drei Sprints) · **§8** neue Einträge **LL-31 bis LL-35** · **§9**
 > Sprint-Stand, Doku-Versionen und Roadmap-Zahlen · **§9 die Momentaufnahme**.
 >
+> **Nachtrag vom selben Tag: die Miete war falsch, und der Fehler war grundsätzlicher.**
+> Der Plan der GEMEINSAM-Karten wurde als *Jahresdurchschnitt ÷ Split-Faktor* konstruiert
+> und erfand damit Haushaltsbeträge, die es nie gab. **Die Gegenprobe lag zwölffach
+> bereit** — dieselbe Rechnung trifft für Feb–Aug 2026 exakt den heute gültigen Plan —
+> **und wurde nicht gemacht** (neuer Eintrag **LL-36**). Korrigiert auf die echten Beträge;
+> 2025 steht jetzt bei **22.567,80 €**, 2026 blieb in allen zwölf Monaten unbewegt. Dabei
+> fiel ein **älterer** Fehler auf: Die Plan-Zeile für Januar 2026 trug schon vor diesem
+> Sprint den Februar-Betrag.
+>
 > **Die Momentaufnahme MUSSTE diesmal ersetzt werden** — anders als bei den letzten
 > Sprints, wo sie bewusst stehenblieb. Sie nannte für 2025 „alle Monate 4.037,11 €"; das
 > ist seit v2-27 falsch, und zwar durch einen Eingriff, nicht durch Benutzung. Sie trägt
@@ -1001,6 +1010,28 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-33 | Der Vorgabewert als Falle: Wo eine Vorbelegung eine **Zeitreihe** eröffnet (`Monatlich` beim Anlegen), gehört sie zur bewussten Wahl gemacht **oder** nachträglich änderbar. Sonst ist Zerstörung der einzige Weg zur Reparatur | §6 Stolperfalle 23 | v2-26 (KJ-8) |
 | LL-34 | Zurückdatieren verschiebt den Rhythmus — jede Zahl bleibt richtig, sie steht nur im falschen Monat. Der Wächter gehört in die Migration | §6 Stolperfalle 24 | v2-27 (DA-1) |
 | LL-35 | Wer aus einem **Textmuster** aggregiert, misst das Muster und nicht die Sache — drei Zahlen eines sorgfältigen Auftrags waren so falsch | §9 · hier | v2-27 (DA-1) |
+| LL-36 | Wer einen **unbekannten** Wert aus Daten rekonstruiert, prüft die Methode zuerst an einem **bekannten** — die Gegenprobe lag zwölffach bereit und wurde nicht gemacht | hier | v2-27 (P6) |
+
+> **LL-36 ist die teuerste Prüfung, die in v2-27 gefehlt hat — und sie hätte nichts
+> gekostet.** Die Migration `DA-1` bildete den Plan der GEMEINSAM-Karten als
+> *Jahresdurchschnitt des Anteils ÷ Split-Faktor*. Das hielt den **Anteil** konstant und
+> erfand dafür einen **Haushaltsbetrag**, den es nie gab (1.817,49 € statt 1.820 €,
+> 1.888,91 € statt 1.861 €). Der Nutzer bemerkte es noch am selben Tag.
+>
+> **Die Gegenprobe war die ganze Zeit verfügbar:** Rechnet man *Zahlung ÷ Faktor des
+> Monats*, ergibt sich für Feb–Aug 2026 **exakt der heute gültige Plan** — zwölf bekannte
+> Werte, die die Methode hätte treffen müssen. Sie tat es; nur hat niemand nachgesehen.
+> Für Mai–Dez 2025 liefert dieselbe Rechnung glatte 1.861,00 €, Monat für Monat ohne Rest.
+>
+> **Der Fehler war nicht Nachlässigkeit, sondern eine Lösung für das falsche Problem.**
+> Die Konstruktion sollte vor der Doppelanwendung des Split-Faktors schützen (§6
+> Stolperfalle 11) — und tat das zuverlässig. Sie unterstellte dabei nur, ein
+> Haushaltsbetrag ändere sich, wenn sich das Verhältnis der Einkommen verschiebt. Er tut
+> es nicht.
+>
+> **Verwandt mit LL-22**, aber schärfer: Dort ist eine Doku-Zusage ungeprüft, hier eine
+> **eigene Rechenmethode** — und die lässt sich, anders als eine Zusage, gegen bekannte
+> Werte testen.
 
 > **LL-35 in einem Satz, weil es die billigste Prüfung dieses Registers ist.** In v2-27
 > hielten drei Angaben des Auftrags der Messung nicht stand, und **alle drei entstanden
@@ -1312,13 +1343,13 @@ Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein*
 
 | Monat | 2026 Ist | 2025 Ist | | Monat | 2026 Ist | 2025 Ist |
 |---|---|---|---|---|---|---|
-| Januar | 1.318,76 € | 1.854,61 € | | Juli | −8,84 € | 1.850,04 € |
-| Februar | 1.667,90 € | 1.891,42 € | | August | 629,34 € | 1.891,42 € |
-| März | 1.053,42 € | 1.891,42 € | | September | 1.821,59 € | 1.888,02 € |
-| April | 1.753,14 € | 1.830,31 € | | Oktober | 1.790,08 € | 1.856,59 € |
-| Mai | −239,10 € | 1.871,57 € | | November | 1.821,59 € | 1.878,07 € |
-| Juni | 3.509,75 € | 1.881,47 € | | Dezember | 1.821,59 € | 1.877,90 € |
-| | | | | **Goldlinie 2025** | | **22.462,84 €** |
+| Januar | 1.318,76 € | 1.853,82 € | | Juli | −8,84 € | 1.866,97 € |
+| Februar | 1.667,90 € | 1.867,34 € | | August | 629,34 € | 1.908,07 € |
+| März | 1.053,42 € | 1.867,34 € | | September | 1.821,59 € | 1.904,67 € |
+| April | 1.753,14 € | 1.850,46 € | | Oktober | 1.790,08 € | 1.873,52 € |
+| Mai | −239,10 € | 1.888,22 € | | November | 1.821,59 € | 1.894,72 € |
+| Juni | 3.509,75 € | 1.898,12 € | | Dezember | 1.821,59 € | 1.894,55 € |
+| | | | | **Goldlinie 2025** | | **22.567,80 €** |
 
 > ### ⚠️ Die 2025-Spalte ist neu, und die alte Zahl war KEIN Messfehler
 >

@@ -305,3 +305,81 @@ gewesen: Man hielte einen durchgeführten Eingriff für abgebrochen und führte 
 ihn feststellen will, misst nicht sofort, sondern mit Abstand — und prüft die Wirkung, nicht
 die Fehlermeldung. Verwandt mit der Log-Ingestion-Falle aus v2-24: Beide Male sieht ein zu
 früher Blick wie ein Befund aus.
+
+
+---
+
+## 8. Nach Phase 6 — die Pläne der GEMEINSAM-Karten korrigiert
+
+**Anlass: eine Korrektur des Nutzers, die einen Konstruktionsfehler aufdeckte.**
+
+Am 19.08.2026 meldete der Nutzer: *„Die Gesamtmiete ist falsch. Wir haben gemeinsam
+gezahlt: 01/25 1.820 € · 02/25–01/26 1.861 € · ab 02/26 1.904 €."*
+
+Er hatte recht — und der Fehler war grundsätzlicher als die Miete.
+
+### Was in Phase 2 falsch gemacht wurde
+
+Der Plan wurde als **Jahresdurchschnitt des eigenen Anteils ÷ Split-Faktor** gebildet.
+Das hielt den Anteil über zwölf Monate konstant und **erfand dafür einen Haushaltsbetrag,
+den es nie gab**: 1.817,49 € (Jan–Mär) und 1.888,91 € (ab April). Echt waren 1.820 € und
+dann 1.861 €.
+
+**Die Methode war von Anfang an prüfbar gewesen, und niemand hat sie geprüft.** Die
+Rückrechnung *Zahlung ÷ Faktor des Monats* ergibt für Mai–Dez 2025 **exakt 1.861,00 €**,
+Monat für Monat ohne Rest — und für Feb–Aug 2026 **exakt 1.904,00 €**, also genau den
+heute gültigen Plan. Eine Rechnung, die den **bekannten** Wert reproduziert, war der
+bessere Schätzer für den unbekannten. Das hätte in Phase 1 auffallen können.
+
+**Derselbe Fehler steckte in allen fünf GEMEINSAM-Karten**, nicht nur in der Miete. Dort
+fiel er auf, weil es die größte Position des Jahres ist.
+
+### Der Nebenbefund: der Januar-2026-Plan war schon vorher falsch
+
+Die Zahlungen zeigen, dass der eigene Anteil **bis einschließlich Januar 2026** mit dem
+alten Faktor 0,565636 berechnet wurde; erst ab Februar 2026 gilt 0,572090. Auch der
+Haushaltsbetrag stieg erst zum Februar.
+
+Die Plan-Zeile `2026-01` trug jedoch bereits den neuen Betrag — bei Miete, Rechtsschutz
+und Strom. **Das stammt aus der Zeit vor diesem Sprint.**
+
+### Was sich bewegt hat
+
+| Monat 2025 | nach P4 | **nach P6** | | Monat | nach P4 | **nach P6** |
+|---|---|---|---|---|---|---|
+| Januar | 1.854,61 | **1.853,82** | | Juli | 1.850,04 | **1.866,97** |
+| Februar | 1.891,42 | **1.867,34** | | August | 1.891,42 | **1.908,07** |
+| März | 1.891,42 | **1.867,34** | | September | 1.888,02 | **1.904,67** |
+| April | 1.830,31 | **1.850,46** | | Oktober | 1.856,59 | **1.873,52** |
+| Mai | 1.871,57 | **1.888,22** | | November | 1.878,07 | **1.894,72** |
+| Juni | 1.881,47 | **1.898,12** | | Dezember | 1.877,90 | **1.894,55** |
+| | | | | **Summe** | 22.462,84 | **22.567,80** |
+
+| Prüfung | Ergebnis |
+|---|---|
+| **2026 Ist, alle zwölf Monate** | **unverändert** ✅ |
+| 2026 Plan, Januar | 1.465,36 → **1.497,91** (die Korrektur) |
+| Anker 1 über 24 Monate | **24/24 exakt** ✅ |
+| Anker 2 (B2) über 24 Monate | **0 Abweichungen** ✅ |
+| Neun Prüfsummen | **jede trifft ihren Vorher-Wert** ✅ |
+| Privathaftpflicht behält Planwert | **52,47 €** ✅ |
+
+**Die Ist-Sparrate 2026 bewegt sich nicht**, obwohl der Januar-Plan korrigiert wurde: Für
+alle fünf Karten ist die Januar-Zahlung verlinkt, und bei Fixkosten gewinnt die Realität.
+
+**Der eigentliche Gewinn steht nicht in der Summe:** Der Miete-Anteil beträgt ab April
+2025 jetzt **1.052,65 €** — exakt den Betrag, der tatsächlich überwiesen wurde. Vorher
+lag der Plan dort systematisch daneben.
+
+### Ein Fehler in der Korrektur, den erst der Trockenlauf fand
+
+Die erste Fassung löschte die Konstruktions-Zeilen über
+`WHERE attribution = 'GEMEINSAM' AND effective_month = '2025-04-01'`. Das traf **sechs**
+Zeilen statt fünf: Die **Privathaftpflicht** beginnt selbst im April 2025 — ihre
+2025-04-Zeile ist keine Konstruktion, sondern ihre **einzige**. Die Karte hätte danach
+keinen Planwert mehr gehabt.
+
+**Der Constraint-Trigger hätte das nicht gefangen:** `cards_assert_initial_plan` hängt an
+`INSERT`/`UPDATE` auf `cards`, nicht an `DELETE` auf `card_planned_timeline`. Gefunden hat
+es allein die Zeilenzahl im Trockenlauf — sechs statt der erwarteten fünf. Die Migration
+nennt die fünf Karten deshalb **namentlich** und bricht ab, wenn es nicht genau fünf sind.

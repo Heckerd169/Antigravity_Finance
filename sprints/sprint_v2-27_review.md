@@ -1,10 +1,11 @@
 # Sprint v2-27 — Review
 
 > **Branch:** `sprint/v2-27-2025-vergleichbar` · **Datum:** 19. August 2026
-> **Commits:** `8925bd1` (P1) · `4582d31` (P2) · `f044e2c` (P3) · `cf49790` (P4) · docs (P5)
+> **Commits:** `8925bd1` (P1) · `4582d31` (P2) · `f044e2c` (P3) · `cf49790` (P4) ·
+> docs (P5) · P6 (Korrektur nach Nutzer-Rückmeldung)
 >
 > **In einem Satz:** Das Jahr 2025 rechnet erstmals mit den Kosten, die es damals gab —
-> die Ist-Sparrate fällt von 48.445,32 € auf 22.462,84 €, während sich 2026 in keinem
+> die Ist-Sparrate fällt von 48.445,32 € auf **22.567,80 €**, während sich 2026 in keinem
 > einzigen Monat bewegt.
 
 ---
@@ -42,6 +43,14 @@ handverlinkten Zahlungen aus 2026, weil es für 2025 keine Wahrheit gibt.
 `supabase/migrations/20260819_v2_27_zo3_rueckwirkend_verlinken.sql`, nach Vorlage der
 Messung und eigener Freigabe. `origin = 'AUTO_ABSORBED'`, Link-Monat = Buchungsmonat.
 
+### Phase 6 — die Pläne der GEMEINSAM-Karten korrigiert (`P6`)
+
+`supabase/migrations/20260819_v2_27_p6_gemeinsam_plaene_korrigiert.sql`
+
+**Nach einer Korrektur des Nutzers**, die einen Konstruktionsfehler aus Phase 2 aufdeckte.
+Der Plan als *Jahresdurchschnitt ÷ Split-Faktor* erfand Haushaltsbeträge, die es nie gab.
+Details in §3 und im Anker-Protokoll §8.
+
 ### Phase 5 — Doku
 
 Review, Historie-Eintrag, Roadmap, CLAUDE.md-Patches für **v2-25, v2-26 und v2-27** —
@@ -75,16 +84,17 @@ gibt es nichts Neues zu bewachen. Die Regel „darf nur steigen" ist eingehalten
 Alles gegen Produktion, **in derselben Sitzung**, vorher und nachher. Vollständiges
 Protokoll: `sprints/sprint_v2-27_anker.md`.
 
-| | vorher | nach P2 | nach P4 |
-|---|---|---|---|
-| **2026, alle zwölf Monate, Ist und Plan** | Referenz | **identisch** ✅ | **identisch** ✅ |
-| 2025 Jahressumme Ist | 48.445,32 € | 22.461,00 € | **22.462,84 €** |
-| Anker 1 (Σ Ordner == Sparrate) | 24/24 | 24/24 ✅ | **24/24** ✅ |
-| Anker 2 (Σ delta == Ist − Plan) | 24/24 | 24/24 ✅ | **24/24** ✅ |
-| Neun Prüfsummen | Referenz | byte-identisch ✅ | **byte-identisch** ✅ |
+| | vorher | nach P2 | nach P4 | nach P6 |
+|---|---|---|---|---|
+| **2026 Ist, alle zwölf Monate** | Referenz | **identisch** ✅ | **identisch** ✅ | **identisch** ✅ |
+| 2025 Jahressumme Ist | 48.445,32 € | 22.461,00 € | 22.462,84 € | **22.567,80 €** |
+| Anker 1 (Σ Ordner == Sparrate) | 24/24 | 24/24 ✅ | 24/24 ✅ | **24/24** ✅ |
+| Anker 2 (Σ delta == Ist − Plan) | 24/24 | 24/24 ✅ | 24/24 ✅ | **24/24** ✅ |
+| Neun Prüfsummen | Referenz | byte-identisch ✅ | byte-identisch ✅ | **byte-identisch** ✅ |
 
 **Jeder einzelne Monatswert traf die vorher aufgeschriebene Erwartung auf den Cent**, in
-beiden Phasen.
+allen drei Phasen. Der Januar-2026-**Plan** wurde in P6 bewusst korrigiert
+(1.465,36 → 1.497,91 €); die Ist-Werte blieben auch dort unberührt.
 
 ### 2025 im Einzelnen
 
@@ -96,6 +106,27 @@ beiden Phasen.
 | April | 4.037,11 | 1.829,39 | 1.830,31 | | Oktober | 4.037,11 | 1.859,07 | 1.856,59 |
 | Mai | 4.037,11 | 1.870,65 | 1.871,57 | | November | 4.037,11 | 1.880,55 | 1.878,07 |
 | Juni | 4.037,11 | 1.880,55 | 1.881,47 | | Dezember | 4.037,11 | 1.880,55 | 1.877,90 |
+
+### Nach Phase 6 — die Korrektur
+
+| Monat 2025 | nach P4 | **nach P6** | | Monat | nach P4 | **nach P6** |
+|---|---|---|---|---|---|---|
+| Januar | 1.854,61 | **1.853,82** | | Juli | 1.850,04 | **1.866,97** |
+| Februar | 1.891,42 | **1.867,34** | | August | 1.891,42 | **1.908,07** |
+| März | 1.891,42 | **1.867,34** | | September | 1.888,02 | **1.904,67** |
+| April | 1.830,31 | **1.850,46** | | Oktober | 1.856,59 | **1.873,52** |
+| Mai | 1.871,57 | **1.888,22** | | November | 1.878,07 | **1.894,72** |
+| Juni | 1.881,47 | **1.898,12** | | Dezember | 1.877,90 | **1.894,55** |
+| | | | | **Summe** | 22.462,84 | **22.567,80** |
+
+**2026 Ist blieb in allen zwölf Monaten unverändert**, Anker 1 und 2 halten 24/24, alle
+neun Prüfsummen treffen weiterhin ihren Vorher-Wert. Der Januar-2026-**Plan** wurde
+korrigiert: 1.465,36 → 1.497,91 €.
+
+> **Der eigentliche Gewinn steht nicht in der Summe.** Der Miete-Anteil beträgt ab April
+> 2025 jetzt **1.052,65 €** — exakt den Betrag, der tatsächlich überwiesen wurde. Die
+> Konstruktion aus Phase 2 lag dort systematisch daneben, ohne dass eine Zahl falsch
+> ausgesehen hätte.
 
 > **Ein grüner Anker ist hier schwächer als sonst.** 2025 war vorher gleichförmig und ist
 > nachher wieder gleichförmig, nur auf anderem Niveau — Ist = Plan, weil in Phase 2 noch
@@ -111,7 +142,7 @@ beiden Phasen.
 | # | Kriterium | erfüllt | Beleg |
 |---|---|---|---|
 | **S1** | 2026 bewegt sich in keinem der zwölf Monate | ✅ | Anker-Protokoll §4 und §6; alle 24 Werte identisch |
-| **S2** | 2025 trifft die vorher aufgeschriebene Erwartung | ✅ | Summe 22.461,00 nach P2 · 22.462,84 nach P4, jeder Monat exakt |
+| **S2** | 2025 trifft die vorher aufgeschriebene Erwartung | ✅ | 22.461,00 (P2) · 22.462,84 (P4) · **22.567,80 (P6)**, jeder Monat exakt |
 | **S3** | Anker 1 in 24 Monaten | ✅ | 24/24, beide Phasen |
 | **S4** | Anker 2 (B2) in 24 Monaten | ✅ | 0 Abweichungen, beide Phasen |
 | **S5** | Neun Prüfsummen byte-identisch | ✅ | jede trifft ihren eigenen Vorher-Wert, einzeln verglichen |
@@ -125,12 +156,25 @@ beiden Phasen.
 
 ## 5. Architektur-Entscheidungen
 
-**① Der Plan trägt die Jahressumme des Anteils, nicht den fertigen Haushaltsbetrag.**
-*Alternative:* die 27 Beträge ausrechnen und als Konstanten eintragen. *Warum nicht:*
-Dann stünde der Split-Faktor implizit in einer Zahl, und niemand könnte später prüfen, ob
-er richtig angewandt wurde. So steht die **gemessene Größe** in der Migration und die
-Umrechnung als Code daneben — nachvollziehbar und gegen genau den Fehler abgesichert, der
-in v2-13 einmal passiert ist.
+**① Der Plan als „Jahresdurchschnitt ÷ Split-Faktor" — und warum diese Entscheidung
+FALSCH war.**
+
+Sie stand hier zunächst als Erfolg: Die Migration trägt die gemessene Jahressumme des
+Anteils und rechnet den Haushaltsbetrag selbst aus, statt ihn abzuschreiben. Das schützte
+zuverlässig vor der Doppelanwendung des Split-Faktors (§6 Stolperfalle 11).
+
+**Es löste das falsche Problem.** Der Ansatz hielt den *Anteil* über zwölf Monate konstant
+— und erfand dafür einen *Haushaltsbetrag*, den es nie gab: 1.817,49 € und 1.888,91 €,
+wo in Wirklichkeit 1.820 € und 1.861 € galten. Der Nutzer bemerkte es am selben Tag.
+
+**Die Gegenprobe lag die ganze Zeit bereit und wurde nicht gemacht.** Rechnet man
+*Zahlung ÷ Faktor des Monats*, kommen für Mai–Dez 2025 **exakt 1.861,00 €** heraus und
+für Feb–Aug 2026 **exakt 1.904,00 €** — also genau der heute gültige Plan. **Eine Methode,
+die den bekannten Wert reproduziert, ist der bessere Schätzer für den unbekannten.** Diese
+Prüfung hätte in Phase 1 stattfinden können und hätte den Fehler verhindert.
+
+Die korrigierte Fassung trägt die echten Beträge (P6). Der Anteil ergibt sich daraus von
+selbst — und trifft ab April 2025 auf den Cent die tatsächliche Zahlung.
 
 **② Rhythmus-Wächter in der Migration statt in der Prüfliste.**
 *Alternative:* die betroffenen Karten von Hand prüfen. *Warum nicht:* Es sind sechs

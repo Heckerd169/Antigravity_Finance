@@ -2740,3 +2740,79 @@ wie ein Befund aus.
   eine bewusste Entscheidung des Nutzers; die tatsächlichen variablen Ausgaben 2025 lagen
   deutlich höher (−30.742,53 € außerhalb der Fixkosten-Muster), lassen sich aber ohne
   Kuratierung nicht sauber auf die drei Töpfe verteilen.
+
+
+---
+
+### Nachtrag zu v2-27 · 19. August 2026 — die Miete war falsch
+
+**Der Nutzer meldete noch am selben Tag:** *„Die Gesamtmiete ist falsch. Wir haben
+gemeinsam gezahlt: 01/25 1.820 € · 02/25–01/26 1.861 € · ab 02/26 1.904 €."*
+
+Er hatte recht, und der Fehler war grundsätzlicher als die Miete.
+
+#### Was falsch war
+
+Der Plan wurde als **Jahresdurchschnitt des eigenen Anteils ÷ Split-Faktor** gebildet.
+Das hielt den *Anteil* über zwölf Monate konstant — und erfand dafür einen
+*Haushaltsbetrag*, den es nie gab: 1.817,49 € (Jan–Mär) und 1.888,91 € (ab April).
+
+**Der Ansatz löste ein Problem, das gar nicht bestand.** Er sollte vor der doppelten
+Anwendung des Split-Faktors schützen (§6 Stolperfalle 11) und tat das auch — nur ist ein
+Haushaltsbetrag keine Größe, die sich ändert, wenn sich das Verhältnis der Einkommen
+verschiebt. Genau das hatte die Konstruktion unterstellt.
+
+**Die Gegenprobe lag die ganze Zeit bereit.** *Zahlung ÷ Faktor des Monats* ergibt für
+Mai–Dez 2025 **exakt 1.861,00 €**, Monat für Monat ohne Rest, und für Feb–Aug 2026 **exakt
+1.904,00 €** — also genau den heute gültigen Plan. **Eine Rechnung, die den bekannten Wert
+reproduziert, ist der bessere Schätzer für den unbekannten.** Diese Prüfung hätte in
+Phase 1 stattfinden können.
+
+**Derselbe Fehler steckte in allen fünf GEMEINSAM-Karten.** Aufgefallen ist er nur bei der
+Miete, weil sie die größte Position des Jahres ist — die anderen vier lagen um Cent-Beträge
+daneben und wären unbemerkt geblieben.
+
+#### Der Nebenbefund: ein Fehler, der älter ist als dieser Sprint
+
+Die Zahlungen zeigen, dass der eigene Anteil **bis einschließlich Januar 2026** mit dem
+alten Faktor 0,565636 berechnet wurde; erst ab Februar 2026 gilt 0,572090. Der
+Haushaltsbetrag stieg ebenfalls erst zum Februar.
+
+Die Plan-Zeile `2026-01` trug jedoch bereits den neuen Betrag — bei Miete, Rechtsschutz und
+Strom. **Das stammt aus der Zeit vor v2-27 und wurde hier mitkorrigiert.** Die
+Ist-Sparrate 2026 bewegt sich dadurch nicht (alle Januar-Zahlungen sind verlinkt, die
+Realität gewinnt); nur der Januar-Plan: 1.465,36 → 1.497,91 €.
+
+#### Ein Fehler in der Korrektur, den erst der Trockenlauf fand
+
+Die erste Fassung löschte die Konstruktions-Zeilen über
+`WHERE attribution = 'GEMEINSAM' AND effective_month = '2025-04-01'` — und traf damit
+**sechs** Zeilen statt fünf. Die **Privathaftpflicht** beginnt selbst im April 2025; ihre
+2025-04-Zeile ist keine Konstruktion, sondern ihre **einzige**. Die Karte hätte danach
+keinen Planwert mehr gehabt.
+
+**Der Constraint-Trigger hätte das nicht gefangen:** `cards_assert_initial_plan` hängt an
+`INSERT`/`UPDATE` auf `cards`, nicht an `DELETE` auf `card_planned_timeline`. Gefunden hat
+es allein die gemeldete Zeilenzahl im Trockenlauf. Die Migration nennt die fünf Karten
+seither **namentlich** und bricht ab, wenn es nicht genau fünf sind.
+
+#### Verifikation
+
+| | nach P4 | **nach P6** |
+|---|---|---|
+| 2025 Jahressumme | 22.462,84 € | **22.567,80 €** |
+| 2026 Ist, alle zwölf Monate | Referenz | **unverändert** |
+| 2026 Plan, Januar | 1.465,36 € | **1.497,91 €** (Korrektur) |
+| Anker 1 / Anker 2 über 24 Monate | 24/24 | **24/24, 0 Abweichungen** |
+| Neun Prüfsummen | byte-identisch | **byte-identisch** |
+| Privathaftpflicht-Plan | 52,47 € | **52,47 €** (erhalten) |
+
+**Der Gewinn steht nicht in der Summe:** Der Miete-Anteil beträgt ab April 2025 jetzt
+**1.052,65 €** — exakt den Betrag, der tatsächlich überwiesen wurde.
+
+#### Was daraus bleibt
+
+**Wer einen unbekannten Wert aus Daten rekonstruiert, prüft die Methode zuerst an einem
+bekannten.** Hier gab es zwölf bekannte Werte (die Pläne ab Februar 2026), und die Methode
+hätte sie exakt treffen müssen. Sie tat es — nur wurde nie nachgesehen. Das ist die
+billigste Prüfung dieses Sprints und die einzige, die gefehlt hat.
