@@ -653,12 +653,19 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     |---|---|---|
     | **Kürzen** | `getTop3Drivers` schnitt vier Treiber auf drei (v2-19) | `slice`, `LIMIT`, `take`, feste Feldlisten |
     | **Nachbauen** | `page.tsx` bildete `card_delete_gate` nach, um 31 RPC-Aufrufe zu sparen. Als die Datenbank in v2-20 großzügiger wurde, blieb der Nachbau streng — das Menü hätte ausgegraut, was die Datenbank längst erlaubte | *wo wird dieselbe Regel ein zweites Mal formuliert* |
-    | **Auf einen Wert filtern** | `page.tsx` filterte verknüpfte Zahlungen mit `status === "ASSIGNED"`. Die View kennt **zwei** zugeordnete Zustände; `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung — obwohl beides in der Datenbank stand und die Sparrate den Betrag mitrechnete (v2-23) | *ist die Menge hinter dem Vergleich größer als der eine Wert* |
+    | **Den Monatsbezug weglassen** | `page.tsx` lud das Einkommen mit `.order("effective_month", desc).limit(1)` — **immer die neueste Zeile, ohne jeden Bezug zum angezeigten Monat**. Das Popup zeigte im Januar 2025 das Jahresbrutto von 2026 (92.400 € statt 90.000 €) und den Split von 2026 (57 % statt 58,8 %). Die **Sparrate war nie betroffen** — sie rechnet in der Datenbank, wo `effective_month <= p_month` gilt (v2-27) | *fehlt der Zeitbezug, obwohl die Datenbank ihn kennt* |
+| **Auf einen Wert filtern** | `page.tsx` filterte verknüpfte Zahlungen mit `status === "ASSIGNED"`. Die View kennt **zwei** zugeordnete Zustände; `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung — obwohl beides in der Datenbank stand und die Sparrate den Betrag mitrechnete (v2-23) | *ist die Menge hinter dem Vergleich größer als der eine Wert* |
 
-    **Vier Vorfälle in fünf Tagen** (v2-19 · v2-20 · v2-21 · v2-23) — das ist die
+    **Fünf Vorfälle** (v2-19 · v2-20 · v2-21 · v2-23 · v2-27) — das ist die
     teuerste Fehlerklasse dieses Projekts, weil **jede Zahl richtig bleibt**. Anker,
-    Prüfsummen und B2-Invariante sind dabei grün; gefunden hat drei der vier Fälle
+    Prüfsummen und B2-Invariante sind dabei grün; gefunden hat **vier der fünf Fälle**
     nicht die Prüfstrecke, sondern das Benutzen.
+
+    **Der fünfte Fall zeigt, worauf sich die Suche ausweiten muss.** Die ersten vier
+    saßen alle in einer *Menge*: zu kurz geschnitten, zweitmals formuliert, auf einen
+    Wert verengt. Der fünfte sitzt in einer *Zeitachse* — die Abfrage war vollständig
+    und richtig, sie galt nur für den falschen Monat. **Wer diese Klasse sucht, prüft
+    deshalb beides:** Ist die Menge vollständig? Und stimmt der Zeitpunkt?
 
     **Gegenmittel, wo die Menge exakt ist:** ein **benanntes Prädikat** statt eines
     Vergleichs an Ort und Stelle (`isLinkedToCard`, `isTransferFragment`). Es hat

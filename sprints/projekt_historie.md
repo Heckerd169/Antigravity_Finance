@@ -2816,3 +2816,76 @@ seither **namentlich** und bricht ab, wenn es nicht genau fünf sind.
 bekannten.** Hier gab es zwölf bekannte Werte (die Pläne ab Februar 2026), und die Methode
 hätte sie exakt treffen müssen. Sie tat es — nur wurde nie nachgesehen. Das ist die
 billigste Prüfung dieses Sprints und die einzige, die gefehlt hat.
+
+
+---
+
+### Nachtrag 2 zu v2-27 · 19./20. August 2026 — das Einkommens-Popup zeigte den falschen Monat
+
+**Der Nutzer öffnete das Einkommens-Popup im Januar 2025 und sah ein Jahresbrutto von
+92.400 €** — seinen Wert von 2026. In der Datenbank stehen dort 90.000 € und ein Netto von
+4.037,11 €. Auch der Split-Kasten zeigte 57 % statt der für Januar 2025 gültigen 58,8 %.
+
+#### Die Ursache
+
+`src/app/page.tsx` lud beide Einkommenszeilen mit
+
+```
+.order("effective_month", { ascending: false })
+.limit(1)
+```
+
+— also **immer die neueste, ohne jeden Bezug zum angezeigten Monat**. Die Variablen hießen
+folgerichtig `ichLatest` und `partnerLatest`. Der Zielmonat lag an dieser Stelle längst vor
+(`targetDbDate`, Zeile 46); wenige Zeilen darunter benutzt ihn `getSplitFactor` korrekt.
+**Nur diese eine Abfrage griff nicht darauf zu.**
+
+#### Warum das teuer ist, obwohl nichts falsch gerechnet wurde
+
+**Die Sparrate war nie betroffen.** Sie entsteht in der Datenbank, und `get_split_factor`
+wie `get_net_monthly_for_month` filtern selbst auf `effective_month <= p_month`. Falsch war
+ausschließlich die **Anzeige** — und in keine Berechnung floss der Wert ein (geprüft: alle
+Verwendungen sind Anzeige-Props).
+
+**Kein Datenrisiko:** Für vergangene Monate ist das Formular gesperrt
+(`submitDisabled = isPastMonth || …`, alle Felder `disabled`). Der Satz „Gilt ab Januar
+2025 für alle Folgemonate" war bei einem gesperrten Formular irreführend, aber folgenlos.
+
+#### Die Einordnung: LL-26 in einer VIERTEN Gestalt
+
+Die bekannten drei waren **Kürzen** (`slice(0,3)`), **Nachbauen** (`card_delete_gate` in
+`page.tsx`) und **Filtern auf einen Wert** (`status === "ASSIGNED"`). Hier wird der
+Monatsbezug schlicht **weggelassen**.
+
+**Und sie zeigt, worauf sich die Suche ausweiten muss.** Die ersten vier Vorfälle saßen
+alle in einer *Menge* — zu kurz geschnitten, zweitmals formuliert, auf einen Wert verengt.
+Dieser sitzt in einer *Zeitachse*: Die Abfrage war vollständig und richtig, sie galt nur
+für den falschen Monat. Wer diese Klasse sucht, prüft deshalb **beides**: Ist die Menge
+vollständig? Und stimmt der Zeitpunkt?
+
+#### Was gebaut wurde
+
+`.lte("effective_month", targetDbDate)` in beiden Abfragen — plus eine Umbenennung, die
+den Fehler schwerer wiederholbar macht: `ichLatest` → `ichForMonth`. **Der Name war Teil
+des Problems**: Er versprach genau das, was falsch war.
+
+Dazu sechs Wächter in `tests/e2e/einkommen-monatsbezug.spec.ts`, eingetragen in
+`testMatch` des `visual`-Projekts (ohne diesen Eintrag wäre die Datei nie gelaufen —
+dieselbe Falle wie bei `gehalt.spec.ts` in v2-19).
+
+#### Der Wächter entfernt Kommentare, und das ist keine Feinheit (LL-32)
+
+Die Fundstelle in `page.tsx` trägt eine ausführliche Erklärung, die den gesuchten Ausdruck
+`.lte("effective_month", …)` **nennen muss**. Ein Wächter auf den Rohtext wäre allein
+dadurch grün — und bliebe es, wenn jemand den Filter entfernte und den Kommentar
+stehenließe.
+
+**Belegt statt behauptet:** In der Gegenprobe wurde genau das getan — Filter raus,
+Kommentar drin. Der Test wurde **rot**. Ein Wächter, dessen Anschlagen man nie gesehen
+hat, ist nur eine Vermutung.
+
+#### Verifikation
+
+`tsc` **0** · ESLint **0/0** · Build **0** · `test:visual` **127/127** (121 → 127, die
+sechs neuen) · `test:e2e` **136/136** inkl. Render-Smoke. Keine Zahl bewegt — es ist eine
+reine Anzeige-Korrektur.

@@ -12,8 +12,10 @@
 
 ## 1. Was gebaut wurde
 
-Dieser Sprint hat **keine Zeile Anwendungscode** geändert. Er bewegt Zahlen durch
-**Daten**, und die neun Prüfsummen der Rechenfunktionen sind selbst ein Prüfanker.
+Bis Phase 6 hat dieser Sprint **keine Zeile Anwendungscode** geändert — er bewegt Zahlen
+durch **Daten**, und die neun Prüfsummen der Rechenfunktionen sind selbst ein Prüfanker.
+**Phase 7 kam nachträglich dazu**, nach einem zweiten Befund des Nutzers, und ist die
+einzige Code-Änderung des Sprints.
 
 ### Phase 1 — Briefing, Migration, Vorher-Anker (`8925bd1`)
 
@@ -51,6 +53,14 @@ Messung und eigener Freigabe. `origin = 'AUTO_ABSORBED'`, Link-Monat = Buchungsm
 Der Plan als *Jahresdurchschnitt ÷ Split-Faktor* erfand Haushaltsbeträge, die es nie gab.
 Details in §3 und im Anker-Protokoll §8.
 
+### Phase 7 — das Einkommens-Popup zeigt den richtigen Monat
+
+`src/app/page.tsx` · `tests/e2e/einkommen-monatsbezug.spec.ts` · `playwright.config.ts`
+
+**Nach einem zweiten Befund des Nutzers:** Das Popup zeigte im Januar 2025 ein
+Jahresbrutto von 92.400 € — seinen Wert von 2026. Ursache war eine Abfrage ohne
+Monatsbezug. Details in §5 ②.
+
 ### Phase 5 — Doku
 
 Review, Historie-Eintrag, Roadmap, CLAUDE.md-Patches für **v2-25, v2-26 und v2-27** —
@@ -65,12 +75,13 @@ die Datei stand zwei Sprints zurück.
 | `tsc --noEmit` | 0 | **0** ✅ |
 | ESLint (kanonisch, `src`) | 0/0 | **0/0** ✅ |
 | `pnpm build` | 0 | **0** ✅ · Route `/` **36,9 kB** (unverändert) · First Load JS **189 kB** (v2-26: 188) · geteilt **87,3 kB** unverändert |
-| `pnpm test:visual` | steigt nur um eigene Tests | **121/121** ✅ (unverändert) |
-| `pnpm test:e2e` | vollständig grün | **130/130** ✅ inkl. Render-Smoke |
+| `pnpm test:visual` | steigt nur um eigene Tests | **127/127** ✅ (121 → 127, die sechs neuen) |
+| `pnpm test:e2e` | vollständig grün | **136/136** ✅ inkl. Render-Smoke |
 
-**Beide Testzahlen sind unverändert gegenüber v2-26 — und das ist hier das richtige
-Ergebnis**, kein vergessener Test: Der Sprint hat keinen Anwendungscode angefasst, also
-gibt es nichts Neues zu bewachen. Die Regel „darf nur steigen" ist eingehalten.
+**Die Testzahlen steigen um genau die sechs Wächter, die dieser Sprint selbst
+geschrieben hat** (`einkommen-monatsbezug.spec.ts`) — die Regel „darf nur steigen" ist
+eingehalten. Bis Phase 6 standen sie unverändert bei 121/130, weil bis dahin keine Zeile
+Anwendungscode berührt war.
 
 > **Der eine Punkt, der sich bewegt hat, ist First Load JS: 188 → 189 kB.** Es wurde keine
 > Zeile Code geändert; die Ursache liegt in der frisch aufgelösten
@@ -151,6 +162,8 @@ korrigiert: 1.465,36 → 1.497,91 €.
 | **S8** | Audible: 6 × 9,95 €, 6 × 0,00 € | ✅ | exakt in den Monaten, in denen 2025 gezahlt wurde |
 | **S9** | Zuordnung mit Richtig **und** Falsch gemessen | ✅ | ab 0,60: 181/49 · ab 0,95: 48/0 · Leave-One-Out eingebaut |
 | **S10** | Prüfstrecke | ✅ | §2 |
+| **S11** | Einkommens-Popup zeigt die Werte des angezeigten Monats | ✅ | `page.tsx:83-98`, sechs Wächter in `einkommen-monatsbezug.spec.ts` |
+| **S12** | Der Wächter fängt den Fehler auch wirklich | ✅ | Gegenprobe: Filter entfernt, Kommentar stehengelassen → Test **rot** |
 
 ---
 
@@ -190,6 +203,14 @@ Daten nicht abbilden können. Der Trockenlauf fand dafür einen echten Fehler.
 diese Frage offen gelassen. `history_match` zählt nur `MANUAL_DROP`; mit der falschen Wahl
 hätte die Zuordnung aus ihren eigenen Vermutungen gelernt und einen Irrtum bei jedem
 weiteren Lauf verstärkt.
+
+**② Der Wächter für das Einkommens-Popup entfernt Kommentare, bevor er prüft.**
+*Alternative:* den Rohtext durchsuchen. *Warum nicht:* Die Fundstelle in `page.tsx` trägt
+einen Kommentar, der den gesuchten Ausdruck `.lte("effective_month", …)` zwangsläufig
+**nennt** — ein Rohtext-Wächter wäre allein dadurch grün und bliebe es auch, wenn jemand
+den Filter entfernte und den Kommentar stehenließe. Genau diese Falle beschreibt LL-32.
+**Belegt statt behauptet:** In der Gegenprobe wurde der Filter entfernt und der Kommentar
+stehengelassen — der Test wurde rot.
 
 **⑤ Der ADAC bleibt draußen.** *Alternative:* auf 2025-07 zurückdatieren, damit der
 Rhythmus passt. *Warum nicht:* Gezahlt wurde im Oktober; ein Plan im Juli wäre eine

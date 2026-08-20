@@ -68,11 +68,24 @@ export default async function Home({ searchParams }: HomeProps) {
       .select("tax_class, tax_year, onboarded_at")
       .eq("user_id", user.id)
       .maybeSingle(),
+    // v2-27: `.lte("effective_month", targetDbDate)` ist der Kern dieser beiden
+    // Abfragen, nicht ein Zusatz. Ohne ihn holen sie IMMER die neueste
+    // Einkommenszeile — unabhängig davon, welchen Monat der Nutzer gerade
+    // ansieht. Das Einkommens-Popup zeigte im Januar 2025 deshalb das
+    // Jahresbrutto von 2026 (92.400 € statt 90.000 €) und den Split von 2026
+    // (57 % statt 58,8 %). Gemeldet vom Nutzer am 19.08.2026.
+    //
+    // Die Sparrate war davon NIE betroffen: Sie wird in der Datenbank gerechnet,
+    // und `get_split_factor` / `get_net_monthly_for_month` filtern selbst auf
+    // `effective_month <= p_month`. Falsch war ausschließlich die Anzeige — und
+    // genau das macht die Klasse so teuer: Jede Zahl ist für sich richtig, sie
+    // gehört nur zum falschen Monat (LL-26, vierte Gestalt).
     supabase
       .from("income_timeline")
       .select("gross_annual, net_monthly, effective_month")
       .eq("user_id", user.id)
       .eq("person", "ICH")
+      .lte("effective_month", targetDbDate)
       .order("effective_month", { ascending: false })
       .limit(1),
     supabase
@@ -80,6 +93,7 @@ export default async function Home({ searchParams }: HomeProps) {
       .select("gross_annual, net_monthly, effective_month")
       .eq("user_id", user.id)
       .eq("person", "PARTNER")
+      .lte("effective_month", targetDbDate)
       .order("effective_month", { ascending: false })
       .limit(1),
   ]);
@@ -89,10 +103,10 @@ export default async function Home({ searchParams }: HomeProps) {
   // irgendeine der teuren Ladungen anläuft.
   if (!profile?.onboarded_at) redirect("/onboarding");
 
-  const ichLatest = ichRows && ichRows.length > 0
+  const ichForMonth = ichRows && ichRows.length > 0
     ? { grossAnnual: Number(ichRows[0].gross_annual), netMonthly: Number(ichRows[0].net_monthly) }
     : null;
-  const partnerLatest = partnerRows && partnerRows.length > 0
+  const partnerForMonth = partnerRows && partnerRows.length > 0
     ? { grossAnnual: Number(partnerRows[0].gross_annual), netMonthly: Number(partnerRows[0].net_monthly) }
     : null;
 
@@ -644,9 +658,9 @@ export default async function Home({ searchParams }: HomeProps) {
             <IncomeLabel
               person="ICH"
               splitPercent={ichPercent}
-              initialGrossAnnual={ichLatest?.grossAnnual}
-              initialNetMonthly={ichLatest?.netMonthly}
-              counterpartGrossAnnual={partnerLatest?.grossAnnual}
+              initialGrossAnnual={ichForMonth?.grossAnnual}
+              initialNetMonthly={ichForMonth?.netMonthly}
+              counterpartGrossAnnual={partnerForMonth?.grossAnnual}
               activeMonth={targetActiveMonth}
               taxClass={taxClass}
               taxYear={taxYear}
@@ -659,9 +673,9 @@ export default async function Home({ searchParams }: HomeProps) {
             <IncomeLabel
               person="PARTNER"
               splitPercent={partnerPercent}
-              initialGrossAnnual={partnerLatest?.grossAnnual}
-              initialNetMonthly={partnerLatest?.netMonthly}
-              counterpartGrossAnnual={ichLatest?.grossAnnual}
+              initialGrossAnnual={partnerForMonth?.grossAnnual}
+              initialNetMonthly={partnerForMonth?.netMonthly}
+              counterpartGrossAnnual={ichForMonth?.grossAnnual}
               activeMonth={targetActiveMonth}
               taxClass={taxClass}
               taxYear={taxYear}
@@ -683,9 +697,9 @@ export default async function Home({ searchParams }: HomeProps) {
              Flanken der Welle bekommt — es ist dasselbe Fenster, nur ein
              zweiter Auslöser (Record A4). Kein zweites Formular. */
           incomeSlot={{
-            initialGrossAnnual: ichLatest?.grossAnnual,
-            initialNetMonthly: ichLatest?.netMonthly,
-            counterpartGrossAnnual: partnerLatest?.grossAnnual,
+            initialGrossAnnual: ichForMonth?.grossAnnual,
+            initialNetMonthly: ichForMonth?.netMonthly,
+            counterpartGrossAnnual: partnerForMonth?.grossAnnual,
             activeMonth: targetActiveMonth,
             taxClass,
             taxYear,
@@ -701,9 +715,9 @@ export default async function Home({ searchParams }: HomeProps) {
 
       {showDevTriggers && (
         <DashboardDevPanel
-          ichLatest={ichLatest}
-          partnerLatest={partnerLatest}
-          isFirstIncomeForIch={ichLatest === null}
+          ichLatest={ichForMonth}
+          partnerLatest={partnerForMonth}
+          isFirstIncomeForIch={ichForMonth === null}
           taxClass={taxClass}
           taxYear={taxYear}
           activeMonth={activeMonth}
