@@ -60,7 +60,7 @@ export default defineConfig({
     // v2-17: `kategorien` kommt dazu (Gruppierungs-Regeln aus KAT-2).
     // v2-24: `welle-driver-states` kommt dazu (die drei Zustände der
     //        Treiber-Anzeige, seit die Treiber erst auf Anfrage geladen werden).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states)\.spec\.ts/, use: DESKTOP },
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

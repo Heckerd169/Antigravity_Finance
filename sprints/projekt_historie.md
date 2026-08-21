@@ -2579,3 +2579,313 @@ Prüfstrecke: `tsc` 0 · ESLint 0/0 · Build 0 · `test:visual` **121/121** (119
 - **`KJ-4`** (Monatsnamen) bleibt aus v2-25 unbeantwortet.
 - **Der Lösch-Toast weicht weiter von §12.5 ab.** Der Beenden-Toast ist mit diesem Sprint
   korrigiert, der Lösch-Toast nicht — er war nicht Teil der Meldung.
+
+---
+
+### Sprint v2-27 · DONE 19. August 2026
+
+**Komponente:** „2025 wird vergleichbar" — Paket 6 (`DA-1`) und der Rest von Paket 5
+(`ZO-3`). Die App rechnete für das gesamte Jahr 2025 mit **null Kosten**: Die Ist-Sparrate
+stand dort in allen zwölf Monaten auf exakt 4.037,11 €, dem vollen Netto. Die
+Vorjahres-Goldlinie in der Welle war damit technisch richtig und inhaltlich wertlos — und
+sie ist die einzige Vergleichsgröße, die es gibt.
+
+**Ergebnis:** 2025 fällt von **48.445,32 € auf 22.461,00 €** und liegt damit auf dem
+Niveau von 2026 (1.821,59 €/Monat in den unkuratierten Monaten). **2026 hat sich in keinem
+der zwölf Monate bewegt.** Zwei Punkte erledigt, keiner neu entstanden.
+
+---
+
+#### Der teuerste Fund: eine Falle, die im Auftrag nicht stand
+
+**`is_card_active_in_month` zählt den Rhythmus ab `first_active_month`** — nicht ab einem
+festen Raster:
+
+```
+v_months_diff := Abstand(p_month, first_active_month)
+ANNUAL    → aktiv, wenn v_months_diff % 12 = 0
+QUARTERLY → aktiv, wenn v_months_diff %  3 = 0
+```
+
+Zurückdatieren verschiebt damit, **in welchen Monaten eine Karte 2026 aktiv ist**. Der
+ADAC-Mitgliedsbeitrag startet 2026-07, gezahlt wurde 2025 aber im Oktober — neun Monate
+Abstand, und 9 % 12 ≠ 0. Eine Rückdatierung hätte den Fälligkeitsmonat 2026 von Juli auf
+Oktober geschoben und die Sparrate zweier Monate vertauscht.
+
+**Kein Wächter dieses Projekts hätte das gefangen.** Die Jahressumme wäre gleich geblieben,
+beide Invarianten hätten gehalten, alle Prüfsummen wären grün gewesen. Es ist dieselbe
+Klasse wie LL-28/LL-29: **jede Zahl bleibt richtig, sie steht nur im falschen Monat.**
+
+Die Migration prüft den Rhythmus deshalb selbst und bricht ab. Der ADAC blieb draußen — 99 €
+rechtfertigen keinen Ankerbruch. Privathaftpflicht, DKV und Rundfunkbeitrag wanderten
+dagegen um exakt zwölf Monate zurück und behielten ihre Monate (04 · 05 · 01,04,07,10);
+das ist als Prüfschritt S7 vorher und nachher belegt.
+
+---
+
+#### Drei Angaben des Auftrags waren falsch — und alle drei plausibel
+
+**Der Eröffnungsprompt war ungewöhnlich vollständig** und nannte Fallen, Prüfanker und
+Datenlage. Genau drei seiner Zahlen hielten der Messung nicht stand, und **alle drei
+entstehen durch Aggregation über eine zu grobe Menge:**
+
+| Angabe | gemessen |
+|---|---|
+| „Neun Karten gab es 2025 nicht" | **Vier davon haben 12 von 12 Monaten Zahlungen** — Nürnberger, Elements, Alte Leipziger, congstar, zusammen −4.164,15 €. Fünf stimmten (CLAUDE.AI, Gemini, Friseur, Deutschlandticket, Audible teilweise). |
+| „iCloud 11,58 statt 9,99" | **iCloud lag 2025 bei exakt 9,99 €, unverändert.** Die 11,58 € sind der Schnitt über **17** `APPLE.COM/BILL`-Buchungen; zwölf davon sind iCloud (alle 9,99 €), fünf sind Einzelkäufe (0,99–69,99 €). |
+| „ZO-3 bewegt −1.296,87 €" (Roadmap, für 2026) | Für 2025: Die 41 Zahlungen summieren sich auf −2.699,90 €, **die Sparrate bewegt sich um +1,84 €.** Bei Fixkosten wirkt nur die Differenz zum Plan. |
+
+**Der ADAC war derselbe Fehler in klein:** zwei Buchungen 2025, 99,00 € Mitgliedsbeitrag
+und 212,10 € Fahrsicherheitstraining — ein Muster, zwei verschiedene Dinge.
+
+**Die Lehre ist nicht „der Auftrag war schlecht".** Er war sorgfältiger als die meisten.
+Sie ist: **Wer eine Zahl aus einem Textmuster aggregiert, misst das Muster, nicht die
+Sache.** Die Gegenprobe kostete jeweils eine Abfrage.
+
+---
+
+#### Die tragenden Entscheidungen
+
+**① Der Plan wird gerechnet, nicht abgeschrieben.** Bei einer GEMEINSAM-Karte ist der Plan
+der **Haushaltsbetrag**, die Zahlung dagegen bereits der eigene Anteil (§6 Stolperfalle 11).
+Die Migration trägt deshalb die **gemessene Jahressumme des Anteils** und teilt selbst durch
+`get_split_factor`. Miete: gezahlt 1.068,44 €/Monat, Plan **1.817,49 €** (Jan–Mär, Faktor
+0,587863) bzw. **1.888,91 €** (ab April, 0,565636).
+
+Wäre der Zahlbetrag als Plan eingetragen worden, hätte die Rechenfunktion den Anteil ein
+zweites Mal abgezogen — rund 604 € statt 1.068 €, bei der größten Position des Jahres.
+
+**② Der Faktor gehört an den Startmonat der Zeile.** Der erste Trockenlauf nahm pauschal
+den Januar-Faktor und gab der Privathaftpflicht (Start April) **50,49 € statt 52,47 €**.
+Das ist Entscheidung ① in Miniatur — **und sie schlug in dem Code zu, der sie prüfen
+sollte**, obwohl die Falle im Briefing stand.
+
+**③ Keine Übungs-Datenbank, dafür ein Trockenlauf auf Produktion.** Der Sprint ändert keine
+Rechenfunktion; die neun Prüfsummen sind selbst ein Anker. Was die Übungs-Datenbank belegen
+könnte, ist der Constraint-Mechanismus — was sie **nicht** kann, ist die Split-Umrechnung:
+Ihr Bestand ist synthetisch, ohne 2025-Zahlungen und ohne GEMEINSAM-Karte mit
+Faktor-Wechsel. Der RAISE-Rollback-Trockenlauf prüfte die **echten** Daten und fand
+Entscheidung ②. Dieselbe Begründung wie v2-24 §5.
+
+**④ Verlinkt wird ab 0,95, nicht ab 0,60.** Gemessen gegen die 411 handverlinkten Zahlungen
+aus 2026 (für 2025 gibt es keine Wahrheit): ab 0,60 **181 richtig / 49 falsch**, ab 0,95
+**48 richtig / 0 falsch**. Jede fünfte Zuordnung an der Badge-Schwelle wäre falsch — und ein
+falscher Link geht rückwirkend in die Sparrate.
+
+**Der Leave-One-Out-Ausschluss aus §7 Regel 25 musste nicht gebaut werden: er ist
+eingebaut.** `history_match` filtert selbst mit `f.id <> p_fragment_id` und zählt
+ausschließlich `origin = 'MANUAL_DROP'` — die Funktion sieht ihre eigene Antwort nie und
+lernt nicht aus automatischen Zuordnungen. Deshalb wurde auch mit `AUTO_ABSORBED`
+geschrieben.
+
+---
+
+#### Verifikation
+
+**Prüfstrecke:** `tsc` **0** · ESLint **0/0** · `pnpm build` **0**, Route `/` **36,9 kB**,
+First Load JS **189 kB** (v2-26: 188), geteilt 87,3 kB · `pnpm test:visual` **121/121** ·
+`pnpm test:e2e` **130/130** inkl. Render-Smoke. **Beide Testzahlen unverändert gegenüber
+v2-26 — korrekt, denn dieser Sprint hat keine Zeile Anwendungscode angefasst.**
+
+**Anker, alles in derselben Sitzung gemessen:**
+
+| | vorher | nach P2 | nach P4 |
+|---|---|---|---|
+| 2025 Jahressumme Ist | 48.445,32 € | 22.461,00 € | **22.462,84 €** |
+| 2026, alle zwölf Monate | — | **identisch** | **identisch** |
+| Anker 1 (Σ Ordner == Sparrate) | 24/24 | 24/24 | **24/24** |
+| Anker 2 (Σ delta == Ist − Plan) | 24/24 | 24/24 | **24/24** |
+| Neun Prüfsummen | Referenz | byte-identisch | **byte-identisch** |
+
+**Jeder einzelne Monatswert traf die vorher aufgeschriebene Erwartung auf den Cent** — in
+beiden Phasen, gegen den jeweils vorher im Trockenlauf gemessenen Wert.
+
+**Umfang:** 22 Karten zurückdatiert · 27 Plan-Zeilen · 6 Audible-Lücken · 41 Zahlungen
+verlinkt (411 → 452 Links) · 253 Vorschläge für 2025, wo vorher **null** waren.
+
+---
+
+#### Ein Betriebsfund, der nichts mit dem Auftrag zu tun hat
+
+**Ein Client-Timeout ist kein Rollback.** Der Aufruf
+`refresh_fragment_suggestions('2025-01-01','2025-12-01')` lief in einen Timeout der
+MCP-Verbindung; die unmittelbar folgende Kontrollabfrage meldete **0 Konfidenzwerte** und
+sah damit wie ein sauberer Rollback aus. Die Datenbank arbeitete jedoch weiter und
+committete — später standen exakt die 253 Vorschläge da.
+
+Aufgefallen ist es nur, weil ein anschließender Monatslauf `vorschlag_gesetzt: 0` meldete:
+Die Werte standen ja schon. **Hier war es harmlos**, weil die Funktion ausschließlich
+Anzeige-Spalten schreibt und ihre eingebaute Link-Invariante hielt. Bei einer mutierenden
+Funktion wäre derselbe Irrtum teuer gewesen — man hielte einen durchgeführten Eingriff für
+abgebrochen und führte ihn erneut aus.
+
+**Verwandt mit der Log-Ingestion-Falle aus v2-24:** Beide Male sieht ein zu früher Blick
+wie ein Befund aus.
+
+---
+
+#### Offen nach v2-27
+
+- **`DA-2` (Kuratierung 2026)** bleibt, und für 2025 gibt es jetzt das Gegenstück: **710
+  offene Zahlungen**, davon 212 mit Kartenvorschlag. Der Rest ist Einmaliges — Urlaube,
+  Geschenke, Anschaffungen.
+- **`ZO-1`** (`frequency_match` liefert ausnahmslos 1,00) ist unberührt. Die Messung dieses
+  Sprints stützt den Befund: Ohne Namenstreffer bleibt die Badge-Schwelle unerreichbar.
+- **`MOBILE SUICA APPLE V`** — 15 Zahlungen, 79,45 € im Jahr, die einzige wiederkehrende
+  Ausgabe 2025 ohne Karte. Bewusst nicht angelegt: Das wäre eine neue Karte, keine
+  Rückdatierung.
+- **Der ADAC-Mitgliedsbeitrag für 2025** (99 €) bleibt unmodelliert, solange der
+  Rhythmus-Konflikt nicht anders gelöst ist.
+- **Die drei Budget-Karten tragen 2025 ihre heutigen Pläne** (150 / 200 / 240 €). Das war
+  eine bewusste Entscheidung des Nutzers; die tatsächlichen variablen Ausgaben 2025 lagen
+  deutlich höher (−30.742,53 € außerhalb der Fixkosten-Muster), lassen sich aber ohne
+  Kuratierung nicht sauber auf die drei Töpfe verteilen.
+
+
+---
+
+### Nachtrag zu v2-27 · 19. August 2026 — die Miete war falsch
+
+**Der Nutzer meldete noch am selben Tag:** *„Die Gesamtmiete ist falsch. Wir haben
+gemeinsam gezahlt: 01/25 1.820 € · 02/25–01/26 1.861 € · ab 02/26 1.904 €."*
+
+Er hatte recht, und der Fehler war grundsätzlicher als die Miete.
+
+#### Was falsch war
+
+Der Plan wurde als **Jahresdurchschnitt des eigenen Anteils ÷ Split-Faktor** gebildet.
+Das hielt den *Anteil* über zwölf Monate konstant — und erfand dafür einen
+*Haushaltsbetrag*, den es nie gab: 1.817,49 € (Jan–Mär) und 1.888,91 € (ab April).
+
+**Der Ansatz löste ein Problem, das gar nicht bestand.** Er sollte vor der doppelten
+Anwendung des Split-Faktors schützen (§6 Stolperfalle 11) und tat das auch — nur ist ein
+Haushaltsbetrag keine Größe, die sich ändert, wenn sich das Verhältnis der Einkommen
+verschiebt. Genau das hatte die Konstruktion unterstellt.
+
+**Die Gegenprobe lag die ganze Zeit bereit.** *Zahlung ÷ Faktor des Monats* ergibt für
+Mai–Dez 2025 **exakt 1.861,00 €**, Monat für Monat ohne Rest, und für Feb–Aug 2026 **exakt
+1.904,00 €** — also genau den heute gültigen Plan. **Eine Rechnung, die den bekannten Wert
+reproduziert, ist der bessere Schätzer für den unbekannten.** Diese Prüfung hätte in
+Phase 1 stattfinden können.
+
+**Derselbe Fehler steckte in allen fünf GEMEINSAM-Karten.** Aufgefallen ist er nur bei der
+Miete, weil sie die größte Position des Jahres ist — die anderen vier lagen um Cent-Beträge
+daneben und wären unbemerkt geblieben.
+
+#### Der Nebenbefund: ein Fehler, der älter ist als dieser Sprint
+
+Die Zahlungen zeigen, dass der eigene Anteil **bis einschließlich Januar 2026** mit dem
+alten Faktor 0,565636 berechnet wurde; erst ab Februar 2026 gilt 0,572090. Der
+Haushaltsbetrag stieg ebenfalls erst zum Februar.
+
+Die Plan-Zeile `2026-01` trug jedoch bereits den neuen Betrag — bei Miete, Rechtsschutz und
+Strom. **Das stammt aus der Zeit vor v2-27 und wurde hier mitkorrigiert.** Die
+Ist-Sparrate 2026 bewegt sich dadurch nicht (alle Januar-Zahlungen sind verlinkt, die
+Realität gewinnt); nur der Januar-Plan: 1.465,36 → 1.497,91 €.
+
+#### Ein Fehler in der Korrektur, den erst der Trockenlauf fand
+
+Die erste Fassung löschte die Konstruktions-Zeilen über
+`WHERE attribution = 'GEMEINSAM' AND effective_month = '2025-04-01'` — und traf damit
+**sechs** Zeilen statt fünf. Die **Privathaftpflicht** beginnt selbst im April 2025; ihre
+2025-04-Zeile ist keine Konstruktion, sondern ihre **einzige**. Die Karte hätte danach
+keinen Planwert mehr gehabt.
+
+**Der Constraint-Trigger hätte das nicht gefangen:** `cards_assert_initial_plan` hängt an
+`INSERT`/`UPDATE` auf `cards`, nicht an `DELETE` auf `card_planned_timeline`. Gefunden hat
+es allein die gemeldete Zeilenzahl im Trockenlauf. Die Migration nennt die fünf Karten
+seither **namentlich** und bricht ab, wenn es nicht genau fünf sind.
+
+#### Verifikation
+
+| | nach P4 | **nach P6** |
+|---|---|---|
+| 2025 Jahressumme | 22.462,84 € | **22.567,80 €** |
+| 2026 Ist, alle zwölf Monate | Referenz | **unverändert** |
+| 2026 Plan, Januar | 1.465,36 € | **1.497,91 €** (Korrektur) |
+| Anker 1 / Anker 2 über 24 Monate | 24/24 | **24/24, 0 Abweichungen** |
+| Neun Prüfsummen | byte-identisch | **byte-identisch** |
+| Privathaftpflicht-Plan | 52,47 € | **52,47 €** (erhalten) |
+
+**Der Gewinn steht nicht in der Summe:** Der Miete-Anteil beträgt ab April 2025 jetzt
+**1.052,65 €** — exakt den Betrag, der tatsächlich überwiesen wurde.
+
+#### Was daraus bleibt
+
+**Wer einen unbekannten Wert aus Daten rekonstruiert, prüft die Methode zuerst an einem
+bekannten.** Hier gab es zwölf bekannte Werte (die Pläne ab Februar 2026), und die Methode
+hätte sie exakt treffen müssen. Sie tat es — nur wurde nie nachgesehen. Das ist die
+billigste Prüfung dieses Sprints und die einzige, die gefehlt hat.
+
+
+---
+
+### Nachtrag 2 zu v2-27 · 19./20. August 2026 — das Einkommens-Popup zeigte den falschen Monat
+
+**Der Nutzer öffnete das Einkommens-Popup im Januar 2025 und sah ein Jahresbrutto von
+92.400 €** — seinen Wert von 2026. In der Datenbank stehen dort 90.000 € und ein Netto von
+4.037,11 €. Auch der Split-Kasten zeigte 57 % statt der für Januar 2025 gültigen 58,8 %.
+
+#### Die Ursache
+
+`src/app/page.tsx` lud beide Einkommenszeilen mit
+
+```
+.order("effective_month", { ascending: false })
+.limit(1)
+```
+
+— also **immer die neueste, ohne jeden Bezug zum angezeigten Monat**. Die Variablen hießen
+folgerichtig `ichLatest` und `partnerLatest`. Der Zielmonat lag an dieser Stelle längst vor
+(`targetDbDate`, Zeile 46); wenige Zeilen darunter benutzt ihn `getSplitFactor` korrekt.
+**Nur diese eine Abfrage griff nicht darauf zu.**
+
+#### Warum das teuer ist, obwohl nichts falsch gerechnet wurde
+
+**Die Sparrate war nie betroffen.** Sie entsteht in der Datenbank, und `get_split_factor`
+wie `get_net_monthly_for_month` filtern selbst auf `effective_month <= p_month`. Falsch war
+ausschließlich die **Anzeige** — und in keine Berechnung floss der Wert ein (geprüft: alle
+Verwendungen sind Anzeige-Props).
+
+**Kein Datenrisiko:** Für vergangene Monate ist das Formular gesperrt
+(`submitDisabled = isPastMonth || …`, alle Felder `disabled`). Der Satz „Gilt ab Januar
+2025 für alle Folgemonate" war bei einem gesperrten Formular irreführend, aber folgenlos.
+
+#### Die Einordnung: LL-26 in einer VIERTEN Gestalt
+
+Die bekannten drei waren **Kürzen** (`slice(0,3)`), **Nachbauen** (`card_delete_gate` in
+`page.tsx`) und **Filtern auf einen Wert** (`status === "ASSIGNED"`). Hier wird der
+Monatsbezug schlicht **weggelassen**.
+
+**Und sie zeigt, worauf sich die Suche ausweiten muss.** Die ersten vier Vorfälle saßen
+alle in einer *Menge* — zu kurz geschnitten, zweitmals formuliert, auf einen Wert verengt.
+Dieser sitzt in einer *Zeitachse*: Die Abfrage war vollständig und richtig, sie galt nur
+für den falschen Monat. Wer diese Klasse sucht, prüft deshalb **beides**: Ist die Menge
+vollständig? Und stimmt der Zeitpunkt?
+
+#### Was gebaut wurde
+
+`.lte("effective_month", targetDbDate)` in beiden Abfragen — plus eine Umbenennung, die
+den Fehler schwerer wiederholbar macht: `ichLatest` → `ichForMonth`. **Der Name war Teil
+des Problems**: Er versprach genau das, was falsch war.
+
+Dazu sechs Wächter in `tests/e2e/einkommen-monatsbezug.spec.ts`, eingetragen in
+`testMatch` des `visual`-Projekts (ohne diesen Eintrag wäre die Datei nie gelaufen —
+dieselbe Falle wie bei `gehalt.spec.ts` in v2-19).
+
+#### Der Wächter entfernt Kommentare, und das ist keine Feinheit (LL-32)
+
+Die Fundstelle in `page.tsx` trägt eine ausführliche Erklärung, die den gesuchten Ausdruck
+`.lte("effective_month", …)` **nennen muss**. Ein Wächter auf den Rohtext wäre allein
+dadurch grün — und bliebe es, wenn jemand den Filter entfernte und den Kommentar
+stehenließe.
+
+**Belegt statt behauptet:** In der Gegenprobe wurde genau das getan — Filter raus,
+Kommentar drin. Der Test wurde **rot**. Ein Wächter, dessen Anschlagen man nie gesehen
+hat, ist nur eine Vermutung.
+
+#### Verifikation
+
+`tsc` **0** · ESLint **0/0** · Build **0** · `test:visual` **127/127** (121 → 127, die
+sechs neuen) · `test:e2e` **136/136** inkl. Render-Smoke. Keine Zahl bewegt — es ist eine
+reine Anzeige-Korrektur.
