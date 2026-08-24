@@ -1,9 +1,22 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.10.0 (V2 · Sprint v2-26 — Nachbesserungen aus der Benutzung)
-**Status:** Freigegeben — Schema-Doku v3.12.0; V2-Patches bis Sprint v2-26 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). **Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut** (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
-**Datum:** 17. August 2026
+**Version:** 3.11.0 (V2 · Sprint v2-28 — die Navigation endet, wo die Daten enden)
+**Status:** Freigegeben — Schema-Doku v3.13.0; V2-Patches bis Sprint v2-28 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+**Datum:** 24. August 2026
 **Primäres Referenzdokument für Claude Code**
+
+> **Changelog v3.11.0 (24.08.2026, Sprint v2-28):** Eine einzige Stelle, aber neue
+> Spezifikation — deshalb Minor.
+>
+> §6 — **die untere Grenze der Zeitachse ist definiert**: der früheste Monat, in dem
+> eine Karte aktiv ist, abgeleitet aus den Daten statt gesetzt. Der Zustand „Kein
+> Vormonat" war seit jeher beschrieben; **wann** er eintritt, stand nirgends — und die
+> Konstante im Code (`1900-01`) sorgte dafür, dass er in über einem Jahr nie eintrat.
+>
+> **Was dieser Eintrag über die Doku sagt:** Hier hatte weder die Doku noch der Code
+> unrecht. Die Doku beschrieb einen Zustand, der Code konnte ihn erzeugen — nur die
+> **Bedingung** dazwischen fehlte auf beiden Seiten. Das ist eine eigene Lücken-Art:
+> keine Abweichung, sondern ein Scharnier, das niemand vermisst hat.
 
 > **Changelog v3.10.0 (18.08.2026, Sprint v2-26):** Fünf Nachbesserungen, alle aus der
 > Benutzung von v2-25 gemeldet. **Minor, weil zwei davon neue Spezifikation sind** — der
@@ -795,6 +808,26 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 | Klick linke Flanke | Navigation zum Vormonat |
 | Klick rechte Flanke | Navigation zum Folgemonat |
 | Kein Vormonat | Linke Flanke `opacity: 0.2`, `pointer-events: none` |
+
+**Wann „kein Vormonat" gilt (v2-28):** Die untere Grenze der Zeitachse ist der
+**früheste Monat, in dem eine Karte aktiv ist** — `min(cards.first_active_month)`
+über alle nicht gelöschten Karten. Liegt der Vormonat davor, ist die linke Flanke
+deaktiviert. Die Grenze wird **aus den Daten abgeleitet**, nicht gesetzt: Nach dem
+Import älterer Kontoauszüge rückt sie von allein nach hinten.
+
+Gibt es überhaupt keine Karte, ist der **laufende Monat** die Grenze — im Onboarding
+gibt es nichts, wohin man zurückblättern könnte.
+
+**Nach vorn gibt es keine solche Grenze, und das ist Absicht:** Der Forecast soll
+blätterbar sein, auch über die Daten hinaus. Die obere Schranke bleibt bewusst absurd
+weit.
+
+> **Diese Zeile war über ein Jahr lang tot.** Bis zum 24.08.2026 stand die untere
+> Schranke auf `1900-01`, im Code selbst als „absurd weit" markiert — ein
+> V1-Platzhalter aus Sprint 3. Der Deaktiviert-Pfad war gebaut und funktionsfähig und
+> wurde **nie ausgelöst**; der Zurück-Pfeil führte über Jahrzehnte in eine leere
+> Bühne. **Kein Wächter fängt so etwas, weil nichts falsch ist** — jede Zahl stimmt,
+> es gibt nur keine.
 
 **Übergangsanimation:** Direktional, `±20px` X-Versatz, `opacity .22s, transform .22s`
 

@@ -60,7 +60,13 @@ export default defineConfig({
     // v2-17: `kategorien` kommt dazu (Gruppierungs-Regeln aus KAT-2).
     // v2-24: `welle-driver-states` kommt dazu (die drei Zustände der
     //        Treiber-Anzeige, seit die Treiber erst auf Anfrage geladen werden).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug)\.spec\.ts/, use: DESKTOP },
+    // v2-28: `navigationsgrenze` kommt dazu (die untere Schranke, die seit
+    //        Sprint 3 nie ausgelöst wurde). Die Warnung oben hat beim Bauen
+    //        dieses Sprints sofort zugeschlagen: Die neue Datei lag da, war
+    //        grün — und lief nicht. Aufgefallen ist es nur, weil die
+    //        Gesamtzahl sich nicht bewegt hat. Genau deshalb steht hier eine
+    //        Zahl im Review.
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

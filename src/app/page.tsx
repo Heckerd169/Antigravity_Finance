@@ -9,6 +9,7 @@ import type { CardMonthValues, CategoryAmount } from "@/lib/rpc";
 import { istVorschlagSichtbar } from "@/lib/suggestion";
 import {
   addMonths,
+  deriveMinNavigableYm,
   getCurrentMonthYM,
   parseMonthParam,
   ymToDbDate,
@@ -193,6 +194,17 @@ export default async function Home({ searchParams }: HomeProps) {
     .is("deleted_at", null)
     .order("type", { ascending: true })
     .order("name", { ascending: true });
+
+  // v2-28: Die untere Navigationsschranke. Sie kommt aus `rawCards`, die hier
+  // ohnehin schon geladen sind — KEINE zusätzliche Netzrunde (LL-29).
+  //
+  // Ohne eine einzige Karte gibt es nichts, wohin man zurückblättern könnte;
+  // dann ist der laufende Monat die Grenze. Das ist der Onboarding-Fall, nicht
+  // der Normalfall.
+  const minNavigableYm = deriveMinNavigableYm(
+    (rawCards ?? []).map((c) => c.first_active_month),
+    currentMonth,
+  );
 
   // v2-17 (KAT-1): Die Ordner selbst. EINE Abfrage für alle Karten, nicht eine
   // je Karte — der Loader feuert ohnehin schon drei Aufrufe pro Karte
@@ -647,6 +659,7 @@ export default async function Home({ searchParams }: HomeProps) {
         targetMonth={targetMonth}
         currentMonth={currentMonth}
         unassignedPreviousMonthCount={unassignedPreviousMonthCount}
+        minNavigableYm={minNavigableYm}
       />
 
       <div className={styles.stage}>

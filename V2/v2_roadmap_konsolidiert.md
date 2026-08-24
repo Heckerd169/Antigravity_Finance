@@ -2,7 +2,14 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 19. August 2026 (nach **v2-27** „2025 wird vergleichbar" — `DA-1` und `ZO-3`
+> **Stand:** 24. August 2026 (nach **v2-28** „Was die 2025-Prüfung zutage gefördert hat" —
+> `DA-3`, `ZO-4` und `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. Die 2025-Pläne
+> tragen jetzt die Beträge, die wirklich gezahlt wurden: **22.316,32 € → 21.776,33 €**,
+> exakt die vorher aufgeschriebenen −539,99 €; **2026 unbewegt in allen zwölf Monaten**.
+> Tankstellen und Nahverkehr ordnen sich künftig von allein zu — 65 Zahlungen aus 2025
+> nachverlinkt, **ohne dass sich eine Zahl bewegt**, weil „Tanken" eine BUDGET-Karte ist.
+> Und die Monatsnavigation endet erstmals dort, wo die Daten enden: Die Schranke stand
+> seit **Sprint 3** auf `1900-01`.) Davor: **v2-27** „2025 wird vergleichbar" — `DA-1` und `ZO-3`
 > erledigt, **kein neuer Punkt entstanden**. Die 2025-Sparrate fällt von 48.445,32 € auf
 > **22.567,80 €** und liegt damit erstmals auf 2026-Niveau; 2026 hat sich in keinem der
 > zwölf Monate bewegt. 41 Zahlungen rückwirkend verlinkt, 253 Vorschläge sichtbar, wo
@@ -41,23 +48,44 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 19.08.2026 zeilengenau nachgezählt — nach Sprint **v2-27**.*
+*Alle Zahlen am 24.08.2026 zeilengenau nachgezählt — nach Sprint **v2-28**.*
 
-| | Anzahl | nach v2-26 | nach v2-25 | nach DD 17.08. | nach v2-24 | nach v2-23 | nach v2-21 | nach v2-20 |
+| | Anzahl | nach v2-27 | nach v2-26 | nach v2-25 | nach DD 17.08. | nach v2-24 | nach v2-23 | nach v2-21 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 12 | 12 | 12 | 11 | 10 | 10 | 10 |
-| Themen darin | **35** | 37 | 36 | 39 | 34 | 32 | 32 | 30 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 6 | 5 |
-| **Offen gesamt** | **39** | 41 | 40 | 43 | 38 | 36 | 38 | 35 |
-| Erledigt | **61** | 59 | 56 | 53 | 53 | 50 | 49 | 47 |
+| Offene Pakete | **12** | 12 | 12 | 12 | 12 | 11 | 10 | 10 |
+| Themen darin | **37** | 35 | 37 | 36 | 39 | 34 | 32 | 32 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 4 | 6 |
+| **Offen gesamt** | **41** | 39 | 41 | 40 | 43 | 38 | 36 | 38 |
+| Erledigt | **64** | 61 | 59 | 56 | 53 | 53 | 50 | 49 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach Sprint v2-27, zeilengenau ausgezählt.** Paket-Tabellen **57** Zeilen, davon
-> **22 ✅** → **35** offen (⬜ 28 · ⬜🔎 3 · 🟡 4). Hausaufgaben **4**, alle ⬜.
-> §4 Erledigt **61** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
+> **Stand nach Sprint v2-28, zeilengenau ausgezählt.** Paket-Tabellen **61** Zeilen, davon
+> **24 ✅** → **37** offen (⬜ 30 · ⬜🔎 3 · 🟡 4). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **64** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
 > erledigt (1, 2, 3, 4, 15, 16) → **12** offen.
 >
-> **v2-27 hat zwei Punkte erledigt und keinen neuen erzeugt** — `DA-1` und `ZO-3`. Das ist
+> **v2-28 hat drei Punkte erledigt und zwei offene eingetragen** — `DA-3`, `ZO-4` und
+> `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. **Offen gesamt steigt deshalb von 39
+> auf 41, und das ist hier das richtige Ergebnis:** Beide neuen Punkte waren vorher schon
+> da, nur unsichtbar. `ZO-5` beschreibt 147 Zahlungen, die seit dem 2025-Import nie einen
+> Vorschlag bekommen haben; `ZO-6` eine Lücke, die dieser Sprint selbst aufgerissen hat.
+>
+> **`NAV-1` stand in keinem Paket** — dasselbe Muster wie Performance vor v2-24. Eine
+> Schranke, die seit Sprint 3 auf „1900-01" stand und deren Deaktiviert-Pfad **nie
+> ausgelöst hat**, kam in dieser Datei nirgends vor. Sie ist deshalb direkt unter §4
+> eingetragen und hat kein eigenes Paket bekommen: Der Punkt ist erledigt, es konkurriert
+> nichts mehr.
+>
+> **Der Sprint hat drei Zahlen seines eigenen Auftrags korrigiert.** Das Briefing nannte
+> **55 Zahlungen / 1.262,92 €** für die Händler-Regel und einen höchsten Tank-Monat von
+> **199,21 €**; gemessen sind es **65 / 1.520,22 €** und **239,21 €**. Nichts davon war
+> falsch gerechnet — es ist der Stand **vor** der Nahverkehr-Entscheidung, und die
+> Differenz ist genau eine RMV-Fahrt über 40,00 € vom 02.07.2025. **Die Zahl wurde nach
+> der Entscheidung nicht nachgezogen.** Dieselbe Klasse wie LL-28 und LL-30, nur innerhalb
+> eines einzigen Papiers. Die Schlussfolgerung hält — aber der Juli 2025 hat statt 40 Euro
+> nur noch **79 Cent** Luft im Budget.
+>
+> **Davor: v2-27 hat zwei Punkte erledigt und keinen neuen erzeugt** — `DA-1` und `ZO-3`. Das ist
 > nach v2-25 erst das zweite Mal in dieser Datei; die Regel der letzten Runden war, dass
 > ein Sprint sichtbar macht, was schon da war (Paket 17, Paket 18, `KJ-6` bis `KJ-9`).
 >
@@ -517,6 +545,9 @@ Kontrolle. Diese Begründung ist in einem halben Jahr sonst verloren.
 | M6 | Verbesserte automatische Fragment-zu-Karten-Zuordnung | Feature | ✅ ja | 🟡 | **Fasst F1, F2, F3 zusammen.** **In v2-21 gebaut: F1 und F3.** Die Namensfunktion vergleicht jetzt Wörter statt Zeichenketten (umlautfest, mit echten Wortgrenzen, mehrdeutige Kartenwörter entwertet), die eigenen Handzuordnungen fließen als Wiedererkennung ein, und `refresh_fragment_suggestions` rechnet Vorschläge für alte Zahlungen nach — was vorher **nie** geschah. Gemessen an 101 Handzuordnungen: richtige Vorschläge über der Badge-Schwelle **14 → 42**, falsche 1 → 4. Für den Nutzer: **9 → 115** sichtbare Vorschläge bei 283 offenen Zahlungen in 2026. **Offen bleibt F2** — das Vorschlags-Badge in der Rohmasse liegt weiter hinter `SHOW_SUGGESTION_BADGES = false` (Entscheid 04.08.2026); sichtbar ist der Vorschlag nur im Schaufenster-Popup. **Namenskollision beachten:** „F2 Kategorie-Vorhersage" meint das KI-Vorschlags-Badge auf Fragmenten, nicht die Karten-Kategorien aus Paket 4 (Befund U6). |
 | ZO-1 | `frequency_match` aussagekräftig machen | Bugfix | **ja** | ⬜ | **Befund aus v2-21, bewusst dort nicht behoben.** Die Funktion prüft ausschließlich, ob die Karte im Monat des Fragments aktiv ist — worauf ihr einziger Aufrufer bereits filtert. Sie liefert deshalb ausnahmslos `1.00`, gemessen über alle fünf Score-Klassen. **20 % des Konfidenz-Gewichts unterscheiden nichts**, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ≤ 0,50). Material liegt bereit: `cards.due_day` seit v2-14 — allerdings nur bei **18 von 51** Karten, fehlende Tage müssten neutral bleiben statt zu bestrafen. **Warum nicht in v2-21:** Jede Änderung dort verschiebt *alle* bestehenden Scores gleichzeitig mit P1 und P2; zwei Verschiebungen in einem Sprint lassen sich nicht mehr auseinanderhalten. |
 | ZO-3 | Rückwirkende automatische Verknüpfung ab 0,95 | Feature | ja | ✅ | **In v2-27 erledigt (19.08.2026), für 2025.** Für **2026 ist der Punkt gegenstandslos geworden** — dort hat der Nutzer inzwischen alles von Hand zugeordnet (411 von 418, die übrigen sieben sind Gehaltseingänge und gehören an keine Karte). Für 2025 war er bis v2-27 gar nicht stellbar: Ohne aktive Karten gab es nichts vorzuschlagen. **Gemessen wurde gegen die 411 handverlinkten Zahlungen aus 2026**, weil es für 2025 selbst keine Wahrheit gibt: ab 0,60 **181 richtig / 49 falsch** (78,7 %), ab 0,95 **48 richtig / 0 falsch**. Der Leave-One-Out-Ausschluss aus §7 Regel 25 ist **eingebaut, nicht nachgerüstet** — `history_match` filtert selbst mit `f.id <> p_fragment_id` und zählt nur `MANUAL_DROP`. **Verlinkt wurden 41 Zahlungen** (Alte Leipziger 12, Nürnberger 12, Spotify 11, Audible 6), einzeln geprüft, 41/41 richtig. **Wirkung: +1,84 € auf das ganze Jahr** — die Zahlungen summieren sich zwar auf −2.699,90 €, aber bei Fixkosten wirkt nur die Differenz zum Plan. Wer beides verwechselt, hält einen harmlosen Eingriff für einen gefährlichen. `origin = AUTO_ABSORBED` (sonst lernte `history_match` aus eigenen Vermutungen), Link-Monat = Buchungsmonat. **Nicht gebaut und ausdrücklich nicht empfohlen:** automatisches Verlinken ab 0,60 — dort wäre jede fünfte Zuordnung falsch. Die 253 Vorschläge für 2025 werden angezeigt, nicht ausgeführt. Messung: `sprints/sprint_v2-27_zuordnung.md`. |
+| ZO-4 | Dauerhafte Händler-Regel für Mobilität | Feature | ja | ✅ | **In v2-28 erledigt (24.08.2026).** Zweistufige Wortliste in `app_config` (`matching.merchant_rules`), gelesen von der neuen Funktion `merchant_rule_match`; `calculate_match_confidence` zieht die Konfidenz mit demselben `GREATEST` hoch, das sie für `history_match` schon benutzt — auf **0,96**, knapp über der Auto-Absorptions-Schwelle. **An `process_csv_import` war damit nichts zu ändern**, der Import verlinkt ab sofort von allein. **Gegen die eigenen Entscheidungen des Nutzers gemessen (LL-27): 75 Übereinstimmungen gegen 2 Widersprüche — 97,4 %.** Von 34 Zeilen mit `DB Vertrieb` oder `Deutschlandticket` wird **keine** getroffen; die bewusste Auslassung wirkt. **Die Zweistufigkeit hat sich an genau zwei Zeilen bewährt:** „JET, 25,00 €" wird über den Betrag angenommen, „Backen FCO-Team, 5,00 €" mangels zweitem Signal abgewiesen — ohne sie wäre eine private Überweisung auf der Tank-Karte gelandet. **65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), Sparrate in allen 24 Monaten unbewegt**, weil „Tanken" eine BUDGET-Karte ist und in keinem Monat über 240 € kommt. **Aber der Juli 2025 hat nur noch 79 Cent Luft** (239,21 €) — eine nachträglich zugeordnete Tankfüllung dort kippt den Monat, und dann bewegt sich die Sparrate. |
+| ZO-5 | Zahlungen mit Buchungsdatum im Text zuordenbar machen | Feature | ja | ⬜ | **Der stärkste bekannte Hebel für die Kuratierung 2025.** `… \| VISA Debitkartenumsatz vom 03.01.2026` — der Name ist bei jeder Buchung ein anderer, die Namensähnlichkeit findet deshalb nie einen Treffer. Gemessen am 24.08.2026: **147 der 553 offenen 2025-Zahlungen tragen dieses Muster, und KEINE EINZIGE bekommt einen Vorschlag ≥ 0,60** (zum Vergleich: 183 von 553 insgesamt haben einen). Vor v2-28 waren es 191 von 618. **Die Händler-Regel `ZO-4` hat 44 davon mit erledigt** — sie erkennt über den Händlernamen statt über Namensähnlichkeit, und genau das ist der Hinweis auf die Lösungsrichtung: den **stabilen** Teil des Textes vom veränderlichen trennen, statt die Ähnlichkeitsfunktion zu reparieren. |
+| ZO-6 | Wächter: zeigt eine Händler-Regel auf eine Karte, die es gibt? | Bugfix | ja | ⬜ | `matching.merchant_rules` ist nach **Kartenname** geschlüsselt — bewusst, weil eine UUID in einer Konfigurationstabelle unlesbar ist und keinen Neuaufbau überlebt (v2-28 §5 ⑤). **Der Preis: Wird die Karte umbenannt, greift die Regel still nicht mehr.** Kein Fehler, keine Meldung, nur ein Automatismus, der aufhört zu funktionieren. Klein zu bauen, aber genau die Fehlerklasse, die dieses Projekt teuer bezahlt. |
 
 ---
 
@@ -539,6 +570,7 @@ automatischen Zuordnung profitiert statt sie vorwegzunehmen.
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
 | DA-1 | Karten auf 2025 zurückdatieren | Daten | ja (Schreibzugriff) | ✅ | **In v2-27 erledigt (19.08.2026).** 22 Karten reichen nach 2025 zurück, 27 Plan-Zeilen, sechs Audible-Lücken. **2025 von 48.445,32 € auf 22.567,80 €** — das volle Netto ist weg, die Vorjahres-Goldlinie ist vergleichbar (2026 liegt in den unkuratierten Monaten bei 1.821,59 €, 2025 jetzt bei 1.854–1.908 €). **2026 hat sich in keinem der zwölf Monate bewegt**, beide Invarianten 24/24, alle neun Prüfsummen byte-identisch. **Drei Befunde, die den Auftrag korrigiert haben:** vier Karten, die angeblich 2025 nicht existierten, haben 12/12 Monate Zahlungen (−4.164,15 €) · iCloud lag 2025 bei 9,99 € statt der angenommenen 11,58 € (Mischwert aus 17 Apple-Buchungen) · und `is_card_active_in_month` zählt den Rhythmus **ab `first_active_month`**, weshalb Zurückdatieren den Fälligkeitsmonat 2026 verschieben kann — der ADAC ist deshalb draußen. **Nachtrag vom selben Tag:** Der Nutzer meldete, die Gesamtmiete sei falsch — und hatte recht. Der Plan wurde als *Jahresdurchschnitt ÷ Split-Faktor* konstruiert und erfand damit Haushaltsbeträge, die es nie gab (1.817,49 € statt 1.820 €). **Die Gegenprobe lag zwölffach bereit** — dieselbe Rechnung trifft für Feb–Aug 2026 exakt den heute gültigen Plan — **und wurde nicht gemacht** (LL-36). Korrigiert für alle fünf GEMEINSAM-Karten; dabei fiel ein **älterer** Fehler auf: Die Plan-Zeile für Januar 2026 trug schon vor diesem Sprint den Februar-Betrag. Protokoll: `sprints/sprint_v2-27_anker.md` §8. |
+| DA-3 | Die 2025-Pläne auf die tatsächlich gezahlten Beträge | Daten | ja (Schreibzugriff) | ✅ | **In v2-28 erledigt (24.08.2026), Nachzug zu `DA-1`.** `DA-1` setzte je Karte **eine** Plan-Zeile als Jahresdurchschnitt — zu grob bei Ausreißern und bei echten Preiswechseln. **Ein Mittelwert kann tadellos gebildet und trotzdem in keinem Monat richtig sein:** (10 × 19,99 + 2 × 13,99) / 12 = **18,99 exakt**, und 18,99 € wurde bei Netflix nie gezahlt. Ebenso Spotifys 11,16 €. Korrigiert: Handyvertrag 33,07 → **33,00** (zehn von zwölf Monaten waren 33,00; 33,40 und 33,44 zogen den Schnitt), Netflix **19,99** ab Januar und **13,99** ab November (Preissenkung), Spotify **10,99** ab Januar und **12,99** ab Dezember (Preiserhöhung), Friseur zurück auf `2025-01` mit Plan 45,00. **Die Preiswechsel waren die ganze Zeit in der Datenbank — nur im falschen Jahr:** Netflix trug für `2026-01` bereits 13,99, Spotify bereits 12,99. **Wirkung 2025: Ist −539,99 €, Plan −539,12 €; 2026 exakt 0,00 € in allen zwölf Monaten.** Die Briefing-Erwartung „Jahressumme unverändert" wurde **vor** dem Eingriff präzisiert: Bei Fixkosten ist ein Monat mit verlinkter Zahlung gegen Plan-Änderungen **immun**, Ist und Plan bewegen sich deshalb unterschiedlich. **Offene Folgepflicht des Nutzers:** Für Friseurbesuche 2025 gibt es keine Belege — die passenden Bargeld-Abhebungen gehören bei der Kuratierung an die Friseur-Karte, sonst zählt dasselbe Geld zweimal. |
 | DA-2 | Kuratierung 2026 | Daten | ja (Schreibzugriff) | ⬜ | Seit v2-07 überhaupt erst möglich — vorher war die Rohmasse ab Februar leer. Voraussetzung dafür, dass die Abweichungs-Treiber live etwas zeigen: bei heute 4 Verknüpfungen, davon 3 wirkungsneutral, steht überall „Keine Abweichungen". Das ist korrektes Verhalten, aber nutzlos. |
 
 ---
@@ -766,6 +798,9 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| DA-3 | **Die 2025-Pläne tragen, was gezahlt wurde.** `DA-1` bildete je Karte einen Jahresdurchschnitt — zu grob bei Ausreißern und bei echten Preiswechseln. **Ein Mittelwert kann tadellos gebildet und trotzdem in keinem Monat richtig sein:** Netflix' 18,99 € ist exakt (10 × 19,99 + 2 × 13,99) / 12 — und wurde **nie gezahlt**. Jetzt zwei Zeitreihen-Zeilen je Preiswechsel (Netflix 19,99 → 13,99 ab November, Spotify 10,99 → 12,99 ab Dezember), der typische Monat statt des Schnitts beim Handyvertrag (33,07 → 33,00), Friseur zurück auf 2025-01. **Die Preiswechsel waren die ganze Zeit in der Datenbank, nur im falschen Jahr** — die 2026-Pläne trugen die neuen Beträge längst. Ist 2025 −539,99 €, Plan −539,12 €, **2026 unbewegt** | v2-28 |
+| ZO-4 | **Mobilität ordnet sich selbst zu.** Zweistufige Händler-Wortliste in `app_config`; `calculate_match_confidence` zieht die Konfidenz auf **0,96** — knapp über die Auto-Schwelle, **damit war an `process_csv_import` nichts zu ändern**. Gegen die eigenen Handzuordnungen gemessen: **75 Übereinstimmungen gegen 2 Widersprüche (97,4 %)**, kein Deutschlandticket getroffen. Die zweite Stufe hat sich an genau zwei Zeilen bewährt — ohne sie wäre „Backen FCO-Team" auf der Tank-Karte gelandet. 65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), **Sparrate unbewegt**, weil BUDGET unter dem Plan bleibt. Die Nachverlinkung **ruft die Funktion auf**, statt die Liste zu wiederholen (LL-26, Form „Nachbauen") | v2-28 |
+| NAV-1 | **Die Navigation endet dort, wo die Daten enden.** Die untere Schranke stand seit **Sprint 3** auf `1900-01`, im Code selbst als „absurd weit" markiert; der Deaktiviert-Pfad war gebaut und hat in über einem Jahr **nie ausgelöst**. Jetzt aus `cards.first_active_month` abgeleitet — **ohne zusätzliche Netzrunde**, weil `page.tsx` die Karten ohnehin lädt. Abgeleitet statt fest verdrahtet, damit die Grenze sich nach einem Import älterer Auszüge selbst korrigiert. **Dieser Punkt stand in keinem Paket** — dasselbe Muster wie Performance vor v2-24: Was nicht in der Liste steht, konkurriert unsichtbar und verliert | v2-28 |
 | DA-1 | **2025 rechnet.** 22 wiederkehrende Karten reichen nach 2025 zurück, mit einem Plan, der zu 2025 passt — die Ist-Sparrate fällt von **48.445,32 € auf 22.461,00 €**, und damit ist die Vorjahres-Goldlinie erstmals vergleichbar (2026 liegt unkuratiert bei 1.821,59 €/Monat). **2026 hat sich in keinem der zwölf Monate bewegt.** Der Plan wird **gerechnet, nicht abgeschrieben**: Bei GEMEINSAM teilt die Migration den gemessenen Anteil selbst durch `get_split_factor` — sonst wäre der Anteil ein zweites Mal abgezogen worden (Miete 604 € statt 1.068 €, ohne dass eine Zahl falsch aussieht). **Der teuerste Fund war eine Falle, die im Auftrag nicht stand:** `is_card_active_in_month` zählt den Rhythmus **ab `first_active_month`**, Zurückdatieren verschiebt also den Fälligkeitsmonat 2026 — ein Wächter in der Migration bricht ab, der ADAC fiel deshalb raus (9 Monate Abstand, 9 % 12 ≠ 0) | v2-27 |
 | ZO-3 | **Rückwirkend verlinkt, was sicher ist** — 41 Zahlungen aus 2025 ab 0,95 Konfidenz. Für **2026 war der Punkt gegenstandslos geworden**, dort ist alles von Hand zugeordnet; für 2025 war er bis `DA-1` gar nicht stellbar. Gemessen gegen die 411 handverlinkten Zahlungen aus 2026, weil es für 2025 keine Wahrheit gibt: **ab 0,95 48 richtig / 0 falsch**, ab 0,60 dagegen 181 / 49 — deshalb wurde die niedrige Schwelle **nicht** automatisiert. **Wirkung +1,84 € auf das Jahr**, obwohl die Zahlungen −2.699,90 € ausmachen: Bei Fixkosten wirkt nur die Differenz zum Plan | v2-27 |
 | KJ-8 | Die **Wiederholung** einer Karte ist nachträglich änderbar — bis dahin war sie nach dem Anlegen endgültig, und der Vorgabewert `Monatlich` sorgt dafür, dass man sich durch **Nichtstun** vertut. Genau deshalb wollte der Nutzer eine Karte löschen: nicht um sie loszuwerden, sondern weil Zerstörung der einzige Weg zur Reparatur war. `set_card_frequency` misst die Sparraten-Wirkung wie `delete_card` und führt `once_is_single_month` mit | v2-26 |
@@ -834,13 +869,19 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 Ältere Papiere nennen Themen über ihre Buchstaben-Kennung. Hier steht, wo sie heute leben.
 
-> **Belegte Präfixe, damit ein neues Paket nicht kollidiert** (Stand 17.08.2026):
-> `BF` `DA` `GE` `KAT` `KJ` `KU` `LQ` `PA` `PF` `RM` `TP` `ZO` `ZU`.
+> **Belegte Präfixe, damit ein neues Paket nicht kollidiert** (Stand 24.08.2026):
+> `BF` `DA` `GE` `KAT` `KJ` `KU` `LQ` `NAV` `PA` `PF` `RM` `TP` `ZO` `ZU`.
 > `KJ` ist am 17.08.2026 für Paket 18 dazugekommen — bewusst nicht `KU`, das gehört
-> Paket 16 (August-Kuratierung).
+> Paket 16 (August-Kuratierung). **`NAV` ist am 24.08.2026 dazugekommen** und hat
+> **kein Paket**: `NAV-1` war beim Eintragen schon erledigt (v2-28). Wer ein
+> Navigations-Thema aufmacht, kann das Präfix weiterverwenden.
 
 | Kennung | Heute |
 |---|---|
+| DA-3 | §4 Erledigt (v2-28) — Nachzug zu `DA-1` |
+| ZO-4 | §4 Erledigt (v2-28) · Paket 5 |
+| ZO-5, ZO-6 | Paket 5 — beide offen, beide neu aus v2-28 |
+| NAV-1 | §4 Erledigt (v2-28) — **stand in keinem Paket** |
 | KJ-1 … KJ-5 | Paket 18 |
 | A1, A4 · B2, B3, B6 · C1, C2, C3 · H2 · J2 · K1 · M0, M1, M3, M10 · N1–N5 · Init-1–4 | §4 Erledigt |
 | A2, A3 · K2 · L1 | §3 Dauerhaft nicht |
