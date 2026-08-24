@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   MAX_NAVIGABLE_YM,
-  MIN_NAVIGABLE_YM,
   addMonths,
   compareMonths,
   formatMonthLabel,
@@ -60,21 +59,28 @@ export function HeaderTimeline({
   targetMonth,
   currentMonth,
   unassignedPreviousMonthCount,
+  minNavigableYm,
   outlierLabel,
 }: HeaderTimelineProps) {
   const prevYm = addMonths(targetMonth, -1);
   const nextYm = addMonths(targetMonth, 1);
 
-  // V1: Schranken sind absurd weit (months.ts), die Disabled-Pfade werden
-  // nie getriggert. Code-Pfad existiert trotzdem zwecks Design-Doku §6
-  // Spec-Konformität (Sprint 3 §3.4 / Stolperfalle 7).
-  const prevDisabled = compareMonths(prevYm, MIN_NAVIGABLE_YM) < 0;
+  // v2-28: Die untere Schranke kommt jetzt aus den Daten (Prop, abgeleitet in
+  // `page.tsx` aus `cards.first_active_month`). Bis dahin stand hier eine
+  // Konstante „1900-01" — dieser Deaktiviert-Pfad war gebaut, geprüft und
+  // wurde NIE ausgelöst. Er läuft ab heute zum ersten Mal.
+  //
+  // Die obere Schranke bleibt absurd weit, und das ist Absicht: Der Forecast
+  // soll blätterbar sein, auch über die Daten hinaus.
+  const prevDisabled = compareMonths(prevYm, minNavigableYm) < 0;
   const nextDisabled = compareMonths(nextYm, MAX_NAVIGABLE_YM) > 0;
 
   const variant = pillVariantFor(targetMonth, currentMonth);
 
   // Sprint 5: dynamisches linke-Flanke-Sublabel.
-  // Boundary-Defense: an MIN_NAVIGABLE_YM ist `prevYm` undefiniert → Count = 0.
+  // Boundary-Defense: an der unteren Schranke gibt es keinen Vormonat, den man
+  // zählen könnte → Count = 0. Seit v2-28 ist das kein theoretischer Fall mehr,
+  // sondern der Januar 2025.
   const safeCount = prevDisabled ? 0 : Math.max(0, unassignedPreviousMonthCount | 0);
   const leftSublabel =
     safeCount === 0

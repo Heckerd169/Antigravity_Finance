@@ -7,9 +7,63 @@
 
 const YM_REGEX = /^(\d{4})-(\d{2})$/;
 
-/** V1-Boundary-Konstanten — absurd weit gesetzt (Sprint 3 §3.4, Stolperfalle 7). */
-export const MIN_NAVIGABLE_YM = "1900-01";
+/** Obere Navigationsschranke — bewusst weit. Der Forecast SOLL blätterbar sein;
+ *  nach vorn endet die Bühne nicht an den Daten, sondern an der Rechenbarkeit.
+ *  (v2-28: die untere Schranke ist dynamisch geworden, diese hier nicht.) */
 export const MAX_NAVIGABLE_YM = "2999-12";
+
+/**
+ * Untere Navigationsschranke, abgeleitet aus den Daten.
+ *
+ * ANLASS (v2-28): Hier stand bis zum 24.08.2026 ein Gegenstück
+ * `MIN_NAVIGABLE_YM = "1900-01"` — ein als „absurd weit" markierter
+ * V1-Platzhalter aus Sprint 3, der nie nachgezogen wurde. Der Deaktiviert-Pfad
+ * in `header-timeline` war gebaut und funktionsfähig und wurde **nie
+ * ausgelöst**: Der Zurück-Pfeil führte über Jahrzehnte in eine leere Bühne —
+ * Sparrate `null`, null Zahlungen, null Karten. Kein Fehler, aber ein
+ * Versprechen ohne Inhalt.
+ *
+ * WARUM ABGELEITET UND NICHT FEST VERDRAHTET: Ein fester Wert `"2025-01"` wäre
+ * heute richtig und nach dem nächsten Import älterer Auszüge still falsch —
+ * dieselbe Klasse wie die Mengen-Annahme aus LL-28, die mit ihrer Begründung
+ * veraltet, ohne dass jemand es merkt. Die abgeleitete Grenze korrigiert sich
+ * selbst.
+ *
+ * WARUM AUS DEN KARTEN UND NICHT AUS DEN ZAHLUNGEN: `page.tsx` lädt die Karten
+ * ohnehin, samt `first_active_month`. Das Minimum daraus kostet **keine
+ * zusätzliche Netzrunde** — und nach LL-29 zählt man bei Trägheit Netzrunden,
+ * erzeugt also am besten gar keine. Gemessen am 24.08.2026: früheste Karte
+ * 2025-01, früheste Zahlung 02.01.2025, frühestes Einkommen 2025-01. Die Karten
+ * sind also tatsächlich die äußere Grenze. **Sollten je Zahlungen VOR der
+ * ersten Karte liegen, ist diese Funktion die Stelle, an der das auffallen
+ * muss** — dann braucht es eine zweite Quelle, nicht einen größeren Puffer.
+ *
+ * @param firstActiveMonths `cards.first_active_month` als `YYYY-MM-DD` (oder
+ *        bereits `YYYY-MM`). Unbrauchbare Einträge werden übersprungen, nicht
+ *        geraten.
+ * @param fallbackYm Grenze, wenn es keine einzige verwertbare Karte gibt —
+ *        sinnvollerweise der aktuelle Monat. Ohne Karten gibt es nichts, wohin
+ *        man zurückblättern könnte.
+ */
+export function deriveMinNavigableYm(
+  firstActiveMonths: readonly (string | null | undefined)[],
+  fallbackYm: string,
+): string {
+  let min: string | null = null;
+
+  for (const raw of firstActiveMonths) {
+    if (typeof raw !== "string") continue;
+    // `YYYY-MM-DD` → `YYYY-MM`; ein bereits gekürzter Wert überlebt das
+    // unverändert. Reine String-Arbeit, kein `new Date()` (§7 Regel 8).
+    const ym = raw.slice(0, 7);
+    if (!isValidYM(ym)) continue;
+    // Nullgepolsterte YYYY-MM-Strings sind lexikografisch == chronologisch —
+    // dieselbe Annahme, auf der `compareMonths` unten steht.
+    if (min === null || ym < min) min = ym;
+  }
+
+  return min ?? fallbackYm;
+}
 
 /** Aktueller Monat in YYYY-MM, basierend auf Server-Zeit. */
 export function getCurrentMonthYM(): string {
