@@ -2889,3 +2889,199 @@ hat, ist nur eine Vermutung.
 `tsc` **0** · ESLint **0/0** · Build **0** · `test:visual` **127/127** (121 → 127, die
 sechs neuen) · `test:e2e` **136/136** inkl. Render-Smoke. Keine Zahl bewegt — es ist eine
 reine Anzeige-Korrektur.
+
+---
+
+### Sprint v2-28 · DONE 24. August 2026
+
+**Komponente:** „Was die 2025-Prüfung zutage gefördert hat" — drei Nachzüge aus der
+Durchsicht von 2025 und 2026. Die 2025-Pläne trugen Jahresdurchschnitte, die
+Monatsnavigation endete nirgends, und Tankstellen mussten jeden Monat von Hand
+zugeordnet werden.
+
+**Ergebnis:** 2025 fällt von **22.316,32 € auf 21.776,33 €** — exakt die vorher
+aufgeschriebenen −539,99 €. **2026 hat sich in keinem der zwölf Monate bewegt.** Die
+Rohmasse 2025 wird um 65 Zahlungen leichter, ohne dass sich eine Zahl bewegt.
+
+---
+
+#### Der Kern von P1: ein Mittelwert kann tadellos gebildet und trotzdem nie richtig sein
+
+v2-27 setzte für jede zurückdatierte Karte **eine** Plan-Zeile, gebildet als
+Jahresdurchschnitt. Bei Ausreißern und bei echten Preiswechseln ist das zu grob:
+
+```
+Netflix 2025:  Jan-Okt 19,99  ·  Nov+Dez 13,99
+               (10 × 19,99 + 2 × 13,99) / 12 = 18,99 EXAKT
+```
+
+**18,99 € wurde nie gezahlt.** Die Jahressumme stimmt, kein einziger Monat stimmt.
+Dasselbe bei Spotify (11,16 €, nie gezahlt) und beim Handyvertrag, wo zwei Ausreißer
+(33,40 · 33,44) den Schnitt von 33,00 auf 33,07 zogen.
+
+**Der Nebenbefund bestätigt die Diagnose:** Netflix trug für `2026-01` bereits 13,99,
+Spotify bereits 12,99. **Die Preiswechsel waren die ganze Zeit in der Datenbank — nur
+im falschen Jahr.**
+
+#### Die Erwartung war zu grob, und das fiel VOR dem Eingriff auf
+
+Das Briefing sagte: *„Netflix und Spotify: Jahressumme 2025 unverändert."* Beim
+Aufschreiben der erwarteten Bewegung stellte sich heraus, dass das nur für den **Plan**
+gilt und nur für Netflix exakt:
+
+Bei Fixkosten gewinnt die Realität — ein Monat mit **verlinkter** Zahlung ist gegen
+Plan-Änderungen **immun**. Netflix hatte 2025 nur den Januar verlinkt, Spotify Januar
+bis November. Ist und Plan bewegen sich deshalb unterschiedlich:
+
+```
+Netflix   Ist +1,00   Plan  0,00     (Januar immun)
+Spotify   Ist -1,83   Plan +0,04     (Jan-Nov immun; +0,04 aus der alten Rundung)
+```
+
+**Der Wert dieses Schritts liegt darin, dass er vor der Migration passierte.** Ohne ihn
+wäre der Nachher-Vergleich stumpf gewesen: „ungefähr −540" trifft immer. Mit ihm traf
+der Trockenlauf **alle 24 Zeilen auf den Cent**.
+
+#### LL-34 greift bei MONTHLY nicht — nachgelesen, nicht angenommen
+
+Die Friseur-Rückdatierung ist genau der Eingriff, der in v2-27 den ADAC gekostet hat.
+Hier greift die Falle nicht: `is_card_active_in_month` gibt für `MONTHLY`
+bedingungslos `true` zurück, der Rhythmus zählt also nicht ab `first_active_month` neu.
+Im Funktionsrumpf geprüft.
+
+#### Der Trockenlauf musste den aufgeschobenen Trigger ERZWINGEN
+
+`cards_assert_initial_plan` ist `DEFERRABLE INITIALLY DEFERRED` — er feuert beim
+Commit. Ein RAISE-Rollback-Trockenlauf committet nie, **der Trigger wäre also nie
+gelaufen** und die Friseur-Rückdatierung ungeprüft geblieben. Abhilfe:
+`SET CONSTRAINTS ALL IMMEDIATE` vor der Messung. Das ist eine allgemeine Lehre für
+diesen Ablauf, nicht nur für diesen Fall.
+
+---
+
+#### P2: eine Schranke, die es seit Sprint 3 gab und die nie ausgelöst hat
+
+`MIN_NAVIGABLE_YM = "1900-01"`, im Code selbst als „absurd weit" markiert. Der
+Deaktiviert-Pfad in `header-timeline` war gebaut, kommentiert und funktionsfähig — und
+lief in über einem Jahr **kein einziges Mal**. Der Zurück-Pfeil führte über Jahrzehnte
+in eine leere Bühne: Sparrate `null`, null Zahlungen, null Karten.
+
+**Kein Wächter dieses Projekts findet so etwas, weil nichts falsch WAR.** Jede Zahl
+stimmte; es gab nur keine.
+
+Ersetzt durch `deriveMinNavigableYm` — eine reine Funktion, gespeist aus `rawCards`,
+das `page.tsx` ohnehin lädt, also **ohne zusätzliche Netzrunde** (LL-29). Abgeleitet
+statt fest verdrahtet, damit die Grenze sich nach einem Import älterer Auszüge selbst
+korrigiert (die Klasse LL-28). `minNavigableYm` ist ein **Pflicht**-Prop: Ein
+Vorgabewert hätte denselben Fehler wieder möglich gemacht.
+
+#### Der Fehler, den nur die Testzahl gefangen hat
+
+`tests/e2e/navigationsgrenze.spec.ts` lag fertig und grün da — **und lief nicht.** Das
+`visual`-Projekt hat eine feste Dateiliste in `playwright.config.ts`.
+
+Aufgefallen ist es ausschließlich daran, dass die Gesamtzahl bei **127** stehen blieb.
+Sowohl `sprint-abschluss` („nur gestiegen, und nur um selbst geschriebene Tests") als
+auch ein eigener Kommentarblock in der Konfiguration warnen davor — **beide Warnungen
+wirkten nur, weil die Zahl verglichen wurde.** Ein „grün" ohne Zahl hätte nichts
+verraten. Dasselbe war in v2-19 mit `gehalt.spec.ts` beinahe passiert.
+
+---
+
+#### P3: die Regel setzt sich neben `history_match`, statt den Import zu ändern
+
+`calculate_match_confidence` kennt das Muster bereits: `history_match` liefert 1 oder
+0, und die Konfidenz wird auf einen konfigurierten Wert **hochgezogen**
+(`GREATEST(v_score, 0.94)`). Die Händler-Regel setzt sich daneben, mit **0,96** —
+knapp über der Auto-Absorptions-Schwelle von 0,95.
+
+**An `process_csv_import` war damit nichts zu ändern.** Der Import verlinkt solche
+Zahlungen ab sofort von allein.
+
+#### Zwei Migrationen, und die Reihenfolge ist inhaltlich begründet
+
+P3b wählt **nicht** über eine Wortliste aus, sondern über
+`calculate_match_confidence(...) >= Schwelle`. Eine zweite Formulierung derselben
+Regel im Migrations-SQL wäre die Form **„Nachbauen"** aus LL-26 — genau das, was in
+v2-20 passiert ist. Deshalb muss P3a vorher laufen.
+
+#### Die Zweistufigkeit hat sich in den Daten bewährt — an genau zwei Zeilen
+
+Im ganzen Bestand tragen zwei Zahlungen ein Wort aus der mehrdeutigen Liste:
+
+```
+JET | VISA Debitkartenumsatz    -25,00   Betrag im Band 10-150  -> angenommen
+... | Backen FCO-Team            -5,00   kein zweites Signal    -> abgewiesen
+```
+
+**Ohne die zweite Stufe wäre eine private Überweisung fürs Backen auf der Tank-Karte
+gelandet.** Genau der Fall, vor dem das Briefing warnt („Team ist ein Alltagswort").
+
+Das zweite Signal sucht bewusst **ohne** Wortgrenze: `af_word_in_text('tank', …)`
+findet „Tankstelle" nicht, weil die Regex hinter dem Wort ein Nicht-Alphanumerisches
+verlangt und dort ein „s" steht. Ausgerechnet „JET Tankstelle" fiele durch.
+
+#### Gegen die eigenen Entscheidungen des Nutzers gemessen, nicht gegen die Treffer
+
+```
+auf "Tanken", vom Nutzer selbst gezogen    75   Regel stimmt zu
+auf "Privates Budget"                       2   Regel widerspricht
+```
+
+**97,4 % Übereinstimmung.** Von 34 Zeilen mit `DB Vertrieb` oder `Deutschlandticket`
+wird **keine einzige** getroffen — die bewusste Auslassung wirkt. Das ist §7 Regel 25
+(LL-27): eine Erkennungsfunktion misst man mit Richtig **und** Falsch.
+
+---
+
+#### Was am Briefing überholt war — dieselbe Klasse, nur innerhalb eines Dokuments
+
+Das Briefing nennt **55 Zahlungen / 1.262,92 €** und einen höchsten Tank-Monat von
+**199,21 €**. Gemessen sind es **65 / 1.520,22 €** und **239,21 €**.
+
+**Nichts davon war falsch gerechnet.** Es ist der Stand **vor** der
+Nahverkehr-Entscheidung; die Differenz ist genau eine RMV-Fahrt über 40,00 € vom
+02.07.2025. Die Zahl wurde nach der Entscheidung nicht nachgezogen.
+
+**Die Schlussfolgerung hält** — kein Monat überschreitet die 240,00 €, die Sparrate
+bewegt sich nicht. **Aber der Juli hat nur noch 79 Cent Luft, nicht 40 Euro.** Eine
+einzige nachträglich zugeordnete Tankfüllung dort kippt den Monat in ÜBERSCHRITTEN,
+und dann bewegt sich die Sparrate.
+
+Das ist die Klasse LL-28 und LL-30 in einer neuen Gestalt: **eine Zahl, die mit der
+Entscheidung veraltet, die sie begründet hat — hier innerhalb desselben Papiers.**
+
+---
+
+**Verifikation.**
+
+```
+tsc 0  ·  ESLint 0/0  ·  Build Exit 0
+Route / 36,9 kB · First Load JS 189 kB · geteilt 87,3 kB  (alle unveraendert)
+test:visual  127 -> 137      test:e2e  136 -> 146      (je +10 eigene)
+
+Sparrate 2025 Ist  22.316,32 -> 21.776,33     erwartet -539,99   getroffen
+Sparrate 2025 Plan                            erwartet -539,12   getroffen
+Sparrate 2026      alle zwoelf Monate 0,00, Ist und Plan
+Anker 1  24/24 exakt   Anker 2  24/24 exakt   neun Pruefsummen 9/0
+Verknuepfungen 541 -> 606, MANUAL_DROP auf Tanken unveraendert 77
+```
+
+Der Trockenlauf hat **alle 24 Zeilen** vorhergesagt, bevor die Migration lief.
+Protokoll: `sprints/sprint_v2-28_anker.md`.
+
+**Offen nach v2-28.**
+
+- **Die Friseur-Folgepflicht liegt beim Nutzer.** Es gibt keine Belege für
+  Friseurbesuche 2025 — der Salon taucht erstmals im Januar 2026 auf. Werden die
+  passenden Bargeld-Abhebungen nicht der Friseur-Karte zugeordnet, **zählt dasselbe
+  Geld zweimal.**
+- **Der Juli 2025 hat 79 Cent Luft im Tank-Budget.**
+- **Wird „Tanken" umbenannt, greift die Händler-Regel still nicht mehr** — sie ist
+  nach Kartenname geschlüsselt. Kein Wächter dafür (`ZO-6`).
+- **147 der 553 offenen 2025-Zahlungen tragen das Buchungsdatum im Text**, und
+  **keine einzige** bekommt einen Vorschlag (zum Vergleich: 183 von 553 insgesamt
+  haben einen). Vor diesem Sprint waren es 191 von 618 — **die Händler-Regel hat 44
+  davon mit erledigt**, weil sie über den Händlernamen erkennt statt über
+  Namensähnlichkeit. Das ist der Hinweis auf die Lösungsrichtung (`ZO-5`).
+- Unverändert offen: `ZO-1`, `DA-2`, `MOBILE SUICA APPLE V`, `KJ-9`, Kuratierung 2025.

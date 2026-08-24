@@ -1,7 +1,30 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.12.0
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen")
+**Version:** 3.13.0
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen" + Sprint v2-28 Händler-Regel)
+
+> **Changelog v3.13.0 (24.08.2026, Sprint v2-28):** Eine neue Funktion, drei
+> `app_config`-Schlüssel in der Tabelle, eine erweiterte Funktion. **Kein
+> Schema-Eingriff** — keine Tabelle, keine Spalte, kein Constraint, und die neun
+> Rechenfunktionen sind byte-identisch geblieben.
+>
+> **§4 — `merchant_rule_match` (neu)** und die zweite Untergrenze in
+> `calculate_match_confidence`. Der Mechanismus ist derselbe wie bei der Wiedererkennung
+> aus v2-21; der Unterschied ist ein einziger Zahlenwert: **0,96 statt 0,94**, also
+> **über** statt **unter** der Auto-Schwelle. Genau daran hängt, ob eine erkannte
+> Zahlung vorgeschlagen oder verlinkt wird — und weil die Schwelle in `app_config`
+> steht, war an `process_csv_import` nichts zu ändern.
+>
+> **§13 — `matching.merchant_rules` und `confidence.merchant_rule_score` neu**; dazu
+> `confidence.history_score`, der seit v2-21 in der Datenbank steht und in dieser
+> Tabelle **fehlte** (§4 nannte ihn, §13 nicht — gemessen gegen `app_config` am
+> 24.08.2026: sieben von acht Schlüsseln waren geführt).
+>
+> **Der Satz, der den Sprint überlebt:** Die Nachverlink-Migration wählt über
+> `calculate_match_confidence(...) >= Schwelle` aus und **nicht** über eine zweite
+> Wortliste. Eine zweite Formulierung derselben Regel ist die Form „Nachbauen" aus
+> LL-26 — dieselbe, die in v2-20 das Lösch-Tor streng hielt, während die Datenbank
+> längst großzügiger war.
 
 > **Changelog v3.12.0 (18.08.2026, Sprint v2-26):** Eine geänderte und eine neue
 > Funktion, **keine neue Tabelle, keine neue Spalte** — und **keine Zahl bewegt** (alle
@@ -516,10 +539,11 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | Funktion | Wofür | Returns |
 |---|---|---|
 | `process_csv_import(p_rows jsonb, p_format_hint text DEFAULT 'DKB')` | Atomare Distiller-Pipeline: SHA-256-Hash → UPSERT mit ON CONFLICT DO UPDATE (IBAN-Backfill bei bestehendem Hash und leerem `counterparty_iban`) → Transfer-Erkennung via `counterparty_iban = ANY(own_ibans)` (mit OQ-B-Link-Auflösung) → Confidence-Loop nur für echte INSERTs ohne Transfer → Auto-Absorption (Score ≥ 0,95) oder Suggestion (Score ≥ 0,60). Eine Transaktion, ein Round-Trip. `p_format_hint` jetzt **aktiv**: `'DKB'` (Default) | `'CORTAL_CONSORS'` | `'DKB_VISA'`. Bei `'DKB_VISA'` greift zusätzlich zur IBAN-Erkennung die KK-Klassifikation: Zeilen mit `amount > 0` **und** Beschreibung `ILIKE 'Einzahlung%'` **oder** `ILIKE 'Ausgleich Kreditkarte%'` → `INTERNAL_TRANSFER` (inkl. OQ-B-Link-Auflösung), da der DKB-Visa-Export keine Gegen-IBAN führt. `p_rows`-Zeilen dürfen optional `counterparty_iban` enthalten | `jsonb` (`{inserted_count, skipped_duplicates_count, iban_backfilled_count, auto_absorbed_count, internal_transfers_count, links_removed_for_transfers_count, fragment_ids[]}`) |
-| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score. Gewichtete Summe aus den drei Sub-Scores (Name über `name_similarity_scoped` seit v2-21), danach die **Wiedererkennung als Untergrenze**: Greift `history_match`, wird der Score auf `confidence.history_score` (0,94) **gehoben** — nie gesenkt. Bewusst knapp **unter** der Auto-Absorptions-Schwelle 0,95: Eine wiedererkannte Zahlung erzeugt einen sichtbaren Vorschlag, aber niemals eine automatische Verknüpfung (User-Entscheid 15.08.2026). Der Wert steht in `app_config` und lässt sich ohne Migration anheben. Eine vierte **gewichtete** Komponente wäre falsch gewesen: Sie hätte alle Scores gesenkt, bei denen keine Historie vorliegt — und das sind die meisten | `numeric` (0..1) |
+| `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score. Gewichtete Summe aus den drei Sub-Scores (Name über `name_similarity_scoped` seit v2-21), danach die **Wiedererkennung als Untergrenze**: Greift `history_match`, wird der Score auf `confidence.history_score` (0,94) **gehoben** — nie gesenkt. Bewusst knapp **unter** der Auto-Absorptions-Schwelle 0,95: Eine wiedererkannte Zahlung erzeugt einen sichtbaren Vorschlag, aber niemals eine automatische Verknüpfung (User-Entscheid 15.08.2026). Der Wert steht in `app_config` und lässt sich ohne Migration anheben. Eine vierte **gewichtete** Komponente wäre falsch gewesen: Sie hätte alle Scores gesenkt, bei denen keine Historie vorliegt — und das sind die meisten. **Seit v2-28 gibt es eine zweite Untergrenze derselben Bauart:** Greift `merchant_rule_match`, wird der Score auf `confidence.merchant_rule_score` (**0,96**) gehoben. Sie steht bewusst **über** der Auto-Absorptions-Schwelle 0,95 — anders als die Wiedererkennung soll ein Händler-Treffer beim Import **automatisch verlinken**. Damit war an `process_csv_import` nichts zu ändern. Beide Untergrenzen benutzen dasselbe `GREATEST` und **heben nur an, sie senken nie**; die Reihenfolge ist deshalb ohne Wirkung | `numeric` (0..1) |
 | `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) über die **ganzen** Strings. Seit v2-21 **nicht mehr direkt von `calculate_match_confidence` aufgerufen**, sondern als Untergrenze innerhalb von `name_similarity_scoped` mitgeführt | `numeric` |
 | `name_similarity_scoped(description, card_id)` **(v2-21)** | Wortweiser Namensvergleich: Umlaut-/ß-Normalisierung auf beiden Seiten, Zerlegung des Kartennamens in Wörter ab 4 Zeichen, Treffer nur an **echten Wortgrenzen** (`Douglas` trifft nicht mehr `Glas`), unscharfer Fallback über `word_similarity` erst ab `0.7`. **Entwertung mehrdeutiger Wörter:** Ein Kartenwort, das in `n` Kartennamen desselben Nutzers vorkommt, zählt nur `1/n` — das fängt Personennamen wie `Aline` (in 7 Kartennamen) ohne gepflegte Stoppwortliste. Führt `name_similarity` als Untergrenze mit: das Ergebnis kann nie schlechter werden als vorher | `numeric` (0..1) |
 | `history_match(fragment_id, card_id)` **(v2-21)** | Wiedererkennung: Wurde eine Zahlung mit **identischer** Beschreibung schon einmal **von Hand** (`origin = 'MANUAL_DROP'`) dieser Karte zugeordnet? Lernt bewusst **nicht** aus `AUTO_ABSORBED` (sonst verstärkt sich ein Automatik-Fehler selbst) und nicht aus Überträgen. Das Fragment selbst ist ausgeschlossen | `numeric` (0 oder 1) |
+| `merchant_rule_match(fragment_id, card_id)` **(v2-28)** | Händler-Erkennung über eine **zweistufige Wortliste** aus `app_config` (`matching.merchant_rules`), geschlüsselt nach **Kartenname**. Stufe 1 („eindeutig") genügt ein Wortreffer über `af_word_in_text`; Stufe 2 („mehrdeutig", z. B. `total`, `team`, `jet`) verlangt zusätzlich ein **zweites Signal** — ein Wort aus `zweitsignal_woerter` oder einen Betrag im konfigurierten Band. **Das zweite Signal sucht bewusst per `strpos`, nicht per Wortgrenze:** `af_word_in_text('tank', …)` findet „Tankstelle" **nicht**, weil die Regex hinter dem Wort ein Nicht-Alphanumerisches verlangt — ausgerechnet der Fall, für den Stufe 2 gebaut ist. Überträge (`transfer_type IS NOT NULL`) geben immer `0` zurück (dritte Absicherung neben RPC-Filter und Trigger). **Bekannte Grenze:** Wird die Karte umbenannt, greift die Regel still nicht mehr | `numeric` (0 oder 1) |
 | `amount_match(fragment_amount, planned)` | Bracket-Score (`<1%→1.00`, `<5%→0.85`, `<15%→0.60`, `<30%→0.30`, sonst `0.00`) | `numeric` |
 | `frequency_match(date, card_id)` | Binär `0/1` basierend auf `is_card_active_in_month`. ⚠️ **In der Praxis eine Konstante:** Der einzige Aufrufer filtert Karten bereits auf Aktivität im Monat des Fragments, weshalb sie dort ausnahmslos `1.00` liefert — gemessen über alle Score-Klassen (v2-21). 20 % des Gewichts unterscheiden damit nichts, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ergeben höchstens 0,50). Offen als Hausaufgabe `ZO-1` | `numeric` |
 | `refresh_fragment_suggestions(p_from_month, p_to_month)` **(v2-21)** | Rechnet Kartenvorschläge für **offene** Zahlungen eines Zeitraums neu und schreibt **ausschließlich** `suggested_card_id` und `confidence`. Nötig, weil `calculate_match_confidence` sonst nur beim Einfügen läuft (`process_csv_import`, hinter `IF v_was_inserted`) — wer später eine Karte anlegt, bekam für ältere Zahlungen nie einen Vorschlag. **Verlinkt niemals**, auch nicht ab 0,95: `card_fragment_links` zu schreiben bewegt sofort die Sparrate. Die Zusage ist **erzwungen**, nicht behauptet — die Funktion zählt die Verknüpfungen vor und nach ihrem Lauf und bricht bei jeder Abweichung mit Exception und Rollback ab. Auth über `auth.uid()` (`28000`), Zeitraum validiert (`22023`, höchstens 5 Jahre). Überträge (`transfer_type IS NOT NULL`) bleiben unangetastet | `jsonb` (`{geprueft, vorschlag_gesetzt, vorschlag_geleert, links_unveraendert, badge_threshold}`) |
@@ -832,6 +856,9 @@ Sechs funktionale / partielle Indexes über die v2-PK/UK-Indexes hinaus:
 | `confidence.minimum_match_threshold` | `0.20` | Unter dieser Schwelle: Score wird auf 0 zurückgesetzt |
 | `confidence.badge_threshold` | `0.60` | Über dieser Schwelle: Suggestion-Badge im Frontend |
 | `confidence.auto_absorption_threshold` | `0.95` | Über dieser Schwelle: Auto-Absorb via Distiller-Pipeline |
+| `confidence.history_score` | `0.94` | Wiedererkennung: Score wird auf diesen Wert **gehoben**, nie gesenkt. Bewusst **unter** 0.95 — erzeugt einen Vorschlag, nie eine automatische Verknüpfung |
+| `confidence.merchant_rule_score` | `0.96` | **(v2-28)** Händler-Treffer: Score wird auf diesen Wert gehoben. Bewusst **über** 0.95 — verlinkt beim Import automatisch. Absenken unter 0.95 macht daraus einen bloßen Vorschlag, ohne Migration |
+| `matching.merchant_rules` | JSON-Objekt | **(v2-28)** Zweistufige Händler-Wortlisten, geschlüsselt nach **Kartenname**: `eindeutig` · `mehrdeutig` · `zweitsignal_woerter` · `zweitsignal_betrag_min` / `_max`. Gelesen von `merchant_rule_match`. **Achtung:** Kartenname als Schlüssel — nach einer Umbenennung greift die Regel still nicht mehr |
 | `trash.retention_seconds` | `60` | UI versteckt Trash-Zeile nach 5 s, Edge-Function löscht final nach diesem Wert |
 
 Alle Werte als JSONB gespeichert (`value` Spalte). Read-Path: `(value::text)::numeric` oder `(value->>0)` je nach Cast.
