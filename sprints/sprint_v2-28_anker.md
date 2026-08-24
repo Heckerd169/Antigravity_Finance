@@ -267,3 +267,105 @@ Jahressumme 2025 Ist: **21.776,33 €**, erwartet waren 21.776,33 €.
 > tatsächlichen Zahlungen.
 
 ---
+
+## §5 · Nachher — P3a und P3b angewendet, 24.08.2026
+
+Migrationen `v2_28_p3a_haendler_regel` und `v2_28_p3b_bestand_nachverlinken`,
+je nach eigener Freigabe.
+
+### Die Sparrate hat sich um 0,00 € bewegt — in allen 24 Monaten
+
+Ist und Plan sind **zeichengleich mit §4**. Das ist kein Zufall, sondern die
+Aussage über BUDGET-Karten aus Design-Doku §4.3.2 (LL-12): Eine Budget-Karte
+zeigt den Plan, solange die Ausgaben darunter liegen. „Tanken" plant 240,00 €
+je Monat.
+
+| Monat 2025 | Tanken Ist | | Monat 2025 | Tanken Ist |
+|---|---|---|---|---|
+| 01 | 129,56 | | 07 | **239,21** |
+| 02 | 174,24 | | 08 | 218,73 |
+| 03 | 157,35 | | 09 | 191,94 |
+| 04 | 149,43 | | 10 | 126,93 |
+| 05 | 112,21 | | 11 | 159,50 |
+| 06 | 72,91 | | 12 | 209,36 |
+
+**Monate über 240,00 €: null.** Die Karte bleibt in allen zwölf Monaten beim
+Plan.
+
+> ### ⚠️ Der Juli hat 79 Cent Luft, nicht 40 Euro
+>
+> Das Briefing nennt als höchsten Monat **199,21 €** und schließt daraus auf
+> einen risikolosen Eingriff. Gemessen sind es **239,21 €** bei 240,00 €
+> Budget.
+>
+> **Die Differenz ist genau eine RMV-Fahrt über 40,00 € vom 02.07.2025.** Die
+> Briefing-Zahl entstand, bevor der Nahverkehr in die Liste aufgenommen wurde;
+> sie wurde danach nicht nachgezogen. Dasselbe gilt für die Wirkungszahl:
+> **55 Zahlungen / 1.262,92 €** ist der Stand ohne Nahverkehr, **65 Zahlungen /
+> 1.520,22 €** der Stand mit.
+>
+> **Die Schlussfolgerung des Briefings hält trotzdem** — kein Monat wird
+> überschritten, die Sparrate bewegt sich nicht. Aber der Spielraum ist klein:
+> **Eine einzige nachträglich zugeordnete Tankfüllung im Juli 2025 kippt den
+> Monat in ÜBERSCHRITTEN, und DANN bewegt sich die Sparrate.** Wer dort
+> kuratiert, sollte das wissen.
+
+### Was sich in den Verknüpfungen geändert hat
+
+| | vorher | nachher |
+|---|---|---|
+| Verknüpfungen gesamt | 541 | **606** (+65) |
+| davon auf „Tanken" | 77 | **142** |
+| davon auf „Tanken" per Hand (`MANUAL_DROP`) | 77 | **77 — unverändert** |
+| offene Zahlungen 2025 | 618 | **553** |
+
+**Keine einzige bestehende Zuordnung wurde aufgehoben.** Die 77
+Handzuordnungen auf „Tanken" stehen unverändert, die neun RMV-Fahrten
+eingeschlossen.
+
+### Wächter nach P3
+
+| Prüfung | Ergebnis |
+|---|---|
+| **Anker 1** — Ordner-Spalte == Sparrate | **24/24, max. Abweichung 0,00 €** ✅ |
+| **Anker 2** — Σ delta == Ist − Plan (B2) | **24/24, max. Abweichung 0,00 €** ✅ |
+| **Neun Prüfsummen** | **9 Treffer, 0 Abweichungen** ✅ |
+| Sparrate gegenüber §4 | in allen 24 Monaten **unverändert** ✅ |
+
+> **`calculate_match_confidence` hat eine neue Prüfsumme — und das ist richtig
+> so.** Sie gehört nicht zu den neun: Sie ordnet zu, sie rechnet keine
+> Sparrate. Der Sprint hat also genau die Funktion angefasst, die er anfassen
+> sollte, und keine andere.
+
+### Die Regel gegen die eigenen Entscheidungen des Nutzers gemessen (LL-27)
+
+| | Treffer | Bedeutung |
+|---|---|---|
+| liegt auf „Tanken", **vom Nutzer selbst gezogen** | **75** | Regel stimmt zu |
+| liegt auf „Privates Budget" | **2** | Regel widerspricht |
+| war offen | 65 | von P3b verlinkt |
+
+**97,4 % Übereinstimmung.** Von 34 Zeilen mit `DB Vertrieb` oder
+`Deutschlandticket` wird **keine einzige** getroffen — die bewusste Auslassung
+wirkt.
+
+Die zwei Widersprüche sind ein `Agip` über 29,82 € (Januar 2026) und ein
+`RMV-HANDYTICKET` über 7,75 € (August 2026). Beide liegen bereits auf
+„Privates Budget" und wurden **nicht** angefasst. Bei künftigen Importen würde
+die Regel solche Fälle nach „Tanken" schicken; rückgängig macht das ein Zug mit
+der Maus.
+
+### Die Zweistufigkeit hat sich in den Daten bewährt
+
+Zwei Zahlungen im ganzen Bestand tragen ein Wort aus der mehrdeutigen Liste:
+
+| Text | Betrag | zweites Signal | Ergebnis |
+|---|---|---|---|
+| `JET \| VISA Debitkartenumsatz vom 28.09.2025` | −25,00 | Betrag im Band 10–150 | **angenommen** ✅ |
+| `… \| Backen FCO-Team` | −5,00 | keines | **abgewiesen** ✅ |
+
+Der zweite Fall ist genau der, vor dem das Briefing warnt („Team ist ein
+Alltagswort"). **Ohne die zweite Stufe wäre eine private Überweisung fürs
+Backen auf der Tank-Karte gelandet.**
+
+---
