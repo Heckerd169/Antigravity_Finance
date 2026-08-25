@@ -173,6 +173,84 @@ wohldefiniert ist.
 
 ---
 
-## 7 · Nachher
+## 7 · Nachher — gemessen in derselben Sitzung
 
-*(wird nach P1 und P2 ergänzt — dieselben Abfragen, dieselbe Sitzung)*
+Dieselben Abfragen, nach der Migration (P1) **und** nach dem Nachrechnen (P2).
+
+| Anker | Erwartung | Gemessen |
+|---|---|---|
+| Sparrate, 24 Monate, Ist **und** Plan | jede Zeile identisch | **24 identisch · 0 bewegt** ✅ |
+| Anker 1 — Ordner-Spalte == Sparrate | 24/24 | **24/24** ✅ |
+| Anker 2 — `Σ delta = Ist − Plan` | 24/24 | **24/24** ✅ |
+| `card_fragment_links` | 678 | **678** (568 Hand · 110 automatisch) ✅ |
+| Prüfsummen | 18 von 19 identisch | **18 identisch**, nur `history_match` bewegt ✅ |
+| `calculate_match_confidence` | byte-identisch | `defa3e43f468e51946362a15ee943c9f` — **unverändert** ✅ |
+| **Vorschläge 2025** | **136 → 195** | **195** ✅ |
+
+**`history_match` neu:** `99aa12b889a18691917c7c7e93f191f6`
+(vorher `5da26193c869c506627c0044b963c94f`).
+
+### Was der Nachrechnen-Lauf gemeldet hat
+
+```
+geprueft            484
+vorschlag_gesetzt    68
+vorschlag_geleert     0      <-- es geht NICHTS verloren
+links_unveraendert  678
+badge_threshold     0.60
+Dauer               23,2 s
+```
+
+> **Die 195 standen VOR dem Eingriff im Briefing und wurden exakt getroffen.**
+> Das ist der eigentliche Wert dieser Messung: Nicht dass die Zahl gestiegen ist,
+> sondern dass sie **vorhersagbar** war. Eine Zahl, die man erst hinterher abliest,
+> belegt nichts — sie beschreibt nur, was passiert ist.
+>
+> **`vorschlag_geleert: 0` ist die zweite wichtige Null.** Sie belegt, dass die
+> Entscheidung „ergänzen statt ersetzen" trägt: Kein einziger der 136 bisherigen
+> Vorschläge ist verschwunden. Bei der verworfenen Bauweise wären es 35 gewesen.
+
+### Stichprobe — was tatsächlich sichtbar geworden ist
+
+**39 Zahlungen mit Buchungsdatum im Text** bekommen einen Vorschlag, wo vorher
+**keine einzige** einen hatte. Genau die 39, die im Briefing §10 prognostiziert
+wurden — nicht die 147 aus der alten `ZO-5`-Begründung.
+
+Alle 39 zeigen auf **Privates Budget** (`ALDI.SUeD/Frankfurt | VISA
+Debitkartenumsatz vom …`, `Apotheke Am Henninger T | …`, `BIOTECHUSA/FRANKFURT`).
+Das ist kein Zufall und kein Fehler: Es sind Alltagskäufe, und der Nutzer hat
+genau diese Händler bisher ausnahmslos dorthin gelegt. Die Regel sagt nichts
+anderes, als was er selbst entschieden hat.
+
+### Der Trockenlauf vorher — was er gefunden hat
+
+Beide Funde wären ohne ihn erst in Produktion aufgefallen:
+
+| | Fund |
+|---|---|
+| **①** | `CREATE INDEX` scheitert mit `42883: function af_normalize_text(text) does not exist`, wenn der Aufruf im Funktionsrumpf nicht **schema-qualifiziert** ist. Postgres bettet die SQL-Funktion beim Anlegen des Index ein und wertet sie unter einem anderen `search_path` aus. Jeder direkte Aufruf funktioniert dabei tadellos — der Fehler tritt **nur** beim Index-Anlegen auf. |
+| **②** | Ohne Index kostet ein Aufruf **14,9 ms**. Mit Index **0,208 ms** — Faktor **72**. Bei rund 14.000 Aufrufen je Nachrechnen-Lauf ist das der Unterschied zwischen 23 Sekunden und über drei Minuten. |
+
+Die Testreihe `T1`–`T8` lief zweimal: einmal im Trockenlauf gegen die noch nicht
+installierte Fassung, einmal **nach** der Migration gegen die tatsächlich
+installierte. Beide Male identisch.
+
+| | Prüfung | Ergebnis |
+|---|---|---|
+| T1 | vereinfachte Fassung == gemessene Fassung, alle 1.599 Fragmente | **0 Abweichungen** |
+| T2 | eindeutiger Händler, richtige Karte | 1.00 |
+| T3 | eindeutiger Händler, falsche Karte | 0.00 |
+| T4 | mehrdeutiger Händler → Stufe 2 übernimmt | 1.00 |
+| T5 | Übertrag | 0.00 |
+| T6 | unbekanntes Fragment | 0 |
+| T7 | Selbstausschluss (einziger Träger seines Händlers) | 0.00 |
+| T8 | Laufzeit mit Index | 0,208 ms je Aufruf |
+
+### Und ein Beleg, den man leicht vergisst
+
+**Die Migrationsdatei im Repo ist byte-genau das, was in Produktion läuft.**
+Nachgewiesen, nicht zugesichert: Der Funktionsrumpf aus der Datei wurde nach der
+Migration ein zweites Mal eingespielt, und die Prüfsumme blieb bei
+`99aa12b889a18691917c7c7e93f191f6`. `pg_get_functiondef` schließt Kommentare ein
+— wer im Rumpf „aufräumt", ohne neu einzuspielen, lässt Datei und Datenbank
+auseinanderlaufen, ohne dass sich das Verhalten ändert (Lehre aus v2-25).
