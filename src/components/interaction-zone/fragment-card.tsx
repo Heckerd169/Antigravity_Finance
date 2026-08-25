@@ -80,7 +80,15 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           ? `${descShort} (Transfer zwischen eigenen Konten)`
           : isLocked
             ? `${descShort} (zugeordnet)`
-            : `${descShort}, ${sign}${formatAmount(abs)} Euro`
+            : /* v2-29: der Vorschlag gehoert mit vorgelesen — dieselbe Regel wie
+                 bei der Beschreibung (RM-1): Vorlesen und Sehen sollen dasselbe
+                 ergeben. Er steht am Ende, weil Betrag und Beschreibung die
+                 Auskunft sind und der Vorschlag die Vermutung. */
+              `${descShort}, ${sign}${formatAmount(abs)} Euro${
+                fragment.suggestedCardName
+                  ? `, KI-Vorschlag: ${fragment.suggestedCardName}`
+                  : ""
+              }`
       }
     >
       <div className={styles.fragmentTop}>
@@ -116,6 +124,35 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
       <div className={styles.fragmentDesc} title={fragment.description}>
         {descShort}
       </div>
+      {/* v2-29: Der Kartenvorschlag als eigene, leise Zeile — Entscheidungen 1–4
+          in V2/design_direktor_2026-08-24_haendler_gedaechtnis.md.
+
+          WARUM HIER UND NICHT NEBEN DEM BETRAG: Gemessen mit dem echten
+          Schriftstack bei 194 px Inhaltsbreite passt selbst der KUERZESTE Fall
+          nicht — „KI-VORSCHLAG: TANKEN" braucht 121,9 px, neben −129,00 € sind
+          119 px frei. Der laengste echte Kartenname hat 105 Zeichen. Gekuerzt
+          wird also in jedem Fall; neben dem Betrag kostet das den BETRAG (so ist
+          `BF-1` in v2-10 entstanden), auf eigener Zeile nur Text.
+
+          EINE BEDINGUNG, NICHT ZWEI: Ob ueberhaupt ein Vorschlag gilt, entscheidet
+          ausschliesslich `istVorschlagSichtbar` in `@/lib/suggestion` — ausgewertet
+          server-seitig in `page.tsx` (LL-17). Kommt hier ein Name an, wird er
+          gezeigt; kommt null, nicht. Eine zweite Pruefung an dieser Stelle waere
+          genau die Fehlerklasse aus LL-26, die dieses Projekt viermal in fuenf
+          Tagen getroffen hat. Deshalb steht hier NUR die Null-Pruefung.
+
+          Transfers sind damit automatisch mit abgedeckt: Ihr Status ist nie
+          `UNASSIGNED`, also liefert die Regel null (AD5 — Transfer ist Fakt, kein
+          Vorschlag). */}
+      {fragment.suggestedCardName && (
+        <div
+          className={styles.fragmentSuggestion}
+          /* wie bei der Beschreibung: gekuerzt wird nur die ANZEIGE (RM-1) */
+          title={`KI-Vorschlag: ${fragment.suggestedCardName}`}
+        >
+          KI-Vorschlag: {fragment.suggestedCardName}
+        </div>
+      )}
       <div className={styles.fragmentDate}>{formatDateShort(fragment.transaction_date)}</div>
       {/* v2-04 ② Interim: Markier-Auslösung. Setzen aus UNASSIGNED (Broker-
           Eingang, F3) oder INTERNAL_TRANSFER (Scalable-Fall, E2); Rücknahme
