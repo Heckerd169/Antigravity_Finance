@@ -518,6 +518,7 @@ export type Database = {
       }
     }
     Functions: {
+      af_merchant_key: { Args: { p_text: string }; Returns: string }
       af_normalize_text: { Args: { p_text: string }; Returns: string }
       af_word_in_text: {
         Args: { p_text: string; p_word: string }
@@ -648,6 +649,10 @@ export type Database = {
       link_fragment_to_income: {
         Args: { p_fragment_id: string; p_month: string }
         Returns: Json
+      }
+      merchant_rule_match: {
+        Args: { p_card_id: string; p_fragment_id: string }
+        Returns: number
       }
       name_similarity: {
         Args: { p_card_name: string; p_description: string }

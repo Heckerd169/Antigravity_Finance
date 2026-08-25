@@ -83,9 +83,12 @@ af_merchant_key(text) = alle Ziffern und Sonderzeichen zu Leerzeichen,
 
 ```
 'Agip | VISA Debitkartenumsatz vom 28.01.2026'  ->  'agip visa debitkartenumsatz vom'
-'Audible Gmbh*YG4WQ1N95'                        ->  'audible gmbh yg wqn'
-'ELEMENTS FITNESS GmbH | 2350--0447 ELEMENTS'   ->  'elements fitness gmbh elements'
+'Audible Gmbh*YG4WQ1N95'                        ->  'audible gmbh yg wq n'
+'12345 / 67-89'                                 ->  ''   (leer -> Stufe 1 schweigt)
 ```
+
+*(Die drei Beispiele sind im Trockenlauf gegen die echte Funktion geprüft, nicht
+von Hand ausgerechnet.)*
 
 **Sie muss nichts über Datumsformate wissen.** Das Datum verschwindet, weil es aus
 Ziffern besteht — und mit ihm jede Kundennummer, jede Transaktions-ID, jede
