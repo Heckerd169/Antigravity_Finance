@@ -7,10 +7,11 @@
 >
 > **Jeder Anker wurde vor der Anwendung einzeln auf Eindeutigkeit geprüft.**
 >
-> **Was hier NICHT steht: die Vorschläge für `CLAUDE.md`.** Für die Verfassung gilt
-> dasselbe Verfahren **plus User-Freigabe vor der Anwendung**. Sie liegen deshalb als
-> Vorschlag in `sprints/sprint_v2-28_review.md` §7 und werden erst nach ausdrücklicher
-> Zustimmung zu Patches.
+> **Die Patches für `CLAUDE.md` stehen am Ende dieser Datei**, unter „Nachtrag". Für
+> die Verfassung gilt dasselbe Verfahren **plus User-Freigabe vor der Anwendung** —
+> beim Schreiben der Bibel-Patches lag sie noch nicht vor, deshalb standen sie
+> zunächst nur als Vorschlag in `sprints/sprint_v2-28_review.md` §7. **Freigegeben am
+> 24.08.2026, nach bestandenem Browser-Smoke und dem Merge von PR #44.**
 
 ---
 
@@ -194,3 +195,102 @@ Plan, weil sie eine BUDGET-Karte unter ihrem Budget ist (§4.3.2).
 **`design-system/` bleibt unverändert.** Weder Tokens noch Komponenten sind berührt —
 `header-timeline` hat ein Prop bekommen, kein neues Aussehen. Die Seiten zeigen
 weiterhin den gültigen Stand.
+
+---
+
+# Nachtrag · CLAUDE.md — freigegeben am 24.08.2026
+
+> **Die Freigabe kam nach dem Browser-Smoke und dem Merge von PR #44.** Bis dahin
+> standen diese Punkte als Vorschlag im Review §7; für die Verfassung gilt LL-16
+> **plus** ausdrückliche Zustimmung des Users, und die lag vorher nicht vor.
+>
+> **Sieben Stellen.** Kopfzeile · §6 Stolperfalle 8 (Korrektur) · §6 neue
+> Stolperfallen 26–28 · §7 Regel 16 (Erweiterung) · §8 LL-37 bis LL-39 · §9
+> Sprint-Stand · §9 Momentaufnahme.
+
+## Patch G · Kopfzeile — v2-28 nach vorn, v2-27 nach hinten
+
+**Anker:**
+
+```
+> **Letzte Aktualisierung:** 19. August 2026 · **nach:** Sprint **v2-27**
+> („2025 wird vergleichbar" — `DA-1` `ZO-3`; Design-Doku **v3.10.0**, Schema-Doku
+> **v3.12.0**). Alles bis **v2-26** ist in `main`.
+```
+
+**Patch-Satz:** ersetzt durch die neue Kopfzeile mit v2-28 und **ohne** die
+abgeschriebenen Doku-Versionen — siehe Patch L, Begründung dort.
+
+Der Block `⚠️ **Dieser Nachzug holt DREI Sprints auf.**` **entfällt**: Er beschrieb
+den Rückstand vor v2-27 und ist mit v2-28 zweimal überholt. Stattdessen kommt der
+v2-28-Abschnitt; der bisherige v2-27-Text bleibt **wortgleich** stehen und rückt
+hinter ein `---`.
+
+## Patch H · §6 Stolperfalle 8 — eine Spalte, die es nicht gibt
+
+**Anker:** `nicht der Roh-Plan \`cards.planned_amount\`.`
+
+**Patch-Satz:**
+
+```markdown
+   nicht der Roh-Plan. **`cards.planned_amount` gibt es nicht** — die Spalte war
+   hier bis zum 24.08.2026 genannt und existiert im Schema nicht (gemessen gegen
+   `information_schema`). Der Plan liegt **ausschließlich** in
+   `card_planned_timeline`; wer den Rohwert braucht, holt ihn dort oder über
+   `get_planned_amount_for_month`.
+```
+
+## Patch I · §6 — drei neue Stolperfallen 26, 27, 28
+
+**Anker:** das Ende von Stolperfalle 25, die Zeile
+`v2-24 (§9 Anker 3): Beide Male sieht ein zu früher Blick wie ein Befund aus. (v2-27)`
+
+**Patch-Satz:** Direkt darunter, vor `### Typen neu erzeugen`, kommen die drei neuen
+Nummern (Volltext siehe angewendete Datei).
+
+- **26** — `af_word_in_text` findet **kein Teilwort**. Wortgrenze und Teilwort sind
+  zwei verschiedene Fragen, und die falsche Wahl fällt nicht auf.
+- **27** — Ein **Mittelwert über eine Periode** verbirgt einen Sprung: Die
+  Jahressumme stimmt, **jeder einzelne Monat ist falsch**. (LL-37)
+- **28** — Ein **RAISE-Rollback lässt aufgeschobene Constraints nie feuern**. (LL-39)
+
+## Patch J · §7 Regel 16 — der Trockenlauf braucht `SET CONSTRAINTS ALL IMMEDIATE`
+
+**Anker:** `` `db-eingriff`. (LL-18) ``
+
+**Patch-Satz:** ergänzt um den Absatz zu aufgeschobenen Constraints (Volltext siehe
+angewendete Datei), Verweis auf **LL-39**.
+
+## Patch K · §8 — LL-37, LL-38, LL-39
+
+**Anker:** die Tabellenzeile `| LL-36 | Wer einen **unbekannten** Wert …`
+
+**Patch-Satz:** drei neue Zeilen darunter.
+
+## Patch L · §9 — Sprint-Stand, Roadmap-Zahlen, und die Doku-Versionen VERSCHWINDEN
+
+**Anker:** `**Doku-Versionen:** Design-Doku **v3.10.0** · Schema-Doku **v3.12.0**.`
+
+**Patch-Satz:** Die Zeile wird **nicht aktualisiert, sondern ersetzt** — durch einen
+Verweis auf die Header der beiden Bibeln, ohne Zahlen.
+
+> **Warum das die einzige wirksame Korrektur ist.** Der Warnkasten, der heute unter
+> dieser Zeile steht, sagt es selbst: *„Ein Warnkasten verhindert nichts. Er wird von
+> derselben Sitzung gelesen, die ihn geschrieben hat, und von keiner danach. Wirksam
+> wäre nur, den Wert **nicht zu duplizieren**."* Die Zeile stand am 17.08. falsch, am
+> 19.08. wieder falsch. **Sie ein drittes Mal richtig zu schreiben, hieße die eigene
+> Lehre zu ignorieren.**
+
+## Patch M · §9 Momentaufnahme — beide Jahre neu, und diesmal mit Beleg
+
+**Anker:** die Tabellenzeile `| Januar | 1.318,76 € | 1.853,82 € | | Juli | −8,84 € | 1.866,97 € |`
+
+**Patch-Satz:** vollständig ersetzte Tabelle, gemessen am 24.08.2026 **nach** dem
+Merge, plus der Warnkasten dazu.
+
+> **Diese Messung trägt ihren eigenen Beleg dafür, dass sie kein Sollwert ist.**
+> Zwischen dem Ende des Sprints und dieser Messung liegen wenige Stunden — und
+> **vier Monate haben sich bewegt** (2025-01 bis 2025-04), weil der Nutzer weiter
+> kuratiert hat. 2025 fiel dabei von 21.776,33 € auf **21.708,77 €**. Beide
+> Invarianten blieben 24/24 exakt, alle neun Prüfsummen unverändert: **normale
+> Benutzung, kein Eingriff.**
