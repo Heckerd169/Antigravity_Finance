@@ -3085,3 +3085,127 @@ Protokoll: `sprints/sprint_v2-28_anker.md`.
   davon mit erledigt**, weil sie über den Händlernamen erkennt statt über
   Namensähnlichkeit. Das ist der Hinweis auf die Lösungsrichtung (`ZO-5`).
 - Unverändert offen: `ZO-1`, `DA-2`, `MOBILE SUICA APPLE V`, `KJ-9`, Kuratierung 2025.
+
+
+---
+
+### Sprint v2-29 · DONE 25. August 2026
+
+**Die App merkt sich, was du entschieden hast.** `history_match` erkannte eine
+frühere Handzuordnung nur bei **wortgleicher** Beschreibung. Bei Kartenzahlungen
+steht das Buchungsdatum im Text (`Agip | VISA Debitkartenumsatz vom 28.01.2026`) —
+es sind also nie zwei gleich, und die eigenen Entscheidungen des Nutzers übertrugen
+sich nie. **303 Fragmente im Bestand tragen dieses Muster.** Seit v2-29 lernt die
+Funktion den **Händler** statt des Wortlauts, und der Vorschlag wird zum ersten Mal
+dort sichtbar, wo kuratiert wird: in der Rohmasse.
+
+**Fünf Wege, den Händler zu gewinnen — eine Messung.** Der Auftrag schlug „Text vor
+dem ersten `|`" vor und verlangte, mindestens zwei Varianten gegen dieselbe Messung
+zu halten (Leave-one-out über **568 Handzuordnungen**, mit Richtig UND Falsch):
+
+```
+Text vor dem ersten |                      147 richtig /  17 falsch   89,6 %
+dito, nur Buchstaben                       152 /  21                  87,9 %
+ganzer Text, alle Ziffern raus     -->     257 /  24                  91,5 %
+dito, Woerter unter 3 Zeichen raus         262 /  26                  91,0 %
+erste 3 Woerter · erste 5 Woerter          203 / 22 · 202 / 22        90,2 %
+```
+
+**Gewonnen hat die einfachste Regel, auf beiden Achsen zugleich.** Sie muss nichts
+über Datumsformate wissen: Das Datum verschwindet, weil es aus Ziffern besteht — und
+mit ihm jede Kundennummer und Transaktions-ID. Der naheliegende Weg scheitert an
+genau den Fällen **ohne** `|`: `Audible Gmbh*YG4WQ1N95` bliebe unverändert. Die
+Variante mit 262 Treffern wurde verworfen, weil sie eine Wortlängen-Grenze braucht,
+für die es keine Begründung gibt außer dem Messwert — und ungenauer ist. **Eine
+Regel, deren Schwelle niemand erklären kann, wird beim nächsten Mal falsch gepflegt.**
+
+**Die teuerste Erkenntnis des Sprints war, dass die genauere Regel die schlechtere
+gewesen wäre.** Die reine Händler-Regel trifft 91,5 % gegen 77,4 % — und hätte
+trotzdem geschadet:
+
+> **131 der 136 sichtbaren 2025-Vorschläge kamen aus der Historie, und 35 davon
+> haben mit dem GRÖBEREN Händler-Schlüssel keinen eindeutigen Treffer mehr.**
+
+Ein gröberer Schlüssel fasst mehr Buchungen zusammen und wird dadurch **öfter
+mehrdeutig**. Ein ersatzloser Austausch hätte die Zahl im Prüfanker erst **gesenkt**,
+bevor sie steigt. Entschieden wurde deshalb **ergänzen**: Stufe 1 der Händler, Stufe 2
+der wortgleiche Vergleich wie seit v2-21.
+
+```
+                richtig  falsch  Regression  2025 sichtbar
+heute             180      76        —           136
+nur Haendler      257      24       17          ~160
+BEIDE             274      80        0           195
+```
+
+Von den 80 Fehlern sind **76 schon vorher da gewesen**.
+
+**Die 24 Fehler der Händler-Regel sind fast keine.** Aufgeschlüsselt: **16** sind
+Händler mit genau zwei Buchungen auf zwei Karten — lässt man eine weg, sieht die
+Messung nur die andere und hält sie für eindeutig. **2** sind zwei verschiedene
+Karten mit demselben Namen („Fahrradteile" gibt es neunmal). Nur **6** sind echte
+Fehler. Und **alle 24** betreffen Händler, die in der vollen Datenmenge mehrdeutig
+sind — im Betrieb schweigt die Regel dort. **Die Leave-one-out-Messung überschätzt
+die Fehlerrate systematisch, weil sie durch Entfernen eines Elements Mehrdeutigkeit
+unsichtbar macht.** Das ist der Preis dafür, dass sie gegen echte Entscheidungen
+misst; er ist es wert, aber er gehört benannt.
+
+**Zwei Funde aus dem Trockenlauf**, beide wären sonst erst in Produktion aufgefallen:
+
+- **`public.` vor `af_normalize_text` ist Pflicht.** Beim Anlegen des Ausdrucks-Index
+  bettet Postgres die SQL-Funktion ein und wertet sie unter einem anderen
+  `search_path` aus. Ohne Schema-Qualifizierung scheitert `CREATE INDEX` mit
+  `42883: function af_normalize_text(text) does not exist` — obwohl die Funktion
+  existiert und **jeder direkte Aufruf funktioniert**.
+- **Ohne Index kostet ein Aufruf 14,9 ms**, ein Seq Scan über 1.599 Fragmente mit
+  `regexp_replace` je Zeile. Bei rund 14.000 Aufrufen je Nachrechnen-Lauf wären das
+  über drei Minuten. **Mit Index 0,208 ms — Faktor 72.** Der echte Lauf brauchte 23 s.
+
+**Verifikation.**
+
+```
+Sparrate 24 Monate, Ist und Plan     alle identisch, 0 bewegt
+Anker 1  24/24 exakt      Anker 2  24/24 exakt
+Pruefsummen  18 von 19 identisch, nur history_match bewegt
+calculate_match_confidence  defa3e43... vor UND nach
+Verknuepfungen  678 -> 678   (568 Hand, 110 automatisch)
+Vorschlaege 2025  136 -> 195   (vorher aufgeschrieben, exakt getroffen)
+vorschlag_geleert 0           (nichts ist verloren gegangen)
+tsc 0 · ESLint 0/0 · Build 0 (Route / 37 kB, First Load 189 kB)
+test:visual 144/144 (von 137)   test:e2e 153/153 (von 146)
+```
+
+**Der neue Wächter wurde gegengeprüft.** Mit einer testweise eingebauten zweiten
+Bedingung schlägt `vorschlagszeile.spec.ts` an; die Änderung wurde zurückgenommen.
+**Ein Wächter, von dem niemand weiß, ob er auslösen kann, ist eine Zusicherung, keine
+Prüfung** — dieselbe Unterscheidung, die LL-22 für Doku-Zusagen macht.
+
+**Der Sprint hat die Begründung seines eigenen Roadmap-Punkts widerlegt.** `ZO-5`
+sagte, 147 Zahlungen bekämen keinen Vorschlag, *„weil der Name jedes Mal ein anderer
+ist"*. **Die Null stimmte, die Erklärung nicht:** Von 128 solchen Zahlungen (Stand
+25.08.) tragen **84 — zwei Drittel — einen Händler, der NIE einer Karte zugeordnet
+wurde.** Es sind Einmalkäufe: eine Japan-Reise, Kleidung, PayPal an Privatpersonen,
+Bargeld. Sie bekommen keinen Vorschlag, **weil es keine Karte gibt, zu der sie
+gehören.** Erreichbar über den Text waren **39**, und die sind jetzt sichtbar. Nach
+der alten Begründung hätte man den Erfolg an „147" gemessen und wäre an einem Ziel
+gescheitert, das es nie gab. Dieselbe Klasse wie die `M6`-Diagnose, die bis zum
+15.08.2026 falsch in CLAUDE.md §9 stand.
+
+**Offen nach v2-29.**
+
+- **⚠️ Die App kennt den Händler und zeigt ihn nicht.** `displayDescription` (v2-10,
+  `RM-1`) zeigt den **letzten** `|`-Teil — bei DKB-Giro der Verwendungszweck und
+  richtig, bei einem Debitkartenumsatz das **Datum**. Der Nutzer liest also
+  „VISA Debitkartenumsatz vom 29.11." und darunter „KI-Vorschlag: Privates Budget",
+  **ohne den Händler zu sehen, auf dem der Vorschlag beruht.** Es sind exakt dieselben
+  39 Zahlungen, die dieser Sprint sichtbar gemacht hat. Gefunden hat es nicht die
+  Prüfstrecke, sondern ein Blick auf den Screenshot. **Fünfte Gestalt von LL-26: die
+  Wahl des falschen Teils.** Nicht behoben — eine Änderung an `displayDescription`
+  beträfe alle 1.599 Fragmente und wäre eine zweite Verschiebung im selben Sprint.
+- **Der alphabetische Münzwurf.** Bei mehrdeutigem wortgleichem Text schlägt Stufe 2
+  mehrere Karten gleichzeitig vor, und `refresh_fragment_suggestions` entscheidet per
+  `ORDER BY score DESC, card_name ASC`. Das ist der Grund, warum die alte Regel nur
+  auf 70,3 % kommt; es betrifft 93 Handzuordnungen.
+- **Die 84 ohne Karte** brauchen Kuratierung, keine Technik.
+- Unverändert offen: `ZO-1` (`frequency_match` liefert ausnahmslos 1.00, bewusst
+  unangetastet), `ZO-6`, `DA-2`, `KJ-9`, `SHOW_SUGGESTION_BADGES` bleibt `false`.

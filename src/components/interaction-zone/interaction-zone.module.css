@@ -765,6 +765,32 @@
   margin-bottom: 3px;
 }
 
+/* v2-29: Der Kartenvorschlag als eigene, leise Zeile unter der Beschreibung.
+   Entscheidungen 1–4 in V2/design_direktor_2026-08-24_haendler_gedaechtnis.md.
+
+   KEIN Kaestchen, KEINE Flaeche, KEIN Rahmen, KEIN Farbton aus --badge-hue-*.
+   Der Grund ist nicht Zurueckhaltung, sondern Wahrheit: Ein Vorschlag ist eine
+   Vermutung der Maschine und darf nicht aussehen wie etwas, das die App WEISS.
+   Fuer Wissen hat die Rohmasse bereits eine Form — das TRANSFER-Kaestchen. Ein
+   zweites Kaestchen daneben wuerde Vermutung und Tatsache gleichstellen.
+
+   KEIN text-transform: uppercase. Versalien sind hier die Formensprache von
+   ETIKETTEN (TRANSFER), nicht von Saetzen. „KI-Vorschlag: Tanken" ist ein
+   Halbsatz und soll auch so aussehen.
+
+   nowrap + ellipsis sind die eigentliche Zusicherung: Die Zeile kann die
+   Fragment-Karte NICHT hoeher machen, egal wie lang der Kartenname ist — und der
+   laengste im Bestand hat 105 Zeichen. Der vollstaendige Name bleibt ueber das
+   title-Attribut erreichbar, genau wie bei der Beschreibung (RM-1). */
+.fragmentSuggestion {
+  font-size: 9px;
+  color: var(--text-ghost);
+  letter-spacing: .1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
 .fragmentDate {
   font-size: 9px;
   color: var(--frag-date);

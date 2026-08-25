@@ -2,8 +2,14 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 24. August 2026 (nach **v2-28** „Was die 2025-Prüfung zutage gefördert hat" —
-> `DA-3`, `ZO-4` und `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. Die 2025-Pläne
+> **Stand:** 25. August 2026 (nach **v2-29** „Die App merkt sich, was du entschieden hast" —
+> `ZO-5` erledigt, `ZO-7` und `ZO-8` neu und offen. `history_match` erkennt eine
+> Handzuordnung jetzt am **Händler** statt am Wortlaut; sichtbare 2025-Vorschläge
+> **136 → 195**, Sparrate in allen 24 Monaten unbewegt. Der Vorschlag steht zum ersten Mal
+> in der Rohmasse. **Der teuerste Fund: Die genauere Regel wäre die schlechtere gewesen** —
+> ein gröberer Schlüssel fasst mehr zusammen und wird dadurch öfter mehrdeutig, was 35 der
+> 136 bestehenden Vorschläge gekostet hätte.) Davor: **v2-28** „Was die 2025-Prüfung zutage
+> gefördert hat" — `DA-3`, `ZO-4` und `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. Die 2025-Pläne
 > tragen jetzt die Beträge, die wirklich gezahlt wurden: **22.316,32 € → 21.776,33 €**,
 > exakt die vorher aufgeschriebenen −539,99 €; **2026 unbewegt in allen zwölf Monaten**.
 > Tankstellen und Nahverkehr ordnen sich künftig von allein zu — 65 Zahlungen aus 2025
@@ -48,21 +54,36 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 24.08.2026 zeilengenau nachgezählt — nach Sprint **v2-28**.*
+*Alle Zahlen am 25.08.2026 zeilengenau nachgezählt — nach Sprint **v2-29**.*
 
-| | Anzahl | nach v2-27 | nach v2-26 | nach v2-25 | nach DD 17.08. | nach v2-24 | nach v2-23 | nach v2-21 |
+| | Anzahl | nach v2-28 | nach v2-27 | nach v2-26 | nach v2-25 | nach DD 17.08. | nach v2-24 | nach v2-23 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 12 | 12 | 12 | 12 | 11 | 10 | 10 |
-| Themen darin | **37** | 35 | 37 | 36 | 39 | 34 | 32 | 32 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 4 | 6 |
-| **Offen gesamt** | **41** | 39 | 41 | 40 | 43 | 38 | 36 | 38 |
-| Erledigt | **64** | 61 | 59 | 56 | 53 | 53 | 50 | 49 |
+| Offene Pakete | **12** | 12 | 12 | 12 | 12 | 12 | 11 | 10 |
+| Themen darin | **38** | 37 | 35 | 37 | 36 | 39 | 34 | 32 |
+| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+| **Offen gesamt** | **42** | 41 | 39 | 41 | 40 | 43 | 38 | 36 |
+| Erledigt | **65** | 64 | 61 | 59 | 56 | 53 | 53 | 50 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach Sprint v2-28, zeilengenau ausgezählt.** Paket-Tabellen **61** Zeilen, davon
-> **24 ✅** → **37** offen (⬜ 30 · ⬜🔎 3 · 🟡 4). Hausaufgaben **4**, alle ⬜.
-> §4 Erledigt **64** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
+> **Stand nach Sprint v2-29, zeilengenau ausgezählt.** Paket-Tabellen **63** Zeilen, davon
+> **25 ✅** → **38** offen (⬜ 31 · ⬜🔎 3 · 🟡 4). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **65** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
 > erledigt (1, 2, 3, 4, 15, 16) → **12** offen.
+>
+> **v2-29 hat einen Punkt erledigt und zwei eingetragen** — `ZO-5` erledigt, `ZO-7` und `ZO-8`
+> neu. **Offen gesamt steigt deshalb von 41 auf 42, und das ist auch hier das richtige
+> Ergebnis:** Beide neuen Punkte waren vorher schon da, nur unsichtbar. `ZO-8` (der
+> alphabetische Münzwurf bei mehrdeutigem Text) ist so alt wie `history_match` selbst —
+> er wurde erst sichtbar, weil dieser Sprint die alte Regel zum ersten Mal **mit Richtig
+> UND Falsch** gemessen hat und sie dabei auf nur 70,3 % kam. `ZO-7` (der Händler wird nicht
+> angezeigt, obwohl die App ihn kennt) ist **beim Ansehen des eigenen Ergebnisses**
+> aufgefallen, nicht in der Prüfstrecke.
+>
+> **Und `ZO-5` hat seine eigene Begründung widerlegt.** Sie nannte 147 Zahlungen, die
+> unsichtbar seien, *„weil der Name jedes Mal ein anderer ist"*. Die Null stimmte, die
+> Erklärung nicht: Zwei Drittel dieser Zahlungen tragen einen Händler, der **nie** einer
+> Karte zugeordnet wurde. Wer den Erfolg an „147" gemessen hätte, wäre an einem Ziel
+> gescheitert, das es nie gab.
 >
 > **v2-28 hat drei Punkte erledigt und zwei offene eingetragen** — `DA-3`, `ZO-4` und
 > `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. **Offen gesamt steigt deshalb von 39
@@ -546,8 +567,10 @@ Kontrolle. Diese Begründung ist in einem halben Jahr sonst verloren.
 | ZO-1 | `frequency_match` aussagekräftig machen | Bugfix | **ja** | ⬜ | **Befund aus v2-21, bewusst dort nicht behoben.** Die Funktion prüft ausschließlich, ob die Karte im Monat des Fragments aktiv ist — worauf ihr einziger Aufrufer bereits filtert. Sie liefert deshalb ausnahmslos `1.00`, gemessen über alle fünf Score-Klassen. **20 % des Konfidenz-Gewichts unterscheiden nichts**, und ohne Namensähnlichkeit ist die Badge-Schwelle 0,60 rechnerisch unerreichbar (Betrag + Frequenz ≤ 0,50). Material liegt bereit: `cards.due_day` seit v2-14 — allerdings nur bei **18 von 51** Karten, fehlende Tage müssten neutral bleiben statt zu bestrafen. **Warum nicht in v2-21:** Jede Änderung dort verschiebt *alle* bestehenden Scores gleichzeitig mit P1 und P2; zwei Verschiebungen in einem Sprint lassen sich nicht mehr auseinanderhalten. |
 | ZO-3 | Rückwirkende automatische Verknüpfung ab 0,95 | Feature | ja | ✅ | **In v2-27 erledigt (19.08.2026), für 2025.** Für **2026 ist der Punkt gegenstandslos geworden** — dort hat der Nutzer inzwischen alles von Hand zugeordnet (411 von 418, die übrigen sieben sind Gehaltseingänge und gehören an keine Karte). Für 2025 war er bis v2-27 gar nicht stellbar: Ohne aktive Karten gab es nichts vorzuschlagen. **Gemessen wurde gegen die 411 handverlinkten Zahlungen aus 2026**, weil es für 2025 selbst keine Wahrheit gibt: ab 0,60 **181 richtig / 49 falsch** (78,7 %), ab 0,95 **48 richtig / 0 falsch**. Der Leave-One-Out-Ausschluss aus §7 Regel 25 ist **eingebaut, nicht nachgerüstet** — `history_match` filtert selbst mit `f.id <> p_fragment_id` und zählt nur `MANUAL_DROP`. **Verlinkt wurden 41 Zahlungen** (Alte Leipziger 12, Nürnberger 12, Spotify 11, Audible 6), einzeln geprüft, 41/41 richtig. **Wirkung: +1,84 € auf das ganze Jahr** — die Zahlungen summieren sich zwar auf −2.699,90 €, aber bei Fixkosten wirkt nur die Differenz zum Plan. Wer beides verwechselt, hält einen harmlosen Eingriff für einen gefährlichen. `origin = AUTO_ABSORBED` (sonst lernte `history_match` aus eigenen Vermutungen), Link-Monat = Buchungsmonat. **Nicht gebaut und ausdrücklich nicht empfohlen:** automatisches Verlinken ab 0,60 — dort wäre jede fünfte Zuordnung falsch. Die 253 Vorschläge für 2025 werden angezeigt, nicht ausgeführt. Messung: `sprints/sprint_v2-27_zuordnung.md`. |
 | ZO-4 | Dauerhafte Händler-Regel für Mobilität | Feature | ja | ✅ | **In v2-28 erledigt (24.08.2026).** Zweistufige Wortliste in `app_config` (`matching.merchant_rules`), gelesen von der neuen Funktion `merchant_rule_match`; `calculate_match_confidence` zieht die Konfidenz mit demselben `GREATEST` hoch, das sie für `history_match` schon benutzt — auf **0,96**, knapp über der Auto-Absorptions-Schwelle. **An `process_csv_import` war damit nichts zu ändern**, der Import verlinkt ab sofort von allein. **Gegen die eigenen Entscheidungen des Nutzers gemessen (LL-27): 75 Übereinstimmungen gegen 2 Widersprüche — 97,4 %.** Von 34 Zeilen mit `DB Vertrieb` oder `Deutschlandticket` wird **keine** getroffen; die bewusste Auslassung wirkt. **Die Zweistufigkeit hat sich an genau zwei Zeilen bewährt:** „JET, 25,00 €" wird über den Betrag angenommen, „Backen FCO-Team, 5,00 €" mangels zweitem Signal abgewiesen — ohne sie wäre eine private Überweisung auf der Tank-Karte gelandet. **65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), Sparrate in allen 24 Monaten unbewegt**, weil „Tanken" eine BUDGET-Karte ist und in keinem Monat über 240 € kommt. **Aber der Juli 2025 hat nur noch 79 Cent Luft** (239,21 €) — eine nachträglich zugeordnete Tankfüllung dort kippt den Monat, und dann bewegt sich die Sparrate. |
-| ZO-5 | Zahlungen mit Buchungsdatum im Text zuordenbar machen | Feature | ja | ⬜ | **Der stärkste bekannte Hebel für die Kuratierung 2025.** `… \| VISA Debitkartenumsatz vom 03.01.2026` — der Name ist bei jeder Buchung ein anderer, die Namensähnlichkeit findet deshalb nie einen Treffer. Gemessen am 24.08.2026: **147 der 553 offenen 2025-Zahlungen tragen dieses Muster, und KEINE EINZIGE bekommt einen Vorschlag ≥ 0,60** (zum Vergleich: 183 von 553 insgesamt haben einen). Vor v2-28 waren es 191 von 618. **Die Händler-Regel `ZO-4` hat 44 davon mit erledigt** — sie erkennt über den Händlernamen statt über Namensähnlichkeit, und genau das ist der Hinweis auf die Lösungsrichtung: den **stabilen** Teil des Textes vom veränderlichen trennen, statt die Ähnlichkeitsfunktion zu reparieren. |
+| ZO-5 | Zahlungen mit Buchungsdatum im Text zuordenbar machen | Feature | ja | ✅ | **In v2-29 erledigt (25.08.2026) — und die Begründung dieses Eintrags dabei widerlegt.** `history_match` erkennt eine Handzuordnung jetzt am **Händler** statt am Wortlaut: `af_merchant_key` macht alle Ziffern und Sonderzeichen zu Leerzeichen, wodurch Buchungsdatum, Kundennummer und Transaktions-ID von selbst wegfallen — ohne dass die Regel ein Format kennen muss. Gegen die **568 Handzuordnungen** gemessen (Leave-one-out, mit Richtig UND Falsch): **257 richtig / 24 falsch = 91,5 %**, gegenüber 147/17 beim naheliegenden „Text vor dem ersten `\|`". Gebaut wurde **ergänzend**, nicht ersetzend: 131 der 136 sichtbaren Vorschläge kamen aus der Historie, und **35 davon** hätten mit dem gröberen Schlüssel keinen eindeutigen Treffer mehr — ein gröberer Schlüssel fasst mehr zusammen und wird dadurch öfter mehrdeutig. **Sichtbare 2025-Vorschläge 136 → 195**, Sparrate in allen 24 Monaten unbewegt. **⚠️ Die alte Begründung hier war FALSCH und ist es wert, stehen zu bleiben:** Sie sagte, 147 Zahlungen bekämen keinen Vorschlag, *„weil der Name bei jeder Buchung ein anderer ist"*. **Die Null stimmte, die Erklärung nicht.** Von 128 solchen Zahlungen (Stand 25.08.) tragen **84 — zwei Drittel — einen Händler, der NIE einer Karte zugeordnet wurde**: Einmalkäufe, eine Japan-Reise, Kleidung, PayPal an Privatpersonen, Bargeld. Sie bekommen keinen Vorschlag, **weil es keine Karte gibt, zu der sie gehören** — nicht weil der Name wechselt. Über den Text erreichbar waren **39**, und die sind jetzt sichtbar. Wer den Erfolg an „147" gemessen hätte, wäre an einem Ziel gescheitert, das es nie gab. Messung: `sprints/sprint_v2-29_review.md`. |
 | ZO-6 | Wächter: zeigt eine Händler-Regel auf eine Karte, die es gibt? | Bugfix | ja | ⬜ | `matching.merchant_rules` ist nach **Kartenname** geschlüsselt — bewusst, weil eine UUID in einer Konfigurationstabelle unlesbar ist und keinen Neuaufbau überlebt (v2-28 §5 ⑤). **Der Preis: Wird die Karte umbenannt, greift die Regel still nicht mehr.** Kein Fehler, keine Meldung, nur ein Automatismus, der aufhört zu funktionieren. Klein zu bauen, aber genau die Fehlerklasse, die dieses Projekt teuer bezahlt. |
+| ZO-7 | Der Händler wird nicht angezeigt, obwohl die App ihn kennt | Bugfix | ja | ⬜ | **Fund aus v2-29, beim Ansehen des Ergebnisses entstanden — nicht durch die Prüfstrecke.** `displayDescription` (v2-10, `RM-1`) zeigt den **letzten** durch `\|` getrennten Teil. Bei DKB-Giro ist das der Verwendungszweck und richtig; bei einem **Debitkartenumsatz ist es das Datum**, und der Händler davor wird weggeschnitten. Der Nutzer liest also „VISA Debitkartenumsatz vom 29.11." und darunter „KI-Vorschlag: Privates Budget" — **ohne zu sehen, worauf der Vorschlag beruht.** Es sind **exakt dieselben 39 Zahlungen**, die v2-29 sichtbar gemacht hat. **Warum das mehr ist als Kosmetik:** Ein Vorschlag soll helfen zu entscheiden; ist seine Begründung unsichtbar, kann man ihn nicht beurteilen. Der volle Text steht im `title`-Attribut, also erst beim Überfahren mit der Maus. **Fünfte Gestalt von LL-26 — die Wahl des falschen Teils.** In v2-29 bewusst nicht behoben: Eine Änderung an `displayDescription` beträfe **alle 1.599** Fragmente und wäre eine zweite Verschiebung im selben Sprint; außerdem ist „welcher Textteil wird gezeigt" eine Gestaltungsfrage. |
+| ZO-8 | Der alphabetische Münzwurf bei mehrdeutigem Text | Bugfix | ja | ⬜ | **Gemessen in v2-29, dort bewusst nicht angefasst.** Der wortgleiche Vergleich in `history_match` prüft **nicht auf Eindeutigkeit**: Liegt derselbe Text auf mehreren Karten, liefert er für **jede** 0,94, und welche gewinnt, entscheidet `refresh_fragment_suggestions` per `ORDER BY score DESC, card_name ASC` — also **alphabetisch**. Das betrifft **93** der 568 Handzuordnungen und ist der Grund, warum die alte Regel im Leave-one-out nur auf **70,3 %** kommt (180 richtig / 76 falsch), während die neue Händler-Stufe 91,5 % erreicht. **Die Eindeutigkeitsprüfung auf Stufe 2 auszuweiten würde die Genauigkeit heben und Reichweite kosten** — dieselbe Abwägung wie in v2-29, aber mit anderen Zahlen: gemessen 257/24 gegen 274/80. Braucht eine eigene Messung und eine Entscheidung des Nutzers, keinen schnellen Patch. **Warum nicht in v2-29:** ein Sprint, eine Verschiebung — sonst lassen sich zwei gleichzeitige Verschiebungen hinterher nicht auseinanderhalten (dieselbe Begründung wie bei `ZO-1`). |
 
 ---
 
@@ -798,6 +821,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| ZO-5 | **Die App merkt sich, was du entschieden hast.** `history_match` erkannte eine Handzuordnung nur bei WORTGLEICHER Beschreibung — bei Kartenzahlungen steht das Buchungsdatum im Text, es sind also nie zwei gleich. Jetzt zweistufig: `af_merchant_key` macht alle Ziffern und Sonderzeichen zu Leerzeichen, wodurch Datum, Kundennummer und Transaktions-ID von selbst wegfallen; **die Regel muss kein Format kennen**. Fünf Extraktionswege gegen dieselbe Messung gehalten (Leave-one-out, 568 Handzuordnungen, Richtig UND Falsch) — **gewonnen hat die einfachste, auf beiden Achsen zugleich: 257/24 = 91,5 % gegen 147/17** beim naheliegenden „Text vor dem ersten `\|`". **Gebaut wurde ergänzend, nicht ersetzend**, und das war der teuerste Fund: Die genauere Regel wäre die schlechtere gewesen — 35 der 136 sichtbaren Vorschläge hätten mit dem gröberen Schlüssel keinen eindeutigen Treffer mehr, weil ein gröberer Schlüssel mehr zusammenfasst und **öfter mehrdeutig** wird. Sichtbare 2025-Vorschläge **136 → 195** (vorher aufgeschrieben, exakt getroffen), `vorschlag_geleert` **0**, Sparrate in allen 24 Monaten unbewegt. Der Vorschlag steht jetzt als leise Zeile in der Rohmasse. **Die Begründung dieses Punktes war falsch und wurde mitkorrigiert** — nicht der wechselnde Name war das Haupthindernis, sondern die fehlende Karte: 84 der 128 solchen Zahlungen sind Einmalkäufe ohne Ziel | v2-29 |
 | DA-3 | **Die 2025-Pläne tragen, was gezahlt wurde.** `DA-1` bildete je Karte einen Jahresdurchschnitt — zu grob bei Ausreißern und bei echten Preiswechseln. **Ein Mittelwert kann tadellos gebildet und trotzdem in keinem Monat richtig sein:** Netflix' 18,99 € ist exakt (10 × 19,99 + 2 × 13,99) / 12 — und wurde **nie gezahlt**. Jetzt zwei Zeitreihen-Zeilen je Preiswechsel (Netflix 19,99 → 13,99 ab November, Spotify 10,99 → 12,99 ab Dezember), der typische Monat statt des Schnitts beim Handyvertrag (33,07 → 33,00), Friseur zurück auf 2025-01. **Die Preiswechsel waren die ganze Zeit in der Datenbank, nur im falschen Jahr** — die 2026-Pläne trugen die neuen Beträge längst. Ist 2025 −539,99 €, Plan −539,12 €, **2026 unbewegt** | v2-28 |
 | ZO-4 | **Mobilität ordnet sich selbst zu.** Zweistufige Händler-Wortliste in `app_config`; `calculate_match_confidence` zieht die Konfidenz auf **0,96** — knapp über die Auto-Schwelle, **damit war an `process_csv_import` nichts zu ändern**. Gegen die eigenen Handzuordnungen gemessen: **75 Übereinstimmungen gegen 2 Widersprüche (97,4 %)**, kein Deutschlandticket getroffen. Die zweite Stufe hat sich an genau zwei Zeilen bewährt — ohne sie wäre „Backen FCO-Team" auf der Tank-Karte gelandet. 65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), **Sparrate unbewegt**, weil BUDGET unter dem Plan bleibt. Die Nachverlinkung **ruft die Funktion auf**, statt die Liste zu wiederholen (LL-26, Form „Nachbauen") | v2-28 |
 | NAV-1 | **Die Navigation endet dort, wo die Daten enden.** Die untere Schranke stand seit **Sprint 3** auf `1900-01`, im Code selbst als „absurd weit" markiert; der Deaktiviert-Pfad war gebaut und hat in über einem Jahr **nie ausgelöst**. Jetzt aus `cards.first_active_month` abgeleitet — **ohne zusätzliche Netzrunde**, weil `page.tsx` die Karten ohnehin lädt. Abgeleitet statt fest verdrahtet, damit die Grenze sich nach einem Import älterer Auszüge selbst korrigiert. **Dieser Punkt stand in keinem Paket** — dasselbe Muster wie Performance vor v2-24: Was nicht in der Liste steht, konkurriert unsichtbar und verliert | v2-28 |
@@ -880,7 +904,9 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|
 | DA-3 | §4 Erledigt (v2-28) — Nachzug zu `DA-1` |
 | ZO-4 | §4 Erledigt (v2-28) · Paket 5 |
-| ZO-5, ZO-6 | Paket 5 — beide offen, beide neu aus v2-28 |
+| ZO-5 | §4 Erledigt (v2-29) · Paket 5 |
+| ZO-6 | Paket 5 — offen, neu aus v2-28 |
+| ZO-7, ZO-8 | Paket 5 — beide offen, beide neu aus v2-29 |
 | NAV-1 | §4 Erledigt (v2-28) — **stand in keinem Paket** |
 | KJ-1 … KJ-5 | Paket 18 |
 | A1, A4 · B2, B3, B6 · C1, C2, C3 · H2 · J2 · K1 · M0, M1, M3, M10 · N1–N5 · Init-1–4 | §4 Erledigt |

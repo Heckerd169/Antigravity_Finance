@@ -1,7 +1,13 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.11.0 (V2 · Sprint v2-28 — die Navigation endet, wo die Daten enden)
-**Status:** Freigegeben — Schema-Doku v3.13.0; V2-Patches bis Sprint v2-28 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+**Version:** 3.12.0 (V2 · Sprint v2-29 — der Vorschlag wird sichtbar, wo kuratiert wird)
+
+**Status:** Freigegeben — Schema-Doku v3.14.0; V2-Patches bis Sprint v2-29 eingespielt. Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+
+> **Changelog v3.12.0 (25.08.2026, Sprint v2-29):** §11 — die **Vorschlagszeile** ist spezifiziert: eigene, leise Zeile unter der Beschreibung, `9px`, `--text-ghost`, keine Versalien, kein Kästchen, einzeilig mit `…`. Der Absatz »Nicht mehr gerendert (v2-10, `BF-1`)« bleibt **unverändert** daneben stehen — das **Kästchen** ist weiterhin aus, und seine Begründung gilt fort; die sechs Badge-Farbtöne werden weder benutzt noch gelöscht (Beschluss 04.08.2026, Punkt 4). Die Tabellenzeile in §11 verweist jetzt auf die neue Zeile, damit sie nicht den Eindruck erweckt, es gäbe gar keine Anzeige.
+>
+> **Die Zahl, die gegen das Kästchen entschied, steht mit im Text:** Bei 194px Inhaltsbreite braucht `KI-VORSCHLAG: TANKEN` 121,9px, neben `−129,00 €` sind 119px frei. **Der kürzeste Fall passt nicht** — es gibt keine Variante, in der alles passt, und deshalb ist die Frage nicht *ob* gekürzt wird, sondern *was*.
+
 **Datum:** 24. August 2026
 **Primäres Referenzdokument für Claude Code**
 
@@ -2105,9 +2111,15 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Betrag | `16px`, `font-weight: 200`, `tabular-nums` | Negativ: `#FF453A` · Positiv: `#3ECFAF` |
 | Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
 | Datum | `9px` | `rgba(255,255,255,.15)` |
-| Vorschlag-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen |
+| Vorschlag-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen. **Seit v2-29 steht an seiner Stelle eine eigene Zeile** unter der Beschreibung (siehe unten); das Kästchen selbst bleibt aus |
 
 **Badge-Farbe (v2-07, A1):** Welchen der sechs Töne ein Badge trägt, bestimmt allein der **Kartenname** — über eine deterministische Funktion, nicht über eine Datenbank-Spalte. Damit ist die Farbe stabil über Renders, Sitzungen und Geräte hinweg und unabhängig von Anzahl, Reihenfolge oder Anlage-Zeitpunkt der Karten; eine Karte behält ihre Farbe, wenn andere Karten angelegt oder gelöscht werden. Groß-/Kleinschreibung und Randleerzeichen im Namen ändern den Ton nicht. Bei mehr Karten als Tönen teilen sich Karten einen Ton — die Farbe ist ein **Gruppierungs-Hinweis, kein Identitätsmerkmal**; der Kartenname steht daneben. Deckkraft, Typografie und Geometrie des Badges sind unverändert; variabel ist ausschließlich der Farbton. Das **TRANSFER-Badge ist vom Mapping ausgenommen** und behält den neutralen Grau-Soft-Ton auf `--fragment-hue` (AD5, Sprint 9: Transfer ist Fakt, kein Vorschlag).
+
+**Die Vorschlagszeile (v2-29):** Der Kartenvorschlag steht als **eigene, leise Zeile** unter der Beschreibung und über dem Datum — `9px`, Farbe `--text-ghost`, **keine** Versalien, **kein** Kästchen, keine Fläche, kein Rahmen, kein Ton aus `--badge-hue-*`. Eine Zeile, `white-space: nowrap` + `text-overflow: ellipsis`; der vollständige Kartenname bleibt im `title`-Attribut erreichbar, genau wie bei der Beschreibung (`RM-1`). Wortlaut unverändert `KI-Vorschlag: [Karten-Name]`. Das `aria-label` der Fragment-Karte trägt ihn mit — Vorlesen und Sehen ergeben dasselbe.
+
+**Warum eine Zeile und kein Kästchen — die Messung, die es entschieden hat:** Bei `194px` Inhaltsbreite braucht `KI-VORSCHLAG: TANKEN` **121,9px**, neben `−129,00 €` sind **119px** frei. **Schon der kürzeste denkbare Fall passt nicht**, und der längste echte Kartenname hat 105 Zeichen. Gekürzt wird also in jedem Fall — neben dem Betrag kostet das den **Betrag** (genau so ist `BF-1` entstanden), auf eigener Zeile nur Text. Der Ghost-Ton ist keine Zurückhaltung, sondern eine Aussage: Ein Vorschlag ist eine **Vermutung**, und die Rohmasse hat für **Wissen** bereits eine Form — das TRANSFER-Kästchen (AD5). Ein zweites Kästchen daneben würde beides gleichstellen. Aus demselben Grund keine Versalien: Sie sind die Formensprache von Etiketten, nicht von Halbsätzen. Record: `V2/design_direktor_2026-08-24_haendler_gedaechtnis.md`.
+
+**Sichtbar ist die Zeile genau dann, wenn `istVorschlagSichtbar` zutrifft** — die Regel hat weiterhin **genau eine** Stelle (`src/lib/suggestion.ts`), ausgewertet server-seitig. In der Fragment-Karte steht ausschließlich die Null-Prüfung; Überträge sind damit automatisch ausgenommen, weil ihr Status nie `UNASSIGNED` ist. Wächter: `tests/e2e/vorschlagszeile.spec.ts`.
 
 **Nicht mehr gerendert (v2-10, BF-1):** Die KI-Vorschlags-Badges sind aus der Anzeige genommen. Anlass war ein Umbruch: Badge und Betrag teilten sich eine Zeile, das Badge durfte weder schrumpfen noch umbrechen, also wurde der Betrag zusammengedrückt und das Euro-Zeichen rutschte in die zweite Zeile. Der Vorschlag wird in der Datenbank unverändert **weiter berechnet** und die sechs Farbtöne bleiben im Code — die Anzeige ist über eine einzelne Konstante (`SHOW_SUGGESTION_BADGES`) wieder einschaltbar. Unberührt bleiben das **TRANSFER-Badge** und die **automatische Zuordnung ab 95 % Konfidenz**: sie ist keine Empfehlung, sondern eine fertige Zuordnung. Der Betrag trägt zusätzlich ein Umbruch-Verbot, damit die Fehlerklasse auch für das TRANSFER-Badge dauerhaft geschlossen ist.
 

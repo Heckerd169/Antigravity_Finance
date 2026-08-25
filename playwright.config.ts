@@ -66,7 +66,10 @@ export default defineConfig({
     //        grün — und lief nicht. Aufgefallen ist es nur, weil die
     //        Gesamtzahl sich nicht bewegt hat. Genau deshalb steht hier eine
     //        Zahl im Review.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze)\.spec\.ts/, use: DESKTOP },
+    // v2-29: `vorschlagszeile` kommt dazu (die leise Zeile unter der
+    //        Beschreibung — dass sie an genau EINER Bedingung hängt, die
+    //        Karte nicht höher macht und kein Kästchen wird).
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
