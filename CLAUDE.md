@@ -8,16 +8,51 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 19. August 2026 · **nach:** Sprint **v2-27**
-> („2025 wird vergleichbar" — `DA-1` `ZO-3`; Design-Doku **v3.10.0**, Schema-Doku
-> **v3.12.0**). Alles bis **v2-26** ist in `main`.
+> **Letzte Aktualisierung:** 24. August 2026 · **nach:** Sprint **v2-28**
+> („Was die 2025-Prüfung zutage gefördert hat" — `DA-3` `ZO-4` `NAV-1`).
+> **Alles bis einschließlich v2-28 ist in `main`** — PR #44 gemergt, Browser-Smoke
+> bestanden, gegen den Baum geprüft.
 >
-> ⚠️ **Dieser Nachzug holt DREI Sprints auf.** Die Datei stand auf **v2-24**, weil die
-> Patches aus v2-25 und v2-26 auf Freigabe warteten. Wer eine Zeile hier gegen eine
-> Beobachtung in der App prüft, sollte das wissen: Zwei Sprints lang war diese Datei
-> nicht die Wahrheit, sondern ein Rückstand.
+> **v2-28: ein Mittelwert kann tadellos gebildet und in keinem Monat richtig sein.**
+> v2-27 setzte für jede zurückdatierte Karte **eine** Plan-Zeile als
+> Jahresdurchschnitt. Bei Netflix ergab (10 × 19,99 + 2 × 13,99) / 12 exakt **18,99**
+> — und **18,99 € wurde nie gezahlt**. Dasselbe bei Spotify (11,16 €). Ursache war
+> jeweils ein echter **Preiswechsel**, beim Handyvertrag waren es zwei **Ausreißer**.
+> Ein Preiswechsel gehört als zweite Zeitreihen-Zeile hinein, nicht in einen
+> Mittelwert. **2025: 22.316,32 → 21.776,33 €, exakt die vorher aufgeschriebenen
+> −539,99 €; 2026 in keinem der zwölf Monate bewegt**, alle neun Prüfsummen
+> byte-identisch. Neue Stolperfalle **27**, neuer Eintrag **LL-37**.
 >
-> **v2-27: Das Vorjahr rechnet zum ersten Mal.** Die App setzte für ganz 2025 **null
+> **Der Nebenbefund entlastet die App und belastet die Methode:** Netflix trug für
+> `2026-01` bereits 13,99, Spotify bereits 12,99. **Die Preiswechsel waren die ganze
+> Zeit in der Datenbank — nur im falschen Jahr verbucht.**
+>
+> **Der zweitteuerste Fund steckt wieder im Auftrag, diesmal in einer anderen
+> Gestalt.** Das Briefing nannte **55 Zahlungen / 1.262,92 €** für die Händler-Regel
+> und einen höchsten Tank-Monat von **199,21 €**. Gemessen: **65 / 1.520,22 €** und
+> **239,21 €**. **Nichts davon war falsch gerechnet** — es ist der Stand *vor* der
+> Nahverkehr-Entscheidung, die im selben Papier weiter unten getroffen wurde, und die
+> Differenz ist genau eine RMV-Fahrt über 40,00 € vom 02.07.2025. **Die Zahl wurde
+> nach der Entscheidung nicht nachgezogen.** Dieselbe Klasse wie LL-28 und LL-30, nur
+> **innerhalb eines einzigen Dokuments** — neue **Arbeitsregel 26**, **LL-38**. Die
+> Schlussfolgerung hielt; aber der Juli 2025 hat statt 40 Euro nur noch **79 Cent**
+> Luft im Budget.
+>
+> **Und eine Lücke im eigenen Prüfverfahren, die jeden künftigen Trockenlauf
+> betrifft:** Ein RAISE-Rollback committet nie — **aufgeschobene Constraints feuern
+> deshalb nie.** `cards_assert_initial_plan` ist `DEFERRABLE INITIALLY DEFERRED`; ohne
+> `SET CONSTRAINTS ALL IMMEDIATE` wäre ausgerechnet die Friseur-Rückdatierung
+> ungeprüft geblieben, also genau der Teil, dessentwegen geprobt wurde. §7 Regel 16
+> ist erweitert, **LL-39**.
+>
+> **Diese Runde berührt sieben Stellen:** diese Kopfzeile · **§6 Stolperfalle 8**
+> (Korrektur — `cards.planned_amount` **gibt es nicht**) · **§6** neue Stolperfallen
+> **26–28** · **§7 Regel 16** · **§8** neue Einträge **LL-37 bis LL-39** · **§9**
+> Sprint-Stand und Roadmap-Zahlen · **§9 die Momentaufnahme**.
+>
+> ---
+>
+> Davor **v2-27: Das Vorjahr rechnet zum ersten Mal.** Die App setzte für ganz 2025 **null
 > Kosten** an — die Ist-Sparrate stand dort in allen zwölf Monaten auf exakt 4.037,11 €,
 > dem vollen Netto. Die Vorjahres-Goldlinie war damit technisch richtig und inhaltlich
 > wertlos, und sie ist die **einzige** Vergleichsgröße, die es gibt. Jetzt
@@ -40,7 +75,7 @@
 > iCloud kostete 9,99 €, nicht 11,58 € — die höhere Zahl war ein Mischwert aus 17
 > Apple-Buchungen. **Die Gegenprobe kostete je eine Abfrage.**
 >
-> **Diese Runde berührt fünf Stellen:** diese Kopfzeile · **§6** neue Stolperfallen
+> **Jene Runde berührte fünf Stellen:** die Kopfzeile · **§6** neue Stolperfallen
 > **21–25** (drei Sprints) · **§8** neue Einträge **LL-31 bis LL-35** · **§9**
 > Sprint-Stand, Doku-Versionen und Roadmap-Zahlen · **§9 die Momentaufnahme**.
 >
@@ -53,10 +88,10 @@
 > fiel ein **älterer** Fehler auf: Die Plan-Zeile für Januar 2026 trug schon vor diesem
 > Sprint den Februar-Betrag.
 >
-> **Die Momentaufnahme MUSSTE diesmal ersetzt werden** — anders als bei den letzten
-> Sprints, wo sie bewusst stehenblieb. Sie nannte für 2025 „alle Monate 4.037,11 €"; das
-> ist seit v2-27 falsch, und zwar durch einen Eingriff, nicht durch Benutzung. Sie trägt
-> jetzt **beide Jahre**.
+> **Die Momentaufnahme musste damals ersetzt werden** — anders als bei den Sprints
+> davor, wo sie bewusst stehenblieb. Sie nannte für 2025 „alle Monate 4.037,11 €"; das
+> war seit v2-27 falsch, und zwar durch einen Eingriff, nicht durch Benutzung. Seither
+> trägt sie **beide Jahre**.
 >
 > ---
 >
@@ -590,7 +625,14 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
 8. **`calculate_card_amount_for_month` ist vollständig fragment-aware** inklusive
    aller §4.3-Sonderfälle. Das Frontend ruft sie und vertraut dem Ergebnis — es
    rechnet §4.3 **nicht** nach. Vergleichsbasis ist `get_effective_plan_for_month`,
-   nicht der Roh-Plan `cards.planned_amount`.
+   nicht der Roh-Plan.
+   ⚠️ **`cards.planned_amount` gibt es nicht.** Diese Zeile nannte die Spalte bis zum
+   24.08.2026; im Schema existiert sie nicht (gemessen gegen `information_schema`).
+   Der Plan liegt **ausschließlich** in `card_planned_timeline` — wer den Rohwert
+   braucht, holt ihn dort oder über `get_planned_amount_for_month`. Eine Abfrage auf
+   `cards.planned_amount` scheitert mit `42703`, das ist also die harmlose Sorte
+   Fehler; teurer wäre gewesen, die Zeile als Beleg für ein Datenmodell zu lesen, das
+   es nicht gibt. (v2-28)
 9. **Treiber-Invariante (B2):** `Σ delta = Ist-Sparrate − Plan-Sparrate` pro Monat.
    Läuft sie auseinander, ist das der erste Verdacht bei jedem Treiber-Bug.
 10. **`card_monthly_states.closed_at` ignorieren** — wird nicht genutzt.
@@ -775,6 +817,45 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     erneut aus. **Regel:** nach einem Timeout mit Abstand messen und die **Wirkung**
     prüfen, nicht die Fehlermeldung. Verwandt mit der Log-Ingestion-Verzögerung aus
     v2-24 (§9 Anker 3): Beide Male sieht ein zu früher Blick wie ein Befund aus. (v2-27)
+26. **Wortgrenze und Teilwort sind zwei verschiedene Fragen — und die falsche Wahl
+    fällt nicht auf.** `af_word_in_text` sucht mit
+    `(^|[^a-z0-9])wort([^a-z0-9]|$)`. Für **Händlernamen** ist das genau richtig:
+    `Douglas` trifft nicht `Glas`. Für ein **Teilwort-Signal** ist es genau falsch:
+    `af_word_in_text('tank', 'jet tankstelle')` liefert **`false`**, weil hinter
+    `tank` ein `s` steht.
+    In v2-28 hing daran der einzige Fall, für den die zweite Stufe der Händler-Regel
+    überhaupt gebaut wurde — „JET Tankstelle" wäre durchgefallen. Das zweite Signal
+    sucht deshalb mit `strpos`, und der Kommentar in der Migration sagt warum:
+    **Sonst „vereinheitlicht" die nächste Sitzung die beiden Aufrufe.**
+    **Regel:** Vor jedem `af_word_in_text` die Frage stellen, ob ein Wort gemeint ist
+    oder eine Zeichenfolge. Beide Antworten sind legitim, sie stehen nur nebeneinander
+    im selben Codeblock. (v2-28)
+27. **Ein Mittelwert über eine Periode verbirgt einen Sprung — die Jahressumme
+    stimmt, und JEDER Monat ist falsch.** v2-27 bildete die 2025-Pläne als
+    Jahresdurchschnitt der tatsächlichen Zahlungen. Bei Netflix ergab
+    (10 × 19,99 + 2 × 13,99) / 12 exakt **18,99 €** — ein rechnerisch tadelloser
+    Mittelwert, der **in keinem einzigen Monat gezahlt wurde**. Ursache war eine echte
+    Preissenkung im November; dasselbe bei Spotify (Erhöhung im Dezember, Mittelwert
+    11,16 €), beim Handyvertrag waren es zwei Ausreißer.
+    **Kein Wächter fängt das.** Jahressumme, beide Invarianten und alle Prüfsummen
+    bleiben grün — dieselbe Familie wie LL-28/LL-29/LL-34: *jede Zahl richtig, nur im
+    falschen Monat.*
+    **Regel:** Ein **Preiswechsel** gehört als zweite Zeile in
+    `card_planned_timeline`, nicht in einen Mittelwert; dafür ist die Zeitreihe
+    gebaut, und die Forward-Inheritance regelt den Rest. Ein **Ausreißer** darf den
+    typischen Monat nicht verschieben — dann ist der Median die ehrlichere Wahl als
+    das arithmetische Mittel.
+    **Die billigste Gegenprobe:** die Einzelbeträge ansehen und fragen, ob der
+    errechnete Wert **überhaupt vorkommt**. Bei Netflix und Spotify kam er kein
+    einziges Mal vor. (v2-28, LL-37)
+28. **Ein RAISE-Rollback lässt aufgeschobene Constraints NIE feuern.** Der
+    Trockenlauf aus §7 Regel 16 committet nicht — ein `DEFERRABLE INITIALLY DEFERRED`
+    Constraint-Trigger prüft aber **erst beim Commit**. Er läuft im Trockenlauf also
+    nicht, und der Lauf ist grün, ohne dass die Prüfung stattgefunden hätte.
+    In v2-28 betraf das `cards_assert_initial_plan` und damit ausgerechnet die
+    Friseur-Rückdatierung — genau den Teil, dessentwegen geprobt wurde.
+    **Regel:** `SET CONSTRAINTS ALL IMMEDIATE;` vor der Messung, innerhalb desselben
+    Blocks. Details in §7 Regel 16. (v2-28, LL-39)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -857,6 +938,14 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     transportiert das Ergebnis in der Fehlermeldung. **Nie im selben Aufruf mit
     echten Mutationen** — der Rollback nimmt die mit. Details: Fähigkeit
     `db-eingriff`. (LL-18)
+    ⚠️ **Und: `SET CONSTRAINTS ALL IMMEDIATE;` gehört in den Block, bevor gemessen
+    wird.** Der `RAISE` committet nie — ein `DEFERRABLE INITIALLY DEFERRED`
+    Constraint-Trigger prüft aber **erst beim Commit** und feuert im Trockenlauf
+    deshalb **überhaupt nicht**. Der Lauf ist dann grün, ohne dass die Prüfung
+    stattgefunden hat. In v2-28 betraf das `cards_assert_initial_plan` und damit
+    genau den Teil des Eingriffs, dessentwegen geprobt wurde. **Der Trockenlauf muss
+    das erzwingen, sonst prüft er weniger, als er zu prüfen scheint.**
+    (v2-28, LL-39 · §6 Stolperfalle 28)
 17. **Widerspricht ein Aufwands-/Performance-Budget der §-Semantik, gewinnt die
     Semantik** — das Budget ist beschreibend, der § ist normativ. Nicht raten,
     sondern klären. Und: ein Referenzwert ohne Daten ist „keine Anzeige", nicht 0.
@@ -909,6 +998,26 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     Entscheidungen des Nutzers, kein synthetisches Set. **Das jeweils geprüfte
     Element gehört aus seiner eigenen Lernmenge ausgeschlossen**, sonst misst man
     Auswendiglernen statt Vorhersage. (LL-27)
+26. **Wer eine Entscheidung ändert, sucht im selben Papier nach den Zahlen, die aus
+    ihr folgen.** Eine Zahl in einem Briefing ist keine Behauptung über die Welt,
+    sondern das **Ergebnis der Annahmen, die bis dahin galten**. Wird weiter unten
+    eine Annahme geändert, ist die Zahl oben still überholt — ohne dass irgendjemand
+    sich geirrt hätte.
+    In v2-28 nannte das Briefing **55 Zahlungen / 1.262,92 €** und einen höchsten
+    Tank-Monat von **199,21 €**. Beides war korrekt gerechnet — **vor** der weiter
+    unten getroffenen Entscheidung, den Nahverkehr aufzunehmen. Mit ihr sind es
+    **65 / 1.520,22 €** und **239,21 €**; die Differenz ist genau **eine** RMV-Fahrt
+    über 40,00 €. Die Schlussfolgerung („bewegt keine Zahl") hielt — aber aus 40 Euro
+    Spielraum im Budget waren **79 Cent** geworden, und darauf beruhte das Urteil
+    „risikolos".
+    **Das ist LL-28 und LL-30 in einer dritten Gestalt.** Dort veraltet eine Annahme
+    mit der Datenmenge bzw. lebt eine Einstellung außerhalb des Diffs; hier veraltet
+    eine Zahl mit einer Entscheidung **auf derselben Seite**. Allen dreien gemeinsam:
+    **Nichts ist falsch gerechnet, und niemand hat einen Fehler gemacht.**
+    **Praktisch:** Wer eine Liste, eine Schwelle oder einen Umfang erweitert, greppt
+    das eigene Papier nach den Kennzahlen, die daraus abgeleitet sind — Summen,
+    Anzahlen, Maxima, „risikolos"-Urteile. Und wer ein Briefing **ausführt**, misst
+    dessen Zahlen ohnehin nach (§7 Regel 10). (v2-28, LL-38)
 
 ### Datei-Konventionen
 
@@ -1018,6 +1127,36 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-34 | Zurückdatieren verschiebt den Rhythmus — jede Zahl bleibt richtig, sie steht nur im falschen Monat. Der Wächter gehört in die Migration | §6 Stolperfalle 24 | v2-27 (DA-1) |
 | LL-35 | Wer aus einem **Textmuster** aggregiert, misst das Muster und nicht die Sache — drei Zahlen eines sorgfältigen Auftrags waren so falsch | §9 · hier | v2-27 (DA-1) |
 | LL-36 | Wer einen **unbekannten** Wert aus Daten rekonstruiert, prüft die Methode zuerst an einem **bekannten** — die Gegenprobe lag zwölffach bereit und wurde nicht gemacht | hier | v2-27 (P6) |
+| LL-37 | Ein **Mittelwert über eine Periode** verbirgt einen Sprung: Die Jahressumme stimmt, und **jeder einzelne Monat ist falsch**. Der billigste Test — kommt der errechnete Wert in den Daten überhaupt **vor**? | §6 Stolperfalle 27 | v2-28 (DA-3) |
+| LL-38 | Eine Zahl in einem Papier veraltet mit einer **Entscheidung auf derselben Seite** — nichts ist falsch gerechnet, und niemand hat sich geirrt | §7 Regel 26 | v2-28 (ZO-4) |
+| LL-39 | Ein **RAISE-Rollback lässt aufgeschobene Constraints nie feuern** — der Trockenlauf ist grün, ohne geprüft zu haben. `SET CONSTRAINTS ALL IMMEDIATE` | §7 Regel 16 · §6 Stolperfalle 28 | v2-28 (DA-3) |
+
+> **Warum LL-37 neben LL-35 und LL-36 steht und nicht in ihnen aufgeht.** Alle drei
+> handeln von Aggregation, und sie sind trotzdem drei verschiedene Fehler.
+> **LL-35:** die Menge ist zu weit gefasst — 17 Apple-Buchungen, von denen nur zwölf
+> iCloud sind. Die Gruppe ist falsch.
+> **LL-36:** die Methode ist ungeprüft — *Jahresdurchschnitt ÷ Split-Faktor* erfand
+> Haushaltsbeträge. Die Rechnung ist falsch.
+> **LL-37:** Gruppe und Rechnung sind **beide richtig**. (10 × 19,99 + 2 × 13,99) / 12
+> = 18,99 ist über genau die richtigen Zahlen exakt gebildet. Falsch ist die
+> **Annahme, dass es einen typischen Monat gibt** — und die steckt nicht in der
+> Formel, sondern in der Entscheidung, überhaupt zu mitteln.
+>
+> Wer LL-35 und LL-36 kennt, prüft die Menge und prüft die Methode, findet beides
+> sauber und übersieht LL-37 vollständig. **Die einzige Frage, die es aufdeckt, ist
+> die naivste: Kommt der errechnete Wert in den Daten vor?** Bei Netflix und Spotify
+> kam er kein einziges Mal vor.
+
+> **Warum LL-38 keine Wiederholung von LL-28 ist, obwohl es sich so liest.** LL-28
+> beschreibt eine Annahme, die mit der **Zeit** veraltet — „<20 Karten" war richtig
+> und wurde es aufhörend, während der Bestand wuchs. LL-38 beschreibt eine Zahl, die
+> **im selben Moment** veraltet, in dem weiter unten im selben Papier eine
+> Entscheidung fällt. Es vergeht keine Zeit, es ändert sich keine Datenlage —
+> **die beiden Stellen widersprechen sich vom Tag ihrer Niederschrift an.**
+>
+> Das macht LL-38 leichter zu finden als LL-28 (es steht alles auf einer Seite) und
+> zugleich leichter zu übersehen: Ein Papier, das man selbst geschrieben hat, liest
+> man nicht noch einmal gegen sich selbst.
 
 > **LL-36 ist die teuerste Prüfung, die in v2-27 gefehlt hat — und sie hätte nichts
 > gekostet.** Die Migration `DA-1` bildete den Plan der GEMEINSAM-Karten als
@@ -1087,11 +1226,62 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-27** („2025 wird vergleichbar" — `DA-1` `ZO-3`, 19.08.2026) ·
-**davor:** v2-26 (`KJ-6` bis `KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`), v2-24 (`PF-1` `PF-2`
-`PF-4`), v2-23 (`ZU-1`), v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`).
-**Alles bis v2-26 ist in `main`.**
+**Letzter Sprint:** **v2-28** („Was die 2025-Prüfung zutage gefördert hat" — `DA-3`
+`ZO-4` `NAV-1`, 24.08.2026) · **davor:** v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6` bis
+`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`), v2-23 (`ZU-1`),
+v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`).
+**Alles bis einschließlich v2-28 ist in `main`** — PR #44 gemergt, Browser-Smoke
+bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), nicht gegen den
+PR-Status.
 Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
+
+> ### ⚠️ v2-28: drei Nachzüge, und alle drei sagen dasselbe über Wächter
+>
+> **Ein Mittelwert, eine Zahl im eigenen Auftrag, eine Schranke, die nie auslöste** —
+> keiner der drei Fehler wäre von Anker, Invariante oder Prüfsumme gefunden worden,
+> weil bei allen dreien **jede Zahl richtig war**.
+>
+> **`DA-3`** — Die 2025-Pläne trugen Jahresdurchschnitte. Netflix' 18,99 € ist über
+> genau die richtigen Zahlen exakt gebildet **und wurde nie gezahlt** (Preissenkung im
+> November); Spotifys 11,16 € ebenso (Erhöhung im Dezember); beim Handyvertrag zogen
+> zwei Ausreißer den Schnitt von 33,00 auf 33,07. Korrigiert über **zweite
+> Zeitreihen-Zeilen**, dazu der Friseur zurück auf `2025-01`.
+> **2025: 22.316,32 → 21.776,33 €, exakt die vorher aufgeschriebenen −539,99 €.
+> 2026 in keinem der zwölf Monate bewegt.** Der Trockenlauf hat **alle 24 Zeilen** auf
+> den Cent vorhergesagt — möglich nur, weil die Erwartung **je Karte** aufgeschrieben
+> war und nicht als Summe.
+> **Der Nebenbefund entlastet die App:** Netflix trug für `2026-01` bereits 13,99,
+> Spotify bereits 12,99. **Die Preiswechsel waren die ganze Zeit erfasst — im falschen
+> Jahr.**
+>
+> **`ZO-4`** — Tankstellen und Nahverkehr ordnen sich selbst zu. Zweistufige Wortliste
+> in `app_config`; `calculate_match_confidence` hebt die Konfidenz auf **0,96**, knapp
+> **über** die Auto-Schwelle 0,95. **Dadurch war an `process_csv_import` nichts zu
+> ändern.** 65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), **Sparrate in allen 24
+> Monaten unbewegt** — „Tanken" ist BUDGET und bleibt unter dem Plan.
+> Gemessen mit Richtig **und** Falsch (Regel 25): **75 Übereinstimmungen mit den
+> eigenen Handzuordnungen des Nutzers gegen 2 Widersprüche, 97,4 %.** Von 34 Zeilen
+> mit `DB Vertrieb`/`Deutschlandticket` wird **keine** getroffen.
+> **Die zweite Stufe hat sich an genau zwei Zeilen bewährt:** „JET, 25,00 €"
+> angenommen, „Backen FCO-Team, 5,00 €" abgewiesen — ohne sie wäre eine private
+> Überweisung fürs Backen auf der Tank-Karte gelandet.
+>
+> **`NAV-1`** — Die untere Navigationsschranke stand seit **Sprint 3** auf `1900-01`.
+> Der Deaktiviert-Pfad war gebaut, kommentiert, funktionsfähig — und hat in über einem
+> Jahr **nie ausgelöst**. Jetzt aus `cards.first_active_month` abgeleitet, **ohne
+> zusätzliche Netzrunde** (LL-29). Abgeleitet statt gesetzt, damit die Grenze nach
+> einem Import älterer Auszüge von allein mitrückt.
+>
+> **Zwei Dinge, die der Nutzer wissen muss:**
+> **①** Der **Juli 2025** liegt bei **239,21 €** gegen 240,00 € Tank-Budget — **79
+> Cent Luft**. Eine nachträglich dort zugeordnete Tankfüllung kippt den Monat in
+> ÜBERSCHRITTEN, und **dann** bewegt sich die Sparrate.
+> **②** Für **Friseurbesuche 2025 gibt es keine Belege** (der Salon taucht erstmals
+> 01/2026 auf). Die Karte plant 12 × 45,00 € ohne Realität dagegen. Werden die
+> passenden Bargeld-Abhebungen bei der Kuratierung nicht der **Friseur**-Karte
+> zugeordnet, **zählt dasselbe Geld zweimal.**
+>
+> Protokolle: `sprints/sprint_v2-28_anker.md` · `sprints/sprint_v2-28_review.md`.
 
 > ### ⚠️ v2-27: das Vorjahr rechnet — und zwei Fallen, die kein Wächter gefangen hätte
 >
@@ -1151,16 +1341,21 @@ Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 > gefährlichste Fall: eine GEMEINSAM-Karte mit verknüpfter Zahlung gibt es dort nicht, in
 > den echten Daten fünfmal. Begründung: `sprints/sprint_v2-24_review.md` §5.
 
-> **`ZO-3` ist damit entscheidungsreif — und das ist der nächste Schritt.** v2-21 hatte
-> festgelegt: *erst sehen, dann entscheiden.* Der Nutzer hat gesehen. Offen ist die
-> Frage, ob Zahlungen ab 95 % Konfidenz **rückwirkend** automatisch verlinkt werden
-> dürfen: **23 Zahlungen in Januar bis Mai** (Summe der Zahlungen −1.296,87 €), im
-> Prüfset waren 11 von 11 solcher Fälle richtig.
+> **Der Satz, der `ZO-3` überlebt — er gilt für jede rückwirkende Verknüpfung.**
+> `ZO-3` selbst ist seit v2-27 erledigt (oben). Was bleibt, ist die Warnung, an der
+> es damals entschieden wurde:
 >
-> **Diese Summe ist NICHT die Sparraten-Bewegung.** Bei Fixkosten gilt „Realität
-> gewinnt": Bewegt wird nur die **Differenz** zwischen Plan und tatsächlicher Zahlung —
-> wo beide übereinstimmen, bewegt sich nichts. Die echte Wirkung ist vor dem Eingriff
-> zu messen und als Erwartung aufzuschreiben (§7 Regel 21).
+> **Die Summe der Zahlungen ist NICHT die Sparraten-Bewegung.** Bei Fixkosten gilt
+> „Realität gewinnt": Bewegt wird nur die **Differenz** zwischen Plan und
+> tatsächlicher Zahlung — wo beide übereinstimmen, bewegt sich nichts. In v2-27
+> machten die 41 verlinkten Zahlungen **−2.699,90 €** aus und bewegten das Jahr um
+> **+1,84 €**. Wer beides verwechselt, hält einen harmlosen Eingriff für einen
+> gefährlichen — oder umgekehrt.
+>
+> **Dieselbe Falle in v2-28, nur bei BUDGET:** 65 nachverlinkte Zahlungen über
+> 1.520,22 € bewegten die Sparrate um **0,00 €**, weil „Tanken" in keinem Monat über
+> seinen Plan kam. Die echte Wirkung ist vor dem Eingriff zu messen und als Erwartung
+> aufzuschreiben (§7 Regel 21) — **je Karte, nicht als Summe.**
 
 > ### ⚠️ Eine PR-Kette sieht nach „erledigt" aus, ohne es zu sein
 >
@@ -1208,13 +1403,17 @@ Nutzers aus Juli/August wurden nie ausgelesen.
 > Stand nach v2-21: 42 richtige Vorschläge über der Badge-Schwelle gegen 4 falsche;
 > davor 14 gegen 1.
 
-**Eine Produktentscheidung steht beim User und ist bewusst nicht vorweggenommen:**
-ob ab 0,95 **rückwirkend** automatisch verknüpft werden darf (`ZO-3`). 24 Zahlungen
-aus 2026 lägen darüber, im Prüfset waren 11 von 11 solcher Fälle richtig. Verknüpfen
-bewegt die Sparrate rückwirkend über bis zu zwölf Monate — deshalb schreibt
-`refresh_fragment_suggestions` ausschließlich Anzeige-Spalten, und das ist **erzwungen,
-nicht zugesagt**: Die Funktion zählt `card_fragment_links` vor und nach ihrem Lauf und
-bricht bei jeder Abweichung mit Rollback ab.
+**Die Produktentscheidung hinter `ZO-3` ist gefallen** — in v2-27, und zwar für
+**0,95 ja, 0,60 nein**: Gemessen an den 411 handverlinkten Zahlungen aus 2026 waren es
+ab 0,95 **48 richtig / 0 falsch**, ab 0,60 dagegen **181 / 49**. Bei jeder fünften
+Zuordnung falsch zu liegen ist kein Automatismus, sondern Aufräumarbeit für später.
+
+**Was davon dauerhaft gilt:** Verknüpfen bewegt die Sparrate rückwirkend über bis zu
+zwölf Monate — deshalb schreibt `refresh_fragment_suggestions` ausschließlich
+Anzeige-Spalten, und das ist **erzwungen, nicht zugesagt**: Die Funktion zählt
+`card_fragment_links` vor und nach ihrem Lauf und bricht bei jeder Abweichung mit
+Rollback ab. Wer eine neue Zuordnungs-Automatik baut, baut denselben Riegel ein oder
+begründet, warum nicht.
 
 **v2-19 macht das Netto von geplant zu gemessen.** Bis dahin galt „Realität gewinnt"
 für Fixkosten und Einnahmen, für das Gehalt nicht: Juli 2026 geplant 4.165,11 €,
@@ -1246,19 +1445,30 @@ gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
 13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
 v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
 
-**Doku-Versionen:** Design-Doku **v3.10.0** · Schema-Doku **v3.12.0**.
+**Doku-Versionen:** stehen **im Header der jeweiligen Bibel** —
+`antigravity_finance_design_dokument.md` und `antigravity_finance_schema_summary.md`,
+jeweils Zeile 3. **Hier steht bewusst keine Zahl mehr.**
 
-> **Diese Zeile hat es jetzt ZWEIMAL erwischt — am 17.08. und am 19.08.2026.** Beim ersten
-> Mal nannte sie Schema-Doku „v3.6.0", während die Datei bei v3.9.0 stand. Der Warnkasten,
-> der daraufhin hier eingezogen ist, endete mit dem Satz *„Sie ist eine Abschrift, keine
-> Quelle"* — und **genau das ist zwei Tage später wieder passiert**: v3.9.0/v3.10.0
-> abgeschrieben, während die Dateien bei v3.10.0/v3.12.0 standen.
+> ### ⚠️ Warum diese Zeile keine Versionsnummern mehr trägt
 >
-> **Das ist die eigentliche Lehre, und sie ist unangenehmer als die erste:** Ein Warnkasten
-> verhindert nichts. Er wird von derselben Sitzung gelesen, die ihn geschrieben hat, und
-> von keiner danach. Wirksam wäre nur, den Wert **nicht zu duplizieren** — im Zweifel gilt
-> ausnahmslos der Header der jeweiligen Datei, und wer hier etwas ändert, liest ihn vorher.
-> Dieselbe Fehlerklasse wie die Regions-Zeile in §2 (LL-30).
+> **Sie hat es ZWEIMAL erwischt — am 17.08. und am 19.08.2026.** Beim ersten Mal nannte
+> sie Schema-Doku „v3.6.0", während die Datei bei v3.9.0 stand. Der Warnkasten, der
+> daraufhin einzog, endete mit *„Sie ist eine Abschrift, keine Quelle"* — und **genau
+> das passierte zwei Tage später wieder**: v3.9.0/v3.10.0 abgeschrieben, während die
+> Dateien bei v3.10.0/v3.12.0 standen.
+>
+> Der Kasten schloss damals selbst: *„Ein Warnkasten verhindert nichts. … Wirksam wäre
+> nur, den Wert **nicht zu duplizieren**."* **Am 24.08.2026 ist genau das umgesetzt.**
+> Die Zahlen ein drittes Mal richtig hinzuschreiben hätte geheißen, die eigene Lehre zu
+> lesen und ihr nicht zu folgen.
+>
+> **Das ist die allgemeine Form von LL-30**, und sie gilt über die Regions-Zeile
+> hinaus: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch —
+> und man erfährt es nicht, weil beide Stellen für sich plausibel bleiben. **Die
+> einzige verlässliche Abhilfe ist, ihn nur einmal zu schreiben.**
+>
+> Wer die Versionen wissen will, liest die zwei Header. Wer sie ändert, ändert sie
+> dort — und nur dort.
 
 ### Die Prüfanker
 
@@ -1345,37 +1555,41 @@ erklären**. Soll sich etwas bewegen, wird der erwartete Wert **vorher** aufgesc
 > Tabelle eingefroren — mit Datum daneben und dem Satz, dass sie nur gilt, solange
 > nicht kuratiert wird.
 
-**Momentaufnahme 19.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
+**Momentaufnahme 24.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
 Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein** Alarm.
 
 | Monat | 2026 Ist | 2025 Ist | | Monat | 2026 Ist | 2025 Ist |
 |---|---|---|---|---|---|---|
-| Januar | 1.318,76 € | 1.853,82 € | | Juli | −8,84 € | 1.866,97 € |
-| Februar | 1.667,90 € | 1.867,34 € | | August | 629,34 € | 1.908,07 € |
-| März | 1.053,42 € | 1.867,34 € | | September | 1.821,59 € | 1.904,67 € |
-| April | 1.753,14 € | 1.850,46 € | | Oktober | 1.790,08 € | 1.873,52 € |
-| Mai | −239,10 € | 1.888,22 € | | November | 1.821,59 € | 1.894,72 € |
-| Juni | 3.509,75 € | 1.898,12 € | | Dezember | 1.821,59 € | 1.894,55 € |
-| | | | | **Goldlinie 2025** | | **22.567,80 €** |
+| Januar | 1.318,76 € | 1.813,98 € | | Juli | −8,84 € | 1.821,04 € |
+| Februar | 1.667,90 € | 1.689,37 € | | August | 629,34 € | 1.862,14 € |
+| März | 1.053,42 € | 1.679,98 € | | September | 1.821,59 € | 1.858,74 € |
+| April | 1.753,14 € | 1.753,87 € | | Oktober | 1.790,08 € | 1.827,59 € |
+| Mai | −239,10 € | 1.842,29 € | | November | 1.821,59 € | 1.854,79 € |
+| Juni | 3.509,75 € | 1.852,19 € | | Dezember | 1.821,59 € | 1.852,79 € |
+| | | | | **Goldlinie 2025** | | **21.708,77 €** |
 
-> ### ⚠️ Die 2025-Spalte ist neu, und die alte Zahl war KEIN Messfehler
+> ### ⚠️ Diese Tabelle trägt ihren eigenen Beleg dafür, dass sie kein Sollwert ist
 >
-> Bis zum 19.08.2026 stand hier *„2025 (alle Monate) 4.037,11 €"* und *„Goldlinie 2025
-> 48.445,32 €"*. Das war **richtig gerechnet und trotzdem wertlos**: In 2025 waren
-> schlicht keine Kosten modelliert, also stand die Sparrate dort auf dem vollen Netto.
+> **Sie war schon veraltet, bevor sie geschrieben wurde.** Der Sprint v2-28 endete am
+> 24.08.2026 mit **21.776,33 €** für 2025 — gemessen wenige Stunden später steht dort
+> **21.708,77 €**, und **vier Monate haben sich bewegt** (Januar bis April 2025). Der
+> Nutzer hat in der Zwischenzeit kuratiert, weiter nichts.
 >
-> **Sprint v2-27 hat das behoben** (`DA-1`), und zwar durch **Daten**, nicht durch Logik —
-> alle neun Prüfsummen sind byte-identisch geblieben. 22 Karten reichen jetzt nach 2025
-> zurück; 41 Zahlungen sind rückwirkend verlinkt (`ZO-3`).
+> **Beide Invarianten blieben dabei 24/24 exakt, alle neun Prüfsummen unverändert.**
+> Die App rechnet also richtig; es sind nur andere Zahlungen zugeordnet als vorhin.
+> Genau deshalb gibt es seit dem 13.08.2026 keine eingefrorene Sollwert-Tabelle mehr:
+> **Eine Abweichung von dieser Tabelle ist der Normalfall, kein Befund.**
 >
-> **Die 2026-Werte haben sich gegenüber der alten Tabelle ebenfalls bewegt** — das ist
-> normale Kuratierung durch den Nutzer, kein Eingriff. v2-27 hat 2026 in **keinem** Monat
-> angefasst; die Werte vom 13.08. waren nur älter.
+> **Wer prüfen will, ob ein Eingriff etwas kaputtgemacht hat, misst selbst** — vorher
+> und nachher, in derselben Sitzung, alle zwölf Monate beider Jahre, Ist **und** Plan.
+> Die Messregel unten ist der Wächter, nicht diese Tabelle.
 >
-> **Warum 2025 jetzt gleichförmig aussieht:** Für die zurückdatierten Fixkosten ist der
-> Plan der Jahresdurchschnitt der echten Zahlungen, und erst 41 von 751 Zahlungen sind
-> verlinkt. Die Streuung kommt, sobald kuratiert wird. Protokoll:
-> `sprints/sprint_v2-27_anker.md`.
+> **Was die 2025-Spalte inhaltlich bedeutet:** Bis v2-27 stand dort in allen Monaten
+> 4.037,11 € — das volle Netto, weil für 2025 gar keine Kosten modelliert waren.
+> `DA-1` hat die Karten zurückdatiert, `DA-3` (v2-28) ihre Pläne auf die tatsächlich
+> gezahlten Beträge gebracht. Die Streuung innerhalb von 2025 wächst weiter, je mehr
+> der Nutzer zuordnet — sie ist ein Fortschrittsmaß, kein Fehlermaß.
+> Protokolle: `sprints/sprint_v2-27_anker.md` · `sprints/sprint_v2-28_anker.md`.
 
 **Was die alte Tabelle an Wissen trug — komprimiert, weil es nicht an ihr hängt:**
 
@@ -1397,18 +1611,32 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**19.08.2026, nach v2-27**: **12 offene Pakete · 35 Themen ·
-4 Hausaufgaben · 39 offen gesamt · 61 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**24.08.2026, nach v2-28**: **12 offene Pakete · 37 Themen ·
+4 Hausaufgaben · 41 offen gesamt · 64 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
-> **Die Zahl steigt trotzdem, und das ist hier das richtige Ergebnis.** v2-24 hat drei
-> Punkte erledigt (`PF-1`, `PF-2`, `PF-4`) und **zwei offene eingetragen**, plus ein
-> neues **Paket 17 „Die App reagiert sofort"**. Performance kam in der Roadmap vorher
-> **nirgends** vor — null Treffer für „Performance", „Ladezeit", „langsam", „Latenz",
-> „Reaktion" —, während die App in Produktion in Zeitüberschreitungen lief. Ein Thema,
-> das nicht in der Liste steht, konkurriert unsichtbar mit allem anderen und verliert
-> gegen das, was gerade lauter ist. Die zwei neuen offenen Punkte sind **keine
-> Verschlechterung**, sondern das Sichtbarwerden von Arbeit, die schon vorher da war.
+> **Die Zahl steigt zum zweiten Mal, und beide Male ist das das richtige Ergebnis.**
+> **v2-28** hat drei Punkte erledigt (`DA-3`, `ZO-4`, `NAV-1`) und **zwei offene
+> eingetragen** (`ZO-5`, `ZO-6`). Beide waren vorher schon da, nur unsichtbar: `ZO-5`
+> beschreibt **147 von 553** offenen 2025-Zahlungen, die das Buchungsdatum im Text
+> tragen und deshalb **keinen einzigen** Kartenvorschlag bekommen — zum Vergleich: 183
+> der 553 haben einen. `ZO-6` ist eine Lücke, die dieser Sprint selbst aufgerissen hat
+> (die Händler-Regel zeigt auf einen **Kartennamen**; nach einer Umbenennung greift sie
+> still nicht mehr).
+>
+> **`NAV-1` stand in keinem Paket** — dasselbe Muster wie Performance vor v2-24, nur
+> mit umgekehrtem Ausgang: Der Punkt war schon erledigt, als er eingetragen wurde, und
+> hat deshalb bewusst **kein** eigenes Paket bekommen. Das Präfix `NAV` ist im
+> Kennungs-Register belegt, falls jemand ein Navigations-Thema aufmacht.
+>
+> **Davor v2-24:** drei Punkte erledigt (`PF-1`, `PF-2`, `PF-4`), zwei offene
+> eingetragen, plus ein neues **Paket 17 „Die App reagiert sofort"**. Performance kam
+> in der Roadmap vorher **nirgends** vor — null Treffer für „Performance", „Ladezeit",
+> „langsam", „Latenz", „Reaktion" —, während die App in Produktion in
+> Zeitüberschreitungen lief. **Ein Thema, das nicht in der Liste steht, konkurriert
+> unsichtbar mit allem anderen und verliert gegen das, was gerade lauter ist.** Neue
+> offene Punkte sind in solchen Fällen **keine Verschlechterung**, sondern das
+> Sichtbarwerden von Arbeit, die schon vorher da war.
 
 > **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
 > Cent neben `Ist − Plan`; `get_year_deviation_drivers` rundete **je Zeile**, die
@@ -1434,8 +1662,22 @@ Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
 
 **Paket 5 ist seit v2-21 zum großen Teil gebaut** (`M6` steht auf 🟡, nicht ✅). Die
 automatische Zuordnung schlägt für **115 statt 9** offene Zahlungen aus 2026 eine
-Karte vor. Offen bleiben `ZO-1`, `ZO-3` und der Teil `F2` — das Vorschlags-Badge in
-der Rohmasse liegt weiter hinter `SHOW_SUGGESTION_BADGES = false`.
+Karte vor; `ZO-3` (v2-27) und `ZO-4` (v2-28) sind erledigt. **Offen bleiben `ZO-1`,
+`ZO-5`, `ZO-6` und der Teil `F2`** — das Vorschlags-Badge in der Rohmasse liegt weiter
+hinter `SHOW_SUGGESTION_BADGES = false`.
+
+> **`ZO-5` ist der stärkste bekannte Hebel für die Kuratierung 2025.** **147 der 553**
+> offenen Zahlungen tragen das Buchungsdatum im Text
+> (`… | VISA Debitkartenumsatz vom 03.01.2026`) — der Name ist bei jeder Buchung ein
+> anderer, die Namensähnlichkeit findet deshalb nie einen Treffer. **Keine einzige
+> dieser 147 bekommt einen Vorschlag ≥ 0,60**, während es über alle 553 hinweg 183
+> sind.
+>
+> **Die Lösungsrichtung steht schon in den Daten:** Vor v2-28 waren es 191 von 618 —
+> die Händler-Regel `ZO-4` hat **44 davon mit erledigt**, weil sie über den
+> **Händlernamen** erkennt statt über Namensähnlichkeit. Nicht die
+> Ähnlichkeitsfunktion reparieren, sondern den **stabilen** Teil des Textes vom
+> veränderlichen trennen.
 
 > ### ⚠️ Die alte Ursachen-Diagnose war falsch — hier stand sie bis zum 15.08.2026
 >
