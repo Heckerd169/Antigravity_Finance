@@ -320,6 +320,15 @@ Gate ist damit weiterhin technisch, aber er sitzt jetzt an der richtigen Stelle.
 | `design-direktor` | Gestaltungsfragen, **bevor** gebaut wird |
 | `db-eingriff` | jede Berührung der Datenbank |
 | `sprint-abschluss` | sobald der Code steht |
+| `claude-md-pflege` | jede Änderung an **dieser** Datei — und wenn `claude-md-umfang.spec.ts` anschlägt |
+
+> **Warum diese Datei eine eigene Fähigkeit hat.** v2-08 kürzte sie von 1.857 auf
+> **434** Zeilen; einundzwanzig Sprints später stand sie bei **1.712**. Jede einzelne
+> Ergänzung war begründet und freigegeben — **nur die Summe war der Fehler**, und
+> Summen bemerkt niemand beim Hinschreiben. Gemessen wird das seit dem 27.08.2026 von
+> `tests/e2e/claude-md-umfang.spec.ts` (Gesamtumfang · Erzählzone · Regelanteil), der
+> in jeder Prüfstrecke mitläuft. **Die Fähigkeit sagt, was zu tun ist; der Test sagt,
+> dass** (LL-40).
 
 **Zusätzlich global installiert** (fremd, liegt in `~/.agents/skills/`, **nicht im
 Repo** — auf einem frischen Klon also nicht vorhanden): `diagnosing-bugs` ·

@@ -69,7 +69,12 @@ export default defineConfig({
     // v2-29: `vorschlagszeile` kommt dazu (die leise Zeile unter der
     //        Beschreibung — dass sie an genau EINER Bedingung hängt, die
     //        Karte nicht höher macht und kein Kästchen wird).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile)\.spec\.ts/, use: DESKTOP },
+    // v2-29 (Nachzug): `claude-md-umfang` kommt dazu — der Wächter gegen das
+    //        stille Zuwachsen der Verfassung. Er misst Gesamtumfang,
+    //        Erzählzone und Regelanteil. Anlass: CLAUDE.md war nach 21
+    //        Sprints von 434 auf 1.712 Zeilen zurückgewachsen, ohne dass es
+    //        jemand bemerkt hat — aus lauter richtigen Entscheidungen.
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
