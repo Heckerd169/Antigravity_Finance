@@ -1,8 +1,50 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.14.0
+**Version:** 3.15.0
 
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen" + Sprint v2-28 Händler-Regel + Sprint v2-29 Händler-Gedächtnis)
+
+> **Changelog v3.15.0 (27.08.2026, Sprint v2-30):** Eine neue Spalte, ein neuer Index,
+> eine geänderte Funktion. **§1 — `fragments`: +1 Spalte** `merchant_key text
+> GENERATED ALWAYS AS (public.af_merchant_key(description)) STORED`, dazu der
+> gewöhnliche B-Tree-Index `idx_fragments_merchant_key_stored` auf
+> `(user_id, merchant_key)`. **§4 — `history_match`** liest Stufe 1 aus der Spalte
+> statt aus dem Ausdruck.
+>
+> **Der Anlass ist ein Fund, der die v3.14.0-Zeile zu `af_merchant_key` teilweise
+> widerlegt (siehe dort):** Ein **Ausdrucks-Index über eine SQL-Funktion ist gegen
+> Inlining nicht robust.** Der Planer bettet `af_merchant_key` ein; danach steht im Plan
+> ihr Rumpf statt des Aufrufs, und ein Index über den Aufruf trifft ihn nicht mehr.
+> `idx_fragments_merchant_key` griff in `history_match` deshalb **nie** — `Seq Scan`
+> über alle 1.628 Fragmente, und weil `history_match` je Karte aufgerufen wird,
+> **28-mal je Zahlung**.
+>
+> **Die Statistik verriet es nicht:** `pg_stat_user_indexes` wies **88.107 Scans** aus.
+> Der Index greift anderswo sehr wohl — und niemand liest den Plan, solange die
+> Statistik beruhigt. Wer einen Ausdrucks-Index anlegt, prüft deshalb den **Plan seines
+> Hauptaufrufers**, nicht die Scan-Zahl.
+>
+> **Wirkung:** Import von 17 neuen Zahlungen **23.938 ms → 1.357 ms** (Faktor 17,6),
+> `history_match` über 28 Karten **326 ms → 12 ms** (Faktor 27). Das
+> `statement_timeout` der Rolle `authenticated` liegt bei **8 s** — der Import lief also
+> vorher strukturell in einen Fehler, sobald mehr als vier Zahlungen neu waren.
+>
+> **Kein Nachbau (§6 Stolperfalle 16):** Die Spalte **ruft** `af_merchant_key` auf,
+> statt deren Logik zu wiederholen. Es gibt weiterhin genau **eine** Definition des
+> Schlüssels; ändert sie sich, rechnet Postgres die Spalte selbst neu.
+>
+> **Zwei naheliegende Fixes wurden gemessen und verworfen** und stehen in der Migration
+> dokumentiert: die Policy-Umstellung auf `(select auth.uid())` (274 → 289 ms,
+> wirkungslos) und `af_merchant_key` auf `LANGUAGE plpgsql` (285 → 367 ms, schlechter —
+> der Planer wählt dann einen Seq Scan über `card_fragment_links`).
+>
+> **Kein Zahlenwert bewegt:** Sparrate 24/24 identisch, Anker 1 und 2 je 0 Verletzungen,
+> Spalten-Äquivalenz über alle 1.628 Zeilen ohne Abweichung, `history_match` alt gegen
+> neu über 231 Paare ohne Unterschied, 16 von 17 Prüfsummen unverändert.
+>
+> **Der alte Ausdrucks-Index bleibt vorerst bestehen** (`PF-7`) — welcher Aufrufer seine
+> 88.107 Scans verursacht, ist nicht ermittelt.
+
 
 > **Changelog v3.14.0 (25.08.2026, Sprint v2-29):** Eine neue Funktion und eine erweiterte. §4 — `af_merchant_key` (der stabile Teil eines Buchungstextes) samt Ausdrucks-Index; `history_match` ist **zweistufig** und erkennt eine Handzuordnung jetzt am **Händler** statt am Wortlaut. §4 `calculate_match_confidence` um den Beleg ergänzt, dass sie **unverändert** geblieben ist.
 >
@@ -548,9 +590,9 @@ Atomare Multi-INSERT-Pfade, die ohne RPC am `cards_assert_initial_plan` DEFERRED
 | `calculate_match_confidence(fragment_id, card_id)` | Best-Match-Score. Gewichtete Summe aus den drei Sub-Scores (Name über `name_similarity_scoped` seit v2-21), danach die **Wiedererkennung als Untergrenze**: Greift `history_match`, wird der Score auf `confidence.history_score` (0,94) **gehoben** — nie gesenkt. Bewusst knapp **unter** der Auto-Absorptions-Schwelle 0,95: Eine wiedererkannte Zahlung erzeugt einen sichtbaren Vorschlag, aber niemals eine automatische Verknüpfung (User-Entscheid 15.08.2026). Der Wert steht in `app_config` und lässt sich ohne Migration anheben. Eine vierte **gewichtete** Komponente wäre falsch gewesen: Sie hätte alle Scores gesenkt, bei denen keine Historie vorliegt — und das sind die meisten. **Seit v2-28 gibt es eine zweite Untergrenze derselben Bauart:** Greift `merchant_rule_match`, wird der Score auf `confidence.merchant_rule_score` (**0,96**) gehoben. Sie steht bewusst **über** der Auto-Absorptions-Schwelle 0,95 — anders als die Wiedererkennung soll ein Händler-Treffer beim Import **automatisch verlinken**. Damit war an `process_csv_import` nichts zu ändern. Beide Untergrenzen benutzen dasselbe `GREATEST` und **heben nur an, sie senken nie**; die Reihenfolge ist deshalb ohne Wirkung. **In v2-29 ist diese Funktion byte-identisch geblieben** (Prüfsumme `defa3e43f468e51946362a15ee943c9f` vor und nach der Migration belegt) — geändert hat sich ausschließlich, *wann* `history_match` darunter anschlägt. Wer die Wirkung von v2-29 hier sucht, sucht an der falschen Stelle | `numeric` (0..1) |
 | `name_similarity(description, card_name)` | Trigram + Substring-Boost (`0.80`) über die **ganzen** Strings. Seit v2-21 **nicht mehr direkt von `calculate_match_confidence` aufgerufen**, sondern als Untergrenze innerhalb von `name_similarity_scoped` mitgeführt | `numeric` |
 | `name_similarity_scoped(description, card_id)` **(v2-21)** | Wortweiser Namensvergleich: Umlaut-/ß-Normalisierung auf beiden Seiten, Zerlegung des Kartennamens in Wörter ab 4 Zeichen, Treffer nur an **echten Wortgrenzen** (`Douglas` trifft nicht mehr `Glas`), unscharfer Fallback über `word_similarity` erst ab `0.7`. **Entwertung mehrdeutiger Wörter:** Ein Kartenwort, das in `n` Kartennamen desselben Nutzers vorkommt, zählt nur `1/n` — das fängt Personennamen wie `Aline` (in 7 Kartennamen) ohne gepflegte Stoppwortliste. Führt `name_similarity` als Untergrenze mit: das Ergebnis kann nie schlechter werden als vorher | `numeric` (0..1) |
-| `af_merchant_key(text)` **(v2-29)** | Der **stabile Teil** eines Buchungstextes. Setzt auf `af_normalize_text` auf und ersetzt danach jede Folge von Nicht-Buchstaben durch **ein** Leerzeichen. Damit fallen Buchungsdatum, Kundennummer, Filialnummer und Transaktions-ID von selbst weg, **ohne dass die Funktion ein Format kennen muss**: `'Agip | VISA Debitkartenumsatz vom 28.01.2026'` → `'agip visa debitkartenumsatz vom'`, `'Audible Gmbh*YG4WQ1N95'` → `'audible gmbh yg wq n'`. Ein Text ohne Buchstaben ergibt den **leeren** Schlüssel; darauf wird nie verglichen. `IMMUTABLE` — das ist Voraussetzung für den Ausdrucks-Index `idx_fragments_merchant_key` auf `(user_id, af_merchant_key(description))`. **Ohne diesen Index kostet ein Aufruf von `history_match` 14,9 ms statt 0,2 ms** (Seq Scan mit `regexp_replace` je Zeile); bei ~14.000 Aufrufen je `refresh_fragment_suggestions`-Lauf ist das der Unterschied zwischen 23 Sekunden und über drei Minuten. ⚠️ Der Aufruf von `af_normalize_text` im Rumpf ist **schema-qualifiziert** (`public.`) — ohne das scheitert `CREATE INDEX` mit `42883`, weil Postgres die Funktion beim Anlegen einbettet und unter einem anderen `search_path` auswertet | `text` |
+| `af_merchant_key(text)` **(v2-29)** | Der **stabile Teil** eines Buchungstextes. Setzt auf `af_normalize_text` auf und ersetzt danach jede Folge von Nicht-Buchstaben durch **ein** Leerzeichen. Damit fallen Buchungsdatum, Kundennummer, Filialnummer und Transaktions-ID von selbst weg, **ohne dass die Funktion ein Format kennen muss**: `'Agip | VISA Debitkartenumsatz vom 28.01.2026'` → `'agip visa debitkartenumsatz vom'`, `'Audible Gmbh*YG4WQ1N95'` → `'audible gmbh yg wq n'`. Ein Text ohne Buchstaben ergibt den **leeren** Schlüssel; darauf wird nie verglichen. `IMMUTABLE` — Voraussetzung sowohl für den Ausdrucks-Index als auch für die seit v2-30 bestehende **generierte Spalte** `fragments.merchant_key`. ⚠️ **Die hier bis v3.14.0 stehende Aussage „ohne diesen Index kostet ein Aufruf 14,9 ms statt 0,2 ms" war irreführend:** Die Messung stimmte, die Schlussfolgerung nicht. Der Ausdrucks-Index `idx_fragments_merchant_key` **griff in `history_match` nie** — der Planer bettet diese SQL-Funktion ein (Inlining), danach steht im Plan ihr Rumpf statt des Aufrufs, und ein Index über den Aufruf trifft ihn nicht mehr (`Seq Scan`, `Rows Removed by Filter: 1628`). Die 0,2 ms wurden unter einer Formulierung gemessen, die es im Funktionsrumpf so nicht gab. **Seit v2-30 trägt Stufe 1 die materialisierte Spalte** `merchant_key` mit dem gewöhnlichen B-Tree-Index `idx_fragments_merchant_key_stored`; ein Spalten-Index ist gegen Inlining immun, weil nichts mehr zu expandieren ist. Gemessen: 326 ms → 12 ms je Zahlung über 28 Karten. ⚠️ Der Aufruf von `af_normalize_text` im Rumpf ist **schema-qualifiziert** (`public.`) — ohne das scheitert `CREATE INDEX` mit `42883`, weil Postgres die Funktion beim Anlegen einbettet und unter einem anderen `search_path` auswertet | `text` |
 | `history_match(fragment_id, card_id)` **(v2-21, zweistufig seit v2-29)** | Wiedererkennung aus den **eigenen** Handzuordnungen, in zwei Stufen.
-**Stufe 1 — der Händler:** Liegen andere handverlinkte Zahlungen mit demselben `af_merchant_key` auf **genau einer** Karte, ist die Antwort `1.00` für diese Karte und `0.00` für jede andere. Liegen sie auf **mehreren**, wird **geschwiegen** und auf Stufe 2 durchgefallen: Gemessen liegt die Trefferquote bei mehrdeutigen Händlern bei **52,7 %** — ein Münzwurf. Häufigster Grund für Mehrdeutigkeit: Bei **Überweisungen** steht vorne nicht der Händler, sondern der Absender; »Dominik Hecker« liegt auf zwölf Karten.
+**Stufe 1 — der Händler (seit v2-30 über die Spalte `fragments.merchant_key`, nicht mehr über den Ausdruck):** Liegen andere handverlinkte Zahlungen mit demselben Händler-Schlüssel auf **genau einer** Karte, ist die Antwort `1.00` für diese Karte und `0.00` für jede andere. Liegen sie auf **mehreren**, wird **geschwiegen** und auf Stufe 2 durchgefallen: Gemessen liegt die Trefferquote bei mehrdeutigen Händlern bei **52,7 %** — ein Münzwurf. Häufigster Grund für Mehrdeutigkeit: Bei **Überweisungen** steht vorne nicht der Händler, sondern der Absender; »Dominik Hecker« liegt auf zwölf Karten.
 **Stufe 2 — wortgleich:** unverändert die Fassung aus v2-21 (`f.description = v_desc`).
 **Warum beide und nicht nur Stufe 1:** Der gröbere Schlüssel fasst mehr Buchungen zusammen und wird dadurch **öfter mehrdeutig**. Ein Ersatz hätte **35 der 136** sichtbaren 2025-Vorschläge gekostet — trotz um 14 Punkte besserer Genauigkeit. Gemessen (Leave-one-out über 568 Handzuordnungen, Richtig **und** Falsch): nur Stufe 1 **257/24 = 91,5 %**, beide Stufen **274/80 = 77,4 %** bei **null** Regression; die alte Fassung allein kam auf 180/76 = 70,3 %.
 Beide Stufen lernen unverändert **nicht** aus `AUTO_ABSORBED` (sonst verstärkt sich ein Automatik-Fehler selbst — 110 Verknüpfungen sind automatisch gesetzt, 65 davon aus v2-28), nicht aus Überträgen, und nie aus dem geprüften Fragment selbst | `numeric` (0 oder 1) |

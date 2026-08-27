@@ -8,9 +8,9 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 25. August 2026 · **nach:** Sprint **v2-29**
-> („Die App merkt sich, was du entschieden hast" — `ZO-5`).
-> **Alles bis einschließlich v2-29 ist in `main`** — PR #46 gemergt, Browser-Smoke
+> **Letzte Aktualisierung:** 27. August 2026 · **nach:** Sprint **v2-30**
+> („Der Import passt wieder in die Zeit" — `PF-6`).
+> **Alles bis einschließlich v2-30 ist in `main`** — PR #48 gemergt, Browser-Smoke
 > bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), nicht gegen den
 > PR-Status.
 >
@@ -719,11 +719,26 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     einem anderen `search_path` aus. **Jeder direkte Aufruf funktioniert dabei
     tadellos** — der Fehler tritt ausschließlich beim Index-Anlegen auf, was die Suche
     zuverlässig in die Irre führt.
-    **② Ohne den Index kostet ein einziger Aufruf das 72-fache.** In v2-29 brauchte
-    `history_match` **14,9 ms** statt **0,208 ms** — ein Seq Scan über 1.599 Fragmente,
-    der für **jede** Zeile ein `regexp_replace` ausführt. Bei rund 14.000 Aufrufen je
+    **② Ohne den Index kostet ein einziger Aufruf das 72-fache.** In v2-29 gemessen:
+    **14,9 ms** statt **0,208 ms** — ein Seq Scan über 1.599 Fragmente, der für **jede**
+    Zeile ein `regexp_replace` ausführt. Bei rund 14.000 Aufrufen je
     `refresh_fragment_suggestions`-Lauf ist das der Unterschied zwischen 23 Sekunden
     und über drei Minuten.
+    **③ Und dann greift der Index beim LESEN trotzdem nicht.** Derselbe Mechanismus wie
+    in ①, nur eine Ebene später: Der Planer **bettet die SQL-Funktion auch in der
+    Abfrage ein**. Danach steht im Plan ihr **Rumpf**, im Index aber der **Aufruf** —
+    und beide treffen sich nie. In v2-30 gemessen: `Seq Scan on fragments`,
+    `Rows Removed by Filter: 1628`, und weil `history_match` je Karte aufgerufen wird,
+    **28-mal je Zahlung**. **Damit ist die Zusage in ② für den Hauptaufrufer nie
+    eingetreten** — die 0,208 ms galten für eine Formulierung, die es im Funktionsrumpf
+    so nicht gab.
+    **Und die Statistik verrät es nicht:** `pg_stat_user_indexes` wies **88.107 Scans**
+    aus. Der Index greift anderswo sehr wohl, und niemand liest den Plan, solange die
+    Statistik beruhigt — dieselbe Klasse wie die Regions-Zeile aus LL-30.
+    **Abhilfe:** den Wert als **Spalte** materialisieren
+    (`GENERATED ALWAYS AS (…) STORED`) und gewöhnlich indizieren; ein Spalten-Index ist
+    gegen Inlining immun. Gemessen 326 ms → 12 ms (v2-30). **Wer einen Ausdrucks-Index
+    anlegt, prüft den PLAN seines Hauptaufrufers, nicht die Scan-Zahl.** (v2-30, LL-42)
     **Regel:** Wer auf einem berechneten Ausdruck vergleicht, legt den Index in
     **derselben** Migration an und ruft darin alles schema-qualifiziert auf. Der
     Trockenlauf findet beide Fallen; ohne ihn findet sie die Produktion. (v2-29)
@@ -1028,6 +1043,20 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-39 | Ein **RAISE-Rollback lässt aufgeschobene Constraints nie feuern** — der Trockenlauf ist grün, ohne geprüft zu haben. `SET CONSTRAINTS ALL IMMEDIATE` | §7 Regel 16 · §6 Stolperfalle 28 | v2-28 (DA-3) |
 | LL-40 | Ein **Wächter, von dem niemand weiß, ob er auslösen kann**, ist eine Zusicherung, keine Prüfung — den Fehler einmal testweise einbauen und rot sehen | §7 Regel 27 | v2-29 |
 | LL-41 | Eine **Verallgemeinerung kann die alte Regel nicht ersetzen, obwohl sie genauer ist** — ein gröberer Schlüssel fasst mehr zusammen und wird dadurch **öfter mehrdeutig**. Wer eine Erkennung verallgemeinert, misst nicht nur die neue Trefferquote, sondern auch, **was die alte Fassung heute schon leistet** | §6 Stolperfalle 30 | v2-29 |
+| LL-42 | Eine Performance-Messung gilt nur unter der **Rolle**, unter der die App arbeitet — ein MCP-Trockenlauf läuft ohne RLS und **ohne Zeitlimit** und beweist Richtigkeit, nicht Bezahlbarkeit | §6 Stolperfalle 29 ③ · §9 | v2-30 (PF-6) |
+
+> **Warum LL-42 neben LL-29 steht und nicht darin aufgeht.** LL-29 sagt: bei Trägheit
+> **zählen, wie oft gefragt wird**, nicht wie lange eine Frage dauert. In v2-30 war
+> richtig gezählt — 28 Aufrufe je Zahlung — und es war trotzdem die falsche Spur, denn
+> der Fehler lag darin, dass **jeder einzelne** Aufruf teuer war. Und das sah man nur
+> unter der richtigen Rolle.
+>
+> **Der Beleg:** identischer Import-Payload, **545 ms** als Dienst-Rolle gegen
+> **9.973 ms** als `authenticated` — Faktor 18. Und v2-29 hat den Händler-Index mit
+> **0,208 ms je Aufruf** dokumentiert; korrekt gemessen, aber unter einer Rolle, die es
+> in der laufenden App **nicht gibt**. Wer Tempo misst, setzt
+> `SET LOCAL ROLE authenticated` — sonst misst er eine Umgebung, die kein Nutzer je
+> sieht.
 
 > **Warum LL-37 neben LL-35 und LL-36 steht und nicht in ihnen aufgeht.** Alle drei
 > handeln von Aggregation, und sie sind trotzdem drei verschiedene Fehler.
@@ -1124,13 +1153,25 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-29** („Die App merkt sich, was du entschieden hast" — `ZO-5`,
-25.08.2026) · **davor:** v2-28 (`DA-3` `ZO-4` `NAV-1`), v2-27 (`DA-1` `ZO-3`),
-v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`),
-v2-23 (`ZU-1`), v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`).
-**Alles bis einschließlich v2-29 ist in `main`** — PR #46 gemergt, Browser-Smoke
+**Letzter Sprint:** **v2-30** („Der Import passt wieder in die Zeit" — `PF-6`,
+27.08.2026) · **davor:** v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4` `NAV-1`),
+v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`),
+v2-24 (`PF-1` `PF-2` `PF-4`), v2-23 (`ZU-1`), v2-22 (`B2-R` `ZO-2`).
+**Alles bis einschließlich v2-30 ist in `main`** — PR #48 gemergt, Browser-Smoke
 bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), **nicht** gegen den
 PR-Status.
+
+> **v2-30 in drei Sätzen.** Ein Import von 17 neuen Zahlungen fiel von **23.938 ms auf
+> 1.357 ms**. Das `statement_timeout` der Rolle `authenticated` liegt bei **8 s** — der
+> Import lief also strukturell in einen Fehler, sobald mehr als **vier** Zahlungen neu
+> waren, und Duplikate überspringen die teure Rechnung, weshalb eine alte Datei
+> weiterhin durchging und **kein Wächter** anschlug.
+>
+> **Die Ursache war kein N+1, sondern ein Ausdrucks-Index, der durch Inlining nie
+> griff** (§6 Stolperfalle 29 ③) — während `pg_stat_user_indexes` **88.107 Scans**
+> auswies. **Kein Zahlenwert bewegt:** Sparrate 24/24, Anker 1 und 2 je 0
+> Verletzungen. Neu offen: `PF-7` (der alte Index wird erst gelöscht, wenn sein
+> Verursacher bekannt ist).
 
 > **Was die einzelnen Sprints gebracht haben, steht in
 > `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
