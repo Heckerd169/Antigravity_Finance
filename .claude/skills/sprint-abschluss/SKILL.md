@@ -181,6 +181,32 @@ Anker vor der Anwendung einzeln per Suche auf Eindeutigkeit prüfen.
 > keine Frage, die eine Maschine beantworten kann. Anders als bei der Historie, wo die
 > Regel exakt ist (Schritt 4b).
 
+### 6b · CLAUDE.md — und dabei auf den Umfang achten ← neu seit 27.08.2026
+
+Hat der Sprint eine **dauerhafte** Lehre erzeugt — eine Stolperfalle, eine
+Arbeitsregel, eine Lesson Learned —, gehört sie in CLAUDE.md. **Verfahren wie oben,
+plus ausdrückliche Freigabe des Users** (§7 Regel 14). Fähigkeit:
+**`claude-md-pflege`**.
+
+**Die Frage vor jeder Ergänzung lautet: Gilt das *immer*?** Was ein einzelner Sprint
+gebracht hat, gehört nach `sprints/projekt_historie.md` — hierher nur, was daraus
+dauerhaft folgt.
+
+> **Warum dieser Schritt existiert.** Er fehlte bis zum 27.08.2026, und CLAUDE.md kam
+> in dieser Datei nur in Nebensätzen vor. **Sprint v2-08 hatte sie von 1.857 auf 434
+> Zeilen gekürzt; einundzwanzig Sprints später stand sie bei 1.712** — fast wieder
+> dort, wo sie vorher war, obwohl ihr eigener Kopf sagt, Historie gehöre woanders hin.
+>
+> **Die Fehlerklasse entsteht ausschließlich aus richtigen Entscheidungen:** Jede
+> Ergänzung war begründet und freigegeben. Nur die Summe war der Fehler — und Summen
+> bemerkt niemand beim Hinschreiben. Deshalb misst
+> **`tests/e2e/claude-md-umfang.spec.ts`** sie bei jedem Testlauf: Gesamtumfang,
+> Erzählzone und Regelanteil. **Er warnt bei 90 % der Grenze und wird rot beim
+> Überschreiten.**
+>
+> Dieselbe Begründung wie bei Schritt 4b: Nach LL-40 ist eine Checklisten-Zeile eine
+> Zusicherung, ein Test eine Prüfung.
+
 ### 7 · Doku-Commit
 
 `docs:` — Review + Doku-Patches + Roadmap in **einem** Commit. So bleibt der Stand
@@ -251,6 +277,8 @@ Als Vorschlag formuliert. Die Anwendung braucht die Freigabe des Users.
       prüft es, aber nur auf Existenz; die Gliederung steht dort
 - [ ] **Roadmap-Stand nachgezogen, Zahlen nachgezählt**
 - [ ] Doku-Patches als eigene Datei, Versions-Bump als eigene Patch-Stelle
+- [ ] **CLAUDE.md gepflegt, falls eine dauerhafte Lehre entstand** (Schritt 6b,
+      Fähigkeit `claude-md-pflege`) — und `claude-md-umfang.spec.ts` grün
 - [ ] `design-system/` nachgezogen, falls Tokens oder Komponenten berührt wurden
 - [ ] `docs:`-Commit mit Review + Patches + Roadmap zusammen
 - [ ] Branch gepusht

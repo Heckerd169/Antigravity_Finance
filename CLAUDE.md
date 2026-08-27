@@ -8,190 +8,35 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 24. August 2026 · **nach:** Sprint **v2-28**
-> („Was die 2025-Prüfung zutage gefördert hat" — `DA-3` `ZO-4` `NAV-1`).
-> **Alles bis einschließlich v2-28 ist in `main`** — PR #44 gemergt, Browser-Smoke
-> bestanden, gegen den Baum geprüft.
+> **Letzte Aktualisierung:** 25. August 2026 · **nach:** Sprint **v2-29**
+> („Die App merkt sich, was du entschieden hast" — `ZO-5`).
+> **Alles bis einschließlich v2-29 ist in `main`** — PR #46 gemergt, Browser-Smoke
+> bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), nicht gegen den
+> PR-Status.
 >
-> **v2-28: ein Mittelwert kann tadellos gebildet und in keinem Monat richtig sein.**
-> v2-27 setzte für jede zurückdatierte Karte **eine** Plan-Zeile als
-> Jahresdurchschnitt. Bei Netflix ergab (10 × 19,99 + 2 × 13,99) / 12 exakt **18,99**
-> — und **18,99 € wurde nie gezahlt**. Dasselbe bei Spotify (11,16 €). Ursache war
-> jeweils ein echter **Preiswechsel**, beim Handyvertrag waren es zwei **Ausreißer**.
-> Ein Preiswechsel gehört als zweite Zeitreihen-Zeile hinein, nicht in einen
-> Mittelwert. **2025: 22.316,32 → 21.776,33 €, exakt die vorher aufgeschriebenen
-> −539,99 €; 2026 in keinem der zwölf Monate bewegt**, alle neun Prüfsummen
-> byte-identisch. Neue Stolperfalle **27**, neuer Eintrag **LL-37**.
+> ### ⚠️ Am 25.08.2026 hat diese Datei ihre eigene Regel gebrochen — und wurde gekürzt
 >
-> **Der Nebenbefund entlastet die App und belastet die Methode:** Netflix trug für
-> `2026-01` bereits 13,99, Spotify bereits 12,99. **Die Preiswechsel waren die ganze
-> Zeit in der Datenbank — nur im falschen Jahr verbucht.**
+> Sie stand bei **1.712 Zeilen**. Der Kasten direkt darüber sagt seit v2-08, hier stehe
+> „ausschließlich das, was **immer** gilt", und Historie gehöre woanders hin. Der
+> Vorspann erzählte trotzdem **19 Sprints** nach, §9 noch einmal **20** — dieselbe
+> Historie, die vollständig in `sprints/projekt_historie.md` steht.
 >
-> **Der zweitteuerste Fund steckt wieder im Auftrag, diesmal in einer anderen
-> Gestalt.** Das Briefing nannte **55 Zahlungen / 1.262,92 €** für die Händler-Regel
-> und einen höchsten Tank-Monat von **199,21 €**. Gemessen: **65 / 1.520,22 €** und
-> **239,21 €**. **Nichts davon war falsch gerechnet** — es ist der Stand *vor* der
-> Nahverkehr-Entscheidung, die im selben Papier weiter unten getroffen wurde, und die
-> Differenz ist genau eine RMV-Fahrt über 40,00 € vom 02.07.2025. **Die Zahl wurde
-> nach der Entscheidung nicht nachgezogen.** Dieselbe Klasse wie LL-28 und LL-30, nur
-> **innerhalb eines einzigen Dokuments** — neue **Arbeitsregel 26**, **LL-38**. Die
-> Schlussfolgerung hielt; aber der Juli 2025 hat statt 40 Euro nur noch **79 Cent**
-> Luft im Budget.
+> **v2-08 hatte die Datei von 1.857 auf 434 Zeilen gebracht.** Sie war also fast wieder
+> dort, wo sie vor jener Kürzung stand. Jede einzelne Ergänzung war für sich begründet;
+> in der Summe hatten sie die Kosten **jeder** Sitzung verdoppelt. **Das ist die
+> Eigenschaft dieser Fehlerklasse: Sie entsteht ausschließlich aus richtigen
+> Entscheidungen** — und keine davon fällt beim Treffen als falsch auf.
 >
-> **Und eine Lücke im eigenen Prüfverfahren, die jeden künftigen Trockenlauf
-> betrifft:** Ein RAISE-Rollback committet nie — **aufgeschobene Constraints feuern
-> deshalb nie.** `cards_assert_initial_plan` ist `DEFERRABLE INITIALLY DEFERRED`; ohne
-> `SET CONSTRAINTS ALL IMMEDIATE` wäre ausgerechnet die Friseur-Rückdatierung
-> ungeprüft geblieben, also genau der Teil, dessentwegen geprobt wurde. §7 Regel 16
-> ist erweitert, **LL-39**.
+> **Raus sind die Sprint-Nacherzählungen** in Vorspann und §9.
+> **Vollständig geblieben sind §6 Stolperfallen, §7 Arbeitsregeln und §8
+> Lessons-Learned-Register** — die Regeln und die Vorfälle, an denen sie haften. Genau
+> daran haften sie; eine Regel ohne ihren Vorfall wird zur Checkliste und nicht gelesen.
 >
-> **Diese Runde berührt sieben Stellen:** diese Kopfzeile · **§6 Stolperfalle 8**
-> (Korrektur — `cards.planned_amount` **gibt es nicht**) · **§6** neue Stolperfallen
-> **26–28** · **§7 Regel 16** · **§8** neue Einträge **LL-37 bis LL-39** · **§9**
-> Sprint-Stand und Roadmap-Zahlen · **§9 die Momentaufnahme**.
->
-> ---
->
-> Davor **v2-27: Das Vorjahr rechnet zum ersten Mal.** Die App setzte für ganz 2025 **null
-> Kosten** an — die Ist-Sparrate stand dort in allen zwölf Monaten auf exakt 4.037,11 €,
-> dem vollen Netto. Die Vorjahres-Goldlinie war damit technisch richtig und inhaltlich
-> wertlos, und sie ist die **einzige** Vergleichsgröße, die es gibt. Jetzt
-> **22.462,84 €** im Jahr, auf demselben Niveau wie 2026. **2026 hat sich in keinem der
-> zwölf Monate bewegt**, alle neun Prüfsummen sind byte-identisch: Der Sprint bewegt
-> Zahlen durch **Daten**, nicht durch Logik.
->
-> **Der teuerste Fund ist wieder einer, den kein Wächter fängt — der dritte dieser Art
-> in vier Sprints.** `is_card_active_in_month` zählt den Rhythmus **ab
-> `first_active_month`**: Wer eine jährliche Karte um neun Monate zurückdatiert,
-> verschiebt ihren Fälligkeitsmonat in **allen Folgejahren**. Jahressumme, beide
-> Invarianten und sämtliche Prüfsummen wären grün geblieben — **jede Zahl richtig, nur
-> im falschen Monat.** Neue Stolperfalle **24**, neuer Eintrag **LL-34**; die Migration
-> prüft es jetzt selbst.
->
-> **Der zweitteuerste Fund steckt im Auftrag selbst, und er ist eine Mahnung an die
-> Sorgfalt.** Drei Zahlen eines ungewöhnlich gründlichen Eröffnungsprompts hielten der
-> Messung nicht stand — **alle drei durch Aggregation über ein zu grobes Textmuster**
-> (LL-35): Vier Karten, die „2025 nicht existierten", hatten 12 von 12 Monaten Zahlungen.
-> iCloud kostete 9,99 €, nicht 11,58 € — die höhere Zahl war ein Mischwert aus 17
-> Apple-Buchungen. **Die Gegenprobe kostete je eine Abfrage.**
->
-> **Jene Runde berührte fünf Stellen:** die Kopfzeile · **§6** neue Stolperfallen
-> **21–25** (drei Sprints) · **§8** neue Einträge **LL-31 bis LL-35** · **§9**
-> Sprint-Stand, Doku-Versionen und Roadmap-Zahlen · **§9 die Momentaufnahme**.
->
-> **Nachtrag vom selben Tag: die Miete war falsch, und der Fehler war grundsätzlicher.**
-> Der Plan der GEMEINSAM-Karten wurde als *Jahresdurchschnitt ÷ Split-Faktor* konstruiert
-> und erfand damit Haushaltsbeträge, die es nie gab. **Die Gegenprobe lag zwölffach
-> bereit** — dieselbe Rechnung trifft für Feb–Aug 2026 exakt den heute gültigen Plan —
-> **und wurde nicht gemacht** (neuer Eintrag **LL-36**). Korrigiert auf die echten Beträge;
-> 2025 steht jetzt bei **22.567,80 €**, 2026 blieb in allen zwölf Monaten unbewegt. Dabei
-> fiel ein **älterer** Fehler auf: Die Plan-Zeile für Januar 2026 trug schon vor diesem
-> Sprint den Februar-Betrag.
->
-> **Die Momentaufnahme musste damals ersetzt werden** — anders als bei den Sprints
-> davor, wo sie bewusst stehenblieb. Sie nannte für 2025 „alle Monate 4.037,11 €"; das
-> war seit v2-27 falsch, und zwar durch einen Eingriff, nicht durch Benutzung. Seither
-> trägt sie **beide Jahre**.
->
-> ---
->
-> Davor **v2-26** (fünf Nachbesserungen aus der Benutzung von v2-25 — `KJ-6` bis `KJ-9`).
-> **Der Fall des Löschriegels legte eine ZWEITE Sperre frei, die niemand kannte:**
-> `HAS_STATES` zählte auch **leere** Zustandszeilen, was nie auffiel, weil
-> `HAS_PAST_PLAN` ohnehin alles sperrte. *Wer eine Sperre entfernt, prüft, was darunter
-> liegt* (Stolperfalle **23**). Dazu: Die Wiederholung einer Karte war nach dem Anlegen
-> **endgültig**, bei Vorgabewert `Monatlich` — der Nutzer wollte reparieren und konnte
-> nur zerstören (**LL-33**).
->
-> Davor **v2-25** (der Löschriegel ist gefallen, `Diesen Monat nicht angefallen` gebaut,
-> **keine Zahl bewegt**). Die Zahl, die man kennen muss: **löschbar sind 3, nicht 78** —
-> `HAS_LINKS` sperrt 79 und bleibt bewusst stehen. `KJ-4` ist **nicht reproduzierbar**
-> (die Hydrations-Hypothese wurde in zwei Engines widerlegt). Zwei Verfahrenslehren:
-> **LL-31** (eine Spezifikation kann an der Physik scheitern — messen, nicht kürzen) und
-> **LL-32** (`pg_get_functiondef` schließt Kommentare ein).
->
-> Davor **v2-24** (die App reagiert sofort — `PF-1` `PF-2` `PF-4`). Ein Dashboard-Aufbau
-> machte **233 Netzrunden** für rund 490 ms Rechenarbeit, jetzt **~18**; daher **Anker 3**
-> in §9. Der teuerste Fund war dort eine Zeile in **dieser** Datei: §2 behauptete über ein
-> Jahr *„Region matched Supabase (eu-west-1)"*, während die Vercel-Funktionen auf **USA**
-> standen und die Datenbank in **Irland** liegt. Jetzt **Dublin**, festgenagelt in
-> `vercel.json` (**LL-30**, Stolperfalle **20**).
->
-> ---
->
-> Davor Sprint **v2-23**
-> (automatisch zugeordnete Zahlungen zählen wieder an ihrer Karte — `ZU-1`).
-> **Alle Pull Requests bis #35 waren gemerged, der Browser-Smoke am 16.08.2026
-> bestanden.**
->
-> **Die Sparraten-Momentaufnahme ist absichtlich unverändert.** Weder v2-21 noch
-> v2-22 noch v2-23 bewegt eine Zahl; die Anker-Werte sind bei allen dreien vor und
-> nach dem Eingriff identisch gemessen worden.
->
-> Diese Runde berührt **vier Stellen**, alle nach ausdrücklicher Freigabe: diese
-> Kopfzeile · **§6 neue Stolperfalle 16** · **§8 neuer Eintrag LL-26** · **§9**
-> Sprint-Stand, Doku-Versionen und Roadmap-Zahlen. **Die Momentaufnahme in §9 bleibt
-> unverändert** — der Sprint hat keine Zahl bewegt, und das ist hier das erwartete
-> Ergebnis, nicht ein fehlender Nachtrag.
->
-> **Das Netto ist nicht mehr nur geplant.** Zieht der Nutzer seine Gehaltszahlung auf
-> die Netto-Kachel, rechnet dieser Monat mit dem tatsächlich überwiesenen Betrag. Die
-> Differenz bekommt eine eigene Treiber-Zeile — die **erste ohne Karte dahinter**.
-> Der teuerste Fund dabei steckt in Stolperfalle 16: Eine Frontend-Zeile hätte die
-> ganze Sache stillgelegt, ohne dass ein einziger Wächter angeschlagen hätte.
->
-> ✅ **Erledigt:** Migrationen auf Produktion, **Browser-Smoke am 16.08.2026 bestanden**
-> — für v2-19 bis v2-23 in einem Durchgang.
->
-> ---
->
-> Davor der Doku-Nachzug
-> *„der Anker wird invariantenbasiert"* (`sprints/doku_patch_2026-08-13_anker-invarianten.md`).
->
-> **Die eingefrorene Zwölf-Monats-Tabelle in §9 ist RAUS.** Sie war am 13.08.2026
-> zweimal innerhalb weniger Stunden überholt, ohne dass irgendetwas kaputt war — der
-> Nutzer hat Zahlungen zugeordnet und Budget-Karten abgeschlossen, beides normale
-> Benutzung. An ihre Stelle treten **zwei datenunabhängige Invarianten**
-> (Ordner-Spalte == Sparrate · `Σ delta = Ist − Plan`) und die Messregel *vor und nach,
-> in derselben Sitzung*. Wer nach einem Sollwert für einen bestimmten Monat sucht:
-> Es gibt keinen mehr, und das ist Absicht. Die Momentaufnahme in §9 ist Orientierung,
-> **kein** Alarmgeber. Der Anker der **Übungs-Datenbank** (2.200,00 €) bleibt dagegen
-> ein echter Sollwert — dort kuratiert niemand.
->
-> Dokumentiert ist in derselben Datei auch der **Schreibzugriff auf Produktion** vom
-> 13.08.2026 (Karte `Rundfunkbeitrag`, gemeinsam, vierteljährlich ab Januar 2026).
->
-> ---
->
-> Davor Sprint **v2-18** (zwei Befunde aus der Nutzung — Ziehen öffnet nur noch den
-> bereits offenen Ordner, die Ansicht springt beim Monatswechsel nicht mehr).
->
-> Jene Runde berührte **nur §9**, dafür an vier Stellen — alle nach ausdrücklicher
-> Freigabe: Juli-Anker auf −322,74 € · **Sprint-Stand und Roadmap-Zahlen** auf v2-18 ·
-> und zwei Sätze, die der Freigabe sonst offen widersprochen hätten: **„nichts ist
-> entschieden und ungebaut" war seit v2-17 falsch** (`KAT-5` / Record `A2`), und die
-> Kopfzeile trug noch v2-17. Der Juli-Wert von damals ist **noch am selben Tag**
-> überholt worden — was den Umbau darüber ausgelöst hat.
->
-> Davor Sprint v2-17 (Kategorien im Karussell — `KAT-1` `KAT-2` `KAT-3` plus die
-> Hausaufgabe `J1`; **Paket 4 damit vollständig**, der Riegel vor Paket 5 gefallen;
-> **§6 Stolperfalle 4 war FALSCH** und ist korrigiert — wer über den Nutzer aggregiert,
-> nimmt `p_user_id` · **neue Stolperfallen 13, 14 und 15** · **neuer Eintrag LL-25**).
-> Davor v2-16 (`RM-2`, `PA-1`) und v2-15 (`LQ-1`-Anzeigeseite + `LQ-2`).
-> Davor die Design-Direktor-Runde vom 06.08.2026 (`LQ-2` `LQ-1` `RM-2` `PA-1`
-> entschieden, Design-Doku v3.3.0) und Sprint v2-14 (`LQ-1`, `cards.due_day`). Davor
-> v2-13 (`BF-4` — der
-> Split-Anteil wird genau einmal angewandt; **neue Stolperfalle 11**, **neue Regeln
-> 23/24 mit LL-23/LL-24**). Damit ist **Paket 1 vollständig**: alle fünf Befunde vom
-> 04.08. sind erledigt.
-> Davor v2-11 (Juli-Anker auf
-> −322,75 € nach der `BF-5`-Migration, **neue Regel 22 / LL-22**, §9-Lage nachgezogen).
-> Davor v2-10 (Prüfanker auf den gemessenen Stand, LL-6
-> um die Portal-Kehrseite ergänzt) und die Entscheidung E2.
-> Davor v2-09 (Workflow-Vereinfachung
-> — drei Sprint-Phasen statt sieben, Design-Direktor als Fähigkeit statt eigenem Chat,
-> Roadmap nach Sprint-Paketen). Davor v2-08: 1.857 → 434 Zeilen, der Sprint-Log liegt
-> seither in `sprints/projekt_historie.md`.
+> **Die Regel, die daraus folgt, gilt ab sofort für jede Ergänzung hier:** Zuerst
+> fragen, ob das Neue *immer* gilt. **Ein Sprint-Ergebnis gilt nicht immer** — es gehört
+> in die Historie und in die Roadmap. Hierher gehört nur, was daraus **dauerhaft** folgt:
+> eine Stolperfalle, eine Arbeitsregel, eine Lesson Learned. Im Zweifel gehört ein
+> Absatz nach `sprints/projekt_historie.md` und ein Verweis hierher.
 
 ---
 
@@ -475,6 +320,15 @@ Gate ist damit weiterhin technisch, aber er sitzt jetzt an der richtigen Stelle.
 | `design-direktor` | Gestaltungsfragen, **bevor** gebaut wird |
 | `db-eingriff` | jede Berührung der Datenbank |
 | `sprint-abschluss` | sobald der Code steht |
+| `claude-md-pflege` | jede Änderung an **dieser** Datei — und wenn `claude-md-umfang.spec.ts` anschlägt |
+
+> **Warum diese Datei eine eigene Fähigkeit hat.** v2-08 kürzte sie von 1.857 auf
+> **434** Zeilen; einundzwanzig Sprints später stand sie bei **1.712**. Jede einzelne
+> Ergänzung war begründet und freigegeben — **nur die Summe war der Fehler**, und
+> Summen bemerkt niemand beim Hinschreiben. Gemessen wird das seit dem 27.08.2026 von
+> `tests/e2e/claude-md-umfang.spec.ts` (Gesamtumfang · Erzählzone · Regelanteil), der
+> in jeder Prüfstrecke mitläuft. **Die Fähigkeit sagt, was zu tun ist; der Test sagt,
+> dass** (LL-40).
 
 **Zusätzlich global installiert** (fremd, liegt in `~/.agents/skills/`, **nicht im
 Repo** — auf einem frischen Klon also nicht vorhanden): `diagnosing-bugs` ·
@@ -697,8 +551,9 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     | **Nachbauen** | `page.tsx` bildete `card_delete_gate` nach, um 31 RPC-Aufrufe zu sparen. Als die Datenbank in v2-20 großzügiger wurde, blieb der Nachbau streng — das Menü hätte ausgegraut, was die Datenbank längst erlaubte | *wo wird dieselbe Regel ein zweites Mal formuliert* |
     | **Den Monatsbezug weglassen** | `page.tsx` lud das Einkommen mit `.order("effective_month", desc).limit(1)` — **immer die neueste Zeile, ohne jeden Bezug zum angezeigten Monat**. Das Popup zeigte im Januar 2025 das Jahresbrutto von 2026 (92.400 € statt 90.000 €) und den Split von 2026 (57 % statt 58,8 %). Die **Sparrate war nie betroffen** — sie rechnet in der Datenbank, wo `effective_month <= p_month` gilt (v2-27) | *fehlt der Zeitbezug, obwohl die Datenbank ihn kennt* |
 | **Auf einen Wert filtern** | `page.tsx` filterte verknüpfte Zahlungen mit `status === "ASSIGNED"`. Die View kennt **zwei** zugeordnete Zustände; `AUTO_ABSORBED` fiel durch, die Karte blieb „Offen" und zeigte keine Zahlung — obwohl beides in der Datenbank stand und die Sparrate den Betrag mitrechnete (v2-23) | *ist die Menge hinter dem Vergleich größer als der eine Wert* |
+    | **Den falschen Teil wählen** | `displayDescription` zeigt den **letzten** `\|`-Teil eines Buchungstextes — bei DKB-Giro der Verwendungszweck und richtig, bei einem Debitkartenumsatz aber das **Datum**. Seit v2-29 erkennt `history_match` die Zahlung am **Händler**, der davor steht: Der Vorschlag ist da, seine Begründung ist weggeschnitten. Der Nutzer liest „VISA Debitkartenumsatz vom 29.11." und darunter „KI-Vorschlag: Privates Budget" (v2-29, `ZO-7`) | *wird der Teil angezeigt, auf dem die Entscheidung beruht* |
 
-    **Fünf Vorfälle** (v2-19 · v2-20 · v2-21 · v2-23 · v2-27) — das ist die
+    **Sechs Vorfälle** (v2-19 · v2-20 · v2-21 · v2-23 · v2-27 · v2-29) — das ist die
     teuerste Fehlerklasse dieses Projekts, weil **jede Zahl richtig bleibt**. Anker,
     Prüfsummen und B2-Invariante sind dabei grün; gefunden hat **vier der fünf Fälle**
     nicht die Prüfstrecke, sondern das Benutzen.
@@ -856,6 +711,36 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Friseur-Rückdatierung — genau den Teil, dessentwegen geprobt wurde.
     **Regel:** `SET CONSTRAINTS ALL IMMEDIATE;` vor der Messung, innerhalb desselben
     Blocks. Details in §7 Regel 16. (v2-28, LL-39)
+29. **Ein Ausdrucks-Index braucht schema-qualifizierte Aufrufe — und ohne ihn ist ein
+    berechneter Ausdruck unbenutzbar.** Zwei Fallen an derselben Stelle:
+    **① `CREATE INDEX` scheitert mit `42883: function … does not exist`**, wenn die
+    indizierte SQL-Funktion ihre Hilfsfunktion nicht als `public.…` aufruft. Postgres
+    **bettet die Funktion beim Anlegen ein** (Inlining) und wertet sie dabei unter
+    einem anderen `search_path` aus. **Jeder direkte Aufruf funktioniert dabei
+    tadellos** — der Fehler tritt ausschließlich beim Index-Anlegen auf, was die Suche
+    zuverlässig in die Irre führt.
+    **② Ohne den Index kostet ein einziger Aufruf das 72-fache.** In v2-29 brauchte
+    `history_match` **14,9 ms** statt **0,208 ms** — ein Seq Scan über 1.599 Fragmente,
+    der für **jede** Zeile ein `regexp_replace` ausführt. Bei rund 14.000 Aufrufen je
+    `refresh_fragment_suggestions`-Lauf ist das der Unterschied zwischen 23 Sekunden
+    und über drei Minuten.
+    **Regel:** Wer auf einem berechneten Ausdruck vergleicht, legt den Index in
+    **derselben** Migration an und ruft darin alles schema-qualifiziert auf. Der
+    Trockenlauf findet beide Fallen; ohne ihn findet sie die Produktion. (v2-29)
+30. **Eine Verallgemeinerung kann die alte Regel nicht ersetzen, obwohl sie genauer
+    ist.** Ein gröberer Schlüssel trifft mehr — und fasst dabei mehr Fälle zusammen,
+    wird also **öfter mehrdeutig**. Wo eine Regel bei Mehrdeutigkeit schweigt, ist das
+    ein **Verlust an Reichweite**, den die Trefferquote nicht zeigt.
+    In v2-29 traf der Händler-Schlüssel **91,5 %** gegen 77,4 % der alten wortgleichen
+    Fassung. Er allein hätte trotzdem geschadet: **131 der 136 sichtbaren Vorschläge
+    kamen aus der Historie, und 35 davon hätten keinen eindeutigen Treffer mehr
+    gehabt.** Gebaut wurde deshalb **zweistufig** — erst der Händler, sonst der alte
+    Vergleich; Regression **null**.
+    **Regel:** Wer eine Erkennungs- oder Ähnlichkeitsfunktion verallgemeinert, misst
+    **beides**: die neue Trefferquote **und** was die alte Fassung heute schon leistet.
+    Ergänzen schlägt ersetzen, solange die alte Stufe etwas trägt, das die neue nicht
+    erreicht. Ergänzt §7 Regel 25, die nur Richtig und Falsch verlangt — hier kommt die
+    **Reichweite** als dritte Achse dazu. (v2-29, LL-41)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -1018,6 +903,17 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
     das eigene Papier nach den Kennzahlen, die daraus abgeleitet sind — Summen,
     Anzahlen, Maxima, „risikolos"-Urteile. Und wer ein Briefing **ausführt**, misst
     dessen Zahlen ohnehin nach (§7 Regel 10). (v2-28, LL-38)
+27. **Ein Wächter, von dem niemand weiß, ob er auslösen kann, ist eine Zusicherung —
+    keine Prüfung.** Wer einen Regressions-Wächter schreibt, baut den Fehler, den er
+    fangen soll, **einmal testweise ein** und belegt, dass der Test rot wird. Danach
+    zurücknehmen.
+    Das kostet zwei Minuten und beantwortet die einzige Frage, die zählt: *Prüft er
+    das, was ich glaube?* In v2-29 lief der neue Wächter beim ersten Versuch grün, weil
+    sein Muster die **falsche** Stelle traf — die Bedingung im `aria-label` statt der
+    Render-Bedingung. Ein grüner Lauf hätte das nie verraten.
+    **Das ist LL-22 in einer zweiten Gestalt:** Dort ist eine Doku-Zusage über
+    Rechenverhalten keine Prüfung; hier ist es ein Test, dessen Auslösung nie
+    beobachtet wurde. Beide sehen aus wie Sicherheit und sind keine. (v2-29, LL-40)
 
 ### Datei-Konventionen
 
@@ -1130,6 +1026,8 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-37 | Ein **Mittelwert über eine Periode** verbirgt einen Sprung: Die Jahressumme stimmt, und **jeder einzelne Monat ist falsch**. Der billigste Test — kommt der errechnete Wert in den Daten überhaupt **vor**? | §6 Stolperfalle 27 | v2-28 (DA-3) |
 | LL-38 | Eine Zahl in einem Papier veraltet mit einer **Entscheidung auf derselben Seite** — nichts ist falsch gerechnet, und niemand hat sich geirrt | §7 Regel 26 | v2-28 (ZO-4) |
 | LL-39 | Ein **RAISE-Rollback lässt aufgeschobene Constraints nie feuern** — der Trockenlauf ist grün, ohne geprüft zu haben. `SET CONSTRAINTS ALL IMMEDIATE` | §7 Regel 16 · §6 Stolperfalle 28 | v2-28 (DA-3) |
+| LL-40 | Ein **Wächter, von dem niemand weiß, ob er auslösen kann**, ist eine Zusicherung, keine Prüfung — den Fehler einmal testweise einbauen und rot sehen | §7 Regel 27 | v2-29 |
+| LL-41 | Eine **Verallgemeinerung kann die alte Regel nicht ersetzen, obwohl sie genauer ist** — ein gröberer Schlüssel fasst mehr zusammen und wird dadurch **öfter mehrdeutig**. Wer eine Erkennung verallgemeinert, misst nicht nur die neue Trefferquote, sondern auch, **was die alte Fassung heute schon leistet** | §6 Stolperfalle 30 | v2-29 |
 
 > **Warum LL-37 neben LL-35 und LL-36 steht und nicht in ihnen aufgeht.** Alle drei
 > handeln von Aggregation, und sie sind trotzdem drei verschiedene Fehler.
@@ -1226,224 +1124,40 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-28** („Was die 2025-Prüfung zutage gefördert hat" — `DA-3`
-`ZO-4` `NAV-1`, 24.08.2026) · **davor:** v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6` bis
-`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`), v2-23 (`ZU-1`),
-v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`).
-**Alles bis einschließlich v2-28 ist in `main`** — PR #44 gemergt, Browser-Smoke
-bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), nicht gegen den
+**Letzter Sprint:** **v2-29** („Die App merkt sich, was du entschieden hast" — `ZO-5`,
+25.08.2026) · **davor:** v2-28 (`DA-3` `ZO-4` `NAV-1`), v2-27 (`DA-1` `ZO-3`),
+v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`),
+v2-23 (`ZU-1`), v2-22 (`B2-R` `ZO-2`), v2-21 (`M6`).
+**Alles bis einschließlich v2-29 ist in `main`** — PR #46 gemergt, Browser-Smoke
+bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), **nicht** gegen den
 PR-Status.
-Vollständige Sprint-Tabelle und alle Details: `sprints/projekt_historie.md`.
 
-> ### ⚠️ v2-28: drei Nachzüge, und alle drei sagen dasselbe über Wächter
->
-> **Ein Mittelwert, eine Zahl im eigenen Auftrag, eine Schranke, die nie auslöste** —
-> keiner der drei Fehler wäre von Anker, Invariante oder Prüfsumme gefunden worden,
-> weil bei allen dreien **jede Zahl richtig war**.
->
-> **`DA-3`** — Die 2025-Pläne trugen Jahresdurchschnitte. Netflix' 18,99 € ist über
-> genau die richtigen Zahlen exakt gebildet **und wurde nie gezahlt** (Preissenkung im
-> November); Spotifys 11,16 € ebenso (Erhöhung im Dezember); beim Handyvertrag zogen
-> zwei Ausreißer den Schnitt von 33,00 auf 33,07. Korrigiert über **zweite
-> Zeitreihen-Zeilen**, dazu der Friseur zurück auf `2025-01`.
-> **2025: 22.316,32 → 21.776,33 €, exakt die vorher aufgeschriebenen −539,99 €.
-> 2026 in keinem der zwölf Monate bewegt.** Der Trockenlauf hat **alle 24 Zeilen** auf
-> den Cent vorhergesagt — möglich nur, weil die Erwartung **je Karte** aufgeschrieben
-> war und nicht als Summe.
-> **Der Nebenbefund entlastet die App:** Netflix trug für `2026-01` bereits 13,99,
-> Spotify bereits 12,99. **Die Preiswechsel waren die ganze Zeit erfasst — im falschen
-> Jahr.**
->
-> **`ZO-4`** — Tankstellen und Nahverkehr ordnen sich selbst zu. Zweistufige Wortliste
-> in `app_config`; `calculate_match_confidence` hebt die Konfidenz auf **0,96**, knapp
-> **über** die Auto-Schwelle 0,95. **Dadurch war an `process_csv_import` nichts zu
-> ändern.** 65 Zahlungen aus 2025 nachverlinkt (1.520,22 €), **Sparrate in allen 24
-> Monaten unbewegt** — „Tanken" ist BUDGET und bleibt unter dem Plan.
-> Gemessen mit Richtig **und** Falsch (Regel 25): **75 Übereinstimmungen mit den
-> eigenen Handzuordnungen des Nutzers gegen 2 Widersprüche, 97,4 %.** Von 34 Zeilen
-> mit `DB Vertrieb`/`Deutschlandticket` wird **keine** getroffen.
-> **Die zweite Stufe hat sich an genau zwei Zeilen bewährt:** „JET, 25,00 €"
-> angenommen, „Backen FCO-Team, 5,00 €" abgewiesen — ohne sie wäre eine private
-> Überweisung fürs Backen auf der Tank-Karte gelandet.
->
-> **`NAV-1`** — Die untere Navigationsschranke stand seit **Sprint 3** auf `1900-01`.
-> Der Deaktiviert-Pfad war gebaut, kommentiert, funktionsfähig — und hat in über einem
-> Jahr **nie ausgelöst**. Jetzt aus `cards.first_active_month` abgeleitet, **ohne
-> zusätzliche Netzrunde** (LL-29). Abgeleitet statt gesetzt, damit die Grenze nach
-> einem Import älterer Auszüge von allein mitrückt.
->
-> **Zwei Dinge, die der Nutzer wissen muss:**
-> **①** Der **Juli 2025** liegt bei **239,21 €** gegen 240,00 € Tank-Budget — **79
-> Cent Luft**. Eine nachträglich dort zugeordnete Tankfüllung kippt den Monat in
-> ÜBERSCHRITTEN, und **dann** bewegt sich die Sparrate.
-> **②** Für **Friseurbesuche 2025 gibt es keine Belege** (der Salon taucht erstmals
-> 01/2026 auf). Die Karte plant 12 × 45,00 € ohne Realität dagegen. Werden die
-> passenden Bargeld-Abhebungen bei der Kuratierung nicht der **Friseur**-Karte
-> zugeordnet, **zählt dasselbe Geld zweimal.**
->
-> Protokolle: `sprints/sprint_v2-28_anker.md` · `sprints/sprint_v2-28_review.md`.
+> **Was die einzelnen Sprints gebracht haben, steht in
+> `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
+> denen sich eine Annahme als falsch erwiesen hat. Hier steht nur, was für die
+> **nächste** Sitzung gilt.
 
-> ### ⚠️ v2-27: das Vorjahr rechnet — und zwei Fallen, die kein Wächter gefangen hätte
->
-> **Die App rechnete für ganz 2025 mit NULL Kosten.** Die Ist-Sparrate stand dort in allen
-> zwölf Monaten auf exakt **4.037,11 €** — dem vollen Netto. Jetzt **22.462,84 € im Jahr**
-> statt 48.445,32 €, und damit liegt 2025 auf demselben Niveau wie 2026. **2026 hat sich
-> in keinem der zwölf Monate bewegt**, beide Invarianten 24/24, alle neun Prüfsummen
-> byte-identisch: Der Sprint bewegt Zahlen durch **Daten**, nicht durch Logik.
->
-> **① Der Rhythmus zählt ab `first_active_month` (neue Stolperfalle 24).** Wer eine
-> jährliche oder quartalsweise Karte zurückdatiert, verschiebt ihren Fälligkeitsmonat in
-> **allen Folgejahren** — sofern der Abstand kein Vielfaches der Periode ist. Der
-> ADAC-Beitrag wäre 2026 von Juli auf Oktober gewandert. **Jede Zahl wäre richtig
-> geblieben, sie hätte nur im falschen Monat gestanden**; Jahressumme, Anker und
-> Prüfsummen wären grün gewesen. Die Migration prüft das jetzt selbst und bricht ab.
->
-> **② Drei Zahlen des Auftrags waren falsch, alle drei durch Aggregation über ein zu
-> grobes Textmuster (LL-35).** Vier Karten, die „2025 nicht existierten", hatten 12 von 12
-> Monaten Zahlungen (−4.164,15 €). iCloud lag 2025 bei **9,99 €**, nicht bei 11,58 € — die
-> höhere Zahl war der Schnitt über 17 Apple-Buchungen, von denen nur zwölf iCloud sind.
-> Und der ADAC verbirgt zwei verschiedene Dinge: 99 € Mitgliedsbeitrag, 212,10 €
-> Fahrsicherheitstraining. **Die Gegenprobe kostete jeweils eine Abfrage.**
->
-> **`ZO-3` ist damit erledigt** — 41 Zahlungen aus 2025 rückwirkend verlinkt, ab 0,95
-> Konfidenz. Gemessen gegen die 411 handverlinkten Zahlungen aus 2026 (für 2025 gibt es
-> keine Wahrheit): **ab 0,95 48 richtig / 0 falsch**, ab 0,60 dagegen 181 / 49 — deshalb
-> wurde die niedrige Schwelle **nicht** automatisiert. **Wirkung: +1,84 € auf das Jahr**,
-> obwohl die Zahlungen −2.699,90 € ausmachen; bei Fixkosten wirkt nur die Differenz zum
-> Plan. Für **2026 war der Punkt gegenstandslos geworden** — dort ist alles von Hand
-> zugeordnet.
->
-> **Der Leave-One-Out-Ausschluss aus §7 Regel 25 musste nicht gebaut werden: er ist
-> eingebaut.** `history_match` filtert selbst mit `f.id <> p_fragment_id` und zählt nur
-> `MANUAL_DROP` — sie sieht ihre eigene Antwort nie und lernt nicht aus automatischen
-> Zuordnungen. Deshalb wurde mit `AUTO_ABSORBED` geschrieben.
->
-> **Offen bleibt Handarbeit, keine Technik:** 710 Zahlungen aus 2025 sind unzugeordnet,
-> für 212 liegt ein Kartenvorschlag bereit. Protokolle:
-> `sprints/sprint_v2-27_anker.md` · `sprints/sprint_v2-27_zuordnung.md`.
+### Wo das Projekt gerade steht
 
-> **⚠️ v2-24 in drei Sätzen, weil die Zahlen den Rest erklären.** Ein Dashboard-Aufbau
-> machte **233 Netzrunden** zu Supabase für rund **490 ms** Rechenarbeit — jetzt
-> **~18**. `is_card_active_in_month` braucht **0,089 ms** in der Datenbank und lag bei
-> **899 ms** über die Leitung; die App rief sie **77-mal einzeln** auf. Am 16.08.2026
-> transportierten **55.881 Anfragen** insgesamt **0,4 MB** (Ø 8 Bytes je Antwort).
->
-> **Zwei neue LESENDE RPCs** — `get_cards_for_month` (179 → 1) und
-> `get_sparrate_series` (24 → 1). Beide **rufen** die Rechenfunktionen **auf** und bauen
-> sie nicht nach; belegt über **byte-identische Prüfsummen** aller neun (9/0). Wer sie
-> erweitert, prüft das erneut: Ein Nachbau würde den Split-Anteil ein zweites Mal
-> anwenden (§6 Stolperfalle 11, der Fehler aus v2-13), und **keine Zahl sähe falsch
-> aus**. Protokoll: `sprints/sprint_v2-24_anker.md`.
->
-> **Die Migrationen liegen auf Produktion** (Freigabe je Migration einzeln eingeholt).
-> Die Übungs-Datenbank-Probe wurde nach Nutzer-Entscheidung **übersprungen** — beide
-> Funktionen sind `STABLE` und tragen neue Namen, und dem synthetischen Bestand fehlt der
-> gefährlichste Fall: eine GEMEINSAM-Karte mit verknüpfter Zahlung gibt es dort nicht, in
-> den echten Daten fünfmal. Begründung: `sprints/sprint_v2-24_review.md` §5.
+| | Stand 25.08.2026 |
+|---|---|
+| **2026** | vollständig zugeordnet — **0** offene Zahlungen |
+| **2025** | **480** offen, davon **195** mit Kartenvorschlag (v2-29: 136 → 195) |
+| **Goldlinie 2025** | **21.708,77 €** — bewegt sich laufend durch Kuratierung |
+| **Nächste Arbeit** | Kuratierung 2025. **Handarbeit in der App, kein Sprint.** |
+| **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
 
-> **Der Satz, der `ZO-3` überlebt — er gilt für jede rückwirkende Verknüpfung.**
-> `ZO-3` selbst ist seit v2-27 erledigt (oben). Was bleibt, ist die Warnung, an der
-> es damals entschieden wurde:
->
-> **Die Summe der Zahlungen ist NICHT die Sparraten-Bewegung.** Bei Fixkosten gilt
-> „Realität gewinnt": Bewegt wird nur die **Differenz** zwischen Plan und
-> tatsächlicher Zahlung — wo beide übereinstimmen, bewegt sich nichts. In v2-27
-> machten die 41 verlinkten Zahlungen **−2.699,90 €** aus und bewegten das Jahr um
-> **+1,84 €**. Wer beides verwechselt, hält einen harmlosen Eingriff für einen
-> gefährlichen — oder umgekehrt.
->
-> **Dieselbe Falle in v2-28, nur bei BUDGET:** 65 nachverlinkte Zahlungen über
-> 1.520,22 € bewegten die Sparrate um **0,00 €**, weil „Tanken" in keinem Monat über
-> seinen Plan kam. Die echte Wirkung ist vor dem Eingriff zu messen und als Erwartung
-> aufzuschreiben (§7 Regel 21) — **je Karte, nicht als Summe.**
+### Was offen ist und eine Entscheidung braucht
 
-> ### ⚠️ Eine PR-Kette sieht nach „erledigt" aus, ohne es zu sein
->
-> **Am 16.08.2026 real passiert.** v2-20, v2-21 und v2-22 lagen als Kette vor: #30 auf
-> `main`, #31 auf dem v2-20-Branch, #32 auf dem v2-21-Branch. Alle drei wurden
-> gemerged — aber **nur #30 landete in `main`**. Die anderen beiden gingen in ihre
-> Ketten-Basis und standen auf GitHub trotzdem als „merged".
->
-> **Das war produktiv relevant, nicht kosmetisch:** Die Datenbank trug alle
-> v2-21-Funktionen, aber `page.tsx` in `main` filterte Vorschläge noch mit der alten
-> Obergrenze — die 24 treffsichersten wären unsichtbar geblieben. Repariert mit #34,
-> der den vollständigen Branch nach `main` brachte.
->
-> **Zwei Lehren:**
-> **①** Wer eine Kette baut, braucht am Ende einen PR des **letzten** Branches nach
-> `main` — oder prüft nach jedem Merge, ob die Dateien wirklich dort liegen
-> (`git ls-tree origin/main`). Der PR-Status allein ist kein Beleg.
-> **②** Ein neuer Sprint setzt **auf `main` auf**, sobald die Vorgänger dort sind.
-> v2-23 ist genau deshalb ein eigenständiger PR und kein viertes Kettenglied.
-> Wer hier ansetzt, prüft zuerst den Stand von #30, #31 und #32.
-
-**v2-23 kam aus der Benutzung, nicht aus der Planung.** Der Nutzer meldete am
-16.08.2026, dass die Spotify-Karte „Offen" zeigte und keine Zahlung führte — obwohl der
-Link in der Datenbank stand und die Sparrate den Betrag mitrechnete. Ursache war ein
-Filter auf **einen** Status, wo die View **zwei** zugeordnete kennt (§6 Stolperfalle 16,
-dritte Form). **Der Fehler stammte aus v2-07 und lag drei Wochen unentdeckt**, weil es
-im ganzen Bestand nur vier automatische Zuordnungen gibt.
-
-**v2-22 hat zwei Hausaufgaben abgeräumt und keine neue erzeugt** — `B2-R` und `ZO-2`.
-Die B2-Invariante gilt wieder in allen zwölf Monaten exakt, und die Regel, ob ein
-Kartenvorschlag angezeigt wird, liegt jetzt als reine Funktion mit eigener Spec vor
-(`src/lib/suggestion.ts`) statt inline in einer Server Component. Genau dort saß der
-Fehler aus v2-21 — es war die **dritte** Stelle dieser Art in vier Tagen (LL-26).
-
-**v2-21 macht Paket 5 zum ersten Mal wirksam.** Die automatische Zuordnung schlägt
-für **115 statt 9** offene Zahlungen aus 2026 eine Karte vor. Drei Ursachen waren
-dafür zu beheben, und nur die erste stand im Auftrag: Die Konfidenz wurde
-ausschließlich **beim Import** berechnet (1.567 von 1.590 Zahlungen trugen gar keinen
-Wert); die Namensfunktion verglich **ganze Zeichenketten** statt Wörter
-(`Nurnberger` gegen `Nürnberger` ergab 0,139); und die **101 Handzuordnungen** des
-Nutzers aus Juli/August wurden nie ausgelesen.
-
-> **Diese 101 Handzuordnungen sind ab jetzt das Prüfset des Projekts.** Wer an der
-> Zuordnung arbeitet, misst dagegen — mit Richtig **und** Falsch (§7 Regel 25).
-> Stand nach v2-21: 42 richtige Vorschläge über der Badge-Schwelle gegen 4 falsche;
-> davor 14 gegen 1.
-
-**Die Produktentscheidung hinter `ZO-3` ist gefallen** — in v2-27, und zwar für
-**0,95 ja, 0,60 nein**: Gemessen an den 411 handverlinkten Zahlungen aus 2026 waren es
-ab 0,95 **48 richtig / 0 falsch**, ab 0,60 dagegen **181 / 49**. Bei jeder fünften
-Zuordnung falsch zu liegen ist kein Automatismus, sondern Aufräumarbeit für später.
-
-**Was davon dauerhaft gilt:** Verknüpfen bewegt die Sparrate rückwirkend über bis zu
-zwölf Monate — deshalb schreibt `refresh_fragment_suggestions` ausschließlich
-Anzeige-Spalten, und das ist **erzwungen, nicht zugesagt**: Die Funktion zählt
-`card_fragment_links` vor und nach ihrem Lauf und bricht bei jeder Abweichung mit
-Rollback ab. Wer eine neue Zuordnungs-Automatik baut, baut denselben Riegel ein oder
-begründet, warum nicht.
-
-**v2-19 macht das Netto von geplant zu gemessen.** Bis dahin galt „Realität gewinnt"
-für Fixkosten und Einnahmen, für das Gehalt nicht: Juli 2026 geplant 4.165,11 €,
-überwiesen 4.149,54 €, und die App sah die 15,57 € nicht. Jetzt lässt sich die Zahlung
-auf die Netto-Kachel ziehen; der Monat rechnet dann mit dem echten Betrag, und die
-Differenz erscheint als eigene Treiber-Zeile **ohne Karte dahinter** — die erste ihrer
-Art. Der Eingriff sitzt ausschließlich in `calculate_sparrate_for_month`;
-`calculate_planned_sparrate_for_month` und `get_net_monthly_for_month` sind
-**nachweislich** unberührt (identische Prüfsummen vor und nach der Migration, LL-23).
-
-**Paket 15 ist vollständig abgeschlossen** — einen Tag nachdem es entstanden ist. Es
-kam nicht aus der Roadmap, sondern aus einem **gescheiterten Bedienversuch**: Der User
-wollte sein Gehalt auf die Kachel ziehen, und es ging nicht.
-
-**v2-18 hat eine Produkt-Entscheidung aufgehoben, nicht nur nachgezogen.** Record `B4`
-(„beim Anfassen einer Zahlung öffnen sich **alle** Ordner") war beim Bauen plausibel
-und löste den Blocker `U1`; in der Praxis schiebt es die Zielkarte aus dem Bild,
-während die Maustaste gedrückt ist und das Karussell deshalb nicht gescrollt werden
-kann. `U1` ist jetzt anders gelöst — durch bewusstes Aufklappen **vor** dem Zug.
-Design-Doku **§8**, Record Teil B.
-
-**Paket 4 ist vollständig abgeschlossen.** Das Karussell zeigt im Juli **elf Ordner
-statt 32 Karten**. Damit sind **vier der fünf Kettenglieder fertig** (Pakete 1, 2, 4
-plus das danebenstehende 3), und der Riegel vor **Paket 5** — der besseren
-automatischen Zuordnung, dem einzigen Punkt der Roadmap, der Aufwand **wegnimmt** — ist
-gefallen. Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
-
-**Ein Beschluss ist entschieden und ungebaut:** `KAT-5` / Record `A2`. Bis zum
-13.08.2026 stand hier „nichts ist entschieden und ungebaut" — das war **falsch**, seit
-v2-17. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt.
+| | |
+|---|---|
+| **`ZO-7`** | **Die App kennt den Händler und zeigt ihn nicht.** `displayDescription` zeigt den **letzten** `\|`-Teil — bei DKB-Giro der Verwendungszweck und richtig, bei einem Debitkartenumsatz das **Datum**. Der Nutzer liest „VISA Debitkartenumsatz vom 29.11." und darunter „KI-Vorschlag: Privates Budget", **ohne zu sehen, worauf der Vorschlag beruht**. Betrifft exakt die 39 Zahlungen, die v2-29 sichtbar gemacht hat. Fünfte Gestalt von LL-26 (§6 Stolperfalle 16). |
+| **`ZO-8`** | **Der alphabetische Münzwurf.** Die wortgleiche Stufe von `history_match` prüft **nicht** auf Eindeutigkeit; liegt derselbe Text auf mehreren Karten, entscheidet `ORDER BY score DESC, card_name ASC`. Betrifft 93 der 568 Handzuordnungen. |
+| **`ZO-1`** | `frequency_match` liefert ausnahmslos `1.00` (§6 Stolperfalle 17). Jede Änderung verschiebt **alle** Scores gleichzeitig. |
+| **`ZO-6`** | Kein Wächter dafür, ob eine Händler-Regel auf eine Karte zeigt, **die es gibt** — sie ist nach Kartenname geschlüsselt und greift nach einer Umbenennung **still** nicht mehr. |
+| **`KAT-5` / `A2`** | entschieden und ungebaut. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt. |
+| **Folgepflicht des Nutzers** | Für Friseurbesuche 2025 gibt es **keine Belege** (Salon erstmals 01/2026). Die passenden Bargeld-Abhebungen gehören bei der Kuratierung an die Friseur-Karte — **sonst zählt dasselbe Geld zweimal.** |
+| **Juli 2025** | hat noch **79 Cent** Luft im Tank-Budget (239,21 bei 240,00). Eine nachträglich zugeordnete Tankfüllung kippt den Monat — und dann bewegt sich die Sparrate. |
 
 **Doku-Versionen:** stehen **im Header der jeweiligen Bibel** —
 `antigravity_finance_design_dokument.md` und `antigravity_finance_schema_summary.md`,
@@ -1454,21 +1168,16 @@ jeweils Zeile 3. **Hier steht bewusst keine Zahl mehr.**
 > **Sie hat es ZWEIMAL erwischt — am 17.08. und am 19.08.2026.** Beim ersten Mal nannte
 > sie Schema-Doku „v3.6.0", während die Datei bei v3.9.0 stand. Der Warnkasten, der
 > daraufhin einzog, endete mit *„Sie ist eine Abschrift, keine Quelle"* — und **genau
-> das passierte zwei Tage später wieder**: v3.9.0/v3.10.0 abgeschrieben, während die
-> Dateien bei v3.10.0/v3.12.0 standen.
+> das passierte zwei Tage später wieder**.
 >
 > Der Kasten schloss damals selbst: *„Ein Warnkasten verhindert nichts. … Wirksam wäre
-> nur, den Wert **nicht zu duplizieren**."* **Am 24.08.2026 ist genau das umgesetzt.**
-> Die Zahlen ein drittes Mal richtig hinzuschreiben hätte geheißen, die eigene Lehre zu
-> lesen und ihr nicht zu folgen.
+> nur, den Wert **nicht zu duplizieren**."* Am 24.08.2026 ist genau das umgesetzt.
 >
 > **Das ist die allgemeine Form von LL-30**, und sie gilt über die Regions-Zeile
 > hinaus: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch —
 > und man erfährt es nicht, weil beide Stellen für sich plausibel bleiben. **Die
 > einzige verlässliche Abhilfe ist, ihn nur einmal zu schreiben.**
->
-> Wer die Versionen wissen will, liest die zwei Header. Wer sie ändert, ändert sie
-> dort — und nur dort.
+
 
 ### Die Prüfanker
 
@@ -1555,8 +1264,14 @@ erklären**. Soll sich etwas bewegen, wird der erwartete Wert **vorher** aufgesc
 > Tabelle eingefroren — mit Datum daneben und dem Satz, dass sie nur gilt, solange
 > nicht kuratiert wird.
 
-**Momentaufnahme 24.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
+**Momentaufnahme 25.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
 Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein** Alarm.
+
+> **Am 25.08.2026 nach v2-29 nachgemessen: alle 24 Werte unverändert.** Das ist hier
+> das erwartete Ergebnis und kein Zufall — `confidence.history_score` steht auf 0,94
+> und damit **unter** der Auto-Absorptions-Schwelle 0,95, es kann also nichts verlinkt
+> werden. Der Sprint hat 59 Vorschläge sichtbar gemacht und **keine** Zuordnung
+> vorgenommen.
 
 | Monat | 2026 Ist | 2025 Ist | | Monat | 2026 Ist | 2025 Ist |
 |---|---|---|---|---|---|---|
@@ -1611,8 +1326,8 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**24.08.2026, nach v2-28**: **12 offene Pakete · 37 Themen ·
-4 Hausaufgaben · 41 offen gesamt · 64 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**25.08.2026, nach v2-29**: **12 offene Pakete · 38 Themen ·
+4 Hausaufgaben · 42 offen gesamt · 65 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
 > **Die Zahl steigt zum zweiten Mal, und beide Male ist das das richtige Ergebnis.**
