@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -298,6 +298,7 @@ export type Database = {
           hash: string
           id: string
           imported_at: string
+          merchant_key: string | null
           suggested_card_id: string | null
           transaction_date: string
           transfer_type: string | null
@@ -312,6 +313,7 @@ export type Database = {
           hash: string
           id?: string
           imported_at?: string
+          merchant_key?: string | null
           suggested_card_id?: string | null
           transaction_date: string
           transfer_type?: string | null
@@ -326,6 +328,7 @@ export type Database = {
           hash?: string
           id?: string
           imported_at?: string
+          merchant_key?: string | null
           suggested_card_id?: string | null
           transaction_date?: string
           transfer_type?: string | null
@@ -576,7 +579,10 @@ export type Database = {
         Args: { p_card_id: string; p_name: string }
         Returns: string
       }
-      delete_card: { Args: { p_card_id: string; p_year?: number }; Returns: Json }
+      delete_card: {
+        Args: { p_card_id: string; p_year?: number }
+        Returns: Json
+      }
       delete_card_category: { Args: { p_category_id: string }; Returns: Json }
       end_card: {
         Args: { p_card_id: string; p_last_month: string }
@@ -693,13 +699,17 @@ export type Database = {
         }
         Returns: string
       }
-      set_card_frequency: {
-        Args: { p_card_id: string; p_frequency: Database["public"]["Enums"]["card_frequency"]; p_year?: number }
-        Returns: Json
-      }
       set_card_category: {
         Args: { p_card_id: string; p_category_id?: string }
         Returns: undefined
+      }
+      set_card_frequency: {
+        Args: {
+          p_card_id: string
+          p_frequency: Database["public"]["Enums"]["card_frequency"]
+          p_year?: number
+        }
+        Returns: Json
       }
       set_fragment_asset_reallocation: {
         Args: { p_fragment_id: string; p_set?: boolean }

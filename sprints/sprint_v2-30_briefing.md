@@ -205,10 +205,97 @@ behauptet. Reicht es nicht, ist **P3** der Ort dafür — mit dann frischen Zahl
 
 ---
 
-## P2 · Den größten Posten beheben — offen
+## P2 · Der Händler-Schlüssel wird eine Spalte — ✅ ABGESCHLOSSEN (27.08.2026)
 
-Inhalt nach P1. **Sicher enthalten:** `history_match` entkoppeln (einmal je Zahlung
-statt je Zahlung × Karte).
+> **P1 hatte die Entkopplung von `history_match` vorgesehen — gebaut wurde etwas
+> anderes und Kleineres.** Der Grund ist ein Fund, den erst der Abfrageplan zeigte.
+
+### Der eigentliche Fund: ein Ausdrucks-Index ist gegen Inlining nicht robust
+
+`idx_fragments_merchant_key` steht auf `af_merchant_key(description)`.
+`af_merchant_key` ist eine **SQL**-Funktion, also **inlined der Planer sie**. Im Plan
+steht danach nicht mehr der Funktionsaufruf, sondern sein Rumpf:
+
+```
+Filter: btrim(regexp_replace(replace(translate(lower(COALESCE(description,'')),
+          'äöüÄÖÜ','aouaou'),'ß','ss'),'[^a-z]+',' ','g')) = 'paypal felix augustin'
+Rows Removed by Filter: 1628          ← Seq Scan über ALLE Fragmente
+Execution Time: 10.352 ms
+```
+
+**Der Index trägt den Aufruf, die Abfrage den Rumpf — sie treffen sich nie.** Und weil
+`history_match` je Karte aufgerufen wird, passiert dieser vollständige Tabellenlauf
+**28-mal je Zahlung**.
+
+> **Warum das so lange unsichtbar blieb:** `pg_stat_user_indexes` weist für den Index
+> **88.107 Scans** aus. Er greift also anderswo sehr wohl. **Die Statistik sagt „wird
+> benutzt", der Plan sagt „hier nicht"** — und niemand liest den Plan, solange die
+> Statistik beruhigt. Dieselbe Klasse wie die Regions-Zeile aus LL-30.
+
+### Zwei naheliegende Fixes wurden gemessen und VERWORFEN
+
+| Versuch | vorher | nachher | Ergebnis |
+|---|---|---|---|
+| Policies auf `(select auth.uid())` (= `PF-3`, Supabase-Empfehlung) | 274 ms | 289 ms | **kein Effekt** |
+| `af_merchant_key` auf `LANGUAGE plpgsql`, damit nicht inlinebar | 285 ms | 367 ms | **schlechter** |
+
+Beim zweiten wählt der Planer dann einen Seq Scan über `card_fragment_links` und zahlt
+den Funktionsaufruf je Zeile. **Beide stehen in der Migration dokumentiert**, damit die
+nächste Sitzung sie nicht erneut probiert.
+
+### Gebaut: der Schlüssel wird materialisiert
+
+`fragments.merchant_key` als `GENERATED ALWAYS AS (af_merchant_key(description))
+STORED`, dazu ein gewöhnlicher B-Tree-Index `(user_id, merchant_key)`. Ein
+Spalten-Index ist gegen Inlining **immun**, weil nichts mehr zu expandieren ist.
+
+**Kein Nachbau (§6 Stolperfalle 16):** Die Spalte *ruft* `af_merchant_key` auf, statt
+deren Logik zu wiederholen. Es gibt weiterhin genau **eine** Definition des Schlüssels.
+
+`history_match` liest die Spalte statt den Ausdruck — **zwei geänderte Zeilen**, alles
+andere wortgleich inklusive Kommentaren (Prüfsummen-Falle aus v2-25/v2-29).
+
+| `history_match` × 28 Karten | Dauer |
+|---|---|
+| vorher | 326 ms |
+| nachher | **12 ms** |
+| **Faktor** | **27** |
+
+### Verifikation
+
+**Vor dem Einspielen**, im zurückgerollten Trockenlauf:
+
+- Spalte gegen Ausdruck, **alle 1.628 Zeilen** → **0 Abweichungen**
+- `history_match` alt gegen neu, **231 Paare** → **0 Unterschiede**
+
+**Nach dem Einspielen:**
+
+- Sparrate 24 Monate Ist+Plan → **24/24 identisch, 0 Abweichungen**
+- Anker 1 → **0 Verletzungen** (12 Monate) · Anker 2 → **0 Verletzungen** (24 Monate)
+- Spalten-Äquivalenz erneut über 1.628 Zeilen → **0 Abweichungen**
+- Prüfsummen von 17 Funktionen → **genau eine geändert: `history_match`**
+  (vorher `99aa12b889a18691917c7c7e93f191f6`). `calculate_match_confidence`,
+  `process_csv_import`, `refresh_fragment_suggestions`, beide Sparrate-Funktionen und
+  `af_merchant_key` selbst sind **unverändert**.
+- `types.ts` neu erzeugt. **Namensmengen verglichen, nicht der Zeilen-Diff:**
+  47 RPC-Funktionen vorher und nachher, **keine verschwunden**. Kein
+  `<claude-code-hint>` am Dateiende.
+
+### Was diese Phase NICHT getan hat
+
+Der alte Ausdrucks-Index `idx_fragments_merchant_key` **bleibt**. Welcher Aufrufer
+seine 88.107 Scans verursacht, ist nicht ermittelt; ihn mitzunehmen wäre eine zweite
+Verschiebung im selben Sprint — dieselbe Begründung, aus der v2-29 `ZO-8` liegen ließ.
+Kosten des Behaltens: ein Anteil an den 8,9 ms je `INSERT`. **Gehört als eigener Punkt
+in die Roadmap.**
+
+### Vorherige Planung (überholt, bleibt als Beleg stehen)
+
+Vorgesehen war, `history_match` zu **entkoppeln** — einmal je Zahlung statt je Zahlung
+× Karte. Das wäre der größere Umbau gewesen und hätte `calculate_match_confidence`
+mit berührt. **Er ist nicht mehr nötig:** Der Index-Fix bringt Faktor 27 auf denselben
+Posten, bei zwei geänderten Zeilen statt einer neuen Funktionssignatur. Die
+Entkopplung bleibt als Option, falls die Datenmenge irgendwann wieder drückt.
 
 **Nicht verhandelbar — die drei Filter bleiben wortgleich:**
 
@@ -228,14 +315,46 @@ identisch, Prüfsummen der nicht angefassten Funktionen identisch.
 
 ---
 
-## P3 · Restliche Posten — offen
+## P3 · Restliche Posten — ✅ ENTFÄLLT
 
-Nur, was P1 zutage fördert. Fällt nichts an, entfällt die Phase — das wäre ein
-Ergebnis, kein Versäumnis.
+**Kein weiterer Posten lohnt.** P2 bringt Faktor 17,6 auf den gesamten Import und
+damit weit unter das Limit; alles außerhalb der Konfidenz-Runde liegt zusammen unter
+32 ms je Zahlung. Die Phase entfällt als **Ergebnis**, nicht als Versäumnis — der Plan
+hatte diesen Ausgang ausdrücklich vorgesehen.
 
 ---
 
-## P4 · Abnahme — offen
+## P4 · Abnahme — ✅ ABGESCHLOSSEN (27.08.2026)
+
+### S7 — die Messung, um die es ging
+
+Derselbe Aufbau wie in P1, in einer zurückgerollten Transaktion, unter
+`SET LOCAL ROLE authenticated`:
+
+| Import von 17 neuen Zahlungen | Dauer | je Zahlung |
+|---|---|---|
+| vorher (P1) | 23.938 ms | 1.408 ms |
+| **nachher** | **1.357 ms** | **80 ms** |
+| Limit | 8.000 ms | |
+| Ziel des Plans | < 3.000 ms | |
+
+**Faktor 17,6 — das Ziel ist mit Reserve erreicht.** Die Ergebnisse sind dabei
+identisch: 17 neu, 13 Duplikate, 3 verlinkt, 5 Überträge.
+
+### Prüfstrecke
+
+- `tsc --noEmit` → **0 Fehler**
+- `pnpm test:visual` → **148 von 148 bestanden**
+
+### Was noch aussteht
+
+**Der Browser-Smoke des Nutzers (S9).** Er ist der Produktiv-Gate und durch nichts
+hiervon ersetzt.
+
+> **Zu prüfen ist dabei ausdrücklich der Import selbst** — und dafür braucht es eine
+> Datei mit **neuen** Zahlungen. Die beiden vom 27.08. liegen seit P0 in der
+> Datenbank; sie erneut zu laden prüft nur den Duplikat-Pfad, der noch nie langsam
+> war. Der belastbare Test ist der **nächste** Monatsabzug.
 
 > **⚠️ P0 hat uns den natürlichen Abnahme-Beleg genommen.** Beide Dateien sind
 > importiert; alle Zeilen sind jetzt Duplikate und überspringen genau die Rechnung,
@@ -258,11 +377,11 @@ Konfidenz-Matrix gegen P2, Prüfsummen — und der **Browser-Smoke des Nutzers**
 | S2 | Sparrate nach P0, 24 Monate Ist+Plan | unverändert | ✅ 24/24 |
 | S3 | Anker 1, 12 Monate 2026 | Ordner-Spalte == Sparrate | ✅ 0 Verletzungen |
 | S4 | Anker 2, 24 Monate | `Σ delta = Ist − Plan` | ✅ 0 Verletzungen |
-| S5 | Konfidenz-Matrix nach P2/P3 | **identisch** — sonst Rollback | offen |
-| S6 | Prüfsummen nicht angefasster Funktionen | identisch | offen |
-| S7 | Import 17 neuer Zahlungen, `authenticated`, rückgerollt | **< 3 s** (heute ~34 s) | offen |
-| S8 | Sparrate nach P2/P3, 24 Monate | unverändert gegenüber S2 | offen |
-| S9 | Browser-Smoke des Nutzers | Import läuft in der App durch | offen |
+| S5 | Konfidenz-Matrix nach P2 | **identisch** — sonst Rollback | ✅ 231 Paare, 0 Unterschiede; zusätzlich Spalten-Äquivalenz 1.628/1.628 |
+| S6 | Prüfsummen nicht angefasster Funktionen | identisch | ✅ 16 von 17 unverändert, nur `history_match` geändert |
+| S7 | Import 17 neuer Zahlungen, `authenticated`, rückgerollt | < 3 s | ✅ **1.357 ms** (vorher 23.938 ms) |
+| S8 | Sparrate nach P2, 24 Monate | unverändert gegenüber S2 | ✅ 24/24, 0 Abweichungen |
+| S9 | Browser-Smoke des Nutzers | Import läuft in der App durch | **offen — braucht eine Datei mit NEUEN Zahlungen** |
 
 **Regel-basiert, nicht instanz-basiert (LL-19):** S7 prüft „ein Import mit 17 neuen
 Zahlungen", nicht „diese Visa-Datei". S5 prüft „jeder Konfidenz-Wert", nicht „die
