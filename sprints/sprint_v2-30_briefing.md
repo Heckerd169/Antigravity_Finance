@@ -108,23 +108,75 @@ Giro → Visa:
 
 ---
 
-## P1 · Vollständige Kostenaufstellung — offen
+## P1 · Vollständige Kostenaufstellung — ✅ ABGESCHLOSSEN (27.08.2026)
 
 **Kein Code, kein Schema.** Alle Messungen unter `SET LOCAL ROLE authenticated` —
 **nie** unter der Dienst-Rolle.
 
-### Was bereits gemessen ist
+### Der Referenzwert für die Abnahme
 
-| Posten, je **neuer** Zahlung | Dienst-Rolle | `authenticated` |
+Echter Importlauf in einer zurückgerollten Transaktion (17 Visa-Fragmente gelöscht,
+neu importiert, `RAISE` → zurück):
+
+> **23.938 ms für 17 neue Zahlungen = 1.408 ms je Zahlung.**
+> Limit: **8.000 ms**. Das ist **dreifach darüber** — und damit die Zahl, gegen die
+> P4 misst.
+
+Der Messaufbau funktioniert und ist damit für S7 erprobt.
+
+### Die Zerlegung — je Zahlung, gegen 28 aktive Karten
+
+| Posten | Dauer | Anteil an der Runde |
 |---|---|---|
-| **Import gesamt** | 109 ms | **1.995 ms** |
-| gesamte Zuordnungs-Unterabfrage | — | 685 ms |
-| davon `history_match` | 7 ms | 264–278 ms |
-| davon Kartenauswahl (`is_card_active_in_month` × 28) | — | 50 ms |
-| **noch nicht lokalisiert** | — | **~1.310 ms** |
+| **Konfidenz-Runde gesamt** | **307 ms** | 100 % |
+| davon **`history_match`** | **263 ms** | **86 %** |
+| davon `name_similarity_scoped` | 7 ms | 2 % |
+| davon `merchant_rule_match` | 6 ms | 2 % |
+| davon Rest (`amount_match`, `frequency_match`, Overhead) | ~31 ms | 10 % |
 
-A/B-Beleg, identischer 5-Zeilen-Payload, getrennte Trockenläufe:
-**545 ms** (Dienst) gegen **9.973 ms** (`authenticated`) — Faktor **18**.
+Alles außerhalb der Runde ist **vernachlässigbar**:
+
+| Posten | Dauer |
+|---|---|
+| `INSERT` in `fragments`, alle 6 Indizes | **8,9 ms** |
+| Hash-Bildung (`digest`) | 2,0 ms |
+| Kartenauswahl (`is_card_active_in_month` × 28) | 20,4 ms |
+| `own_ibans` lesen | 11,4 ms (einmal je **Import**, nicht je Zahlung) |
+
+> ### ⚠️ Zwei Verdachtsmomente sind hier GESTORBEN — beide waren plausibel
+>
+> **① Der GIN-Index war unschuldig.** Der Trigram-Index auf `description` ist mit
+> 1.376 kB der größte der sechs, und GIN-Einfügungen gelten als teuer. Der Verdacht
+> lag nahe genug, dass er im Plan stand. Gemessen kostet ein vollständiger `INSERT`
+> mit **allen sechs** Indizes **8,9 ms** — 0,6 % der Kosten je Zahlung. **Auch
+> `fragments` hat keine Trigger**, der Einfügepfad ist nackt.
+>
+> **② Meine eigene Schätzung „history_match sind nur ~13 %" war zu niedrig.** Sie
+> stammte aus 255 ms gegen 1.995 ms Import — also aus zwei Messungen, die unter
+> verschiedener Last entstanden sind. Sauber zerlegt sind es **86 % der
+> Konfidenz-Runde**, und die Runde ist praktisch der ganze Import.
+>
+> **Deshalb ist die Entkopplung von `history_match` nicht nur der richtige Hebel,
+> sondern auch ein ausreichender.** Genau dafür gab es P1: Hätte P2 nach dem
+> GIN-Verdacht gebaut, wäre der Sprint an 0,6 % der Kosten verstrichen.
+
+### Die Beobachtung, die man kennen muss, um die Zahlen zu lesen
+
+**Dieselbe Messung liefert 307, 575, 602 und 685 ms.** Die Schwankung ist real und
+nicht wegzumitteln: Die kostenlose Instanz drosselt unter Dauerlast, und diese Sitzung
+hat sie mit Messläufen belastet. **Das ist LL-29 selbst** — dort wurde aus genau
+dieser Drosselung ein Ausfall.
+
+**Konsequenz für die Bewertung:** Absolute Millisekunden aus dieser Sitzung sind
+Größenordnungen, keine Sollwerte. **Die Anteile sind stabil** (`history_match`
+86 %, über mehrere Läufe reproduziert) — und Anteile tragen die Entscheidung, welcher
+Posten anzufassen ist. Der Abnahme-Wert in P4 wird deshalb **unmittelbar vor und nach**
+der Migration erhoben, in derselben Sitzung, nicht gegen die 23.938 ms von heute.
+
+### A/B: warum der Trockenlauf den Fehler nicht sieht
+
+Identischer 5-Zeilen-Payload, getrennte Läufe:
+**545 ms** (Dienst-Rolle) gegen **9.973 ms** (`authenticated`) — Faktor **18**.
 
 ### Die eine Ursache, die schon feststeht
 
@@ -139,16 +191,17 @@ läuft deshalb **28-mal dieselbe Abfrage**.
 Das ist **LL-29 in neuer Gestalt**: nicht die Abfrage optimieren, sondern zählen, wie
 oft gefragt wird.
 
-### Was P1 noch beantworten muss
+### Was P1 für P2 entschieden hat
 
-Die **~1.310 ms**. Zu trennen sind mindestens: der `INSERT` in `fragments` samt aller
-sechs Indizes (der Trigram-GIN-Index mit 1.376 kB gesondert), Hash-Bildung,
-Übertrags-Klassifikation, Kartenauswahl, Konfidenz-Runde.
+**P2 fasst genau einen Posten an: `history_match`.** Kein zweiter Posten lohnt —
+alles außerhalb der Konfidenz-Runde liegt zusammen unter 32 ms je Zahlung.
 
-> **⚠️ `history_match` allein reicht NICHT.** Es sind ~13 % der Import-Kosten. Nur
-> diesen Teil zu reparieren brächte 1.995 → ~1.740 ms je Zahlung; bei 17 Zahlungen
-> immer noch **~30 s** statt 8. **Was P2 baut, entscheidet P1** — nicht der Plan und
-> nicht der Verdacht.
+Erwartung: `history_match` von **28 Ausführungen auf 1** je Zahlung, also 263 ms →
+grob 9 ms. Die Konfidenz-Runde fällt damit von ~307 auf ~53 ms — **Faktor ~6 auf den
+gesamten Import**.
+
+Ob das für das Ziel „< 3 s bei 17 Zahlungen" reicht, wird in P4 gemessen, nicht hier
+behauptet. Reicht es nicht, ist **P3** der Ort dafür — mit dann frischen Zahlen.
 
 ---
 
