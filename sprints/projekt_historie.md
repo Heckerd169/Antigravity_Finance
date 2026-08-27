@@ -3209,3 +3209,96 @@ gescheitert, das es nie gab. Dieselbe Klasse wie die `M6`-Diagnose, die bis zum
 - **Die 84 ohne Karte** brauchen Kuratierung, keine Technik.
 - Unverändert offen: `ZO-1` (`frequency_match` liefert ausnahmslos 1.00, bewusst
   unangetastet), `ZO-6`, `DA-2`, `KJ-9`, `SHOW_SUGGESTION_BADGES` bleibt `false`.
+
+---
+
+### Sprint v2-30 · DONE 27. August 2026
+
+**Komponente.** Der Nutzer konnte seine beiden Monatsabzüge vom 27.08.2026 nicht
+importieren — beide Dateien wurden mit einer Fehlermeldung abgewiesen, eine ältere
+ging problemlos durch. Die Dateien waren einwandfrei; der Import riss den
+`statement_timeout` der Rolle `authenticated` (**8 s**) mit **23.938 ms für 17 neue
+Zahlungen**. Nach der Behebung: **1.357 ms, Faktor 17,6.** Fünf Phasen, davon zwei
+ohne eine Zeile Code.
+
+**Der Fund war ein anderer als der Verdacht.** Erwartet wurde ein N+1 — `history_match`
+wird je Karte aufgerufen, also 28-mal je Zahlung. Der Abfrageplan zeigte etwas
+Tieferes: `idx_fragments_merchant_key` steht auf `af_merchant_key(description)`, und
+weil das eine **SQL**-Funktion ist, **inlined der Planer sie**. Danach steht im Plan
+ihr Rumpf statt des Aufrufs, und beide treffen sich nie — `Seq Scan`,
+`Rows Removed by Filter: 1628`, achtundzwanzigmal je Zahlung.
+
+**Warum es über zwei Sprints unsichtbar blieb:** `pg_stat_user_indexes` wies für
+diesen Index **88.107 Scans** aus. Er greift anderswo sehr wohl. **Die Statistik sagte
+„wird benutzt", der Plan sagte „hier nicht"** — und niemand liest den Plan, solange
+die Statistik beruhigt. Dieselbe Klasse wie die Regions-Zeile aus LL-30.
+
+**Gebaut** wurde `fragments.merchant_key` als `GENERATED ALWAYS AS
+(af_merchant_key(description)) STORED` plus gewöhnlicher B-Tree-Index; ein
+Spalten-Index ist gegen Inlining immun, weil nichts mehr zu expandieren ist. **Kein
+Nachbau** (§6 Stolperfalle 16): Die Spalte *ruft* die Funktion auf, es gibt weiterhin
+genau eine Definition des Schlüssels. `history_match` liest die Spalte — **zwei
+geänderte Zeilen**, alles andere wortgleich inklusive Kommentaren.
+Isoliert: **326 ms → 12 ms, Faktor 27.**
+
+**Drei Annahmen haben sich als falsch erwiesen — und das ist der Ertrag dieses
+Sprints.**
+
+- **Der GIN-Verdacht stand im freigegebenen Plan und war falsch.** Der Trigram-Index
+  ist mit 1.376 kB der größte der sechs, GIN-Einfügungen gelten als teuer. Gemessen
+  kostet ein `INSERT` mit **allen sechs** Indizes **8,9 ms** — 0,6 % der Kosten je
+  Zahlung. Hätte P2 danach gebaut, wäre der Sprint an 0,6 % der Kosten verstrichen.
+  Genau dafür gab es P1 als eigene Phase ohne Code.
+- **Die eigene Schätzung „`history_match` sind nur ~13 %" war zu niedrig.** Sie
+  stammte aus zwei Messungen unter verschiedener Last. Sauber zerlegt sind es **86 %
+  der Konfidenz-Runde**, und die Runde ist praktisch der ganze Import.
+- **Zwei naheliegende Fixes wurden gemessen und verworfen:** `PF-3` (Policies auf
+  `(select auth.uid())`, die Supabase-Empfehlung) bringt **274 → 289 ms, also
+  nichts**; `af_merchant_key` auf `LANGUAGE plpgsql` umzustellen macht es
+  **schlechter** (285 → 367 ms), weil der Planer dann einen Seq Scan über
+  `card_fragment_links` wählt. Beide stehen in der Migration dokumentiert, damit die
+  nächste Sitzung sie nicht erneut probiert.
+
+**P0 hat die Daten gerettet, bevor der Code fertig war.** Beide Dateien wurden nach
+ausdrücklicher Freigabe einmalig über die Dienst-Rolle importiert — mit **vorher**
+festgelegter Erwartung (§7 Regel 21): Giro 11 neu/36 Duplikate, Visa 17 neu/13
+Duplikate, Sparrate in allen 24 Monaten unverändert. Alles exakt eingetreten.
+**Die Null ist dabei erklärt, nicht bloß gemessen:** 10 der 28 neuen Zahlungen sind
+interne Überträge, 14 bleiben unverlinkt, und die 4 verlinkten bewegen nichts, weil
+`CLAUDE.AI SUBSCRIPTION` als FIXED_COST den Plan trifft und `Tanken` als BUDGET den
+Plan zeigt, solange die Ausgaben darunter liegen (§4.3). Das ist exakt die
+`ZO-4`-Falle, wo der Juli 2025 nur 79 Cent Luft hatte.
+
+**Verifikation.** Vor dem Einspielen im zurückgerollten Trockenlauf: Spalte gegen
+Ausdruck über **alle 1.628 Zeilen → 0 Abweichungen**, `history_match` alt gegen neu
+über **231 Paare → 0 Unterschiede**. Nach dem Einspielen: Sparrate **24/24
+identisch**, Anker 1 **0 Verletzungen** (12 Monate), Anker 2 **0 Verletzungen** (24
+Monate), Prüfsummen von 17 Funktionen — **genau eine geändert**, `history_match`.
+`types.ts` neu erzeugt, **Namensmengen** verglichen statt Zeilen-Diff: 47 RPC vorher
+und nachher, keine verschwunden. Prüfstrecke: `tsc` 0, Lint sauber, Build ok,
+`test:visual` **148/148**, `test:e2e` **157/157**. Bundle: Route `/` 37 kB, First Load
+189 kB. Browser-Smoke bestanden.
+
+**Die Übungs-Datenbank wurde bewusst übersprungen**, vom Nutzer freigegeben: Der Fund
+hängt an der echten Datenmenge und an echten Händlernamen — der synthetische Bestand
+hätte den Effekt **nicht zeigen können**. Stattdessen Proben auf Produktion in
+zurückgerollten Transaktionen, mit der Spalten-Äquivalenz über alle Zeilen als
+Wächter. Dieselbe Begründungsform wie in v2-24 §5.
+
+**Offen nach v2-30.**
+
+- **⚠️ Dieser Sprint hat KEINEN eigenen Wächter erzeugt.** Die Testzahl stieg zwar von
+  144 auf 148, aber die vier neuen stammen aus PR #47, nicht von hier. Der Fehler blieb
+  unentdeckt, weil alle bestehenden Wächter grün waren — jede Zahl war richtig, sie kam
+  nur zu spät. Ein Playwright-Test wäre der falsche Ort (wechselnde Daten, Fehlalarme).
+  **Vorgeschlagen ist ein Anker 4 in §9:** Dauer eines Imports je neuer Zahlung, unter
+  `SET LOCAL ROLE authenticated`. Stand nach v2-30: **80 ms**. Zur Entscheidung des
+  Nutzers.
+- **`PF-7` (neu):** Der alte Ausdrucks-Index hat seinen Hauptnutzer verloren, wird aber
+  **nicht** gelöscht, solange nicht ermittelt ist, wer seine 88.107 Scans verursacht.
+  Ein Sprint, eine Verschiebung.
+- **Ein Jahresimport bleibt außer Reichweite.** Bei 80 ms je Zahlung wären 544
+  Zahlungen rund **44 s** — weiterhin über dem Limit. Die Stückelung großer Importe
+  (Option A aus dem Befund) bleibt offen, ist für Monatsabzüge aber nicht nötig.
+- Unverändert offen: `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `DA-2`, `KJ-9`, `PF-3`, `PF-5`,
+  `SHOW_SUGGESTION_BADGES` bleibt `false`.
