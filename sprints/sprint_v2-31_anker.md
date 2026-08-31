@@ -115,6 +115,113 @@ Die Plan-Seite braucht damit **keinen** Rest-Ausgleich — anders als die Ist-Se
 
 ---
 
-## NACHHER
+## NACHHER — gemessen 31.08.2026, unmittelbar nach der Migration, dieselbe Sitzung
 
-*(wird nach P3 ausgefüllt — in derselben Sitzung wie die Vorher-Messung)*
+### Sparrate, 24 Monate, Ist und Plan
+
+**Alle 24 Zeilen byte-identisch zur Vorher-Messung.** Ist und Plan, beide Jahre.
+Goldlinie 2025 unverändert 11.442,30 €, Σ Ist 2026 unverändert 16.076,56 €.
+
+### Anker 1 — Ordner-Spalte ergibt die Sparrate
+
+**0,00 € in allen 24 Monaten.** Keine Verletzung.
+
+### Prüfsummen der neun Rechenfunktionen
+
+**Alle neun identisch zur Vorher-Messung.** Keine bestehende Rechenfunktion wurde
+berührt — die Migration legt ausschließlich zwei neue an.
+
+### Neu-Anker A — Serien-Ist je Ordner == Karussell-Wert
+
+Gemessen über **alle 11 Ordner** und **alle 24 Monate**:
+
+| | |
+|---|---|
+| verglichene Zellen | **200** |
+| Verletzungen | **0** |
+| größte Abweichung | **0,0000 €** |
+| Lücke in der Reihe, aber Kachel vorhanden | **0** |
+| Wert in der Reihe, aber keine Kachel | **0** |
+
+Die letzten beiden Zeilen sind der eigentliche Beleg: Die Reihe erkennt **exakt
+dieselben** Monate als aktiv wie das Karussell.
+
+### Funktionale Testreihe
+
+| | Fall | Ergebnis |
+|---|---|---|
+| T1 | Netflix (monatlich, ICH) | 24 Einträge, 24 aktiv, max. Abstand Ist↔Plan **0,00 €** |
+| T2 | ADAC Mitgliedschaft (jährlich) | 24 Einträge, **2 aktiv, 22 NULL** |
+| T3 | Miete (monatlich, GEMEINSAM) | 24 aktiv, max. Abstand **41,36 €** — roh wären es ~815 € |
+| T3b | Urlaub Frankreich (einmalig) | 1 aktiv, 23 NULL, Abstand 303,23 € (700,00 geplant → 396,77) |
+| T4 | `p_year` = 1800 / NULL / 3000 | je **`22023`** |
+| T5 | unbekannte Karte / unbekannter Ordner / `p_card_id` NULL | je **`[]`** |
+| T6 | `aktiv = true`, aber `ist` NULL | **0 Fälle** |
+| T7 | `aktiv = false`, aber Wert gesetzt | **0 Fälle** — LL-20 greift in der Datenbank |
+| T8 | Zeitraum | `2025-01-01` … `2026-12-01`, 24 Einträge |
+
+### Laufzeit
+
+| | in der Datenbank |
+|---|---|
+| `get_card_amount_series` | **21 ms** |
+| `get_category_amount_series` | **254 ms** |
+
+Der Faktor 12 ist der Preis für Neu-Anker A: 24 interne Aufrufe von
+`get_category_amounts_for_month`, die jedes Mal **alle** Ordner rechnen — nötig, weil
+sich erst daraus ergibt, wer den Rundungs-Rest trägt. Die Schwelle im Briefing lag bei
+800 ms; sie wird eingehalten.
+
+---
+
+## ⚠️ Neu-Anker B ist gerissen — und das ist ein Befund, keine Panne
+
+**Vorher gemessen: 0,00 € in allen 24 Monaten. Nachher: ±0,01 € in 12 von 24.**
+
+Ich habe den Anker vor dem Bau falsch formuliert, ohne es zu merken. Gemessen habe ich
+damals:
+
+```
+round( Σ_ungerundet (Karten-Plan × Anteil) + Netto-Plan , 2)  ==  Plan-Sparrate
+```
+
+Die Funktion liefert aber **je Ordner gerundete** Werte. Summiert man die, ergibt sich:
+
+| | Abweichung zur Plan-Sparrate |
+|---|---|
+| ungerundet über alle Karten summiert | **0,00 € in 24/24** |
+| Summe der je Ordner gerundeten Werte | **±0,01 € in 12/24** |
+
+**Das ist LL-25, Wort für Wort:** *„‚Ungerundet summieren, erst am Ende runden' ist
+notwendig, aber NICHT hinreichend — es behebt die Rundung **innerhalb** einer Gruppe;
+der Cent geht **zwischen** den Gruppen verloren."* Innerhalb eines Ordners rechnet die
+Funktion sauber (`sum()` ungerundet, `round()` einmal am Ende). Die Abweichung entsteht
+erst beim Addieren der Ordner.
+
+### Warum das so bleibt
+
+**Es gibt keine Anzeige, die Ordner-Pläne summiert.** `get_category_amounts_for_month`
+liefert `planned` für Karten-Ordner hart als `NULL` — eine Plan-Spalte im Karussell
+existiert nicht. Anker 1 erzwingt den Ausgleich auf der **Ist**-Seite, weil dort eine
+**sichtbare** Summe stimmen muss; auf der Plan-Seite gibt es keine solche Summe.
+
+Ein Ausgleich verschöbe den Plan **eines** Ordners um fremde Rundungsreste, damit eine
+Zahl stimmt, die niemand sieht — und der Verlauf zeigt genau **einen** Ordner. Das wäre
+keine Korrektur, sondern eine Verfälschung.
+
+**Festgehalten, wo es zur Laufzeit sichtbar ist:** im `COMMENT ON FUNCTION` von
+`get_category_amount_series` (§6 Stolperfalle 12 — ein Beleg nur im Migrations-Kommentar
+ist zur Laufzeit nicht vorhanden), zusätzlich ausführlich in der Migrationsdatei.
+
+**Wer das später ändert, braucht zuerst den Ort, an dem diese Summe sichtbar wird.**
+
+---
+
+## Fazit
+
+**Kein Zahlenwert hat sich bewegt.** 24 Sparraten identisch, Anker 1 in 24/24 bei 0,00 €,
+neun Prüfsummen unverändert. Das war das erwartete Ergebnis — die beiden neuen Funktionen
+lesen ausschließlich und rufen bestehende Funktionen auf, statt zu rechnen.
+
+Der einzige unerwartete Befund ist Neu-Anker B, und er betrifft nicht die Daten, sondern
+meine Formulierung des Ankers. Er steht oben vollständig.

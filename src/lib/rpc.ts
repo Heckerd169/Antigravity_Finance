@@ -733,3 +733,97 @@ export async function createCardFromFragment(
   if (!data) throw new Error("create_card_from_fragment returned no card id");
   return data;
 }
+
+// ── v2-31 (M7 / KAT-4): 24 Monate Ist gegen Plan in EINER Netzrunde ─────────
+
+/** Ein Monat einer Verlaufs-Reihe — für eine Karte oder für einen Ordner.
+ *
+ *  ⚠️ `ist` und `plan` sind `null`, wenn `aktiv === false`. Das ist KEINE
+ *  Nachlässigkeit, sondern die Aussage „in diesem Monat gibt es die Karte
+ *  nicht" — etwas anderes als „in diesem Monat wurden 0 € ausgegeben"
+ *  (§7 Regel 17 / LL-20). Die Unterscheidung sitzt in der Datenbank, nicht
+ *  hier: Sonst entschiede die Anzeige, was ein fehlender Wert bedeutet, und
+ *  zeichnete eine jährliche Karte in elf Monaten auf die Nulllinie.
+ *
+ *  Wer diese Reihe zeichnet, MUSS `null` als Lücke behandeln und darf sie nicht
+ *  auf 0 verschleifen. */
+export type AmountSeriesPoint = {
+  /** 0 = Januar des Vorjahres … 23 = Dezember des angefragten Jahres. */
+  month_index: number;
+  /** "YYYY-MM-DD", immer der Monatserste. */
+  month: string;
+  aktiv: boolean;
+  /** Bei GEMEINSAM bereits der EIGENE Anteil — nicht erneut umrechnen. */
+  ist: number | null;
+  /** Bei GEMEINSAM bereits AUF DEN EIGENEN ANTEIL heruntergerechnet, anders als
+   *  `effective_plan` in `CardMonthValues`. Ohne das stünden zwei Größen mit
+   *  verschiedener Basis nebeneinander: bei der Miete 1.089,26 € gegen
+   *  1.904,00 €, also 43 % Abstand in jedem Monat — und keiner davon eine
+   *  Abweichung (§6 Stolperfalle 11). */
+  plan: number | null;
+  /** Nur bei Ordner-Reihen gesetzt: Zahl der Karten im Monat. */
+  posten?: number | null;
+};
+
+/** 24 Monate Ist und Plan EINER Karte — Vorjahr und `year`.
+ *
+ *  ── Warum es diese RPC gibt ────────────────────────────────────────────────
+ *  Die Roadmap führte `M7` als „datenseitig bereits abgedeckt —
+ *  `get_year_deviation_drivers` liefert je Karte ist und plan pro Monat".
+ *  Gemessen stimmt das nicht: Jene Funktion trägt `WHERE round(delta,2) <> 0`
+ *  und liefert ausschließlich **abweichende** Karten. Netflix läuft zwölf
+ *  Monate exakt auf Plan und erscheint in **keinem** Monat; für Sep–Dez 2026
+ *  liefert sie gar nichts (0 von 22 aktiven Karten). Ein Verlauf darauf hätte
+ *  Löcher, die wie fehlende Daten aussehen und „lief wie geplant" bedeuten.
+ *  (LL-22 — eine Doku-Zusage über Rechenverhalten ist keine Prüfung.)
+ *
+ *  ── Warum EINE RPC und nicht 36 Aufrufe ────────────────────────────────────
+ *  Ohne sie kostete ein Verlauf 36 Netzrunden (drei Einzel-RPCs × 24 Monate).
+ *  In der Datenbank kostet die ganze Reihe **21 ms**; teuer ist nur der Weg.
+ *  Dasselbe Argument wie bei `getSparrateSeries` (v2-24, PF-4) — und Anker 3
+ *  zählt genau diese Runden (LL-29).
+ *
+ *  Kein `userId`-Parameter: Die RPC löst eine **einzelne** Karte auf und
+ *  aggregiert nicht über den Nutzer (§6 Stolperfalle 4). Eine fremde Karte
+ *  findet sie wegen RLS nicht — dann kommt `[]` zurück, kein Fehler. */
+export async function getCardAmountSeries(
+  client: AppSupabaseClient,
+  args: { cardId: string; year: number },
+): Promise<AmountSeriesPoint[]> {
+  const { data, error } = await client.rpc("get_card_amount_series", {
+    p_card_id: args.cardId,
+    p_year: args.year,
+  });
+  if (error) throw error;
+  return (data as unknown as AmountSeriesPoint[]) ?? [];
+}
+
+/** 24 Monate Ist und Plan EINES Ordners — dieselbe Reihe, eine Ebene höher.
+ *
+ *  ⚠️ Der **Ist**-Wert wird aus `get_category_amounts_for_month` GEHOLT, nicht
+ *  nachgerechnet. Jene Funktion legt den Rundungs-Rest des Monats auf den
+ *  betragsgrößten Ordner, damit Anker 1 (`Σ Ordner == Sparrate`) exakt gilt.
+ *  Gemessen am 31.08.2026: In den vier Zukunftsmonaten trägt jeweils ein Ordner
+ *  0,01 € Ausgleich. Eine eigene Summierung zeigte dort einen Cent weniger als
+ *  die Kachel daneben — **ohne dass eine Zahl falsch aussähe** (LL-25/LL-26).
+ *  Der Preis sind 24 interne Aufrufe, gemessen **254 ms**; der Karten-Verlauf
+ *  kostet 21 ms. Der Faktor 12 ist genau dieser Ausgleich.
+ *
+ *  ⚠️ Der **Plan** trägt den Ausgleich NICHT. Ungerundet über alle Karten
+ *  summiert ergibt er exakt die Plan-Sparrate (0,00 € in 24/24); summiert man
+ *  die hier gelieferten, je Ordner gerundeten Werte, weicht das Ergebnis in 12
+ *  der 24 Monate um ±0,01 € ab. Das ist gewollt: Es gibt **keine Anzeige, die
+ *  Ordner-Pläne summiert** — `get_category_amounts_for_month` liefert `planned`
+ *  für Karten-Ordner hart als `null`. Wer das ändert, braucht zuerst den Ort,
+ *  an dem diese Summe sichtbar wird. */
+export async function getCategoryAmountSeries(
+  client: AppSupabaseClient,
+  args: { categoryId: string; year: number },
+): Promise<AmountSeriesPoint[]> {
+  const { data, error } = await client.rpc("get_category_amount_series", {
+    p_category_id: args.categoryId,
+    p_year: args.year,
+  });
+  if (error) throw error;
+  return (data as unknown as AmountSeriesPoint[]) ?? [];
+}
