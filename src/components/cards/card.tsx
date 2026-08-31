@@ -258,6 +258,7 @@ function FixedCostCard({
         cardType={card.type}
         currentDueDay={card.dueDay}
         currentCategoryId={card.categoryId}
+        attribution={card.attribution}
         categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "paid" ? `${card.name} als offen markieren` : `${card.name} als bezahlt markieren`}
@@ -340,6 +341,7 @@ function IncomeCard({
         cardType={card.type}
         currentDueDay={card.dueDay}
         currentCategoryId={card.categoryId}
+        attribution={card.attribution}
         categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={state === "received" ? `${card.name} als erwartet markieren` : `${card.name} als erhalten markieren`}
@@ -492,6 +494,7 @@ function BudgetCard({
         cardType={card.type}
         currentDueDay={card.dueDay}
         currentCategoryId={card.categoryId}
+        attribution={card.attribution}
         categories={categories}
         linkedFragments={card.linkedFragments}
         ariaLabel={isDone ? `${card.name} als nicht abgeschlossen markieren` : `${card.name} als abgeschlossen markieren`}

@@ -21,7 +21,9 @@ import { DueDayOverlay } from "./due-day-overlay";
 import { EndCardOverlay } from "./end-card-overlay";
 import { FrequencyOverlay } from "./frequency-overlay";
 import { LinkedFragmentsOverlay } from "@/components/interaction-zone/linked-fragments-overlay";
+import { VerlaufOverlay } from "./verlauf-overlay";
 import type {
+  CardAttribution,
   CardCategory,
   CardFrequency,
   CardType,
@@ -29,6 +31,24 @@ import type {
   LinkedFragmentRef,
 } from "./cards.types";
 import styles from "./cards.module.css";
+
+/** v2-31 (M7): Wortlaut der Unterzeile im Verlaufs-Overlay. Dieselben Wörter
+ *  wie beim Anlegen und in „Wiederholung ändern …" (§12.4) — ein zweiter
+ *  Wortschatz für denselben Begriff wäre genau die Art Abweichung, die man
+ *  erst bemerkt, wenn jemand danach sucht. */
+const VERLAUF_TYP_LABEL: Record<CardType, string> = {
+  FIXED_COST: "Fixkosten",
+  INCOME: "Einnahme",
+  BUDGET: "Budget",
+};
+
+const VERLAUF_FREQUENZ_LABEL: Record<CardFrequency, string> = {
+  MONTHLY: "monatlich",
+  QUARTERLY: "quartalsweise",
+  SEMIANNUAL: "halbjährlich",
+  ANNUAL: "jährlich",
+  ONCE: "einmalig",
+};
 
 /** v2-05: Grund-Codes des Lösch-Tors in Klartext (ausgegrauter Menüpunkt).
  *
@@ -92,6 +112,9 @@ type CardInteractiveProps = {
   currentCategoryId: string | null;
   /** v2-17 (KAT-1): alle Ordner des Nutzers, in Anzeige-Reihenfolge (C2). */
   categories: CardCategory[];
+  /** v2-31 (M7): nur für die Unterzeile des Verlaufs. Die Anzeige-Logik der
+   *  Karte selbst hängt nicht daran — dafür gibt es `MetaRow` in `card.tsx`. */
+  attribution: CardAttribution;
 };
 
 export function CardInteractive({
@@ -113,6 +136,7 @@ export function CardInteractive({
   currentDueDay,
   currentCategoryId,
   categories,
+  attribution,
 }: CardInteractiveProps) {
   const effectiveTappable = tappable && !endDeleteOnly;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -123,6 +147,7 @@ export function CardInteractive({
   const [endOverlayOpen, setEndOverlayOpen] = useState(false);
   const [frequencyOverlayOpen, setFrequencyOverlayOpen] = useState(false);
   const [linkedOverlayOpen, setLinkedOverlayOpen] = useState(false);
+  const [verlaufOverlayOpen, setVerlaufOverlayOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const hasLinkedFragments = (linkedFragments?.length ?? 0) > 0;
@@ -226,6 +251,12 @@ export function CardInteractive({
     e.stopPropagation();
     setMenuOpen(false);
     setCategoryOverlayOpen(true);
+  }
+
+  function handleVerlaufClick(e: React.MouseEvent) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setVerlaufOverlayOpen(true);
   }
 
   function handleLinkedClick(e: React.MouseEvent) {
@@ -380,6 +411,30 @@ export function CardInteractive({
               Verknüpfte Fragmente
             </button>
           )}
+          {/* v2-31 (M7): „Verlauf …" — 24 Monate Ist gegen Plan.
+              Steht bei den ANSEHEN-Punkten oben, nicht bei den Änderungen: Das
+              Menü ist nach Wirkung gruppiert — harmlos, dann ändernd, zuletzt
+              beendend/löschend. Der Verlauf ändert nichts.
+              NICHT bei `ONCE`: Eine Einmal-Karte existiert per Constraint in
+              genau einem Monat, ihr „Verlauf" wäre ein Punkt. Ein Menüpunkt,
+              der nichts zeigt, ist ein Versprechen ins Leere — dieselbe Logik,
+              mit der „Fällig am …" auf Budget-Karten fehlt. Das betrifft 142
+              der 178 Karten (Design-Record §5).
+              JA auf Ghost-Karten, anders als „Betrag anpassen" und „Fällig
+              am …" und aus demselben Grund wie „Kategorie ändern …": Der
+              Verlauf ist eine Eigenschaft der Karte über die Zeit, kein
+              Monats-Zustand — und im Zukunftsmonat ist die Kartenmenge oft die
+              vollständigste. */}
+          {currentFrequency !== "ONCE" && (
+            <button
+              type="button"
+              className={styles.contextMenuItem}
+              onClick={handleVerlaufClick}
+              role="menuitem"
+            >
+              Verlauf …
+            </button>
+          )}
           {!endDeleteOnly && (
             <button
               type="button"
@@ -506,6 +561,23 @@ export function CardInteractive({
           )}
         </div>,
         document.body
+      )}
+
+      {/* Verlaufs-Overlay (v2-31, M7) — 24 Monate Ist gegen Plan.
+          Das Jahr kommt aus dem angezeigten Monat: Wer im März 2026 steht,
+          sieht 2025 und 2026. Die Grenze zwischen teal und grau hängt dagegen
+          am KALENDER, nicht am angezeigten Monat (§9) — sie wird in
+          `verlauf.ts` aus der Server-Zeit gebildet, nicht hier. */}
+      {verlaufOverlayOpen && (
+        <VerlaufOverlay
+          quelle={{ art: "karte", cardId }}
+          name={cardName}
+          unterzeile={`${VERLAUF_TYP_LABEL[cardType]} · ${VERLAUF_FREQUENZ_LABEL[currentFrequency]} · ${
+            attribution === "GEMEINSAM" ? "gemeinsame Karte" : "eigene Karte"
+          }`}
+          jahr={Number(month.slice(0, 4))}
+          onClose={() => setVerlaufOverlayOpen(false)}
+        />
       )}
 
       {/* Beenden-Overlay (v2-05) */}

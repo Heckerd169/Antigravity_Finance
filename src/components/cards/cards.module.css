@@ -782,3 +782,207 @@
   border-color: var(--border-teal);
   color: var(--text-primary);
 }
+
+/* ---------- v2-31 (M7 / KAT-4): Verlaufs-Overlay ---------- */
+/* Maße 1:1 aus welle.module.css (.popup) — dieselbe Anatomie, weil es dieselbe
+ * Sorte Fläche ist: ein Single-Surface-Overlay mit Kicker, Held, Unterzeile,
+ * Zeichenfläche und Fußzeile. §7 verlangt zentriert; der Backdrop ist der
+ * bestehende .overlayBackdrop. */
+
+.verlaufModal {
+  width: 680px;
+  max-width: calc(100vw - 48px);
+  background: var(--bg-primary);
+  border: .5px solid rgba(255, 255, 255, .08);
+  border-radius: 18px;
+  padding: 24px 26px 20px;
+  position: relative;
+  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9);
+}
+
+.verlaufClose {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: .5px solid rgba(255, 255, 255, .12);
+  background: none;
+  color: rgba(255, 255, 255, .28);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-stack-system);
+}
+
+.verlaufClose:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, .06);
+}
+
+.verlaufKicker {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .28);
+}
+
+/* Der Held ist der NAME, keine Zahl. Das Welle-Popup führt dort die
+ * Jahressumme, weil dort die Summe die Aussage ist; hier ist die Aussage die
+ * KURVE. Eine große Zahl daneben konkurrierte mit ihr und mit der Sparrate im
+ * Ring — „ein Screen, ein Monat, eine Zahl". Die beiden Jahressummen stehen
+ * klein im Fuß (Design-Record §7). */
+.verlaufHero {
+  font-size: 38px;
+  font-weight: 200;
+  letter-spacing: -1.6px;
+  margin-top: 4px;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.verlaufSub {
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, .28);
+  margin-top: 2px;
+}
+
+.verlaufChart {
+  margin-top: 14px;
+  min-height: 200px;
+}
+
+.verlaufSvg {
+  display: block;
+  height: 200px;
+}
+
+.verlaufPlatzhalter {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(255, 255, 255, .28);
+}
+
+/* Werte aus welle/draw.ts, nicht neu gewählt: Raster graS(0.07) bei 0,5 px,
+ * Plan graS(0.25) bei 1 px, Ist teal bei 2 px. Kein neuer Token, keine neue
+ * Farbe — Teal und Grau tragen hier exakt ihre §9-Bedeutung. */
+.verlaufRaster {
+  stroke: rgba(255, 255, 255, .07);
+  stroke-width: .5;
+}
+
+.verlaufJahrGrenze {
+  stroke: rgba(255, 255, 255, .10);
+  stroke-width: .5;
+}
+
+.verlaufHeuteLinie {
+  stroke: rgba(255, 255, 255, .13);
+  stroke-width: .5;
+  stroke-dasharray: 2 3;
+}
+
+.verlaufHeuteLabel {
+  font-size: 8px;
+  font-weight: 500;
+  fill: rgba(255, 255, 255, .26);
+}
+
+.verlaufYLabel,
+.verlaufXLabel {
+  font-size: 8px;
+  font-weight: 500;
+  font-variant-numeric: var(--typo-numeric-variant);
+}
+
+.verlaufYLabel {
+  fill: rgba(255, 255, 255, .28);
+}
+
+.verlaufXLabel {
+  fill: rgba(255, 255, 255, .22);
+}
+
+.verlaufPlanLinie {
+  fill: none;
+  stroke: rgba(255, 255, 255, .25);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.verlaufPlanPunkt {
+  fill: rgba(255, 255, 255, .25);
+}
+
+.verlaufIstLinie {
+  fill: none;
+  stroke: rgba(62, 207, 175, .85);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.verlaufIstPunkt {
+  fill: rgba(62, 207, 175, .85);
+}
+
+/* Fußzeile im Muster von .popupDrivers (welle.module.css). */
+.verlaufFuss {
+  margin-top: 10px;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, .03);
+  border: .5px solid var(--border-subtle);
+  border-radius: 9px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.verlaufLegende {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.verlaufLegende span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.verlaufLegende i {
+  display: block;
+  width: 15px;
+}
+
+.verlaufLegendeIst {
+  height: 2px;
+  background: rgba(62, 207, 175, .85);
+  border-radius: 1px;
+}
+
+.verlaufLegendePlan {
+  height: 1px;
+  background: rgba(255, 255, 255, .25);
+}
+
+.verlaufSummen {
+  font-variant-numeric: var(--typo-numeric-variant);
+  color: rgba(255, 255, 255, .28);
+  white-space: nowrap;
+}
