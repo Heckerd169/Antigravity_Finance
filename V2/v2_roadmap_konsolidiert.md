@@ -2,7 +2,16 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 25. August 2026 (nach **v2-29** „Die App merkt sich, was du entschieden hast" —
+> **Stand:** 31. August 2026 (nach **v2-31** „Verlauf je Karte und je Ordner" — `M7` und
+> `KAT-4` erledigt, **Paket 10 vollständig**, kein neuer Punkt entstanden. 24 Monate Ist
+> gegen Plan in einem zentrierten Overlay, aus dem Kontextmenü einer Karte **und** einer
+> Ordner-Kachel. **Kein Zahlenwert bewegt** — 24 Sparraten byte-identisch, neun
+> Prüfsummen unverändert. **Der teuerste Fund war eine Zeile dieser Datei:** `M7` galt
+> als „datenseitig bereits abgedeckt", aber `get_year_deviation_drivers` liefert nur
+> **abweichende** Karten — Netflix erschien in keinem einzigen Monat. `KAT-5` wurde
+> zugunsten von `KAT-4` aus dem Sprint genommen und steht unverändert in Paket 7.)
+> Davor: 27. August 2026 (nach **v2-30**). Davor: 25. August 2026
+> (nach **v2-29** „Die App merkt sich, was du entschieden hast" —
 > `ZO-5` erledigt, `ZO-7` und `ZO-8` neu und offen. `history_match` erkennt eine
 > Handzuordnung jetzt am **Händler** statt am Wortlaut; sichtbare 2025-Vorschläge
 > **136 → 195**, Sparrate in allen 24 Monaten unbewegt. Der Vorschlag steht zum ersten Mal
@@ -56,19 +65,41 @@
 
 *Alle Zahlen am 27.08.2026 zeilengenau nachgezählt — nach Sprint **v2-30**.*
 
-| | Anzahl | nach v2-29 | nach v2-28 | nach v2-27 | nach v2-26 | nach v2-25 | nach DD 17.08. | nach v2-24 |
+| | Anzahl | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 | nach v2-26 | nach v2-25 | nach v2-24 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 12 | 12 | 12 | 12 | 12 | 12 | 11 |
-| Themen darin | **39** | 38 | 37 | 35 | 37 | 36 | 39 | 34 |
+| Offene Pakete | **11** | 12 | 12 | 12 | 12 | 12 | 12 | 11 |
+| Themen darin | **37** | 39 | 38 | 37 | 35 | 37 | 36 | 34 |
 | Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **43** | 42 | 41 | 39 | 41 | 40 | 43 | 38 |
-| Erledigt | **66** | 65 | 64 | 61 | 59 | 56 | 53 | 53 |
+| **Offen gesamt** | **41** | 43 | 42 | 41 | 39 | 41 | 40 | 38 |
+| Erledigt | **68** | 66 | 65 | 64 | 61 | 59 | 56 | 53 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach Sprint v2-30, zeilengenau ausgezählt.** Paket-Tabellen **65** Zeilen, davon
-> **26 ✅** → **39** offen (⬜ 35, davon 3 mit 🔎 · 🟡 4). Hausaufgaben **4**, alle ⬜.
-> §4 Erledigt **66** Zeilen. §3 unverändert **4**. Pakete **18**, davon **6** vollständig
-> erledigt (1, 2, 3, 4, 15, 16) → **12** offen.
+> **Stand nach Sprint v2-31, zeilengenau ausgezählt.** Paket-Tabellen **65** Zeilen, davon
+> **28 ✅** → **37** offen (⬜ 33, davon 3 mit 🔎 · 🟡 4). Hausaufgaben **4**, alle ⬜.
+> §4 Erledigt **68** Zeilen. §3 unverändert **4**. Pakete **18**, davon **7** vollständig
+> erledigt (1, 2, 3, 4, **10**, 15, 16) → **11** offen.
+>
+> **v2-31 hat zwei Punkte erledigt und keinen neuen eingetragen** — `M7` und `KAT-4`.
+> **Offen gesamt fällt damit zum ersten Mal seit v2-27 wieder**, von 43 auf 41, und
+> **Paket 10 („Verlauf") ist vollständig**. Das ist kein Zufall des Zuschnitts: Befund
+> `U5` hatte am 04.08.2026 festgestellt, dass Karten- und Kategorie-Verlauf **dieselbe
+> Fläche mit zwei Ebenen** sind — beide zusammen zu bauen war die einzige Variante, die
+> sie nicht zweimal anfasst.
+>
+> **Der Sprint war anders geschnitten und wurde in der Design-Runde geändert.** Geplant
+> waren `M7` + `KAT-5`; der Nutzer hat stattdessen `KAT-4` hineingenommen („der Verlauf
+> muss bei allen Ordnern dargestellt werden") und `KAT-5` herausgenommen. `KAT-5` steht
+> unverändert in Paket 7.
+>
+> ⚠️ **Und eine Zeile dieser Datei hat sich als falsch erwiesen.** `M7` stand in der
+> Spalte „Datenbank" auf **nein**, mit der Begründung, `get_year_deviation_drivers`
+> liefere je Karte `ist` und `plan` pro Monat. **Gemessen liefert sie nur Karten, die
+> ABWEICHEN** (`WHERE round(delta,2) <> 0`): Netflix läuft zwölf Monate exakt auf Plan
+> und erschien in **keinem einzigen**; für Sep–Dez 2026 lieferte sie **gar nichts**.
+> Der Auftrag hatte auf dieser Zeile aufgebaut und einen Datenbank-Eingriff
+> ausgeschlossen. **Das ist LL-22 — eine Doku-Zusage über Rechenverhalten ist keine
+> Prüfung.** Die Zeile klang plausibel und wurde erst geprüft, als jemand sie benutzen
+> wollte.
 >
 > **v2-30 hat einen Punkt erledigt und einen eingetragen** — `PF-6` erledigt, `PF-7` neu.
 > **Offen gesamt steigt deshalb von 42 auf 43, und auch das ist das richtige Ergebnis:**
@@ -614,7 +645,7 @@ automatischen Zuordnung profitiert statt sie vorwegzunehmen.
 | B2-F | Feinschliff der Abweichungs-Treiber | Diskussion | nein | ⬜ | Label-Format der Treiber-Zeilen · Wortlaut bei Monaten ohne Abweichung · Entscheidung über **E4** (Pseudo-Treiber „n € unzugeordnet in Monat M" für die Rohmasse — bewusst nicht umgesetzt). |
 | M5 | Karten-Anordnung im Karussell | Feature | nein | ⬜ 🔎 | Heute Fixkosten → Einnahmen → Budget (seit Sprint 4). Ursprünglicher Wunsch war Budget → Fixkosten → Einnahmen. **Vor dem Schnitt bestätigen**, ob das noch gilt. |
 | A1-F | Badge-Palette und Schalter-Sprache | Diskussion | nein | ⬜ | Aus v2-07: reiner Token- und Text-Tausch. **Achtung:** Wird BF-1 umgesetzt, entfallen die Vorschlags-Kästchen ganz — dann erledigt sich die Palettenfrage von selbst. Erst nach Paket 1 anfassen. |
-| KAT-5 | Zahlung auf eine Ordner-Kachel ziehen → Anlege-Fenster | Feature | nein | ⬜ | **Record `A2`, entschieden am 07.08.2026 — in v2-17 NICHT gebaut und im dortigen Review nicht benannt.** Ein Zug auf den Ordner soll dasselbe Fenster öffnen wie der leere Platz (Name, Betrag, Häufigkeit, Typ, Attribution), nur mit vorausgewählter Kategorie. Das Muster existiert bereits (`RecurrencePopup`, §8 „Leerer Slot — Weg 1"); es wird nur ein zweites Mal ausgelöst. **Seit v2-18 relevanter:** Weil sich beim Ziehen kein Ordner mehr von selbst öffnet, ist ein zugeklappter Ordner heute gar kein Ziel — `KAT-5` wäre der zweite Weg neben dem Aufklappen. |
+| KAT-5 | Zahlung auf eine Ordner-Kachel ziehen → Anlege-Fenster | Feature | nein | ⬜ | **Record `A2`, entschieden am 07.08.2026 — in v2-17 NICHT gebaut und im dortigen Review nicht benannt.** Ein Zug auf den Ordner soll dasselbe Fenster öffnen wie der leere Platz (Name, Betrag, Häufigkeit, Typ, Attribution), nur mit vorausgewählter Kategorie. Das Muster existiert bereits (`RecurrencePopup`, §8 „Leerer Slot — Weg 1"); es wird nur ein zweites Mal ausgelöst. **Seit v2-18 relevanter:** Weil sich beim Ziehen kein Ordner mehr von selbst öffnet, ist ein zugeklappter Ordner heute gar kein Ziel — `KAT-5` wäre der zweite Weg neben dem Aufklappen. **v2-31: bewusst HERAUSGENOMMEN.** Der Sprint war als `M7` + `KAT-5` geschnitten; in der Design-Runde vom 31.08.2026 hat der Nutzer stattdessen `KAT-4` hineingenommen („der Verlauf muss bei allen Ordnern dargestellt werden"). `KAT-5` hängt an nichts und ist in einer Sitzung erledigt — Record `A2` gilt unverändert. |
 
 ---
 
@@ -645,15 +676,20 @@ Vergleichsbasis für die Verkettung.
 
 ---
 
-### Paket 10 · Verlauf
+### Paket 10 · Verlauf — ✅ vollständig erledigt (v2-31)
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| M7 | „Verlauf" im Karten-Kontextmenü: Jan–Dez, Ist gegen Plan je Karte | Feature | nein | ⬜ | Datenseitig bereits abgedeckt — `get_year_deviation_drivers` liefert je Karte `ist` und `plan` pro Monat. Reines Oberflächen-Feature. **Nicht mehr allein isolierbar**, seit `KAT-4` dieselbe Fläche braucht (Befund U5). |
-| KAT-4 | Ausgabenverlauf je Kategorie und Unterkategorie | Feature | **ja** | ⬜ | **Die zweite Hälfte der Kategorien-Idee** (Ideen-Runde 04.08.2026) — bewusst hierher gehängt statt in Paket 4. Setzt `KAT-1` **und** eine kuratierte Datenbasis voraus: heute hängen in Jan–Apr **0,0 %** der Ausgaben an einer Karte, im Juli 74,3 %; die Kurve zeigte den Kurationsfortschritt statt des Ausgabeverhaltens, und für ganz 2025 wäre sie null (Befund D4). Zusammen mit `M7` zu schneiden — Karten- und Kategorie-Verlauf sind dieselbe Fläche mit zwei Ebenen, und Design-Doku §9 erklärt das Welle-Popup zur einzigen Heimat der kumulierten Sicht. |
+| M7 | „Verlauf" im Karten-Kontextmenü: 24 Monate, Ist gegen Plan je Karte | Feature | **ja** | ✅ | **v2-31.** Menüpunkt `Verlauf …`, zentriertes Overlay, Ist teal / Plan grau, Vorjahr + angezeigtes Jahr. ⚠️ **Die Spalte „Datenbank" stand hier auf „nein" und war falsch:** `get_year_deviation_drivers` trägt `WHERE round(delta,2) <> 0` und liefert nur **abweichende** Karten — Netflix läuft zwölf Monate auf Plan und erschien in **keinem**; Sep–Dez 2026 lieferte sie **gar nichts**. Gebaut wurde deshalb `get_card_amount_series` (rein lesend, eine Netzrunde statt 36). Nicht bei `ONCE` — das sind 142 der 178 Karten. |
+| KAT-4 | Ausgabenverlauf je Kategorie und Unterkategorie | Feature | **ja** | ✅ | **v2-31**, zusammen mit `M7` — dieselbe Fläche, wie Befund `U5` es vorhergesagt hatte. `get_category_amount_series` **holt** den Ist-Wert aus `get_category_amounts_for_month`, statt ihn nachzurechnen: Dort sitzt der Rundungs-Ausgleich, den Anker 1 erzwingt (gemessen 0,01 € in vier Monaten). Prüfung: 200 Zellen über 11 Ordner, 0 Verletzungen. ⚠️ **Die alte Voraussetzung ist entfallen** — Befund `D4` („in Jan–Apr hängen 0,0 % der Ausgaben an einer Karte, für 2025 wäre sie null") gilt seit `DA-1`/`DA-3` nicht mehr: In **allen 20** vergangenen Monaten hat **jede** aktive Karte eine Zahlung oder einen Tap. Der Ordner „Ohne Kategorie" bekommt bewusst keinen Verlauf (Zufluss, kein Bestand — Befund `D12`). |
 
 > Deshalb heißt dieses Paket seit dem 04.08.2026 **„Verlauf"** statt „Kartenverlauf".
-> Voraussetzungen: Paket 4 (`KAT-1`) und Paket 6 (`DA-1`/`DA-2`).
+> Voraussetzungen waren Paket 4 (`KAT-1`) und Paket 6 (`DA-1`/`DA-2`) — **beide erfüllt**,
+> und genau darin lag der stille Teil: `KAT-4` stand zusätzlich unter dem Vorbehalt einer
+> kuratierten Datenbasis (Befund `D4`). `DA-1` (v2-27) und `DA-3` (v2-28) haben ihn
+> aufgehoben, ohne dass es hier jemand nachgetragen hätte. Gemessen am 31.08.2026 hat in
+> **allen 20** vergangenen Monaten **jede** aktive Karte eine verknüpfte Zahlung oder
+> einen Tap. **Der Punkt war schneidbar, bevor jemand ihn dafür hielt.**
 
 ---
 
@@ -829,6 +865,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| M7 | **Karten haben einen Verlauf.** `Verlauf …` im Kontextmenü öffnet ein zentriertes Overlay mit **24 Monaten** Ist gegen Plan — Ist teal (2 px), Plan grau (1 px), beide Werte aus `welle/draw.ts`, **kein neuer Token**. Bis dahin war „wie lief das übers Jahr?" nur durch zwölfmaligen Monatswechsel beantwortbar. **Der teuerste Fund war die Roadmap-Zeile selbst:** Sie führte den Punkt als „datenseitig bereits abgedeckt", aber `get_year_deviation_drivers` trägt `WHERE round(delta,2) <> 0` und liefert nur **abweichende** Karten — Netflix läuft zwölf Monate auf Plan und erschien in **keinem einzigen**; Sep–Dez 2026 lieferte sie **gar nichts** (0 von 22 aktiven Karten). Gebaut wurde deshalb `get_card_amount_series`: rein lesend, **eine Netzrunde statt 36**, 21 ms. Drei Regeln haften im Code — die Ist-Linie endet am laufenden Monat (dort sind alle Werte reine Plan-Kopien), inaktive Monate brechen die Linie statt auf 0 zu fallen (LL-20), isolierte Werte werden als Punkt gezeichnet. Bei GEMEINSAM zeigt die Plan-Linie den **eigenen Anteil**: max. Abstand Miete 41,36 € statt roh ~815 €. Nicht bei `ONCE` — 142 der 178 Karten | v2-31 |
+| KAT-4 | **Ordner haben denselben Verlauf** — dieselbe Fläche, eine Ebene höher, wie Befund `U5` es am 04.08.2026 vorhergesagt hatte. `get_category_amount_series` **holt** den Ist-Wert aus `get_category_amounts_for_month`, statt ihn nachzurechnen: Dort sitzt der Rundungs-Ausgleich, den Anker 1 erzwingt — gemessen trägt in den vier Zukunftsmonaten je ein Ordner **0,01 €**, ein Nachbau zeigte dort einen Cent weniger als die Kachel daneben, **ohne dass eine Zahl falsch aussähe** (LL-25/LL-26). Preis: 254 ms statt 21 ms. Geprüft über **200 Zellen in 11 Ordnern, 0 Verletzungen**. **Die alte Voraussetzung war entfallen, ohne dass es jemand nachgetragen hatte:** Befund `D4` knüpfte den Punkt an eine kuratierte Datenbasis — seit `DA-1`/`DA-3` hat in **allen 20** vergangenen Monaten **jede** aktive Karte eine Zahlung oder einen Tap. „Ohne Kategorie" bekommt bewusst keinen Verlauf (Zufluss, kein Bestand — `D12`) | v2-31 |
 | PF-6 | **Der Import passt wieder in die Zeit.** 17 neue Zahlungen: **23.938 ms → 1.357 ms**, Faktor **17,6**, bei einem `statement_timeout` von 8 s für die Rolle `authenticated`. **Der Fund war nicht das erwartete N+1**, sondern ein Index, der nie griff: `idx_fragments_merchant_key` stand auf `af_merchant_key(description)`, und weil das eine **SQL**-Funktion ist, **inlined der Planer sie** — danach steht im Plan ihr Rumpf statt des Aufrufs, und beide treffen sich nie (`Seq Scan`, `Rows Removed by Filter: 1628`, 28-mal je Zahlung). **Die Statistik verriet es nicht:** 88.107 Scans wiesen den Index als benutzt aus, er griff nur anderswo. Behoben durch `fragments.merchant_key` als `GENERATED … STORED` plus gewöhnlichen B-Tree-Index — ein Spalten-Index ist gegen Inlining immun. **Kein Nachbau:** Die Spalte ruft die Funktion auf. Zwei naheliegende Fixes wurden gemessen und verworfen (`PF-3`: 274 → 289 ms, wirkungslos · `plpgsql`: 285 → 367 ms, schlechter) und stehen in der Migration dokumentiert. Verifiziert: Spalten-Äquivalenz 1.628/1.628, 231 Matrix-Paare ohne Unterschied, Sparrate 24/24, Anker 1+2 je 0 Verletzungen, 16 von 17 Prüfsummen unverändert. | v2-30 |
 | ZO-5 | **Die App merkt sich, was du entschieden hast.** `history_match` erkannte eine Handzuordnung nur bei WORTGLEICHER Beschreibung — bei Kartenzahlungen steht das Buchungsdatum im Text, es sind also nie zwei gleich. Jetzt zweistufig: `af_merchant_key` macht alle Ziffern und Sonderzeichen zu Leerzeichen, wodurch Datum, Kundennummer und Transaktions-ID von selbst wegfallen; **die Regel muss kein Format kennen**. Fünf Extraktionswege gegen dieselbe Messung gehalten (Leave-one-out, 568 Handzuordnungen, Richtig UND Falsch) — **gewonnen hat die einfachste, auf beiden Achsen zugleich: 257/24 = 91,5 % gegen 147/17** beim naheliegenden „Text vor dem ersten `\|`". **Gebaut wurde ergänzend, nicht ersetzend**, und das war der teuerste Fund: Die genauere Regel wäre die schlechtere gewesen — 35 der 136 sichtbaren Vorschläge hätten mit dem gröberen Schlüssel keinen eindeutigen Treffer mehr, weil ein gröberer Schlüssel mehr zusammenfasst und **öfter mehrdeutig** wird. Sichtbare 2025-Vorschläge **136 → 195** (vorher aufgeschrieben, exakt getroffen), `vorschlag_geleert` **0**, Sparrate in allen 24 Monaten unbewegt. Der Vorschlag steht jetzt als leise Zeile in der Rohmasse. **Die Begründung dieses Punktes war falsch und wurde mitkorrigiert** — nicht der wechselnde Name war das Haupthindernis, sondern die fehlende Karte: 84 der 128 solchen Zahlungen sind Einmalkäufe ohne Ziel | v2-29 |
 | DA-3 | **Die 2025-Pläne tragen, was gezahlt wurde.** `DA-1` bildete je Karte einen Jahresdurchschnitt — zu grob bei Ausreißern und bei echten Preiswechseln. **Ein Mittelwert kann tadellos gebildet und trotzdem in keinem Monat richtig sein:** Netflix' 18,99 € ist exakt (10 × 19,99 + 2 × 13,99) / 12 — und wurde **nie gezahlt**. Jetzt zwei Zeitreihen-Zeilen je Preiswechsel (Netflix 19,99 → 13,99 ab November, Spotify 10,99 → 12,99 ab Dezember), der typische Monat statt des Schnitts beim Handyvertrag (33,07 → 33,00), Friseur zurück auf 2025-01. **Die Preiswechsel waren die ganze Zeit in der Datenbank, nur im falschen Jahr** — die 2026-Pläne trugen die neuen Beträge längst. Ist 2025 −539,99 €, Plan −539,12 €, **2026 unbewegt** | v2-28 |

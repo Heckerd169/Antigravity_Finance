@@ -756,6 +756,25 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     Ergänzen schlägt ersetzen, solange die alte Stufe etwas trägt, das die neue nicht
     erreicht. Ergänzt §7 Regel 25, die nur Richtig und Falsch verlangt — hier kommt die
     **Reichweite** als dritte Achse dazu. (v2-29, LL-41)
+31. **Ein Rundungs-Ausgleich gehört nur dorthin, wo die Summe der Gruppen SICHTBAR
+    ist — an jeder anderen Stelle ist er eine Verfälschung.** Und beide Stellen sehen
+    im Code gleich aus.
+    `get_category_amounts_for_month` **muss** den Rest ausgleichen: Anker 1 verlangt
+    `Σ Ordner == Sparrate`, und die Ordner-Spalte steht sichtbar im Karussell. Die
+    **Plan**-Seite derselben Gruppierung **darf** es nicht — dort liefert dieselbe
+    Funktion `planned` hart als `NULL`, es gibt also gar keine Summe, die stimmen
+    müsste. Ein Ausgleich verschöbe den Plan **eines** Ordners um fremde Rundungsreste,
+    damit eine Zahl stimmt, die niemand sieht.
+    **Gemessen in v2-31:** Ungerundet über alle Karten summiert ergibt der Plan exakt
+    die Plan-Sparrate (0,00 € in 24/24). Summiert man die **je Ordner gerundeten**
+    Werte, weicht das Ergebnis in **12 von 24** Monaten um ±0,01 € ab — sauber
+    gerechnet innerhalb jeder Gruppe, und trotzdem daneben.
+    **Wer LL-25 kennt, neigt dazu, den Ausgleich überall einzubauen, wo gruppiert
+    wird.** Die Frage ist aber nicht *„wird gruppiert?"*, sondern **„wird die Summe der
+    Gruppen irgendwo angezeigt?"** Ohne diesen Ort ist der Ausgleich keine Korrektur.
+    **Das ist nicht die Wiederholung von LL-25, sondern seine Grenze:** LL-25 sagt,
+    wann man ausgleichen **muss**; diese Falle sagt, wann man es **lassen** muss.
+    Erst beide zusammen ergeben eine benutzbare Regel. (v2-31, LL-43)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -1044,6 +1063,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-40 | Ein **Wächter, von dem niemand weiß, ob er auslösen kann**, ist eine Zusicherung, keine Prüfung — den Fehler einmal testweise einbauen und rot sehen | §7 Regel 27 | v2-29 |
 | LL-41 | Eine **Verallgemeinerung kann die alte Regel nicht ersetzen, obwohl sie genauer ist** — ein gröberer Schlüssel fasst mehr zusammen und wird dadurch **öfter mehrdeutig**. Wer eine Erkennung verallgemeinert, misst nicht nur die neue Trefferquote, sondern auch, **was die alte Fassung heute schon leistet** | §6 Stolperfalle 30 | v2-29 |
 | LL-42 | Eine Performance-Messung gilt nur unter der **Rolle**, unter der die App arbeitet — ein MCP-Trockenlauf läuft ohne RLS und **ohne Zeitlimit** und beweist Richtigkeit, nicht Bezahlbarkeit | §6 Stolperfalle 29 ③ · §9 | v2-30 (PF-6) |
+| LL-43 | Ein **Rundungs-Ausgleich gehört nur dorthin, wo die Summe der Gruppen sichtbar ist** — die Frage ist nicht „wird gruppiert?", sondern „wird die Summe irgendwo angezeigt?". Ohne diesen Ort ist er keine Korrektur, sondern eine Verfälschung. **Die Grenze von LL-25**, nicht seine Wiederholung | §6 Stolperfalle 31 | v2-31 |
 
 > **Warum LL-42 neben LL-29 steht und nicht darin aufgeht.** LL-29 sagt: bei Trägheit
 > **zählen, wie oft gefragt wird**, nicht wie lange eine Frage dauert. In v2-30 war
@@ -1153,25 +1173,28 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-30** („Der Import passt wieder in die Zeit" — `PF-6`,
-27.08.2026) · **davor:** v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4` `NAV-1`),
-v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`),
-v2-24 (`PF-1` `PF-2` `PF-4`), v2-23 (`ZU-1`), v2-22 (`B2-R` `ZO-2`).
+**Letzter Sprint:** **v2-31** („Verlauf je Karte und je Ordner" — `M7` `KAT-4`,
+31.08.2026) · **davor:** v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4`
+`NAV-1`), v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`),
+v2-24 (`PF-1` `PF-2` `PF-4`).
 **Alles bis einschließlich v2-30 ist in `main`** — PR #48 gemergt, Browser-Smoke
 bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), **nicht** gegen den
-PR-Status.
+PR-Status. **v2-31 liegt als Pull Request vor und ist NICHT gemergt.**
 
-> **v2-30 in drei Sätzen.** Ein Import von 17 neuen Zahlungen fiel von **23.938 ms auf
-> 1.357 ms**. Das `statement_timeout` der Rolle `authenticated` liegt bei **8 s** — der
-> Import lief also strukturell in einen Fehler, sobald mehr als **vier** Zahlungen neu
-> waren, und Duplikate überspringen die teure Rechnung, weshalb eine alte Datei
-> weiterhin durchging und **kein Wächter** anschlug.
+> **v2-31 in drei Sätzen.** Karten und Ordner haben einen **Verlauf** bekommen: 24
+> Monate Ist gegen Plan in einem zentrierten Overlay, aus dem Kontextmenü. `M7` und
+> `KAT-4` zusammen — **Paket 10 ist damit vollständig**, und es war seit dem 04.08.2026
+> so geschnitten, weil beide dieselbe Fläche brauchen (Befund `U5`).
 >
-> **Die Ursache war kein N+1, sondern ein Ausdrucks-Index, der durch Inlining nie
-> griff** (§6 Stolperfalle 29 ③) — während `pg_stat_user_indexes` **88.107 Scans**
-> auswies. **Kein Zahlenwert bewegt:** Sparrate 24/24, Anker 1 und 2 je 0
-> Verletzungen. Neu offen: `PF-7` (der alte Index wird erst gelöscht, wenn sein
-> Verursacher bekannt ist).
+> **Der teuerste Fund war eine Zeile der Roadmap.** Sie führte `M7` als „datenseitig
+> bereits abgedeckt"; gemessen liefert `get_year_deviation_drivers` aber nur Karten,
+> die **abweichen** — Netflix läuft zwölf Monate auf Plan und erschien in **keinem
+> einzigen**, für Sep–Dez 2026 lieferte sie **gar nichts**. Der Auftrag hatte darauf
+> aufgebaut und einen Datenbank-Eingriff ausgeschlossen (LL-22).
+>
+> **Kein Zahlenwert bewegt:** 24 Sparraten byte-identisch, Anker 1 in 24/24 bei 0,00 €,
+> alle neun Prüfsummen unverändert. `KAT-5` wurde zugunsten von `KAT-4` aus dem Sprint
+> genommen und bleibt offen.
 
 > **Was die einzelnen Sprints gebracht haben, steht in
 > `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
@@ -1180,13 +1203,21 @@ PR-Status.
 
 ### Wo das Projekt gerade steht
 
-| | Stand 25.08.2026 |
+| | Stand 31.08.2026 |
 |---|---|
 | **2026** | vollständig zugeordnet — **0** offene Zahlungen |
-| **2025** | **480** offen, davon **195** mit Kartenvorschlag (v2-29: 136 → 195) |
-| **Goldlinie 2025** | **21.708,77 €** — bewegt sich laufend durch Kuratierung |
-| **Nächste Arbeit** | Kuratierung 2025. **Handarbeit in der App, kein Sprint.** |
+| **2025** | **ebenfalls vollständig zugeordnet — 0 offene Zahlungen** (642 von Hand, 106 automatisch) |
+| **Goldlinie 2025** | **11.442,30 €** — von 21.708,77 € gefallen, weil zugeordnete Zahlungen die Sparrate ihres Monats senken |
+| **Nächste Arbeit** | **offen.** Die Kuratierung ist durch; der nächste Sprint kommt aus der Roadmap. |
 | **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
+
+> **Die Kuratierung 2025 ist abgeschlossen** — gemessen am 31.08.2026: kein einziges
+> `UNASSIGNED` in beiden Jahren. Damit ist die Bedingung erfüllt, die der Kasten unten
+> seit dem 13.08.2026 nennt (*„Wann sie zurückkommt: wenn die Kuratierung durch ist"*).
+> **Die eingefrorene Sollwert-Tabelle kann zurückkommen, sobald der Nutzer es
+> freigibt** — mit Datum daneben und dem Satz, dass sie nur gilt, solange nicht
+> kuratiert wird. In v2-31 ist sie **bewusst noch nicht** eingefroren: Die
+> Momentaufnahme unten wurde nur nachgezogen.
 
 ### Was offen ist und eine Entscheidung braucht
 
@@ -1305,24 +1336,34 @@ erklären**. Soll sich etwas bewegen, wird der erwartete Wert **vorher** aufgesc
 > Tabelle eingefroren — mit Datum daneben und dem Satz, dass sie nur gilt, solange
 > nicht kuratiert wird.
 
-**Momentaufnahme 25.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
+**Momentaufnahme 31.08.2026 — Orientierung, KEIN Sollwert.** Sie sagt einer neuen
 Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein** Alarm.
 
-> **Am 25.08.2026 nach v2-29 nachgemessen: alle 24 Werte unverändert.** Das ist hier
-> das erwartete Ergebnis und kein Zufall — `confidence.history_score` steht auf 0,94
-> und damit **unter** der Auto-Absorptions-Schwelle 0,95, es kann also nichts verlinkt
-> werden. Der Sprint hat 59 Vorschläge sichtbar gemacht und **keine** Zuordnung
-> vorgenommen.
+> **Am 31.08.2026 nachgezogen — und die alten Werte lagen um über 10.000 € daneben.**
+> v2-31 selbst hat **keine** Zahl bewegt (24/24 byte-identisch vorher/nachher, neun
+> Prüfsummen unverändert); die Bewegung kommt vollständig aus der **abgeschlossenen
+> Kuratierung** des Nutzers zwischen dem 25. und dem 31.08.2026. Beide Invarianten
+> hielten dabei durchgehend.
+>
+> **Genau deshalb wurde sie nachgezogen und nicht stehen gelassen:** Eine
+> Momentaufnahme, die um mehr als 10.000 € danebenliegt, zeigt keine Größenordnung
+> mehr, sondern eine falsche.
 
 | Monat | 2026 Ist | 2025 Ist | | Monat | 2026 Ist | 2025 Ist |
 |---|---|---|---|---|---|---|
-| Januar | 1.318,76 € | 1.813,98 € | | Juli | −8,84 € | 1.821,04 € |
-| Februar | 1.667,90 € | 1.689,37 € | | August | 629,34 € | 1.862,14 € |
-| März | 1.053,42 € | 1.679,98 € | | September | 1.821,59 € | 1.858,74 € |
-| April | 1.753,14 € | 1.753,87 € | | Oktober | 1.790,08 € | 1.827,59 € |
-| Mai | −239,10 € | 1.842,29 € | | November | 1.821,59 € | 1.854,79 € |
-| Juni | 3.509,75 € | 1.852,19 € | | Dezember | 1.821,59 € | 1.852,79 € |
-| | | | | **Goldlinie 2025** | | **21.708,77 €** |
+| Januar | 1.318,76 € | −987,21 € | | Juli | −8,84 € | −272,20 € |
+| Februar | 1.667,90 € | 1.813,37 € | | August | 507,10 € | 169,35 € |
+| März | 1.053,42 € | 3.527,21 € | | September | 1.621,60 € | 682,50 € |
+| April | 1.753,14 € | −198,14 € | | Oktober | 1.691,08 € | 1.856,28 € |
+| Mai | −239,10 € | 87,55 € | | November | 1.745,66 € | 2.925,87 € |
+| Juni | 3.509,75 € | 894,60 € | | Dezember | 1.456,09 € | 943,12 € |
+| | | | | **Goldlinie 2025** | | **11.442,30 €** |
+
+> **Die 2025-Spalte streut jetzt so stark wie 2026 — das ist der Fortschritt, nicht ein
+> Fehler.** Bis v2-27 stand dort in allen Monaten 4.037,11 €, danach ein
+> gleichmäßiges Band um 1.850 €. Erst die vollständige Zuordnung bringt die echten
+> Ausschläge hervor: Januar −987,21 €, März +3.527,21 €. Die Plan-Werte stehen im
+> Protokoll `sprints/sprint_v2-31_anker.md`.
 
 > ### ⚠️ Diese Tabelle trägt ihren eigenen Beleg dafür, dass sie kein Sollwert ist
 >
@@ -1367,8 +1408,8 @@ ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren
 
 **Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
 §0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**25.08.2026, nach v2-29**: **12 offene Pakete · 38 Themen ·
-4 Hausaufgaben · 42 offen gesamt · 65 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
+**31.08.2026, nach v2-31**: **11 offene Pakete · 37 Themen ·
+4 Hausaufgaben · 41 offen gesamt · 68 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
 geschätzt — das ist dort schon zweimal schiefgegangen.
 
 > **Die Zahl steigt zum zweiten Mal, und beide Male ist das das richtige Ergebnis.**
