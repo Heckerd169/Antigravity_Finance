@@ -74,7 +74,12 @@ export default defineConfig({
     //        Erzählzone und Regelanteil. Anlass: CLAUDE.md war nach 21
     //        Sprints von 434 auf 1.712 Zeilen zurückgewachsen, ohne dass es
     //        jemand bemerkt hat — aus lauter richtigen Entscheidungen.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang)\.spec\.ts/, use: DESKTOP },
+    // v2-31 (M7/KAT-4): `verlauf` kommt dazu — der Wächter über die drei Regeln
+    //        des Verlaufs, deren Bruch KEINE Zahl falsch macht: Ist-Linie endet
+    //        am laufenden Monat, inaktive Monate brechen die Linie statt auf 0
+    //        zu fallen, isolierte Werte werden als Punkt gezeichnet. Anker,
+    //        Prüfsummen und beide Invarianten blieben dabei grün.
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
