@@ -238,6 +238,7 @@ export function Carousel({
                   group={group}
                   isOpen={isOpen}
                   onToggle={() => toggleGroup(group.key)}
+                  jahr={Number(targetDbMonth.slice(0, 4))}
                 />
 
                 {/* Record B5: Ein offener Ordner steht in einer KLAMMER — eine
