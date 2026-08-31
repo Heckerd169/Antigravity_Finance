@@ -8,6 +8,8 @@ import {
   deleteCard,
   deleteCardCategory,
   endCard,
+  getCardAmountSeries,
+  getCategoryAmountSeries,
   renameCardCategory,
   restoreCard,
   restoreCardCategory,
@@ -16,10 +18,12 @@ import {
 } from "@/lib/rpc";
 import { setCardFrequency } from "@/lib/rpc";
 import type {
+  AmountSeriesPoint,
   DeleteEffect,
   DeletedCategoryPayload,
   FrequencyEffect,
 } from "@/lib/rpc";
+import type { VerlaufPunkt } from "./verlauf";
 
 export async function toggleCardTap(formData: FormData) {
   const cardId = formData.get("cardId") as string;
@@ -27,6 +31,74 @@ export async function toggleCardTap(formData: FormData) {
   const supabase = createClient();
   await toggleCardManuallyPaid(supabase, { cardId, month });
   revalidatePath("/", "page");
+}
+
+// ── v2-31 (M7 / KAT-4): der Verlauf wird erst beim Öffnen geladen ───────────
+
+/** Was das Verlaufs-Overlay zum Zeichnen braucht.
+ *
+ *  `heuteIso` kommt vom SERVER, nicht aus dem Browser. Die Grenze zwischen
+ *  Teal und Grau liegt am Kalender-„jetzt" (§9) — käme sie vom Client, könnte
+ *  eine falsch gestellte Uhr die Ist-Linie in die Zukunft verlängern. Dasselbe
+ *  Muster wie in `loadWelleExtras`, wo das laufende Jahr server-seitig
+ *  bestimmt wird. */
+export type VerlaufDaten = {
+  punkte: VerlaufPunkt[];
+  /** ISO-Zeitpunkt des Servers, aus dem der Client `heuteIndex` bildet. */
+  heuteIso: string;
+};
+
+/** Prüft das Jahr, das aus dem Browser kommt.
+ *
+ *  Eine Server Action ist ein von außen erreichbarer Endpunkt. RLS schützt die
+ *  Daten (es sind ohnehin nur die eigenen), aber ein unplausibler Wert löste
+ *  sinnlose Datenbank-Arbeit aus — bei der Ordner-Reihe immerhin 24 innere
+ *  Aufrufe. Die Prüfung ist damit eine Lastschranke, kein Datenschutz.
+ *  Wortgleich zu `loadWelleExtras`. */
+function pruefeJahr(jahr: number): void {
+  if (!Number.isInteger(jahr) || jahr < 1900 || jahr > 2200) {
+    throw new Error(`Unplausibles Jahr: ${jahr}`);
+  }
+}
+
+/** 24 Monate Ist und Plan einer Karte — Vorjahr und `jahr`. */
+export async function loadCardVerlauf(
+  cardId: string,
+  jahr: number,
+): Promise<VerlaufDaten> {
+  pruefeJahr(jahr);
+  const supabase = createClient();
+  const reihe = await getCardAmountSeries(supabase, { cardId, year: jahr });
+  return { punkte: reihe.map(zuPunkt), heuteIso: new Date().toISOString() };
+}
+
+/** 24 Monate Ist und Plan eines Ordners — dieselbe Fläche, eine Ebene höher. */
+export async function loadCategoryVerlauf(
+  categoryId: string,
+  jahr: number,
+): Promise<VerlaufDaten> {
+  pruefeJahr(jahr);
+  const supabase = createClient();
+  const reihe = await getCategoryAmountSeries(supabase, { categoryId, year: jahr });
+  return { punkte: reihe.map(zuPunkt), heuteIso: new Date().toISOString() };
+}
+
+/** `AmountSeriesPoint` → `VerlaufPunkt`. Die beiden Formen sind fast gleich;
+ *  getrennt bleiben sie, weil `verlauf.ts` bewusst nichts über die Datenbank
+ *  weiß und dadurch ohne Supabase testbar ist.
+ *
+ *  ⚠️ `null` bleibt `null`. Es aus Bequemlichkeit auf 0 zu ziehen, machte aus
+ *  „die Karte gibt es in diesem Monat nicht" ein „sie kostete null Euro" —
+ *  und zeichnete eine jährliche Karte in elf Monaten auf die Nulllinie
+ *  (§7 Regel 17 / LL-20). */
+function zuPunkt(p: AmountSeriesPoint): VerlaufPunkt {
+  return {
+    monthIndex: p.month_index,
+    month: p.month,
+    aktiv: p.aktiv,
+    ist: p.ist,
+    plan: p.plan,
+  };
 }
 
 /* ── v2-05: Karten-Lebenszyklus (ersetzt das Sprint-10-Verbergen) ──────────── */

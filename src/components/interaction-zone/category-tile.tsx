@@ -7,6 +7,7 @@ import {
   restoreCardCategoryAction,
 } from "@/components/cards/actions";
 import { useCardActionToast } from "@/components/cards/card-action-toast-provider";
+import { VerlaufOverlay } from "@/components/cards/verlauf-overlay";
 import { RenameCategoryOverlay } from "./rename-category-overlay";
 import type { CategoryGroup } from "./category-groups";
 import { formatEuroSigned } from "@/lib/format";
@@ -17,6 +18,9 @@ type CategoryTileProps = {
   group: CategoryGroup;
   isOpen: boolean;
   onToggle: () => void;
+  /** v2-31 (KAT-4): das RECHTE Jahr des Verlaufs — gezeigt werden `jahr - 1`
+   *  und `jahr`. Kommt aus dem angezeigten Monat. */
+  jahr: number;
 };
 
 /** v2-17 (KAT-2): Die Kategorie-Kachel — Variante A aus der Gestaltungsrunde.
@@ -45,8 +49,9 @@ type CategoryTileProps = {
  *  fällig war.
  *
  *  Anschauung: `design-system/entwuerfe/kat-kategorien.html` §3. */
-export function CategoryTile({ group, isOpen, onToggle }: CategoryTileProps) {
+export function CategoryTile({ group, isOpen, onToggle, jahr }: CategoryTileProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [verlaufOpen, setVerlaufOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(
     null,
   );
@@ -214,6 +219,30 @@ export function CategoryTile({ group, isOpen, onToggle }: CategoryTileProps) {
             style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
             role="menu"
           >
+            {/* v2-31 (KAT-4): „Verlauf …" — dieselbe Fläche wie auf der Karte,
+                eine Ebene höher. Befund `U5` hat am 04.08.2026 vorhergesagt,
+                dass Karten- und Kategorie-Verlauf dieselbe Fläche mit zwei
+                Ebenen sind; getrennt zu bauen hieße, sie zweimal anzufassen.
+                Steht oben, weil das Menü nach Wirkung gruppiert ist: ansehen
+                (harmlos), dann ändern, zuletzt löschen.
+                „Einkommen" und „Ohne Kategorie" bekommen ihn NICHT — dieses
+                Menü gibt es dort ohnehin nicht (`isCategory`). Für „Ohne
+                Kategorie" ist das kein Versehen: Der Behälter ist ein Zufluss,
+                kein Bestand (Befund `D12`) — jede neu angelegte Karte landet
+                dort, bis sie einsortiert wird. Sein Verlauf zeigte den
+                Aufräumfortschritt statt des Ausgabeverhaltens. */}
+            <button
+              type="button"
+              className={cardStyles.contextMenuItem}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen(false);
+                setVerlaufOpen(true);
+              }}
+              role="menuitem"
+            >
+              Verlauf …
+            </button>
             <button
               type="button"
               className={cardStyles.contextMenuItem}
@@ -248,6 +277,22 @@ export function CategoryTile({ group, isOpen, onToggle }: CategoryTileProps) {
           categoryId={group.categoryId}
           currentName={group.name}
           onClose={() => setRenameOpen(false)}
+        />
+      )}
+
+      {/* v2-31 (KAT-4): Der Ordner-Verlauf. Die Unterzeile trägt das
+          VORZEICHEN — im Chart stehen die Beträge als Höhe, weil Rot in dieser
+          App „offen/Defizit" heißt und nicht „Ausgabe" (§3). Record `B5`:
+          „Der Ordner trägt ein Vorzeichen, die Karte nicht." */}
+      {verlaufOpen && group.categoryId && (
+        <VerlaufOverlay
+          quelle={{ art: "ordner", categoryId: group.categoryId }}
+          name={group.name}
+          unterzeile={`Ordner · ${group.posten} Posten${
+            group.amount !== null ? ` · ${formatEuroSigned(group.amount)} im angezeigten Monat` : ""
+          }`}
+          jahr={jahr}
+          onClose={() => setVerlaufOpen(false)}
         />
       )}
     </div>

@@ -1,8 +1,8 @@
 # Antigravity Finance 1.0 — Schema-Zusammenfassung
 
-**Version:** 3.15.0
+**Version:** 3.16.0
 
-**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen" + Sprint v2-28 Händler-Regel + Sprint v2-29 Händler-Gedächtnis)
+**Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen" + Sprint v2-28 Händler-Regel + Sprint v2-29 Händler-Gedächtnis + Sprint v2-31 Verlaufs-Reihen)
 
 > **Changelog v3.15.0 (27.08.2026, Sprint v2-30):** Eine neue Spalte, ein neuer Index,
 > eine geänderte Funktion. **§1 — `fragments`: +1 Spalte** `merchant_key text
@@ -466,6 +466,71 @@ delta := round( vorzeichen × ( calculate_card_amount_for_month(karte, M)
 - **Keine eigene Betragslogik** (§7 Regel 1): ausschließlich Aufrufe der bestehenden §4.3-kompletten Basis-RPCs. Transfer-Fragmente sind dadurch transitiv ausgeschlossen.
 - **Snapshot-Integrität §2.1:** KEIN `cards.deleted_at`-Filter — identisch zu den Sparrate-RPCs, deren Kurve die Treiber erklären. Papierkorb-Karten haben per Lösch-Gate weder Links noch States noch Vergangenheits-Plan → `delta = 0` → fallen ohnehin aus dem Ranking.
 - **Sichtbarkeits-Grenze (bewusst, Konzept §2):** B2 sieht nur Karten-Realität. Unzugeordnete Rohmasse ist unsichtbar; die Qualität wächst mit der Kuratierung. E4 (Rohmasse-Pseudo-Treiber) bleibt offene DD-Frage und ist **nicht** umgesetzt.
+
+### Beim Verlauf (Sprint v2-31, `M7` / `KAT-4`)
+
+| Funktion | Wofür | Returns |
+|---|---|---|
+| `get_card_amount_series(p_card_id uuid, p_year integer)` | 24 Monate Ist und Plan **einer Karte** — `p_year-1` und `p_year`. `STABLE`, `SECURITY INVOKER`, `SET search_path TO 'public'`, **ohne** `p_user_id`: Sie löst eine **einzelne** Karte auf und aggregiert nicht über den Nutzer; die `user_id` kommt aus `cards`, RLS erledigt den Rest. Eine fremde oder unbekannte Karte ergibt `[]` — **kein Fehler**. `p_year` außerhalb 1900–2999 → `22023`. Rein lesend: ruft ausschließlich `is_card_active_in_month`, `calculate_card_amount_for_month`, `get_effective_plan_for_month` und `get_split_factor` auf | `jsonb` |
+| `get_category_amount_series(p_category_id uuid, p_year integer)` | dieselbe Reihe **für einen Ordner**. Zusätzliches Feld `posten`. Gleiche Konventionen und gleiche Fehlerfälle | `jsonb` |
+
+**Return-Form** — immer genau 24 Einträge, aufsteigend nach `month_index`:
+
+```jsonc
+[{ "month_index": 0, "month": "2025-01-01", "aktiv": true,
+   "ist": 129.56, "plan": 240.00 }, …]
+```
+
+**⚠️ `ist` und `plan` sind `null`, wenn `aktiv = false`.** Das ist die Kernaussage
+dieser beiden Funktionen und **kein** Nebeneffekt: `is_card_active_in_month` liefert
+dort `false`, und beide Betragsfunktionen geben dann `0.00` zurück — aber „nicht
+fällig" und „null Euro ausgegeben" sind verschiedene Aussagen. Die Unterscheidung
+gehört **hierher** und nicht ins Frontend (§7 Regel 15 / LL-20); sonst entschiede die
+Anzeige, was ein fehlender Wert bedeutet, und zeichnete eine jährliche Karte in elf
+Monaten auf die Nulllinie. **Jeder Aufrufer muss `null` als Lücke behandeln.**
+
+**⚠️ `plan` ist bei `GEMEINSAM` bereits auf den eigenen Anteil heruntergerechnet** —
+anders als `effective_plan` in `get_cards_for_month`, das den **vollen
+Haushaltsbetrag** liefert. Der Split wird **genau einmal** angewandt, und nur auf die
+Plan-Seite; `ist` kommt aus `calculate_card_amount_for_month` und ist bereits der
+überwiesene Anteil (§4.5). Ohne diese Umrechnung stünden zwei Größen mit verschiedener
+Basis nebeneinander: bei der Miete 1.089,26 € gegen 1.904,00 €, also **43 % Abstand in
+jedem Monat — und keiner davon eine Abweichung**.
+
+**⚠️ `get_category_amount_series` HOLT den Ist-Wert aus
+`get_category_amounts_for_month`, statt ihn nachzurechnen.** Jene Funktion legt den
+Rundungs-Rest des Monats auf den **betragsgrößten** Ordner, damit Anker 1
+(`Σ Ordner == Sparrate`) exakt gilt. Gemessen am 31.08.2026 über 24 Monate trägt in
+den vier Zukunftsmonaten jeweils **ein** Ordner **0,01 €** Ausgleich — eine eigene
+Summierung zeigte dort einen Cent weniger als die Kachel im Karussell daneben, **ohne
+dass eine Zahl falsch aussähe** (LL-25 / LL-26 „Nachbauen"). Der Preis sind 24 innere
+Aufrufe: gemessen **254 ms** gegen **21 ms** beim Karten-Verlauf.
+
+**⚠️ Der PLAN trägt diesen Ausgleich NICHT — und das ist Absicht.** Ungerundet über
+alle Karten summiert ergibt er exakt `calculate_planned_sparrate_for_month` (0,00 € in
+24/24, gemessen); summiert man die **je Ordner gerundeten** Rückgabewerte, weicht das
+Ergebnis in **12 von 24** Monaten um ±0,01 € ab. Das ist LL-25 — die Rundung innerhalb
+der Gruppe ist sauber, der Cent geht **zwischen** den Gruppen verloren.
+
+> **Die Frage ist nicht „wird gruppiert?", sondern „wird die Summe der Gruppen irgendwo
+> angezeigt?"** Auf der Ist-Seite gibt es diesen Ort (die Ordner-Spalte im Karussell,
+> Anker 1) — dort ist der Ausgleich Pflicht. Auf der Plan-Seite gibt es ihn nicht:
+> `get_category_amounts_for_month` liefert `planned` für Karten-Ordner hart als `NULL`.
+> Ein Ausgleich verschöbe dort den Plan **eines** Ordners um fremde Rundungsreste,
+> damit eine Zahl stimmt, die niemand sieht — und der Verlauf zeigt genau **einen**
+> Ordner. Wer das ändert, braucht zuerst den Ort, an dem die Summe sichtbar wird.
+
+**Warum es diese Funktionen überhaupt gibt.** `get_year_deviation_drivers` schien sie
+überflüssig zu machen — sie liefert je Monat `ist` und `plan` je Karte. Sie trägt aber
+`WHERE round(delta_roh, 2) <> 0` und liefert deshalb **ausschließlich abweichende**
+Karten: Netflix läuft zwölf Monate exakt auf Plan und erscheint in **keinem einzigen**;
+für Sep–Dez 2026 liefert sie **gar nichts** (0 von 22 aktiven Karten). Zusätzlich trägt
+das `delta` der Rang-1-Zeile seit v2-22 den Rundungs-Rest des ganzen Monats.
+
+**Eine Netzrunde statt 36.** Ohne diese Funktionen kostete ein Verlauf 36 Anfragen
+(drei Einzel-RPCs × 24 Monate). In der Datenbank kostet die ganze Reihe **21 ms**;
+teuer ist ausschließlich der Weg — dasselbe Argument wie bei `get_sparrate_series`
+(v2-24). Anker 3 zählt genau diese Runden.
 
 ### Beim Karten-Lebenszyklus (Sprint v2-05)
 

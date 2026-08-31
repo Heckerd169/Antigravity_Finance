@@ -3302,3 +3302,173 @@ Wächter. Dieselbe Begründungsform wie in v2-24 §5.
   (Option A aus dem Befund) bleibt offen, ist für Monatsabzüge aber nicht nötig.
 - Unverändert offen: `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `DA-2`, `KJ-9`, `PF-3`, `PF-5`,
   `SHOW_SUGGESTION_BADGES` bleibt `false`.
+
+---
+
+### Sprint v2-31 · DONE 31. August 2026
+
+**Komponente.** „Verlauf" je Karte **und** je Ordner — `M7` + `KAT-4`, Roadmap-Paket
+10. Ein Klick auf `Verlauf …` im Kontextmenü öffnet ein zentriertes Overlay mit 24
+Monaten Ist gegen Plan: Vorjahr und angezeigtes Jahr, Ist in Teal, Plan in Grau. Bis
+hierher war die Frage „wie lief das übers Jahr?" nur beantwortbar, indem man zwölfmal
+den Monat wechselte.
+
+**Der Umfang hat sich in der Design-Runde an zwei Stellen geändert**, beide auf
+Entscheidung des Nutzers: `KAT-4` kam **dazu** („der Verlauf muss bei allen Ordnern
+dargestellt werden"), `KAT-5` fiel **raus** und wird ein eigener Sprint. Befund `U5`
+hatte am 04.08.2026 vorhergesagt, dass Karten- und Kategorie-Verlauf dieselbe Fläche
+mit zwei Ebenen sind — genau deshalb liegen sie seither im selben Paket.
+
+#### Die Roadmap-Zusage hielt der Messung nicht stand — und der Auftrag hing daran
+
+Die Roadmap führte `M7` als *„datenseitig bereits abgedeckt —
+`get_year_deviation_drivers` liefert je Karte `ist` und `plan` pro Monat. Reines
+Oberflächen-Feature."* Der Eröffnungsauftrag baute darauf auf und schloss einen
+Datenbank-Eingriff **ausdrücklich** aus.
+
+**Gemessen trägt die Zusage nicht.** Die Funktion enthält die Zeile
+`WHERE round(delta_roh, 2) <> 0` und liefert deshalb **ausschließlich Karten, die vom
+Plan abweichen**:
+
+| 2026 | Jan | Feb | Mär | Apr | Mai | Jun | Jul | Aug | Sep | Okt | Nov | Dez |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Karten aktiv | 27 | 23 | 30 | 27 | 34 | 30 | 34 | 29 | 22 | 23 | 22 | 22 |
+| davon geliefert | 11 | 5 | 5 | 5 | 7 | 3 | 5 | 5 | **0** | **0** | **0** | **0** |
+
+Netflix läuft zwölf Monate exakt auf Plan und erscheint deshalb in **keinem einzigen
+Monat**; sein Verlauf wäre leer gewesen. Für September bis Dezember 2026 liefert die
+Funktion **gar nichts**.
+
+**Das ist LL-22 in Reinform** — eine Doku-Zusage über Rechenverhalten ist keine
+Prüfung. Der Widerspruch wurde dem Nutzer vorgelegt (§7 Regel 19), nicht
+stillschweigend aufgelöst; er hat die neue, **rein lesende** Funktion freigegeben.
+
+#### Die tragenden Entscheidungen
+
+**① Eine Serien-Funktion statt 36 Netzrunden.** Ohne sie kostete ein Verlauf 36
+Anfragen (drei Einzel-RPCs × 24 Monate) oder 24 über `get_cards_for_month`. In der
+Datenbank kostet die ganze Reihe **21 ms**; teuer ist ausschließlich der Weg. Dasselbe
+Argument wie bei `get_sparrate_series` (v2-24, `PF-4`), und Anker 3 zählt genau diese
+Runden (LL-29).
+
+**② Der Ordner-Ist wird GEHOLT, nicht nachgerechnet — und das war messbar nötig.**
+`get_category_amounts_for_month` legt den Rundungs-Rest des Monats auf den
+betragsgrößten Ordner, damit Anker 1 exakt gilt. Gemessen über 24 Monate: In den vier
+Zukunftsmonaten trägt jeweils **ein** Ordner **0,01 €** Ausgleich. Ein Nachbau zeigte
+dort einen Cent weniger als die Kachel daneben — **ohne dass eine Zahl falsch aussähe**
+(LL-25 / LL-26). Der Preis ist **254 ms statt 21 ms**, Faktor 12; er fällt beim Öffnen
+eines Popups an, nicht im Dashboard-Aufbau.
+
+**③ Inaktive Monate liefern `null`, nicht `0` — und zwar aus der Datenbank.**
+`is_card_active_in_month` sagt `false`, beide Betragsfunktionen liefern dann `0.00`.
+Die Serien-Funktionen unterscheiden. Läge diese Regel im Frontend, entschiede die
+Anzeige, was ein fehlender Wert bedeutet, und eine jährliche Karte läge in 22 von 24
+Monaten auf der Nulllinie (§7 Regel 15 / LL-20).
+
+**④ Die Ist-Linie endet am laufenden Monat.** In Zukunftsmonaten liefert
+`calculate_card_amount_for_month` den Plan zurück — gemessen sind in Sep–Dez 2026
+**alle 22** aktiven Karten reine Plan-Kopien, in den 20 vergangenen Monaten **keine
+einzige**. Weiterzuzeichnen hieße, die Plan-Linie ein zweites Mal zu zeichnen und das
+Ergebnis „Ist" zu nennen. Eine gestrichelte `heute`-Marke trägt die Begründung; ohne
+sie ist eine Linie, die im August aufhört, von fehlenden Daten nicht zu unterscheiden.
+
+**⑤ Bei gemeinsamen Karten zeigt die Plan-Linie den eigenen Anteil.** Roh gezeichnet
+stünden zwei Größen mit verschiedener Basis nebeneinander: bei der Miete 1.089,26 €
+gegen 1.904,00 €, also **43 % Abstand in jedem Monat — und keiner davon eine
+Abweichung**. Auf gemeinsame Basis gebracht sinkt der größte Abstand auf **41,36 €**,
+und sichtbar wird, was wirklich abweicht: die Nachzahlung im Januar 2025 und der
+Mietsprung im Februar 2026. Dieselbe Entscheidung wie im Record vom 05.08.2026, eine
+Ebene weiter.
+
+**⑥ Einmal-Karten bekommen den Menüpunkt nicht.** Das betrifft **142 von 178** Karten
+(80 %); nur 36 haben überhaupt einen Rhythmus. Ihr „Verlauf" wäre ein einzelner Punkt,
+und ein Menüpunkt, der nichts zeigt, ist ein Versprechen ins Leere — dieselbe Logik,
+mit der `Fällig am …` auf Budget-Karten fehlt.
+
+**⑦ §9 verbietet diese Fläche nicht — aber die Frage stand am Anfang.** Befund `U5`
+hatte gewarnt: §9 erklärt das Welle-Popup zur „**einzigen** Heimat der kumulierten
+Treppe". Der Verlauf zeigt **je Monat den Wert dieses Monats**, also die
+Darstellungsform der Welle, nicht die des Popups. Das Verbot greift nicht — **aber wer
+hier später eine Treppe einbaut, verletzt §9 an einer Stelle, an der es niemandem
+auffiele:** Die Zahlen blieben richtig, es wäre nur die falsche Heimat.
+
+#### Wo sich eine Annahme als falsch erwiesen hat
+
+**Neu-Anker B ist gerissen, und der Fehler lag in meiner eigenen Formulierung.**
+
+Vor dem Bau hatte ich gemessen: `Σ_ungerundet (Karten-Plan × Anteil) + Netto-Plan`
+ergibt exakt die Plan-Sparrate, **0,00 € in allen 24 Monaten**. Daraus wurde ein Anker
+im Briefing. Die fertige Funktion liefert aber **je Ordner gerundete** Werte — und
+deren Summe weicht in **12 von 24** Monaten um ±0,01 € ab.
+
+**Das ist LL-25, Wort für Wort:** *„‚Ungerundet summieren, erst am Ende runden' ist
+notwendig, aber NICHT hinreichend — es behebt die Rundung innerhalb einer Gruppe; der
+Cent geht zwischen den Gruppen verloren."* Innerhalb eines Ordners rechnet die Funktion
+sauber; die Abweichung entsteht erst beim Addieren der Ordner.
+
+**Der Anker bleibt gerissen, und das ist die richtige Entscheidung.** Es gibt **keine
+Anzeige, die Ordner-Pläne summiert** — `get_category_amounts_for_month` liefert
+`planned` für Karten-Ordner hart als `NULL`. Anker 1 erzwingt den Ausgleich auf der
+**Ist**-Seite, weil dort eine sichtbare Summe stimmen muss; auf der Plan-Seite gibt es
+keine. Ein Ausgleich verschöbe den Plan **eines** Ordners um fremde Rundungsreste,
+damit eine Zahl stimmt, die niemand sieht — und der Verlauf zeigt genau **einen**
+Ordner.
+
+**Die allgemeine Form steht seit v2-31 als LL-43 in CLAUDE.md** (§6 Stolperfalle 31):
+Die Frage ist nicht „wird gruppiert?", sondern „**wird die Summe der Gruppen irgendwo
+angezeigt?**" Ohne diesen Ort ist der Ausgleich keine Korrektur, sondern eine
+Verfälschung. Das ist keine Wiederholung von LL-25, sondern seine **Grenze**: LL-25
+sagt, wann man ausgleichen **muss**; **LL-43** sagt, wann man es **lassen** muss.
+
+**Zweiter Irrtum, kleiner: Der Entwurf setzte den Haushaltsbetrag in die Unterzeile.**
+Beim Bauen fiel auf, dass das nicht trägt — der Entwurf zeigt einen Monat, der Verlauf
+zeigt 24, und die Miete hat darin **drei** verschiedene Haushaltsbeträge (1.820 /
+1.861 / 1.904 €). Eine feste Zahl wäre in 23 von 24 Monaten die falsche. Die Zeile ist
+weggelassen. **Verwandt mit LL-38:** Eine Zahl, die in einem Papier richtig ist,
+veraltet mit einer Entscheidung auf derselben Seite.
+
+**Und eine Sorge, die sich als unbegründet erwies.** Befund `D4` (04.08.2026) hatte
+`KAT-4` an eine kuratierte Datenbasis geknüpft: *„heute hängen in Jan–Apr 0,0 % der
+Ausgaben an einer Karte … für ganz 2025 wäre sie null."* Das gilt nicht mehr. Gemessen
+am 31.08.2026 über alle 178 Karten: In **allen 20** vergangenen Monaten hat **jede**
+aktive Karte eine verknüpfte Zahlung oder einen Tap — `reine_plan_kopie = 0`; in den
+vier Zukunftsmonaten sind es **alle**. `DA-1` (v2-27) und `DA-3` (v2-28) haben die
+Voraussetzung geschaffen, ohne dass es jemand nachgetragen hatte. **„Ist = Plan" heißt
+in der Vergangenheit wirklich „lief wie geplant", nicht „nichts zugeordnet"** — und
+davon hängt der ganze Wert dieser Anzeige ab.
+
+**Verifikation.**
+
+- `tsc` **0** · Lint **0/0** · `pnpm build` **0** (Route `/` 39,5 kB · First Load JS
+  192 kB) · `test:visual` **168/168** *(v2-30: 148)* · `test:e2e` **177/177**
+  *(v2-30: 157)*. Beide um genau **20** gestiegen — die selbst geschriebenen Tests.
+- **Kein Zahlenwert bewegt.** 24 Sparraten byte-identisch vorher/nachher, Anker 1 in
+  24/24 bei 0,00 €, **alle neun Prüfsummen unverändert**. Protokoll:
+  `sprints/sprint_v2-31_anker.md`.
+- **Neu-Anker A:** Serien-Ist je Ordner == Karussell-Wert, **200 verglichene Zellen
+  über 11 Ordner, 0 Verletzungen, größte Abweichung 0,0000 €** — und die
+  Lücken-Erkennung deckt sich exakt mit dem Karussell (0 Fälle in beide Richtungen).
+- **LL-40 eingehalten.** Jede Kernregel des neuen Wächters wurde einmal absichtlich
+  gebrochen: Ist-Linie bis Dezember → **2 rot**; inaktive Monate auf 0 → **3 rot**;
+  Menü-Bedingung gegen `ONCE` entfernt → **3 rot**. Alle drei zurückgenommen, danach
+  168/168 grün. Ein Wächter, von dem niemand weiß, ob er auslösen kann, ist eine
+  Zusicherung und keine Prüfung.
+
+**Offen nach v2-31.**
+
+- **`KAT-5`** — aus diesem Sprint herausgenommen, Record `A2` (07.08.2026) gilt
+  unverändert. Eigener, kleiner Sprint.
+- **Kein Tooltip, kein Monatsklick** im Verlauf. Werte liest man an der Y-Achse ab.
+  Beides wäre eine eigene Gestaltungsentscheidung — nicht stillschweigend nachrüsten.
+- **Der Ordner `Einkommen`** bekommt keinen Verlauf; er ist keine Karten-Gruppe und hat
+  kein Kontextmenü. Ob und was er zeigen sollte, ist offen.
+- **„Ohne Kategorie" bewusst ohne Verlauf** — der Behälter ist ein Zufluss, kein
+  Bestand (Befund `D12`); seine Kurve zeigte den Aufräumfortschritt statt des
+  Ausgabeverhaltens.
+- **Ein Ordner mit wechselndem Vorzeichen** ist nicht entschieden. Tritt heute nicht
+  auf; wenn er auftritt, ist „Betrag als Höhe" mehrdeutig.
+- **Die Laufzeit des Ordner-Verlaufs** (254 ms) gehört neu gemessen, wenn der
+  Kartenbestand deutlich wächst.
+- Unverändert offen: `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `DA-2`, `KJ-9`, `PF-3`, `PF-5`,
+  `PF-7`, `SHOW_SUGGESTION_BADGES` bleibt `false`. Der vorgeschlagene **Anker 4** aus
+  v2-30 wartet weiter auf eine Entscheidung.
