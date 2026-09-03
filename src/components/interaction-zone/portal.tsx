@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { buildImportBatches } from "@/lib/csv-batches";
 import { routeAndParseCsv } from "@/lib/csv-format-router";
 import type { CsvImportResult } from "@/lib/rpc";
 import { processCsvImportAction } from "./actions";
@@ -8,10 +9,15 @@ import styles from "./interaction-zone.module.css";
 
 /* ============================================================
    Portal — Design-Doku §8 + §11. Sprint 8: Live-Pipeline.
-   Drop/File-Picker → FileReader (UTF-8) → DKB-Parser → atomare RPC
+   Drop/File-Picker → FileReader (UTF-8) → DKB-Parser → RPC
    process_csv_import → State-Machine (processing → success/error).
    Fehler-Klassen (format/empty/corrupt) kommen aus dem Parser bzw. einem
-   RPC-Fehler. Die 4 Dev-Buttons (NODE_ENV-gated) simulieren Visuals ohne Datei.
+   RPC-Fehler. Die Dev-Buttons (NODE_ENV-gated) simulieren Visuals ohne Datei.
+
+   03.09.2026: Die RPC wird BLOCKWEISE gerufen (`lib/csv-batches.ts`), weil sie
+   als ein Statement gegen ein statement_timeout von 8 s läuft. Der Import ist
+   damit über die ganze Datei nicht mehr atomar — je Block schon. Begründung und
+   Messwerte stehen bei `runImport`.
    ============================================================ */
 
 type PortalState =
@@ -21,7 +27,15 @@ type PortalState =
   | "success"
   | "error-format"
   | "error-empty"
-  | "error-corrupt";
+  | "error-corrupt"
+  /** 03.09.2026: Ein Block ist durchgelaufen, ein späterer nicht. Anders als die
+   *  drei anderen Fehler ist hier etwas ANGEKOMMEN — „Datei fehlerhaft" wäre an
+   *  dieser Stelle schlicht unwahr und würde den Nutzer von der einzig richtigen
+   *  Reaktion abhalten: dieselbe Datei noch einmal einwerfen. Nutzt bewusst
+   *  dieselben Visuals wie die übrigen Fehlerzustände (Rahmen, Glyph); neu sind
+   *  nur die Worte. Der Wortlaut ist nicht durch die Design-Doku gedeckt und
+   *  gehört bei nächster Gelegenheit vor den Design-Direktor (§7 Regel 3). */
+  | "error-partial";
 
 const SUCCESS_MS = 1500;
 const PROCESSING_MS = 2000;
@@ -39,6 +53,11 @@ type PortalProps = {
 
 export function Portal({ targetMonth }: PortalProps) {
   const [state, setState] = useState<PortalState>("default");
+  /** Nur gesetzt, solange ein Import über MEHRERE Blöcke läuft. Bei einer
+   *  Monatsdatei (ein Block) bleibt es `null` und die Anzeige ist wie bisher. */
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(
+    null,
+  );
   const [toast, setToast] = useState<BackfillToast | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,6 +71,7 @@ export function Portal({ targetMonth }: PortalProps) {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     dragCounter.current = 0;
     setState("default");
+    setProgress(null);
     setToast(null);
   }, [targetMonth]);
 
@@ -103,8 +123,9 @@ export function Portal({ targetMonth }: PortalProps) {
     }, SUCCESS_MS);
   }
 
-  function runErrorSequence(kind: "format" | "empty" | "corrupt") {
+  function runErrorSequence(kind: "format" | "empty" | "corrupt" | "partial") {
     clearTimer();
+    setProgress(null);
     setState(`error-${kind}` as PortalState);
     timerRef.current = setTimeout(() => {
       setState("default");
@@ -113,9 +134,24 @@ export function Portal({ targetMonth }: PortalProps) {
   }
 
   /** Echte Import-Pipeline (Briefing §4). „processing" hält für die tatsächliche
-   *  Dauer von Lesen + Parsen + RPC; danach Erfolg (1.5 s) oder Fehler (4 s). */
+   *  Dauer von Lesen + Parsen + RPC; danach Erfolg (1.5 s) oder Fehler (4 s).
+   *
+   *  Seit dem 03.09.2026 geht der Import blockweise (`lib/csv-batches.ts`). Die
+   *  RPC läuft als EIN Statement gegen ein `statement_timeout` von 8 s und
+   *  rechnet je neuer Zahlung gegen jede aktive Karte — gemessen 92,85 ms je
+   *  Zeile. Eine Jahresdatei mit 2.031 neuen Zeilen bräuchte ~188 s und lief
+   *  deshalb ausnahmslos in den Timeout; der Nutzer sah „Datei fehlerhaft",
+   *  obwohl der Parser die Datei in 4 ms vollständig verarbeitet.
+   *
+   *  Damit ist der Import NICHT MEHR ATOMAR. Das ist bewusst und in der Sache
+   *  besser: Bei ~100 Blöcken über mehrere Minuten wäre „alles oder nichts" die
+   *  schlechtere Zusage — ein Abbruch im 99. Block würfe 98 gelungene Blöcke weg.
+   *  Tragfähig ist das nur, weil der Import über den Hash idempotent ist:
+   *  Dieselbe Datei erneut einwerfen setzt fort, was fehlt, und überspringt den
+   *  Rest als Duplikat. Genau dafür muss die Blockbildung deterministisch sein. */
   async function runImport(file: File) {
     clearTimer();
+    setProgress(null);
     setState("processing");
 
     let text: string;
@@ -132,26 +168,61 @@ export function Portal({ targetMonth }: PortalProps) {
       return;
     }
 
-    try {
-      const result = await processCsvImportAction(parsed.rows, parsed.formatHint);
-      console.info(
-        `CSV-Import (${parsed.formatHint}): ${result.inserted_count} neu, ` +
-          `${result.skipped_duplicates_count} Duplikate, ` +
-          `${result.auto_absorbed_count} auto-absorbiert, ` +
-          `${result.iban_backfilled_count} IBAN-Backfill, ` +
-          `${result.internal_transfers_count} Transfers, ` +
-          `${result.links_removed_for_transfers_count} Links gelöst, ` +
-          `${parsed.skippedPendingCount} vorgemerkt übersprungen`,
-      );
-      showBackfillToast(
-        buildBackfillLines(result, parsed.skippedPendingCount),
-      );
-    } catch (err) {
-      console.error("CSV-Import-RPC fehlgeschlagen", err);
-      runErrorSequence("corrupt");
-      return;
+    const batches = buildImportBatches(parsed.rows);
+    const gesamtZeilen = parsed.rows.length;
+    const summe = leeresImportErgebnis();
+    let uebertragen = 0;
+
+    for (let i = 0; i < batches.length; i += 1) {
+      const batch = batches[i];
+      const istLetzterBlock = i === batches.length - 1;
+
+      try {
+        // Nur der letzte Block revalidiert — sonst baut jeder einzelne Block das
+        // gesamte Dashboard neu auf (siehe Kommentar in `actions.ts`).
+        const result = await processCsvImportAction(
+          batch,
+          parsed.formatHint,
+          istLetzterBlock,
+        );
+        addiereImportErgebnis(summe, result);
+      } catch (err) {
+        console.error(
+          `CSV-Import-RPC fehlgeschlagen in Block ${i + 1}/${batches.length} ` +
+            `(${uebertragen} von ${gesamtZeilen} Zeilen übertragen)`,
+          err,
+        );
+        // Was vor diesem Block lief, steht in der Datenbank. Das dem Nutzer zu
+        // verschweigen wäre der teuerste Teil des Fehlers.
+        showBackfillToast([
+          `${uebertragen} von ${gesamtZeilen} Zahlungen übernommen`,
+          "Dieselbe Datei erneut einwerfen setzt fort",
+        ]);
+        runErrorSequence("partial");
+        return;
+      }
+
+      uebertragen += batch.length;
+      // Der letzte Block braucht keine Fortschrittszahl mehr — direkt danach
+      // übernimmt der Erfolgszustand.
+      if (!istLetzterBlock && batches.length > 1) {
+        setProgress({ done: uebertragen, total: gesamtZeilen });
+      }
     }
 
+    console.info(
+      `CSV-Import (${parsed.formatHint}, ${batches.length} Block/Blöcke, ` +
+        `${gesamtZeilen} Zeilen): ${summe.inserted_count} neu, ` +
+        `${summe.skipped_duplicates_count} Duplikate, ` +
+        `${summe.auto_absorbed_count} auto-absorbiert, ` +
+        `${summe.iban_backfilled_count} IBAN-Backfill, ` +
+        `${summe.internal_transfers_count} Transfers, ` +
+        `${summe.links_removed_for_transfers_count} Links gelöst, ` +
+        `${parsed.skippedPendingCount} vorgemerkt übersprungen`,
+    );
+    showBackfillToast(buildBackfillLines(summe, parsed.skippedPendingCount));
+
+    setProgress(null);
     enterSuccess();
   }
 
@@ -202,7 +273,7 @@ export function Portal({ targetMonth }: PortalProps) {
   const stateClass = stateClassNameFor(state);
   const isLocked = state !== "default" && state !== "drag-over";
   const showPulse = state === "processing";
-  const { label, subLabel } = visualLabelsFor(state);
+  const { label, subLabel } = visualLabelsFor(state, progress);
 
   return (
     <div className={styles.portalColumn}>
@@ -274,18 +345,31 @@ function stateClassNameFor(s: PortalState): string {
     case "error-format":
     case "error-empty":
     case "error-corrupt":
+    case "error-partial":
       return styles.portalError;
     default:
       return "";
   }
 }
 
-function visualLabelsFor(s: PortalState): { label: string; subLabel: string } {
+function visualLabelsFor(
+  s: PortalState,
+  progress: { done: number; total: number } | null,
+): { label: string; subLabel: string } {
   switch (s) {
     case "drag-over":
       return { label: "Loslassen zum Import", subLabel: "CSV wird erkannt" };
     case "processing":
-      return { label: "Wird verarbeitet…", subLabel: "Fragmente werden erkannt" };
+      // Ein Jahresexport braucht Minuten (siehe `runImport`). Ohne eine Zahl,
+      // die sich bewegt, ist „Wird verarbeitet…" von „hängt" nicht zu
+      // unterscheiden — und der Nutzer lädt neu, mitten im Import.
+      return {
+        label: "Wird verarbeitet…",
+        subLabel: progress
+          ? `${progress.done.toLocaleString("de-DE")} von ` +
+            `${progress.total.toLocaleString("de-DE")} Zahlungen`
+          : "Fragmente werden erkannt",
+      };
     case "success":
       return {
         label: "Import erfolgreich",
@@ -305,6 +389,11 @@ function visualLabelsFor(s: PortalState): { label: string; subLabel: string } {
       return {
         label: "Datei fehlerhaft",
         subLabel: "Datei konnte nicht gelesen werden",
+      };
+    case "error-partial":
+      return {
+        label: "Import unvollständig",
+        subLabel: "Dieselbe Datei erneut einwerfen",
       };
     default:
       return {
@@ -331,7 +420,8 @@ function PortalGlyph({ state }: { state: PortalState }) {
   if (
     state === "error-format" ||
     state === "error-empty" ||
-    state === "error-corrupt"
+    state === "error-corrupt" ||
+    state === "error-partial"
   ) {
     return (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -403,7 +493,7 @@ function PortalDevButtons({
   onTriggerError,
   onTriggerSuccess,
 }: {
-  onTriggerError: (kind: "format" | "empty" | "corrupt") => void;
+  onTriggerError: (kind: "format" | "empty" | "corrupt" | "partial") => void;
   onTriggerSuccess: () => void;
 }) {
   return (
@@ -438,6 +528,13 @@ function PortalDevButtons({
         >
           Fehler: Korrupt
         </button>
+        <button
+          type="button"
+          className={styles.devButton}
+          onClick={() => onTriggerError("partial")}
+        >
+          Fehler: Teil-Import
+        </button>
       </div>
     </>
   );
@@ -455,6 +552,41 @@ function PortalDevButtons({
  *  DB-Gegenstück — reine Anzeige-Sprache ohne Rechenwirkung. Eine
  *  app_config-Zeile würde eine Kopplung vortäuschen, die nicht existiert. */
 const IBAN_BACKFILL_SUMMARY_THRESHOLD = 50;
+
+/* Blockweiser Import (03.09.2026): Die RPC antwortet je Block. Der Toast und die
+   Konsolen-Zeile sollen aber den GESAMTEN Import beschreiben — sonst meldete ein
+   Jahresexport hundertmal winzige Zahlen statt einmal der Wahrheit.
+
+   Die beiden Helfer sind bewusst getrennt von `buildBackfillLines`: Dort geht es
+   um Wortlaut, hier ums Addieren. Wer der RPC ein Feld hinzufügt, muss es an
+   GENAU einer Stelle nachtragen — `addiereImportErgebnis`. */
+
+function leeresImportErgebnis(): CsvImportResult {
+  return {
+    inserted_count: 0,
+    skipped_duplicates_count: 0,
+    auto_absorbed_count: 0,
+    fragment_ids: [],
+    iban_backfilled_count: 0,
+    internal_transfers_count: 0,
+    links_removed_for_transfers_count: 0,
+  };
+}
+
+/** Addiert das Ergebnis eines Blocks auf die laufende Summe (mutierend). */
+function addiereImportErgebnis(
+  summe: CsvImportResult,
+  block: CsvImportResult,
+): void {
+  summe.inserted_count += block.inserted_count;
+  summe.skipped_duplicates_count += block.skipped_duplicates_count;
+  summe.auto_absorbed_count += block.auto_absorbed_count;
+  summe.iban_backfilled_count += block.iban_backfilled_count;
+  summe.internal_transfers_count += block.internal_transfers_count;
+  summe.links_removed_for_transfers_count +=
+    block.links_removed_for_transfers_count;
+  summe.fragment_ids.push(...block.fragment_ids);
+}
 
 /** §6.2: Backfill-Toast-Zeilen — nur Counter > 0, in fester Reihenfolge.
  *  v2-04 P7: weist zusätzlich übersprungene vorgemerkte Zeilen aus.

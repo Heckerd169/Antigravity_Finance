@@ -92,10 +92,21 @@ export async function linkFragmentToIncomeAction(
 
 /** Ruft die atomare Distiller-RPC und revalidiert das Dashboard. Der
  *  revalidatePath liefert dem aufrufenden Client-Component das aktualisierte
- *  RSC-Payload zurück → Fragment-Stack zeigt neue Fragmente, ohne Reload (P3). */
+ *  RSC-Payload zurück → Fragment-Stack zeigt neue Fragmente, ohne Reload (P3).
+ *
+ *  `revalidate` ist seit dem 03.09.2026 abschaltbar. Grund: Eine große Datei
+ *  wird in Blöcken importiert (`lib/csv-batches.ts`), und jeder revalidatePath
+ *  baut das GESAMTE Dashboard neu auf — bei ~100 Blöcken also hundertmal, mit
+ *  je ~18 Netzrunden zur Datenbank (§9 Anker 3). Das wäre ein N+1 auf der Ebene
+ *  darüber und dieselbe Fehlerklasse, die v2-24 abgeräumt hat (LL-29): Jede
+ *  Zahl bliebe richtig, der Import würde nur ein Vielfaches länger dauern.
+ *
+ *  Der Aufrufer setzt `revalidate` deshalb nur beim LETZTEN Block. Der Vorgabe-
+ *  wert bleibt `true` — ein Aufrufer, der nichts weiß, verhält sich wie bisher. */
 export async function processCsvImportAction(
   rows: CsvImportRow[],
   formatHint: CsvFormatHint,
+  revalidate: boolean = true,
 ): Promise<CsvImportResult> {
   const supabase = createClient();
   const {
@@ -105,7 +116,7 @@ export async function processCsvImportAction(
 
   const result = await processCsvImport(supabase, rows, formatHint);
 
-  revalidatePath("/", "page");
+  if (revalidate) revalidatePath("/", "page");
   return result;
 }
 
