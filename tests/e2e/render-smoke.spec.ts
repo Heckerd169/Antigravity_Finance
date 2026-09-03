@@ -140,7 +140,23 @@ test("kategorie-kachel: das ⋯-menü wird beim überfahren sichtbar", async ({ 
 // nicht die Welle. Der Sprung der WELLE ist gegen den dev-Server nicht sichtbar,
 // weil das Entwickler-Panel sie in beiden Monaten auf ihr Minimum drückt.
 test("layout: die höhe der interaktionszone hängt nicht vom monat ab", async ({ page }) => {
-  const monate = ["2026-06", "2026-07", "2026-08", "2026-09"];
+  // ⚠️ Die Monate werden RELATIV ZU HEUTE gewählt, nicht fest verdrahtet.
+  //
+  // Bis zum 03.09.2026 stand hier `["2026-06", "2026-07", "2026-08", "2026-09"]`,
+  // und der Test verließ sich darauf, dass September leer bleibt — er war der
+  // einzige Zukunftsmonat der Liste. Am 01.09.2026 hat der Nutzer seinen
+  // Monatsabzug importiert, neun Zahlungen landeten dort, und die
+  // Aussagekraft-Prüfung unten schlug an: kein Monat mehr ohne Umsätze.
+  //
+  // Der Test war nicht falsch — seine Annahme ist mit dem Kalender verfallen,
+  // durch nichts als bestimmungsgemäße Benutzung (LL-28 in neuer Gestalt).
+  // Zwei Monate in der Vergangenheit tragen Umsätze, zwei in der Zukunft nie:
+  // Dort gibt es keine Buchungen, weil sie noch nicht stattgefunden haben.
+  const heute = new Date();
+  const monate = [-2, -1, 2, 3].map((versatz) => {
+    const d = new Date(Date.UTC(heute.getUTCFullYear(), heute.getUTCMonth() + versatz, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  });
   const hoehen: { monat: string; hoehe: number; umsaetze: number }[] = [];
 
   for (const monat of monate) {

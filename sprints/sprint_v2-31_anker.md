@@ -217,6 +217,46 @@ ist zur Laufzeit nicht vorhanden), zusätzlich ausführlich in der Migrationsdat
 
 ---
 
+## Nachtrag 03.09.2026 — zwei Anzeige-Änderungen, kein Datenbank-Eingriff
+
+Der Nutzer hat nach dem Ansehen zwei Änderungen beauftragt: **alle Verläufe als
+durchgehende Linie** (inaktive Monate laufen auf 0 statt die Linie zu brechen) und
+eine **Y-Achse mit runden Schritten**. Beides ist **reines Frontend** —
+`src/components/cards/verlauf.ts`; die Migration wurde nicht angefasst, beide
+Serien-Funktionen liefern unverändert `null` bei `aktiv = false`.
+
+**Gesundheitsprüfung nach der Änderung:**
+
+| | |
+|---|---|
+| Anker 1 in 24 Monaten | **0 Verletzungen** |
+| Goldlinie 2025 | **11.442,30 €** — unverändert gegenüber dem 31.08. |
+| Σ 2026 | 16.245,54 € *(31.08.: 16.076,56 €)* |
+
+> **Die Bewegung von +168,98 € in 2026 stammt NICHT aus diesem Sprint.** Der Nutzer hat
+> am **01.09.2026** seinen Monatsabzug importiert — neun Zahlungen mit
+> `transaction_date` im September, `created_at = 2026-09-01`, nachgeprüft in
+> `fragments`. Dass **2025 auf den Cent unverändert** blieb, ist der Beleg: Ein
+> Frontend-Wechsel kann keine Sparrate bewegen, und dieser hat es nicht getan.
+
+**Nebenbefund aus derselben Ursache — ein Test ist am Kalender gescheitert.**
+`render-smoke.spec.ts` prüft, dass die Höhe der Interaktionszone nicht vom Monat
+abhängt, und sichert seine eigene Aussagekraft ab: Mindestens einer der geprüften
+Monate muss Umsätze tragen, mindestens einer keine. Die vier Monate waren **fest
+verdrahtet** (`2026-06` … `2026-09`), und September war der einzige leere — bis der
+Import ihn füllte.
+
+Der Test war nicht falsch; **seine Annahme ist mit dem Kalender verfallen**, durch
+nichts als bestimmungsgemäße Benutzung. Das ist **LL-28 in neuer Gestalt** (dort
+verfällt eine Mengen-Annahme mit dem Datenwachstum). Er wählt die Monate jetzt
+**relativ zu heute** — zwei in der Vergangenheit, zwei in der Zukunft; Zukunftsmonate
+tragen nie Buchungen, weil sie noch nicht stattgefunden haben.
+
+**Prüfstrecke nach dem Nachtrag:** `tsc` 0 · Lint 0/0 · `build` 0 (Route `/` 39,7 kB ·
+First Load 192 kB) · `test:visual` **175/175** · `test:e2e` **184/184**.
+
+---
+
 ## Fazit
 
 **Kein Zahlenwert hat sich bewegt.** 24 Sparraten identisch, Anker 1 in 24/24 bei 0,00 €,

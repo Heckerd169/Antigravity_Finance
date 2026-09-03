@@ -3420,6 +3420,58 @@ angezeigt?**" Ohne diesen Ort ist der Ausgleich keine Korrektur, sondern eine
 Verfälschung. Das ist keine Wiederholung von LL-25, sondern seine **Grenze**: LL-25
 sagt, wann man ausgleichen **muss**; **LL-43** sagt, wann man es **lassen** muss.
 
+**Der dritte Irrtum wurde erst nach drei Tagen sichtbar, und er ist der lehrreichste:
+Ich habe LL-20 auf einen Fall angewandt, für den es nicht gemacht ist.**
+
+Die erste Fassung ließ die Linie in inaktiven Monaten **brechen**, mit LL-20 als
+Begründung: *„ein Referenzwert ohne Daten ist ‚keine Anzeige', nicht 0."* Der Wächter
+prüfte das in drei Tests, die Anker waren grün, der Record trug ein schlüssiges
+Argument.
+
+**Am Bild fiel es auseinander.** Der Nutzer sah zerhackte Reihen, und von der
+jährlichen Karte blieben zwei einsame Punkte übrig, aus denen sich kein Rhythmus lesen
+ließ. Seine Anweisung am 03.09.2026: *„ALLE (!) Verläufe sollen als Liniendiagramm
+dargestellt werden … In einem solchen Fall verläuft die Linie die restlichen Monate auf
+0 EUR."*
+
+**Er hatte recht, und die Prüfung dafür ist ein Satz:** LL-20 meint einen **fehlenden**
+Wert — „Budget frei" in einem Monat ohne Budget-Karten, wo eine 0 eine Falschaussage
+wäre. Beim Verlauf ist sie keine. Er beantwortet *„was hat mich das gekostet"*, und für
+einen Monat ohne Fälligkeit lautet die Antwort **null Euro**. Das ist wahr, nicht
+geschätzt. Im Karussell wird die Karte in so einem Monat gar nicht gezeigt; über 24
+Monate hinweg ist ihre Abwesenheit dagegen selbst eine Aussage über Geld.
+
+**Die Fehlerklasse:** eine gültige Regel auf einen benachbarten Fall ausgedehnt, in dem
+ihre Voraussetzung nicht erfüllt ist. Nichts war falsch gerechnet, kein Wächter konnte
+anschlagen — die Regel *stand* ja, sie galt nur woanders. **Wer eine Lesson Learned
+anwendet, prüft ihre Voraussetzung, nicht ihren Wortlaut.**
+
+**Die Datenbank blieb unberührt.** Beide Serien-Funktionen liefern weiterhin `null` bei
+`aktiv = false`; die Anzeige verdichtet das zu einer Null. Ein späterer Tooltip „nicht
+fällig" hat damit weiterhin eine Grundlage.
+
+**Und ein Befund über den eigenen Wächter.** Die erste LL-40-Probe für die neue Regel
+**schlug nicht an**: Ich hatte `: 0` auf `: null` zurückgedreht — aber `Math.abs(null)`
+ist `0`, die Probe war wirkungslos, der Test blieb grün. **Das ist der v2-29-Fall aus
+LL-40, nur eine Ebene weiter innen:** Diesmal traf nicht der Test die falsche Stelle,
+sondern die Probe, mit der er geprüft werden sollte. Erst ein Bruch an der richtigen
+Stelle machte 6 Tests rot.
+
+**Zugleich kam die Y-Achse dazu**, aus demselben Ansehen: Sie trug drei Rasterlinien
+und **zwei** Beschriftungen. Der Ordner `Versicherungen` liegt in **18 von 24 Monaten
+zwischen 223 und 262 €**, hat aber im Dezember 2026 eine Jahresprämie von **597,36 €** —
+die Achse muss bis 600 reichen, und dazwischen stand nichts. Jetzt rastert sie in
+**runden Schritten** mit Beschriftung an jeder Linie; der Schritt wächst mit der
+Größenordnung (Netflix 5er, Wohnen 500er), höchstens sechs Abschnitte.
+
+**Nicht vom Sprint verursacht, aber am selben Tag gefunden:** `render-smoke.spec.ts`
+wurde rot. Er prüft, dass die Höhe der Interaktionszone nicht vom Monat abhängt, und
+sichert seine Aussagekraft ab — mindestens ein geprüfter Monat muss leer sein. Die vier
+Monate waren **fest verdrahtet**, und September war der einzige leere, bis der Nutzer am
+**01.09.2026** seinen Monatsabzug importierte (belegt über `fragments.created_at`). Der
+Test war nicht falsch; **seine Annahme ist mit dem Kalender verfallen** — LL-28 in neuer
+Gestalt. Er wählt die Monate jetzt relativ zu heute.
+
 **Zweiter Irrtum, kleiner: Der Entwurf setzte den Haushaltsbetrag in die Unterzeile.**
 Beim Bauen fiel auf, dass das nicht trägt — der Entwurf zeigt einen Monat, der Verlauf
 zeigt 24, und die Miete hat darin **drei** verschiedene Haushaltsbeträge (1.820 /
