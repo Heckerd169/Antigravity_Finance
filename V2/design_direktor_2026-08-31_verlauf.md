@@ -96,7 +96,43 @@ genau die Frage, die sie beantwortet. (Dasselbe Argument wie bei der Unterzeile
 
 ---
 
-## 3 · Inaktive Monate: die Linie bricht, sie fällt nicht auf null
+## 3 · Inaktive Monate — ABGELÖST am 03.09.2026
+
+> ### ⚠️ Diese Entscheidung ist nach drei Tagen gefallen, und der Grund war die Anschauung
+>
+> **Es gilt jetzt:** Ein inaktiver Monat läuft auf **0 €**. Jeder Verlauf ist **eine
+> durchgehende Linie**, auch wenn nur ein einziger Monat einen Wert trägt.
+>
+> **Warum die ursprüngliche Begründung nicht trug.** Sie berief sich auf LL-20 — *„ein
+> Referenzwert ohne Daten ist ‚keine Anzeige', nicht 0"*. LL-20 meint einen
+> **fehlenden** Wert: „Budget frei" in einem Monat ohne Budget-Karten, wo eine 0 eine
+> Falschaussage wäre. **Hier ist sie keine.** Der Verlauf beantwortet *„was hat mich
+> das gekostet"*, und für einen Monat, in dem die Karte nicht fällig war, lautet die
+> Antwort **null Euro**. Das ist wahr, nicht geschätzt.
+>
+> Die Regel wurde also **überdehnt** — auf einen Fall, für den sie nicht gemacht ist.
+> Im Karussell wird eine nicht-fällige Karte gar nicht gezeigt; über 24 Monate hinweg
+> ist ihre Abwesenheit dagegen selbst eine Aussage über Geld.
+>
+> **Gesehen hat es der Nutzer, nicht die Prüfstrecke.** Der Wächter war grün, die Anker
+> waren grün, das Argument im Record klang schlüssig. Am Bild fiel auf, dass Reihen mit
+> vielen Lücken **zerhackt** aussehen und von der jährlichen Karte nur zwei einsame
+> Punkte übrig blieben, aus denen sich kein Rhythmus lesen ließ. Dieselbe Karte zeigt
+> jetzt eine flache Nulllinie mit zwei Ausschlägen — und genau das ist sie.
+>
+> **Die Datenbank ist unberührt geblieben.** Beide Serien-Funktionen liefern weiterhin
+> `null` bei `aktiv = false`; die Unterscheidung geht nicht verloren, sie wird in der
+> Anzeige zu einer Null verdichtet. Wer sie später braucht — etwa für einen Tooltip
+> „nicht fällig" —, findet sie in den Rohdaten. **Ein reiner Frontend-Wechsel, kein
+> Datenbank-Eingriff.**
+>
+> Was von der alten Fassung bleibt: **Regel ③**. Eine Reihe mit einem einzigen Knoten
+> bekommt eine sichtbare Marke, weil ein SVG-Pfad aus einem Punkt nichts malt. Das
+> tritt nur noch am Rand auf.
+
+**Die abgelöste Fassung, zur Nachvollziehbarkeit:**
+
+## 3 (abgelöst) · Inaktive Monate: die Linie bricht, sie fällt nicht auf null
 
 **Entscheidung:** Monate, in denen die Karte nicht aktiv ist, bekommen **keinen
 Punkt** — die Linie ist dort unterbrochen. Ein aktiver Monat ohne aktive Nachbarn wird
@@ -163,6 +199,33 @@ eine Eigenschaft der Karte über die Zeit, kein Monats-Zustand. Im Zukunftsmonat
 Kartenmenge zudem am vollständigsten (§7, `KAT-1`).
 
 ---
+
+## 5b · Y-Achse: runde Schritte, jede Linie beschriftet *(neu am 03.09.2026)*
+
+**Entscheidung:** Die Y-Achse trägt Rasterlinien in **runden Schritten** — jede davon
+beschriftet. Der Schritt stammt aus einer festen Folge (1, 2, 5, 10, 20, 50, 100, 200,
+500 …) und wächst mit der Größenordnung; es sind **höchstens sechs Abschnitte**.
+
+**Begründung, gemessen.** Die erste Fassung trug drei Rasterlinien (0, Mitte, Maximum)
+und **zwei** Beschriftungen. Der Ordner `Versicherungen` liegt in **18 von 24 Monaten
+zwischen 223 und 262 €**, hat aber im Dezember 2026 eine Jahresprämie von **597,36 €**.
+
+Die Achse **muss** bis 600 reichen — sonst wäre die Anzeige schlicht falsch. Damit lag
+das dichte Band bei **38 % der Höhe**, und zwischen 0 und 600 stand nichts: Man sah,
+*dass* die Linie flach verläuft, aber nicht, *auf welcher Höhe*. Jetzt sind es
+`0/100/…/600`, und die Frage „liegt die Linie bei 230?" beantwortet sich durch
+Hinsehen.
+
+**Die Obergrenze war ausdrücklich nicht das Problem** — 600 statt 597,36 sind 0,4 %
+Luft. Wer hier die Skala enger fasst, schneidet einen echten Wert ab.
+
+**Verworfen:** die Nulllinie weglassen und den Ausschnitt auf 200–600 legen. Das
+brächte die Streuung zur Geltung und übertriebe sie zugleich — bei Ausgaben ist die
+Null der Anker, und §5 hält daran auch im Ring fest.
+
+**Der kleinste Schritt ist 1 €, nicht 0,50 €.** Die Beschriftung rundet auf ganze Euro
+(wie der Ring, §5); ein halber Schritt ergäbe bei einer Karte über 1,00 € zwei Marken
+mit demselben Text. Karten mit einem Platzhalter-Plan von 1,00 € gibt es im Bestand.
 
 ## 6 · X-Achse: `01/25`, jeder dritte Monat
 

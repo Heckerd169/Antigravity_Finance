@@ -1,9 +1,26 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.13.0 (V2 · Sprint v2-31 — Karten und Ordner haben einen Verlauf)
+**Version:** 3.13.1 (V2 · Sprint v2-31 — Karten und Ordner haben einen Verlauf)
 
 **Status:** Freigegeben — V2-Patches bis Sprint v2-31 eingespielt. *(Die Version der Schema-Doku stand hier bis zum 31.08.2026 als Zahl und war zuletzt zwei Bumps veraltet. Sie ist entfernt statt korrigiert: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch — er steht jetzt nur noch im Header der Schema-Doku selbst. Dieselbe Konsequenz, die CLAUDE.md §9 am 24.08.2026 für sich gezogen hat.)* Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
 
+> **Changelog v3.13.1 (03.09.2026, Sprint v2-31 · Nachtrag aus der Anschauung):**
+> Zwei Korrekturen an **§7**, beide vom Nutzer beim Ansehen der ersten Fassung
+> ausgelöst. **①** Inaktive Monate **brechen die Linie nicht mehr**, sie laufen auf
+> **0 €** — jeder Verlauf ist eine durchgehende Linie. Die erste Fassung berief sich
+> auf §7 Regel 17 („ein Referenzwert ohne Daten ist keine Anzeige, nicht 0") und hat
+> sie damit **überdehnt**: Regel 17 meint einen *fehlenden* Wert, hier ist die Null
+> aber wahr — in einem Monat ohne Fälligkeit hat die Karte nichts gekostet. Sichtbar
+> wurde es an der jährlichen Karte, von der nur zwei einsame Punkte übrig blieben.
+> **②** Die **Y-Achse rastert in runden Schritten** mit Beschriftung an jeder Linie,
+> statt nur `0 €` und das Maximum zu zeigen; der Schritt wächst mit der
+> Größenordnung, höchstens sechs Abschnitte. Anlass gemessen am Ordner
+> `Versicherungen`: 18 von 24 Monaten zwischen 223 und 262 €, aber eine Jahresprämie
+> von 597,36 € im Dezember — die Achse muss dorthin reichen, und dazwischen stand
+> nichts. **Patch-Bump**, weil beide Änderungen einen bestehenden Abschnitt
+> präzisieren; die Datenbank ist unberührt (sie liefert weiterhin `null` bei
+> `aktiv = false`, nur die Anzeige verdichtet das zu einer Null).
+>
 > **Changelog v3.13.0 (31.08.2026, Sprint v2-31 · `M7` `KAT-4`):** Neuer Abschnitt in
 > **§7** — `Verlauf …` im Karten-Kontextmenü: 24 Monate Ist gegen Plan, Ist teal (2 px)
 > und Plan grau (1 px) in **exakt ihrer §9-Bedeutung**, kein neuer Token. Die Ist-Linie
@@ -1314,7 +1331,8 @@ zentrierten Overlay — Vorjahr und angezeigtes Jahr.
 | Ist-Linie | Teal, 2 px — **endet am laufenden Monat** |
 | Plan-Linie | Grau `rgba(255,255,255,.25)`, 1 px — läuft bis Dezember durch |
 | X-Achse | Format `01/25`, **jeder dritte Monat** beschriftet; dünne Jahresgrenze |
-| Y-Achse | zwei Marken: `0 €` und ein gerundetes Maximum |
+| Y-Achse | Rasterlinien in **runden Schritten**, jede beschriftet; höchstens sechs Abschnitte |
+| Lücken | keine — inaktive Monate laufen auf **0 €**, die Linie ist durchgehend |
 | Fußzeile | Legende links, die beiden Jahressummen des Ist rechts |
 
 **Die Ist-Linie endet am laufenden Monat, und die Grenze hängt am Kalender.** In
@@ -1331,13 +1349,48 @@ unterscheiden. Fiele sie einer späteren Straffung zum Opfer, entstünde genau d
 die sie beantwortet — dasselbe Argument wie bei der Unterzeile `gilt für alle Monate`
 oben.
 
-**Monate, in denen die Karte nicht aktiv ist, brechen die Linie — sie fallen nicht auf
-null.** „Nicht fällig" und „null Euro ausgegeben" sind verschiedene Aussagen (§7 Regel
-17). Die Unterscheidung liegt in der Datenbank: Die Serien-Funktionen liefern dort
-`null`, nicht `0`. Ein Wert ohne aktive Nachbarn wird als **Punkt** gezeichnet — ohne
-das wäre eine jährliche Karte unsichtbar (`ADAC Mitgliedschaft`: 2 von 24 Monaten).
-Eine Linie **zwischen** zwei so weit entfernten Punkten behauptete eine Entwicklung,
-die es nicht gibt.
+**Monate, in denen die Karte nicht aktiv ist, laufen auf 0 € — die Linie bricht
+nicht.** Jeder Verlauf ist **eine durchgehende Linie**, auch wenn nur ein einziger
+Monat einen Wert trägt.
+
+> ⚠️ **Geändert am 03.09.2026, drei Tage nach der ersten Fassung.** Sie regelte das
+> Gegenteil: Lücken brachen die Linie, isolierte Werte wurden als Punkt gezeichnet,
+> begründet mit §7 Regel 17 („ein Referenzwert ohne Daten ist keine Anzeige, nicht 0").
+>
+> **Die Regel wurde dabei überdehnt.** Regel 17 meint einen **fehlenden** Wert — etwa
+> „Budget frei" in einem Monat ohne Budget-Karten, wo eine 0 eine Falschaussage wäre.
+> Hier ist sie keine: Der Verlauf beantwortet *„was hat mich das gekostet"*, und für
+> einen Monat, in dem die Karte nicht fällig war, lautet die Antwort **null Euro**.
+> Das ist wahr, nicht geschätzt.
+>
+> **Den Ausschlag gab die Anschauung.** Reihen mit vielen Lücken sahen zerhackt aus,
+> und bei einer jährlichen Karte blieben zwei einsame Punkte übrig, aus denen sich der
+> Rhythmus nicht lesen ließ. Dieselbe Karte zeigt jetzt eine flache Nulllinie mit zwei
+> Ausschlägen — und genau das ist sie.
+>
+> **Die Datenbank ist davon unberührt.** Beide Serien-Funktionen liefern weiterhin
+> `null` bei `aktiv = false`; die Unterscheidung geht nicht verloren, sie wird in der
+> Anzeige bewusst zu einer Null verdichtet. Wer sie später braucht — etwa für einen
+> Tooltip „nicht fällig" —, findet sie in den Rohdaten.
+
+**Die Y-Achse rastert in runden Schritten, jede Linie beschriftet.** Der Schritt wächst
+mit der Größenordnung und stammt aus einer festen Folge (1, 2, 5, 10, 20, 50, 100, 200,
+500 …); es sind **höchstens sechs Abschnitte**, damit die Fläche nicht zum Raster wird.
+
+> **Auch das ist vom 03.09.2026, und der Anlass ist gemessen.** Vorher trug die Achse
+> drei Rasterlinien (0, Mitte, Maximum) und **zwei** Beschriftungen. Der Ordner
+> `Versicherungen` liegt in **18 von 24 Monaten zwischen 223 und 262 €**, hat aber im
+> Dezember 2026 eine Jahresprämie von **597,36 €**. Die Achse **muss** bis 600 reichen —
+> sonst wäre die Anzeige schlicht falsch —, und damit lag das dichte Band bei 38 % der
+> Höhe, ohne dass sich sein Wert ablesen ließ.
+>
+> **Die Obergrenze war nicht das Problem** (600 statt 597,36 sind 0,4 % Luft), sondern
+> dass zwischen 0 und 600 nichts stand. Jetzt sind es `0/100/…/600`, und die Frage
+> „liegt die Linie bei 230?" beantwortet sich durch Hinsehen.
+>
+> **Der kleinste Schritt ist 1 €**, nicht 0,50 € — die Beschriftung rundet auf ganze
+> Euro (wie im Ring, §5), und ein halber Schritt ergäbe bei einer Karte über 1,00 €
+> zwei Marken mit demselben Text.
 
 **Auf gemeinsamen Karten zeigt die Plan-Linie den eigenen Anteil**, nicht den
 Haushaltsbetrag. Roh gezeichnet stünden zwei Größen mit verschiedener Basis

@@ -50,12 +50,23 @@
 -- eine Abweichung. Wer hier einen zweiten Faktor einzieht, kürzt die bereits
 -- umgerechnete Seite ein zweites Mal (LL-23).
 --
--- ⚠️ INAKTIVE MONATE LIEFERN NULL, NICHT 0.
+-- ⚠️ INAKTIVE MONATE LIEFERN NULL, NICHT 0 — und das bleibt so, obwohl die
+-- ANZEIGE seit dem 03.09.2026 eine Null daraus macht.
+--
 -- is_card_active_in_month sagt false, und beide Betragsfunktionen liefern dann
--- 0.00 — aber „nicht fällig" und „null Euro ausgegeben" sind verschiedene
--- Aussagen. Die Unterscheidung gehört hierher und nicht ins Frontend: Sonst
--- entscheidet die Anzeige, was ein fehlender Wert bedeutet, und zeichnet eine
--- jährliche Karte in elf Monaten auf die Nulllinie. (§7 Regel 15 · LL-20)
+-- 0.00 von sich aus. Diese Funktion unterscheidet trotzdem: „nicht fällig" und
+-- „null Euro ausgegeben" sind zwei Aussagen, und welche davon gezeigt wird, ist
+-- eine Frage der Darstellung — keine der Daten.
+--
+-- Das Frontend hat sich am 03.09.2026 für die Null entschieden: Der Verlauf
+-- beantwortet „was hat mich das gekostet", und für einen Monat ohne Fälligkeit
+-- lautet die Antwort null Euro. Reihen mit Lücken sahen zerhackt aus, und von
+-- einer jährlichen Karte blieben zwei einsame Punkte übrig.
+--
+-- ⚠️ Wer daraus schließt, die Funktion könne jetzt selbst 0 liefern, nimmt der
+-- Anzeige die Wahl — und einem späteren Tooltip „nicht fällig" die Grundlage.
+-- Die Unterscheidung ist hier billig und außerhalb nicht wiederherstellbar.
+-- (§7 Regel 15)
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_card_amount_series(
   p_card_id uuid,

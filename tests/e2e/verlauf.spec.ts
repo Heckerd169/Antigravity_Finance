@@ -63,6 +63,8 @@ type Geometrie = {
   planPfad: string;
   istPunkte: { x: number; y: number }[];
   planPunkte: { x: number; y: number }[];
+  rasterY: number[];
+  yMarken: { wert: number; y: number }[];
   xMarken: { label: string; x: number }[];
   heuteX: number | null;
   jahrGrenzeX: number;
@@ -160,47 +162,139 @@ test.describe("Verlauf: die Ist-Linie endet am laufenden Monat (v2-31 §1)", () 
   });
 });
 
-test.describe("Verlauf: inaktive Monate brechen die Linie (v2-31 §2, LL-20)", () => {
-  test("eine jährliche Karte ergibt zwei isolierte Punkte, keine Linie", () => {
+test.describe("Verlauf: inaktive Monate laufen auf 0, die Linie bricht NICHT (v2-31 §2, rev. 03.09.2026)", () => {
+  // ⚠️ Diese vier Tests prüften bis zum 03.09.2026 das GEGENTEIL — dass eine
+  // Lücke den Pfad bricht. Die Umkehr ist eine Design-Entscheidung des Nutzers
+  // mit Begründung: Der Verlauf beantwortet „was hat mich das gekostet", und
+  // für einen Monat ohne Fälligkeit lautet die Antwort null Euro. Das ist wahr,
+  // nicht geschätzt — anders als der FEHLENDE Referenzwert, den LL-20 meint.
+  // Die alte Fassung berief sich auf LL-20 und hat ihn dabei überdehnt.
+
+  test("eine jährliche Karte ergibt EINE durchgehende Linie mit zwei Ausschlägen", () => {
     // ADAC Mitgliedschaft: aktiv in 10/2025 (Index 9) und 10/2026 (Index 21).
     const g = baueGeometrie(
       reihe(() => ({ ist: 99, plan: 99 }), [9, 21]),
       2026,
       AUGUST_2026,
     );
-    // Plan: beide Monate, beide ohne Nachbarn → zwei Punkte, keine Verbindung.
-    expect(g.planPunkte).toHaveLength(2);
-    expect(g.planPfad).not.toContain("L");
-    // Ist: nur Index 9 liegt vor „heute" (19); Index 21 ist Zukunft.
-    expect(g.istPunkte).toHaveLength(1);
+    expect(anzahlAbschnitte(g.planPfad)).toBe(1);
+    expect(g.planPfad).toContain("L");
+    // 24 Koordinaten statt zwei — jeder Monat ist gezeichnet.
+    expect((g.planPfad.match(/[ML]/g) ?? []).length).toBe(MONATE_GESAMT);
+    // Keine Einzelpunkte mehr: Die Linie trägt die Aussage.
+    expect(g.planPunkte).toHaveLength(0);
   });
 
-  test("kein inaktiver Monat landet auf der Nulllinie", () => {
+  test("die inaktiven Monate liegen auf der Nulllinie, die aktiven darüber", () => {
     const g = baueGeometrie(
       reihe(() => ({ ist: 99, plan: 99 }), [9, 21]),
       2026,
       AUGUST_2026,
     );
-    // 24 Monate, 2 aktiv → höchstens 2 Koordinaten je Pfad. Würden inaktive
-    // Monate auf 0 gezogen, stünden hier 24.
-    const koordinaten = (g.planPfad.match(/[ML]/g) ?? []).length;
-    expect(koordinaten).toBe(2);
+    const yNull = g.yMarken.find((m) => m.wert === 0)!.y;
+    // Alle Koordinaten einsammeln und nach Höhe trennen.
+    const ys = g.planPfad
+      .split(/[ML]/)
+      .filter(Boolean)
+      .map((s) => Number(s.split(",")[1]));
+    const aufNull = ys.filter((v) => Math.abs(v - yNull) < 0.05).length;
+    expect(aufNull).toBe(22); // 24 minus die beiden Oktober
+    expect(ys.filter((v) => v < yNull - 0.05)).toHaveLength(2);
   });
 
-  test("eine Lücke in der Mitte teilt die Linie in zwei Abschnitte", () => {
+  test("eine Lücke in der Mitte teilt die Linie NICHT mehr", () => {
     const aktive = [0, 1, 2, 3, 4, 10, 11, 12];
     const g = baueGeometrie(
       reihe(() => ({ ist: 50, plan: 50 }), aktive),
       2026,
       AUGUST_2026,
     );
-    expect(anzahlAbschnitte(g.planPfad)).toBe(2);
+    expect(anzahlAbschnitte(g.planPfad)).toBe(1);
   });
 
   test("eine durchgehende Reihe hat genau einen Abschnitt", () => {
     const g = baueGeometrie(reihe(() => ({ ist: 50, plan: 50 })), 2026, AUGUST_2026);
     expect(anzahlAbschnitte(g.planPfad)).toBe(1);
     expect(g.planPunkte).toHaveLength(0);
+  });
+
+  test("eine Reihe ohne einen einzigen aktiven Monat bleibt zeichenbar", () => {
+    const g = baueGeometrie(reihe(() => ({ ist: 0, plan: 0 }), []), 2026, AUGUST_2026);
+    expect(anzahlAbschnitte(g.planPfad)).toBe(1);
+    expect(g.top).toBeGreaterThan(0); // keine Division durch null
+  });
+});
+
+test.describe("Verlauf: die Y-Achse rastert in runden Schritten (v2-31, 03.09.2026)", () => {
+  // Anlass, gemessen am Ordner „Versicherungen": 18 von 24 Monaten liegen
+  // zwischen 223 und 262 €, der Dezember 2026 bei 597,36 €. Die Achse MUSS bis
+  // dorthin reichen — vorher stand zwischen 0 und 600 aber nichts, und das
+  // dichte Band bei 38 % Höhe war nicht ablesbar.
+
+  test("Versicherungen: 100er-Schritte, sieben beschriftete Marken", () => {
+    const werte = [511.86, 224.32, 224.32, 253.64, 233.30, 223.40, 223.40, 223.40,
+      226.80, 226.80, 440.80, 592.30, 226.80, 232.83, 232.83, 261.71, 257.63,
+      232.83, 232.83, 232.83, 236.33, 231.86, 307.79, 597.36];
+    const g = baueGeometrie(
+      reihe((i) => ({ ist: werte[i], plan: werte[i] })),
+      2026,
+      AUGUST_2026,
+    );
+    expect(g.top).toBe(600);
+    expect(g.yMarken.map((m) => m.wert)).toEqual([0, 100, 200, 300, 400, 500, 600]);
+    // Jede Marke trägt eine Rasterlinie — nicht nur die erste und die letzte.
+    expect(g.rasterY).toHaveLength(g.yMarken.length);
+  });
+
+  test("die Schrittweite passt sich der Größenordnung an", () => {
+    const faelle: { max: number; top: number; schritte: number }[] = [
+      { max: 13.99, top: 15, schritte: 5 },     // Netflix
+      { max: 99, top: 100, schritte: 20 },      // ADAC
+      { max: 259.36, top: 300, schritte: 50 },  // Tanken
+      { max: 1120.33, top: 1200, schritte: 200 }, // Miete
+      { max: 2592.82, top: 3000, schritte: 500 }, // Wohnen
+    ];
+    for (const f of faelle) {
+      const g = baueGeometrie(
+        reihe(() => ({ ist: f.max, plan: f.max })),
+        2026,
+        AUGUST_2026,
+      );
+      expect(g.top, `max ${f.max}`).toBe(f.top);
+      const marken = g.yMarken.map((m) => m.wert);
+      expect(marken[1] - marken[0], `Schritt bei max ${f.max}`).toBe(f.schritte);
+    }
+  });
+
+  test("die Achse trägt nie mehr als sieben Marken", () => {
+    for (const max of [1, 7, 42, 99, 260, 597, 1120, 2593, 9999, 45000]) {
+      const g = baueGeometrie(reihe(() => ({ ist: max, plan: max })), 2026, AUGUST_2026);
+      expect(g.yMarken.length, `max ${max}`).toBeLessThanOrEqual(7);
+      expect(g.yMarken.length, `max ${max}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  test("die Obergrenze schneidet nie einen Wert ab", () => {
+    for (const max of [0.4, 13.99, 99, 259.36, 597.36, 2592.82]) {
+      const g = baueGeometrie(reihe(() => ({ ist: max, plan: max })), 2026, AUGUST_2026);
+      expect(g.top, `max ${max}`).toBeGreaterThanOrEqual(max);
+    }
+  });
+
+  test("die Marken sind runde Zahlen, keine krummen Zwischenwerte", () => {
+    const g = baueGeometrie(reihe(() => ({ ist: 597.36, plan: 597.36 })), 2026, AUGUST_2026);
+    for (const m of g.yMarken) expect(Number.isInteger(m.wert)).toBe(true);
+  });
+
+  test("keine zwei Marken tragen dieselbe gerundete Beschriftung", () => {
+    // Die Y-Labels runden auf ganze Euro (`formatEuroRounded`, wie im Ring).
+    // Ein Schritt unter 1 € ergäbe deshalb zwei Marken mit demselben Text —
+    // im Bestand gibt es Karten mit einem Platzhalter-Plan von 1,00 €.
+    for (const max of [0.4, 1, 1.5, 2, 3, 4.99]) {
+      const g = baueGeometrie(reihe(() => ({ ist: max, plan: max })), 2026, AUGUST_2026);
+      const labels = g.yMarken.map((m) => Math.round(m.wert));
+      expect(new Set(labels).size, `max ${max}`).toBe(labels.length);
+    }
   });
 });
 

@@ -7,7 +7,7 @@
  * — ein Nachbau driftet ab und gibt falsche Sicherheit. Dieselbe Bauart wie
  * `ring-subline.ts`, `liquidity.ts` und `drivers.ts`.
  *
- * ── Die drei Regeln, die hier haften (Design-Record 31.08.2026) ─────────────
+ * ── Die drei Regeln, die hier haften (Design-Record 31.08., §2 rev. 03.09.2026) ─
  *
  * ① Die Ist-Linie endet am laufenden Monat. In Zukunftsmonaten liefert
  *    `calculate_card_amount_for_month` den Plan zurück; sie weiterzuzeichnen
@@ -15,16 +15,34 @@
  *    zu nennen. §9 sagt dasselbe für die Welle: Teal bis einschließlich
  *    laufender Monat, Grau ab dem ersten Zukunftsmonat.
  *
- * ② Ein inaktiver Monat bricht die Linie, er fällt nicht auf null. Die
- *    Datenbank liefert dafür `null` statt 0 — „nicht fällig" und „null Euro
- *    ausgegeben" sind verschiedene Aussagen (§7 Regel 17 / LL-20). Hier wird
- *    daraus eine Lücke im Pfad.
+ * ② Ein inaktiver Monat läuft auf 0 €, er bricht die Linie NICHT.
  *
- * ③ Ein Wert ohne aktive Nachbarn wird als Punkt gezeichnet. Ohne das ist eine
- *    jährliche Karte unsichtbar: `ADAC Mitgliedschaft` ist in 2 von 24 Monaten
- *    aktiv, und zwei isolierte Pfad-Knoten ohne Verbindung malen nichts.
- *    Eine Linie ZWISCHEN ihnen wäre die falsche Alternative — sie behauptete
- *    eine Entwicklung, die es nicht gibt.
+ *    ⚠️ **Das war bis zum 03.09.2026 umgekehrt geregelt, und die Umkehr ist
+ *    begründet.** Die alte Fassung berief sich auf LL-20 („ein Referenzwert
+ *    ohne Daten ist keine Anzeige, nicht 0") und ließ die Linie brechen. LL-20
+ *    meint aber einen **fehlenden** Wert — etwa „Budget frei" in einem Monat
+ *    ohne Budget-Karten, wo 0 eine Falschaussage wäre.
+ *
+ *    Hier ist es keine. Der Verlauf beantwortet „was hat mich das gekostet",
+ *    und für einen Monat, in dem die Karte nicht fällig war, lautet die Antwort
+ *    **null Euro** — das ist wahr, nicht geschätzt. Im Karussell wird die Karte
+ *    in so einem Monat gar nicht gezeigt; über 24 Monate hinweg ist ihre
+ *    Abwesenheit dagegen selbst eine Aussage über Geld.
+ *
+ *    Der Anlass war die Anschauung: Reihen mit vielen Lücken sahen zerhackt
+ *    aus, und bei einer jährlichen Karte blieben zwei einsame Punkte übrig,
+ *    aus denen sich der Rhythmus nicht lesen ließ. Jetzt zeigt dieselbe Karte
+ *    eine flache Nulllinie mit zwei Ausschlägen — und genau das ist sie.
+ *
+ *    **Die Datenbank bleibt unverändert:** Beide Serien-Funktionen liefern
+ *    weiterhin `null` bei `aktiv = false`. Die Unterscheidung geht also nicht
+ *    verloren, sie wird hier bewusst zu einer Null verdichtet. Wer sie später
+ *    braucht (etwa für einen Tooltip „nicht fällig"), findet sie in den
+ *    Rohdaten.
+ *
+ * ③ Eine Reihe mit einem einzigen Knoten bekommt trotzdem eine sichtbare Marke.
+ *    Ein SVG-Pfad aus einem einzelnen Punkt malt nichts. Das tritt nur noch am
+ *    Rand auf — etwa wenn „heute" der erste Monat der Reihe ist.
  */
 
 /** Ein Monat der Reihe, wie ihn `get_card_amount_series` /
@@ -66,10 +84,10 @@ export type VerlaufGeometrie = {
   istPfad: string;
   /** SVG-Pfad der Plan-Linie. */
   planPfad: string;
-  /** Isolierte Ist-Werte, die sonst unsichtbar wären. */
+  /** Nur belegt, wenn die Linie aus einem einzigen Knoten besteht (Regel ③). */
   istPunkte: { x: number; y: number }[];
   planPunkte: { x: number; y: number }[];
-  /** Waagerechte Rasterlinien (0, Hälfte, Maximum). */
+  /** Waagerechte Rasterlinien — eine je Achsen-Schritt. */
   rasterY: number[];
   /** Beschriftete Y-Marken: Betrag und Position. */
   yMarken: { wert: number; y: number }[];
@@ -107,49 +125,83 @@ export function heuteIndex(jahr: number, heute: Date): number {
   return idx;
 }
 
-/** Rundet die Y-Obergrenze auf einen halben Zehnerschritt auf. */
-function obergrenze(werte: number[]): number {
+/**
+ * Runde Schrittweiten für die Y-Achse. Bewusst ohne 25 und 250 — eine Achse
+ * mit 0/25/50/75 liest sich unruhiger als eine mit 0/20/40/60, und der Gewinn
+ * an Genauigkeit ist keiner.
+ */
+const SCHRITTE = [
+  1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000,
+];
+
+/** Höchstens so viele Abschnitte zwischen 0 und der Obergrenze. */
+const MAX_ABSCHNITTE = 6;
+
+/**
+ * Wählt Schrittweite und Obergrenze der Y-Achse.
+ *
+ * ⚠️ **Die Achse trägt Rasterlinien in RUNDEN Schritten, nicht nur 0 und das
+ * Maximum** — seit dem 03.09.2026, und der Anlass ist gemessen. Der Ordner
+ * `Versicherungen` liegt in **18 von 24 Monaten zwischen 223 und 262 €**, hat
+ * aber im Dezember 2026 eine Jahresprämie von **597,36 €**. Die Achse muss
+ * dorthin reichen — sonst wäre die Anzeige schlicht falsch —, und damit lag das
+ * dichte Band bei 38 % der Höhe, ohne dass sich sein Wert ablesen ließ.
+ *
+ * **Die Obergrenze war nicht das Problem** (600 statt 597,36 sind 0,4 % Luft).
+ * Das Problem war, dass zwischen 0 und 600 nichts stand. Jetzt sind es
+ * 0/100/…/600 mit Beschriftung an jeder Linie, und die Frage „liegt die Linie
+ * bei 230?" beantwortet sich durch Hinsehen.
+ *
+ * Der Schritt wächst mit der Größenordnung: Netflix bekommt 5er-Schritte,
+ * Wohnen 500er. Höchstens sechs Abschnitte, damit die Fläche nicht zum Raster
+ * wird — „Ruhe vor Betonung".
+ *
+ * **Der kleinste Schritt ist 1 €, nicht 0,50 €** — die Beschriftung rundet auf
+ * ganze Euro (`formatEuroRounded`, wie im Ring), und ein halber Schritt ergäbe
+ * bei einer Karte über 1,00 € zwei Marken mit demselben Text. Karten mit einem
+ * Plan von 1,00 € gibt es im Bestand (Platzhalter-Pläne aus dem Import).
+ */
+function achse(werte: number[]): { top: number; schritt: number } {
   const max = Math.max(0, ...werte.map((v) => Math.abs(v)));
-  if (max === 0) return 1;
-  const schritt = Math.pow(10, Math.floor(Math.log10(max)));
-  return Math.ceil(max / (schritt / 2)) * (schritt / 2) || 1;
+  if (max === 0) return { top: SCHRITTE[0], schritt: SCHRITTE[0] };
+
+  for (const schritt of SCHRITTE) {
+    if (max / schritt <= MAX_ABSCHNITTE) {
+      return { top: Math.ceil(max / schritt) * schritt, schritt };
+    }
+  }
+  // Jenseits der Tabelle: gröbster Schritt, Obergrenze aufgerundet.
+  const schritt = SCHRITTE[SCHRITTE.length - 1];
+  return { top: Math.ceil(max / schritt) * schritt, schritt };
 }
 
 /**
- * Baut aus einer Reihe die Pfade. `null` bricht den Pfad (Regel ②); ein Wert
- * ohne aktive Nachbarn wandert in `punkte` (Regel ③).
+ * Baut aus einer Reihe den Pfad. Die Reihe ist **durchgehend** — inaktive
+ * Monate stehen bereits auf 0 (Regel ②), es gibt also keine Lücken mehr.
  *
- * `bis` begrenzt die Reihe nach rechts — für die Ist-Linie der laufende Monat
+ * `bis` begrenzt die Reihe nach rechts: für die Ist-Linie der laufende Monat
  * (Regel ①), für die Plan-Linie das Ende der Reihe.
+ *
+ * `punkte` trägt den Randfall aus Regel ③ — ein Pfad aus einem einzigen Knoten
+ * malt nichts, deshalb bekommt er eine Marke.
  */
 function pfadUndPunkte(
-  werte: (number | null)[],
+  werte: number[],
   x: (i: number) => number,
   y: (v: number) => number,
   bis: number,
 ): { pfad: string; punkte: { x: number; y: number }[] } {
   let pfad = "";
-  let offen = false;
-  const punkte: { x: number; y: number }[] = [];
+  const knoten: { x: number; y: number }[] = [];
 
   for (let i = 0; i <= bis && i < werte.length; i++) {
-    const v = werte[i];
-    if (v == null) {
-      offen = false;
-      continue;
-    }
     const px = x(i);
-    const py = y(v);
-    pfad += `${offen ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`;
-
-    const vorher = i === 0 ? null : werte[i - 1];
-    const nachher = i === bis ? null : werte[i + 1];
-    if (vorher == null && nachher == null) punkte.push({ x: px, y: py });
-
-    offen = true;
+    const py = y(werte[i]);
+    pfad += `${i === 0 ? "M" : "L"}${px.toFixed(1)},${py.toFixed(1)}`;
+    knoten.push({ x: px, y: py });
   }
 
-  return { pfad, punkte };
+  return { pfad, punkte: knoten.length === 1 ? knoten : [] };
 }
 
 /**
@@ -173,20 +225,22 @@ export function baueGeometrie(
   // bleibt der Monat leer, statt einen fremden Wert zu erben. Dasselbe Muster
   // wie im Welle-Loader (v2-24).
   const nachIndex = new Map(punkte.map((p) => [p.monthIndex, p]));
-  const istWerte: (number | null)[] = [];
-  const planWerte: (number | null)[] = [];
+  const istWerte: number[] = [];
+  const planWerte: number[] = [];
   for (let i = 0; i < MONATE_GESAMT; i++) {
     const p = nachIndex.get(i);
-    istWerte.push(p?.aktiv ? p.ist : null);
-    planWerte.push(p?.aktiv ? p.plan : null);
+    // Inaktiver Monat → 0 €, keine Lücke (Regel ②). Ein fehlender Index wird
+    // genauso behandelt: adressiert wird über den Index, nicht über die
+    // Array-Position, damit ein Loch keinen fremden Wert erbt.
+    istWerte.push(p?.aktiv ? (p.ist ?? 0) : 0);
+    planWerte.push(p?.aktiv ? (p.plan ?? 0) : 0);
   }
 
   // Beträge als HÖHE: Ein Ausgaben-Ordner wird nicht unter die Nulllinie
   // gezeichnet und nicht rot eingefärbt — Rot ist in dieser App
   // „offen / Defizit" (§3), nicht „Ausgabe". Das Vorzeichen trägt die
   // Unterzeile des Overlays (Design-Record §8).
-  const alle = [...istWerte, ...planWerte].filter((v): v is number => v != null);
-  const top = obergrenze(alle);
+  const { top, schritt } = achse([...istWerte, ...planWerte]);
 
   const x = (i: number): number => padLeft + (i / (MONATE_GESAMT - 1)) * flaecheB;
   const y = (v: number): number => padTop + flaecheH - (Math.abs(v) / top) * flaecheH;
@@ -194,6 +248,11 @@ export function baueGeometrie(
   const istBis = heuteIndex(jahr, heute);
   const ist = istBis < 0 ? { pfad: "", punkte: [] } : pfadUndPunkte(istWerte, x, y, istBis);
   const plan = pfadUndPunkte(planWerte, x, y, MONATE_GESAMT - 1);
+
+  // Eine Marke je Schritt, jede beschriftet. Vorher waren es drei Rasterlinien
+  // und zwei Beschriftungen — zu wenig, um einen Wert in der Mitte abzulesen.
+  const marken: number[] = [];
+  for (let v = 0; v <= top + 1e-9; v += schritt) marken.push(+v.toFixed(6));
 
   // Jeder dritte Monat beschriftet — acht Marken mit je rund 50 px Luft.
   // 24 Marken passten rechnerisch (23,5 px je Marke bei ~20 px Labelbreite),
@@ -209,11 +268,8 @@ export function baueGeometrie(
     planPfad: plan.pfad,
     istPunkte: ist.punkte,
     planPunkte: plan.punkte,
-    rasterY: [0, top / 2, top].map(y),
-    yMarken: [
-      { wert: 0, y: y(0) },
-      { wert: top, y: y(top) },
-    ],
+    rasterY: marken.map(y),
+    yMarken: marken.map((wert) => ({ wert, y: y(wert) })),
     xMarken,
     jahrGrenzeX: (x(11) + x(12)) / 2,
     heuteX: istBis >= 0 && istBis <= MONATE_GESAMT - 1 ? x(istBis) : null,

@@ -201,6 +201,53 @@ erreichen**, nicht nur „wahrscheinlich nicht". Selbst nachgeprüft: `page.tsx:
 
 ---
 
+### P5 · Nachtrag 03.09.2026 — zwei Änderungen aus der Anschauung
+
+Der Nutzer hat die Entwürfe angesehen und zwei Dinge beauftragt. **Beides ist reines
+Frontend** (`verlauf.ts`), die Datenbank blieb unangetastet.
+
+**① Alle Verläufe sind eine durchgehende Linie.** Inaktive Monate laufen auf **0 €**,
+statt die Linie zu brechen.
+
+> **Das kehrt eine Entscheidung um, die ich getroffen und mit LL-20 begründet hatte —
+> und die Begründung war eine Überdehnung.** LL-20 sagt: *„ein Referenzwert ohne Daten
+> ist ‚keine Anzeige', nicht 0."* Gemeint ist ein **fehlender** Wert; „Budget frei" in
+> einem Monat ohne Budget-Karten ist das Musterbeispiel. **Beim Verlauf ist die Null
+> keine Falschaussage:** Er beantwortet „was hat mich das gekostet", und für einen Monat
+> ohne Fälligkeit lautet die Antwort null Euro. Das ist wahr, nicht geschätzt.
+>
+> **Gesehen hat es der Nutzer, nicht die Prüfstrecke.** Der Wächter war grün, die Anker
+> waren grün, das Argument im Record klang schlüssig. Am Bild fiel auf, dass die Reihen
+> **zerhackt** aussehen und von der jährlichen Karte zwei einsame Punkte übrig bleiben,
+> aus denen sich kein Rhythmus lesen lässt.
+
+**② Die Y-Achse rastert in runden Schritten**, jede Linie beschriftet; der Schritt
+wächst mit der Größenordnung, höchstens sechs Abschnitte.
+
+> **Anlass gemessen am Ordner `Versicherungen`:** 18 von 24 Monaten liegen zwischen
+> 223 und 262 €, der Dezember 2026 bei **597,36 €**. Die Achse **muss** bis 600 reichen.
+> Vorher trug sie drei Rasterlinien und **zwei** Beschriftungen — man sah, *dass* die
+> Linie flach verläuft, aber nicht, *auf welcher Höhe*. **Die Obergrenze war nicht das
+> Problem** (600 statt 597,36 sind 0,4 % Luft), sondern die Leere dazwischen.
+
+**Und ein Befund über meinen eigenen Wächter.** Die erste LL-40-Probe für Regel ②
+**schlug nicht an** — ich hatte `: 0` auf `: null` zurückgedreht, aber `Math.abs(null)`
+ist `0`, die Probe war also wirkungslos. Der Test blieb grün, obwohl ich ihn zu brechen
+versuchte. Erst eine Probe an der richtigen Stelle machte ihn rot (6 Tests). **Das ist
+genau der v2-29-Fall** aus LL-40: ein Muster, das die falsche Stelle trifft — nur diesmal
+in der Probe statt im Test.
+
+**Nebenbefund, nicht vom Sprint verursacht:** `render-smoke.spec.ts` wurde rot, weil er
+vier Monate fest verdrahtet hatte und sich darauf verließ, dass September leer bleibt.
+Der Nutzer hat am **01.09.2026** seinen Monatsabzug importiert (belegt über
+`fragments.created_at`). Der Test wählt die Monate jetzt relativ zu heute — **LL-28 in
+neuer Gestalt**: eine Annahme, die mit dem Kalender verfällt.
+
+**Prüfstrecke:** `test:visual` **175/175** *(v2-30: 148)* · `test:e2e` **184/184**
+*(v2-30: 157)*. Anker 1 in 24/24 bei 0 Verletzungen, Goldlinie 2025 unverändert.
+
+---
+
 ## 5. Architektur-Entscheidungen
 
 ### ① Die Roadmap-Zusage prüfen, statt ihr zu glauben (LL-22)
