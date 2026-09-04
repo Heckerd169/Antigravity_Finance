@@ -1,4 +1,4 @@
-# Doku-Patches — Sprint v2-32 (P2)
+# Doku-Patches — Sprint v2-32 (P2 + P3)
 
 > **Verfahren:** §7 Regel 14 / LL-16 — Anker + Patch-Satz je Stelle, danach angewendet.
 > **Datum:** 04. September 2026 · Branch `sprint/v2-32-aufraeumen`
@@ -236,3 +236,95 @@ Changelog-Eintrag `v3.16.0` existiert nicht** — der neueste ist `v3.15.0` (v2-
 Version **3.13.1** vom 03.09.2026, Changelog deckt den Nachtrag zu v2-31 (durchgehende
 Verlaufslinie, PR #52) vollständig ab. **Für das anstehende Re-Design ist das die
 wichtigste Datei überhaupt** — sie ist geprüft und aktuell. Nichts zu tun.
+
+---
+
+## P3 · CLAUDE.md verschlanken — und warum die ursprüngliche Diagnose falsch war
+
+> **Diese Phase hat mit einer Korrektur an sich selbst begonnen.** Dem User war
+> vorgelegt worden: *„CLAUDE.md steht bei 1.509 von 1.600 Zeilen (94 %) — jetzt
+> kürzen?"* Er hat zugestimmt. **Die Frage war schlecht gestellt.**
+
+### Was die Messung ergab
+
+Die Fähigkeit `claude-md-pflege` verlangt, vor jeder Kürzung **alle drei** Grenzen zu
+lesen, nicht nur die gerissene:
+
+| Grenze | Ist | Bewertung |
+|---|---|---|
+| Zeilen gesamt | 1.516 / 1.600 | **95 %** — eng |
+| Erzählzone | 126 / 150 | 84 % — **schlank** |
+| Regelanteil | **50 %** | über dem Mindestwert 45 % · über den 49 % bei Einführung |
+
+Und die Fähigkeit ist für genau diesen Fall eindeutig:
+
+> *„Ist sie allein gerissen, während ② und ③ grün sind, ist die Datei tatsächlich aus
+> **Regeln** gewachsen. **Dann ist Kürzen die falsche Antwort.**"*
+
+**§6 + §7 + §8 waren 752 Zeilen.** „Kürzen" hätte hier bedeutet: Regeln wegwerfen —
+und mit ihnen die Vorfälle, an denen sie haften. §8 sagt, warum das teuer wäre: *Eine
+Regel ohne ihren Vorfall wird zur Checkliste, und Checklisten werden nicht gelesen.*
+
+### Was stattdessen geschnitten wurde
+
+Ausschließlich **doppelt erzählte Beschreibung**. Jede Streichung wurde vorher gegen
+die Zieldatei belegt.
+
+| | Was | vorher | nachher | Beleg, dass nichts verloren geht |
+|---|---|---|---|---|
+| **A** | §2 — die Dublin-Entscheidung in **drei** Kästen | 78 Z. | 23 Z. | Regel in §6 Stolperfalle 20 (LL-30) · vollständige Messung in Roadmap `PF-4` · 6 Treffer in der Historie |
+| **B** | §3 — derselbe Stoff ein **viertes** Mal | 12 Z. | 6 Z. | §2 |
+| **C** | §9 — nacherzählter Roadmap-Stand ab „Offene Themen" | 101 Z. | 14 Z. | jede Aussage einzeln in der Roadmap nachgewiesen (Paket 1/2/3/4 ✅, `M6`, `ZO-1`/`ZO-5`/`ZO-6`, `M2`/`M5`, `B2-R`, `DA-2`) |
+
+**Vorher übertragen, nicht gestrichen:** Der Kasten zu `B2-R` trug eine Lehre, die
+**nirgends sonst als Regel stand** — ein Delta von **0,0022 €** rundet auf 0,00 und
+fällt aus der Anzeige, verschiebt die Summe aber trotzdem; wer die B2-Invariante um
+einen Cent verfehlt, sucht in den **angezeigten** Zeilen und findet dort nichts. Sie
+steht jetzt in **§6 Stolperfalle 9**. Genau diese Reihenfolge verlangt die Fähigkeit:
+erst übertragen, dann streichen.
+
+### Ergebnis
+
+| | vorher | nachher |
+|---|---|---|
+| Zeilen gesamt | 1.516 (95 %) | **1.397 (87 %)** |
+| Erzählzone | 126 | 126 (unverändert) |
+| **Regelanteil** | 50 % | **54 %** |
+| §6 + §7 + §8 | 752 Z. | **759 Z.** — *gewachsen* |
+| Nicht-Regel außerhalb der Erzählzone | 638 Z. (42 %) | 512 Z. (37 %) |
+
+**Der Regelblock ist größer geworden, während die Datei um 119 Zeilen schrumpfte.**
+Das ist dasselbe Muster wie in v2-29 und der Grund, warum der Regelanteil überhaupt
+gemessen wird: Eine reine Zeilenzahl hätte beide Zustände gleich beurteilt.
+
+---
+
+## P3b · Der blinde Fleck des Wächters — Prüfung ⑤
+
+**Beim Schneiden von C fiel auf, warum diese 101 Zeilen überhaupt entstehen konnten.**
+
+Der Wächter misst die Erzählzone als *Vorspann + §9 **bis zur Überschrift „Die
+Prüfanker"***. Die 101 Zeilen standen **dahinter**. Sie zählten damit weder als
+Erzählung noch als Regel — **sie lagen zwischen zwei Messungen** und konnten wachsen,
+während alle drei Grenzen grün blieben.
+
+**Prüfung ⑤** misst jetzt die Zone ab `**Offene Themen:**` bis zum Dateiende, Grenze
+**30 Zeilen** (Stand nach v2-32: 14).
+
+> ### Der Beweis, dass sie auslösen kann — und was er nebenbei zeigt
+>
+> §7 Regel 27 (LL-40) verlangt, den Fehler **einmal absichtlich einzubauen** und rot
+> zu sehen. Eingebaut: 25 Zeilen im Stil des gestrichenen Roadmap-Stands.
+>
+> **Ergebnis: ⑤ rot — ①, ②, ③ und ④ blieben GRÜN.**
+>
+> Das ist mehr als der geforderte Nachweis. Es belegt den blinden Fleck direkt:
+> **25 Zeilen Roadmap-Abschrift hätten von den bestehenden drei Grenzen keine
+> ausgelöst.** Die Datei lag mit ihnen bei 1.422 von 1.600 Zeilen — bequem im grünen
+> Bereich. Genau so sind die 101 entstanden.
+>
+> Danach zurückgenommen, 8/8 grün, Vorwarnung verschwunden.
+
+**Das ist LL-30, angewandt auf einen Wächter statt auf eine Doku-Zeile:** Was nicht
+gemessen wird, wächst — und eine Messung, die ihre eigenen Ränder nicht kennt, sieht
+aus wie Abdeckung.

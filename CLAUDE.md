@@ -75,66 +75,31 @@ Finanzdaten** des Users — das schärft jede Test- und Migrations-Regel (§4).
 **Major-Versions sind eingefroren.** Keine Bumps von Next/React/ESLint ohne
 expliziten Sprint-Auftrag.
 
-> ### ⚠️ Die Regions-Zeile stand hier über ein Jahr FALSCH — und niemand hat es geprüft
+> ### Warum Dublin — und was daran Regel ist
 >
-> Bis zum 17.08.2026 behauptete diese Tabelle *„Region matched Supabase (eu-west-1)"*.
-> **Sie tat es nicht.** Die Vercel-Funktionen standen auf **USA**, die Datenbank liegt
-> in **eu-west-1 (Irland)** — jede einzelne Anfrage lief über den Atlantik und zurück,
-> rund **90 ms** Umweg. Bei den 233 Netzrunden, die ein Dashboard-Aufbau vor v2-24
-> machte, war das ein erheblicher Anteil der Wartezeit.
+> Vercel beschriftet Dublin selbst mit **`eu-west-1`**: dieselbe AWS-Region, in der die
+> Supabase-Datenbank liegt. Die Funktion läuft damit **in** der Region der Datenbank,
+> nicht daneben. **Die Entscheidung trägt nicht die Zahl der Anfragen, sondern die der
+> Abhängigkeitsstufen** — `src/app/page.tsx` hat **13 `await`-Barrieren**, und jede
+> kostet eine volle Wegstrecke. Über alle 13 liegt Frankfurt bei ~250–320 ms, Dublin
+> bei ~25–40 ms; dass Dublin für einen Nutzer in Deutschland ~25 ms weiter weg ist,
+> verliert gegen dieses Verhältnis. Der Browser spricht pro Geste **zweimal** mit der
+> Funktion, die Funktion **dreizehnmal** mit der Datenbank.
 >
-> **Gefunden hat es nicht die Prüfstrecke und nicht diese Datei, sondern der Nutzer** —
-> weil v2-24 die Frage überhaupt erst gestellt hat (`PF-4`).
->
-> **Das ist LL-22 in seiner allgemeinen Form:** Eine Zusage in einer Doku ist keine
-> Prüfung. LL-22 sagt das über **Rechenverhalten** — hier war es die Infrastruktur, und
-> die Zeile war umso wirksamer, weil sie so beruhigend klang, dass niemand nachsah.
->
-> ### Warum Dublin und nicht Frankfurt
->
-> Am 17.08.2026 zunächst auf Frankfurt umgestellt, am selben Tag auf **Dublin**
-> weitergezogen. Der Grund steht in Vercels eigener Beschriftung: Dublin heißt dort
-> **`eu-west-1`** — dieselbe AWS-Region, in der die Supabase-Datenbank liegt. Die
-> Funktion läuft damit **in** der Region der Datenbank, nicht daneben.
->
-> **Die Zahl, die die Entscheidung trägt, ist nicht die Zahl der Anfragen, sondern die
-> der Abhängigkeitsstufen.** `src/app/page.tsx` hat **13 `await`-Barrieren** — Stellen,
-> an denen der Render auf eine Antwort warten *muss*, bevor er die nächste Frage stellt.
-> Jede kostet eine volle Wegstrecke, egal wie viele Anfragen darin parallel laufen.
->
-> | | Weg Funktion → Datenbank | × 13 Stufen |
-> |---|---|---|
-> | Frankfurt (`eu-central-1`) | andere AWS-Region | ~250–320 ms |
-> | **Dublin (`eu-west-1`)** | **dieselbe** AWS-Region | **~25–40 ms** |
->
-> Dagegen steht, dass Dublin für einen Nutzer in Deutschland rund 25 ms weiter weg ist
-> als Frankfurt. Das verliert: Der Browser spricht pro Geste **zweimal** mit der
-> Funktion, die Funktion **dreizehnmal hintereinander** mit der Datenbank. Das
-> Verhältnis 13:2 entscheidet, und daran ändern einzelne Millisekunden nichts.
->
-> **Was gemessen ist und was nicht:** Die 13 Stufen sind aus dem Code gezählt. Die
-> Millisekunden sind **geschätzt** — sie liegen außerhalb dessen, was die Supabase-Logs
-> sehen (`response.origin_time` misst Supabases eigene Verarbeitung, **nicht** die
-> Netzstrecke von Vercel dorthin). Das Argument hängt nicht an den exakten Werten:
-> „gleiche Region" liegt strukturell etwa eine Größenordnung unter „andere Region".
->
-> ### Die Einstellung ist jetzt festgenagelt
->
-> **`vercel.json` trägt `{"regions": ["dub1"]}`** — versioniert, im Diff sichtbar, und
-> sie überlebt ein neu angelegtes Projekt. Vorher lebte sie **nur im Vercel-Portal** und
-> war damit für dieses Repo unsichtbar; genau das ist der Grund, warum die falsche Zeile
-> so lange überlebt hat (**LL-30 / §6 Stolperfalle 20**).
->
-> **Zwei Dinge, die man dazu wissen muss:**
+> **Drei Dinge, die dauerhaft gelten:**
 > - **Die Datei gewinnt gegen das Portal.** Wer die Region ändern will, ändert
->   `vercel.json` — eine Umstellung im Portal allein wird beim nächsten Deployment
+>   `vercel.json` — eine Umstellung im Portal wird beim nächsten Deployment
 >   überschrieben. Das ist gewollt.
-> - **Die Middleware ist davon NICHT betroffen.** Sie läuft als Edge-Middleware immer am
->   Netzknoten in der Nähe des Nutzers; ihre eine Anmelde-Abfrage geht also weiterhin von
->   Deutschland nach Irland. Diese Einstellung steuert ausschließlich die
->   Server-Funktionen.
+> - **Die Middleware ist NICHT betroffen** — sie läuft als Edge-Middleware immer
+>   nutzernah. Diese Einstellung steuert ausschließlich die Server-Funktionen.
+> - **Der Hobby-Plan erlaubt genau eine Region.** „Beides" gibt es nicht.
 >
-> **Der Hobby-Plan erlaubt genau eine Region** — „beides" gibt es nicht.
+> **Dass diese Zeile über ein Jahr das Gegenteil behauptete** — „Region matched
+> Supabase", während die Funktionen in den **USA** standen — ist als Regel in
+> **§6 Stolperfalle 20** (LL-30) festgehalten; die vollständige Messung steht in der
+> Roadmap unter `PF-4`. **Hier stand sie bis zum 04.09.2026 ein zweites Mal, auf 78
+> Zeilen.**
+
 
 **Was NICHT verwendet wird:** kein Tailwind · keine Component-Library ·
 kein State-Manager · keine ORM.
@@ -189,17 +154,13 @@ Antigravity_Finance/
 └── vercel.json                                ← NUR die Funktions-Region (§2)
 ```
 
-> **Warum `vercel.json` nur eine einzige Zeile enthält.** Es gibt sie seit dem
-> 17.08.2026 und ausschließlich für `{"regions": ["dub1"]}` — die AWS-Region, in der
-> auch die Supabase-Datenbank liegt. Der Anlass steht in **§2**: Die Region stand über
-> ein Jahr auf **USA**, während diese Datei das Gegenteil behauptete, und sie lebte nur
-> im Vercel-Portal, wo kein Diff sie prüfen konnte (LL-30).
->
-> **JSON kann keine Begründung tragen** — deshalb steht sie in §2 und nicht in der
-> Datei. Wer `vercel.json` erweitern will, prüft zuerst, ob die Einstellung nicht
-> besser in `next.config.mjs` gehört: Diese Datei ist bewusst **kein** Sammelbecken für
+> **Warum `vercel.json` nur eine Zeile enthält.** Sie trägt ausschließlich
+> `{"regions": ["dub1"]}` — die Begründung steht in §2, weil JSON keine tragen kann.
+> Wer sie erweitern will, prüft zuerst, ob die Einstellung nicht besser nach
+> `next.config.mjs` gehört: Diese Datei ist bewusst **kein** Sammelbecken für
 > Deployment-Optionen, sondern trägt genau die eine Sache, die Next.js nicht selbst
 > versioniert.
+
 
 ### Wohin gehört etwas Neues?
 
@@ -488,6 +449,13 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
    es nicht gibt. (v2-28)
 9. **Treiber-Invariante (B2):** `Σ delta = Ist-Sparrate − Plan-Sparrate` pro Monat.
    Läuft sie auseinander, ist das der erste Verdacht bei jedem Treiber-Bug.
+   ⚠️ **Und die verursachende Zeile ist dabei oft gar nicht sichtbar.** In v2-22
+   lag die Treiber-Summe in Juli und August je einen Cent daneben; verursacht
+   haben es Karten mit einem Delta von **0,0022 €** — das rundet auf 0,00 und
+   fällt aus der Anzeige, **verschiebt die Summe aber trotzdem**. Wer die
+   Invariante um einen Cent verfehlt, sucht in den **angezeigten** Zeilen und
+   findet dort nichts. Ebenfalls gemessen und dabei widerlegt: Das separat
+   gerundete Gehalts-Delta trägt nichts bei — es ist exakt.
 10. **`card_monthly_states.closed_at` ignorieren** — wird nicht genutzt.
 11. **Der Split-Anteil wird genau EINMAL angewandt** — in
     `calculate_card_amount_for_month`, und dort **nur auf Plan/Anpassung**.
@@ -1412,104 +1380,17 @@ Sitzung, in welcher Größenordnung sie sich bewegt. Eine Abweichung ist **kein*
 ein echter Sollwert** — dort kuratiert niemand, die Daten stehen still. Weicht er ab,
 ist die Übungs-Datenbank nicht im erwarteten Zustand: anhalten, nicht migrieren.
 
-**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet;
-§0 trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf. Stand dort
-**31.08.2026, nach v2-31**: **11 offene Pakete · 37 Themen ·
-4 Hausaufgaben · 41 offen gesamt · 68 erledigt**. Die Zahlen sind zeilengenau ausgezählt, nicht
-geschätzt — das ist dort schon zweimal schiefgegangen.
+**Offene Themen:** `V2/v2_roadmap_konsolidiert.md` — nach **Sprint-Paketen** geordnet.
+**§0 dieser Datei trägt die Zahlen, §5 löst die alten Buchstaben-Kennungen auf.**
+Hier steht bewusst keine Zahl: Sie wäre eine Abschrift, und Abschriften veralten.
 
-> **Die Zahl steigt zum zweiten Mal, und beide Male ist das das richtige Ergebnis.**
-> **v2-28** hat drei Punkte erledigt (`DA-3`, `ZO-4`, `NAV-1`) und **zwei offene
-> eingetragen** (`ZO-5`, `ZO-6`). Beide waren vorher schon da, nur unsichtbar: `ZO-5`
-> beschreibt **147 von 553** offenen 2025-Zahlungen, die das Buchungsdatum im Text
-> tragen und deshalb **keinen einzigen** Kartenvorschlag bekommen — zum Vergleich: 183
-> der 553 haben einen. `ZO-6` ist eine Lücke, die dieser Sprint selbst aufgerissen hat
-> (die Händler-Regel zeigt auf einen **Kartennamen**; nach einer Umbenennung greift sie
-> still nicht mehr).
+> **Hier stand bis zum 04.09.2026 der Roadmap-Stand ein zweites Mal** — welche Pakete
+> erledigt sind, was in Paket 5 offen blieb, welche Rückstände geschlossen wurden:
+> **101 Zeilen**, die nach jedem Sprint an zwei Stellen nachzuziehen waren und es
+> zuletzt nicht mehr wurden.
 >
-> **`NAV-1` stand in keinem Paket** — dasselbe Muster wie Performance vor v2-24, nur
-> mit umgekehrtem Ausgang: Der Punkt war schon erledigt, als er eingetragen wurde, und
-> hat deshalb bewusst **kein** eigenes Paket bekommen. Das Präfix `NAV` ist im
-> Kennungs-Register belegt, falls jemand ein Navigations-Thema aufmacht.
->
-> **Davor v2-24:** drei Punkte erledigt (`PF-1`, `PF-2`, `PF-4`), zwei offene
-> eingetragen, plus ein neues **Paket 17 „Die App reagiert sofort"**. Performance kam
-> in der Roadmap vorher **nirgends** vor — null Treffer für „Performance", „Ladezeit",
-> „langsam", „Latenz", „Reaktion" —, während die App in Produktion in
-> Zeitüberschreitungen lief. **Ein Thema, das nicht in der Liste steht, konkurriert
-> unsichtbar mit allem anderen und verliert gegen das, was gerade lauter ist.** Neue
-> offene Punkte sind in solchen Fällen **keine Verschlechterung**, sondern das
-> Sichtbarwerden von Arbeit, die schon vorher da war.
-
-> **`B2-R` ist erledigt (v2-22).** Die Treiber-Summe lag in Juli und August je einen
-> Cent neben `Ist − Plan`; `get_year_deviation_drivers` rundete **je Zeile**, die
-> Sparrate-Funktionen erst **am Ende über alles**. Seit v2-22 wird das Ziel aus den
-> Rechenfunktionen **geholt** (LL-25) und der Rest auf die betragsgrößte Zeile gelegt.
-> **Die Invariante gilt wieder in allen zwölf Monaten exakt.**
->
-> **Der Satz, der den Sprint überlebt, weil er eine Falle beschreibt:**
-> Die Karten, die den Abstand verursachten, waren **gar nicht sichtbar**. Ein Delta
-> von 0,0022 € rundet auf 0,00 und fällt aus der Anzeige — es verschiebt die Summe
-> trotzdem. Wer die B2-Invariante prüft und sie um einen Cent verfehlt, sucht den
-> Fehler in den **angezeigten** Zeilen und findet ihn nie.
-> Ebenfalls gemessen und dabei widerlegt: Das separat gerundete **Gehalts-Delta trägt
-> nichts bei** — es ist exakt.
-
-**Paket 1 ist vollständig abgeschlossen.** Alle fünf Befunde vom 04.08.2026 sind
-erledigt — `BF-3` und `BF-1` (v2-10), `BF-5` (v2-11), `BF-2` (v2-12), `BF-4` (v2-13).
-Damit blockiert **keine Entscheidung mehr Arbeit**: E1, E2 und E3 sind gefallen.
-
-**Die Pakete 2, 3 und 4 sind ebenfalls vollständig abgeschlossen.** `RM-1`/`RM-2`
-(v2-10/v2-16), `LQ-1`/`LQ-2` (v2-14/v2-15) und `KAT-1`/`KAT-2`/`KAT-3` (v2-17).
-`LQ-3` und `RM-3` gehörten nie dazu — beide liegen in Paket 9, `KAT-4` in Paket 10.
-
-**Paket 5 ist seit v2-21 zum großen Teil gebaut** (`M6` steht auf 🟡, nicht ✅). Die
-automatische Zuordnung schlägt für **115 statt 9** offene Zahlungen aus 2026 eine
-Karte vor; `ZO-3` (v2-27) und `ZO-4` (v2-28) sind erledigt. **Offen bleiben `ZO-1`,
-`ZO-5`, `ZO-6` und der Teil `F2`** — das Vorschlags-Badge in der Rohmasse liegt weiter
-hinter `SHOW_SUGGESTION_BADGES = false`.
-
-> **`ZO-5` ist der stärkste bekannte Hebel für die Kuratierung 2025.** **147 der 553**
-> offenen Zahlungen tragen das Buchungsdatum im Text
-> (`… | VISA Debitkartenumsatz vom 03.01.2026`) — der Name ist bei jeder Buchung ein
-> anderer, die Namensähnlichkeit findet deshalb nie einen Treffer. **Keine einzige
-> dieser 147 bekommt einen Vorschlag ≥ 0,60**, während es über alle 553 hinweg 183
-> sind.
->
-> **Die Lösungsrichtung steht schon in den Daten:** Vor v2-28 waren es 191 von 618 —
-> die Händler-Regel `ZO-4` hat **44 davon mit erledigt**, weil sie über den
-> **Händlernamen** erkennt statt über Namensähnlichkeit. Nicht die
-> Ähnlichkeitsfunktion reparieren, sondern den **stabilen** Teil des Textes vom
-> veränderlichen trennen.
-
-> ### ⚠️ Die alte Ursachen-Diagnose war falsch — hier stand sie bis zum 15.08.2026
->
-> Der Satz lautete: *„Ursache ist die Split-Systematik — ‚Miete' plant 1.904 €,
-> überwiesen werden 1.089,26 €, und `calculate_match_confidence` gewichtet
-> `amount_match` mit 0,30; 43 % Abweichung reichen nie für die 95-%-Schwelle."*
->
-> **Gemessen stimmt das nicht.** Die 72 Zahlungen, die im toten Band 0,50–0,60 direkt
-> unter der Schwelle klemmten, hatten einen Betrags-Score von **1,00** — perfekt
-> getroffen. Sie scheiterten am **Namen**. Die wirklichen Ursachen waren drei andere:
-> `frequency_match` liefert immer `1.00` und macht die Schwelle ohne Namenstreffer
-> rechnerisch unerreichbar (§6 Stolperfalle 17); die Namensfunktion verglich ganze
-> Zeichenketten statt Wörter; und die Konfidenz wurde **nur beim Import** berechnet.
->
-> **Der Fehler wäre teuer geworden:** Eine Sitzung, die der alten Diagnose gefolgt
-> wäre, hätte an `amount_match` und der Split-Behandlung gearbeitet — und die 72
-> Zahlungen mit perfektem Betrag nicht bewegt. Die Beobachtung „von 76 gemeinsamen
-> Monatszahlungen sind zwei zugeordnet" war richtig; nur ihre Erklärung nicht.
-> Deshalb steht sie hier als **korrigierte** Fassung und nicht bloß gelöscht.
-
-**Die 20 unzugeordneten Gehalts-Fragmente** (2025 alle zwölf, 2026 Januar bis Juli)
-bleiben bestehen: Sie sind kein Zuordnungsproblem, sondern ein Datenproblem für 2025
-(`DA-1`, Paket 6) — dort ist keine Karte aktiv, es gibt also nichts vorzuschlagen.
-
-**Weiterhin offen, für eine eigene Gestaltungsrunde:** `M2` (Verben und Gesten des
-Karten-Lebenszyklus) und `M5` (Reihenfolge). **`M5` hat seit v2-17 einen Ort** —
-`card_categories.sort_order` ist änderbar, ohne dass eine Migration nötig wird.
-
-**Der Escape-Handler-Rückstand aus `sprints/sprint_v2-10_offene_fragen.md` §6 ist
-geschlossen.** Das Einkommens-Popup hat seit v2-16 einen (`income-split/index.tsx`);
-in v2-17 nachgeprüft, weil dieser Sprint dasselbe Popup an einer **zweiten** Stelle
-öffnet (Netto-Kachel im Einkommens-Ordner). Alle Overlays haben jetzt einen.
+> **Der Umfangs-Wächter konnte das nicht sehen.** Er misst die Erzählzone als
+> *Vorspann + §9 bis zur Überschrift „Die Prüfanker"* — und diese 101 Zeilen standen
+> **dahinter**. Sie zählten damit weder als Erzählung noch als Regel und konnten
+> ungestört wachsen. **Seit v2-32 misst Prüfung ⑤ auch sie.** Das ist dieselbe Lehre
+> wie LL-30, angewandt auf einen Wächter: Was nicht gemessen wird, wächst.
