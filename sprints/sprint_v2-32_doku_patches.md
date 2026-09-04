@@ -1,4 +1,4 @@
-# Doku-Patches — Sprint v2-32 (P2 + P3)
+# Doku-Patches — Sprint v2-32 (P2 · P3 · P4)
 
 > **Verfahren:** §7 Regel 14 / LL-16 — Anker + Patch-Satz je Stelle, danach angewendet.
 > **Datum:** 04. September 2026 · Branch `sprint/v2-32-aufraeumen`
@@ -328,3 +328,86 @@ während alle drei Grenzen grün blieben.
 **Das ist LL-30, angewandt auf einen Wächter statt auf eine Doku-Zeile:** Was nicht
 gemessen wird, wächst — und eine Messung, die ihre eigenen Ränder nicht kennt, sieht
 aus wie Abdeckung.
+
+---
+
+## P4 · Das Re-Design bekommt einen Platz — und `design-system/` wird gemessen
+
+### Warum das ein eigenes Paket braucht
+
+**„Re-Design" hatte in der Roadmap null Treffer.** Das ist exakt der Zustand, den
+Paket 17 für Performance beschreibt: *Ein Thema, das nicht in der Liste steht,
+konkurriert unsichtbar mit allem anderen und verliert gegen das, was gerade lauter
+ist.* Neu ist **Paket 19 · Re-Design der Oberfläche**, mit vier Punkten.
+
+### Die Messung, die den Zuschnitt bestimmt hat
+
+Der Design-Direktor beurteilt **Bilder, keine Beschreibungen** (CLAUDE.md §4). Also
+wurde gezählt, wie viele Bilder es gibt:
+
+| | |
+|---|---|
+| Sichtbare Komponenten laut Design-Doku | **7** (§5 Ring · §6 Header/Timeline · §7 Karten · §8 Untere Interaktionszone · §9 Welle · §10 Income/Partner-Split · §11 CSV-Import) |
+| Davon mit einer Seite unter `design-system/komponenten/` | **3** — Ring, Karten, Welle (dazu Kategorien und Verlauf als Teilansichten) |
+| **Ohne jede Seite** | **4** — Header/Timeline · Untere Interaktionszone (Rohmasse) · Income/Partner-Split · CSV-Import |
+
+**Fable würde neu gestalten, was es sehen kann, und den Rest raten.** Deshalb ist
+`RD-1` die erste Arbeit des Pakets und nicht die zweite.
+
+### Der zweite Fund: die Foundation-Seiten schreiben ab, statt zu benutzen
+
+`design-system/foundations/typografie.html` enthält **null** `var(--typo-*)` und nennt
+**keinen einzigen** Token-Namen — sie setzt px-Werte hart. `src/styles/tokens.css`
+definiert **21 `--typo-*`-Tokens**.
+
+**Heute stimmen die Werte noch.** Alle sieben Größen (34 · 22 · 17 · 13 · 13 · 10 ·
+9 px) sind auf der Seite vertreten; es gibt **keinen Drift**. Aber nur, weil bisher
+niemand ein Token geändert hat — und genau das wird das Re-Design tun.
+
+> **Das ist LL-30 an einer neuen Stelle:** derselbe Wert an zwei Orten, einer davon
+> ohne Prüfung. Die Besonderheit hier ist, dass der Ort, der veraltet, das
+> **Anschauungsmaterial** ist. Ein überholtes Bild ist schlimmer als gar keines: Es
+> sieht aus wie der Stand.
+
+### Der Vorspann der Roadmap — dasselbe Muster, ohne Wächter
+
+Der Kopf trug eine Kette von **neun** nacherzählten Sprintständen (v2-31 zurück bis
+v2-18), die mit jedem Sprint länger wurde. **27 Zeilen raus**, ersetzt durch den
+aktuellen Stand plus den Verweis auf die Historie — dieselbe Konsequenz, die CLAUDE.md
+in v2-29 für sich gezogen hat.
+
+**Bemerkenswert:** Paket 19 hat genau **27 Zeilen** hinzugefügt. Die Datei ist gleich
+lang geblieben und trägt jetzt mehr Inhalt.
+
+### §0 neu ausgezählt — und ein Zählfehler, der hierher gehört
+
+| | nach v2-31 | Δ | nach v2-32 |
+|---|---|---|---|
+| Paket-Tabellen | 65 | +6 | **71** |
+| ✅ | 28 | +1 | **29** |
+| ⬜ (davon 🔎) | 33 (3) | +5 (+1) | **38 (4)** |
+| 🟡 | 4 | 0 | **4** |
+| Hausaufgaben | 4 | +1 | **5** |
+| §4 Erledigt | 68 | +1 | **69** |
+| Pakete (davon fertig) | 18 (7) | +1 | **19 (7)** |
+| **Offen gesamt** | 41 | +6 | **47** |
+
+**Keiner der sechs neuen Punkte ist neue Arbeit.** Fünf standen schon da und nirgends
+geschrieben (`PF-9`, Hausaufgabe `V1`, `RD-1` bis `RD-4`); der sechste (`PF-8`) war
+bereits erledigt, als er eingetragen wurde.
+
+> ### ⚠️ Der Zählfehler, und warum er im Papier bleibt
+>
+> Gezählt wurde mit einem Skript, weil die Datei selbst festhält, dass das Schätzen
+> hier **zweimal** schiefgegangen ist. Das Skript nahm die erste Tabellenzelle, die mit
+> einem Statuszeichen **beginnt**. Bei `M6` steht in der *Datenbank*-Spalte **„✅ ja"** —
+> der Punkt wurde damit als **erledigt** gezählt statt als **teilweise**.
+>
+> **Die Summe stimmte trotzdem:** 29 ✅ + 3 🟡 ergibt dasselbe wie 28 + 4. Eine
+> Plausibilitätsprüfung über die Gesamtzahl hätte den Fehler **nicht** gefunden.
+> Sichtbar wurde er nur durch den Abgleich **gegen die vorherige Auszählung**, Zeile
+> für Zeile — 65 + 6 Zeilen, 28 + 1 ✅, 33 + 5 ⬜, und dort passte 🟡 nicht.
+>
+> **Die Regel daraus:** Eine Statuszelle enthält **ausschließlich** Statuszeichen. Und
+> wer neu auszählt, hält das Ergebnis gegen die letzte Zählung **plus die eigenen
+> Änderungen** — nicht gegen die eigene Erwartung.
