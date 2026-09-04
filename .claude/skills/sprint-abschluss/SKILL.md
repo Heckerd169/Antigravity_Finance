@@ -224,8 +224,39 @@ grün ist.
 
 ### 9 · Sauberer Abschluss
 
-`git status` muss leer sein. Keine `??`, keine `M`. Temporäre Dateien und
-Arbeitskopien entfernen.
+`git status` muss leer sein. Keine `??`, keine `M`. Temporäre Dateien entfernen.
+
+**Und die Arbeitskopie dieses Sprints entfernen — mit diesem Befehl, nicht von Hand:**
+
+```bash
+.claude/skripte/tote-arbeitskopien.sh entfernen
+```
+
+Er entfernt **ausschließlich**, was belegbar sicher ist: nichts Ungesichertes, kein
+Stash, Branch vollständig in `origin/main`, und **nie** die Arbeitskopie, in der er
+selbst läuft. Fehlt `.env.local` oder `.env.e2e.local` im Haupt-Checkout, **bricht er
+ab** statt zu löschen.
+
+> ### ⚠️ Warum diese Zeile jetzt einen Befehl trägt — und vorher nichts bewirkt hat
+>
+> Hier stand bis zum 04.09.2026 nur *„Temporäre Dateien und **Arbeitskopien**
+> entfernen"*. Über **neun Sprints** hinweg ist das übersehen worden; gefunden wurde
+> es erst, als unter `.claude/worktrees/` **4.309 MB** in neun Arbeitskopien lagen.
+>
+> **Das ist LL-40 an dieser Fähigkeit selbst:** Eine Checklisten-Zeile ist eine
+> Zusicherung, keine Prüfung — und die gemessene Trefferquote dieser einen war
+> **null**. Ein Befehl, den man ausführt, ist überprüfbar; ein Halbsatz am Ende einer
+> langen Liste ist es nicht.
+>
+> **Zusätzlich meldet seit v2-32 ein `SessionStart`-Hook**, wenn tote Arbeitskopien
+> herumliegen (`.claude/settings.json`). Er **löscht nie** — eine laufende Sitzung
+> kann in einer Arbeitskopie stehen, deren Branch bereits gemergt ist. Der Hook ist
+> das Netz; dieser Schritt bleibt die Arbeit.
+>
+> **Die Prüfung, die vor dem Löschen kommt und fast vergessen worden wäre:**
+> `git status` zeigt **gitignorierte** Dateien nicht. `.env.local` und
+> `.env.e2e.local` wären also lautlos mitgelöscht worden — genau der Vorfall aus
+> CLAUDE.md §4 zwischen v2-10 und v2-15.
 
 ---
 

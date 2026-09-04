@@ -130,7 +130,8 @@ Antigravity_Finance/
 │   ├── settings.json                          ← geteilte Freigaben (versioniert)
 │   ├── settings.local.json                    ← lokal, gitignored
 │   ├── agents/                                ← Subagenten (§4)
-│   └── skills/                                ← Fähigkeiten (§4)
+│   ├── skills/                                ← Fähigkeiten (§4)
+│   └── skripte/                               ← `tote-arbeitskopien.sh` (§4)
 ├── sprints/                                   ← sprint-gebundene Artefakte
 │   ├── projekt_historie.md                    ← der vollständige Sprint-Log
 │   ├── sprint_v2-NN_briefing.md
@@ -319,6 +320,15 @@ Die beiden Import-Agenten sind das Gegenstück zum CSV-Import-Verfahren, für da
 bewusst **keine** Fähigkeit angelegt wurde (erst zwei Läufe): sie decken es als
 Werkzeug ab, statt es als Ablauf zu beschreiben. Reihenfolge bei einem neuen
 Konto-Abzug: `import-preflight` → Import durch den User → `import-db-verifier`.
+
+> **Und eine Routine, die weder Fähigkeit noch Subagent ist.**
+> `.claude/skripte/tote-arbeitskopien.sh` entfernt am Sprint-Ende die Arbeitskopien
+> unter `.claude/worktrees/` — aber **nur**, was belegbar sicher ist (nichts
+> Ungesichertes, Branch in `origin/main`, nie die eigene), und es **bricht ab**, wenn
+> `.env.local` im Haupt-Checkout fehlt. Ein `SessionStart`-Hook meldet Liegengebliebenes
+> und **löscht nie**. Der Schritt stand seit v2-08 als Halbsatz in `sprint-abschluss`
+> und wurde **neun Sprints lang** übersehen — bis 4,3 GB dalagen. **LL-40: eine
+> Checklisten-Zeile ist eine Zusicherung, ein Automatismus eine Prüfung.**
 
 **Wann KEIN Subagent:** wenn die Aufgabe klein ist (der Kontext-Aufbau kostet mehr,
 als er spart) · wenn das Ergebnis ein Urteil ist, das du selbst verantworten musst ·
