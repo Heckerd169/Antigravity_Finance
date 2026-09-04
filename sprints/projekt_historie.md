@@ -3524,3 +3524,65 @@ davon hängt der ganze Wert dieser Anzeige ab.
 - Unverändert offen: `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `DA-2`, `KJ-9`, `PF-3`, `PF-5`,
   `PF-7`, `SHOW_SUGGESTION_BADGES` bleibt `false`. Der vorgeschlagene **Anker 4** aus
   v2-30 wartet weiter auf eine Entscheidung.
+
+
+---
+
+### Nachtrag zu v2-31 · 03. September 2026 — der Visa-Jahresexport ließ sich nicht importieren
+
+> **Kein Sprint, ein Fix.** Branch `fix/visa-import-grosse-datei`, gemergt als PR #53.
+> **Nachgetragen am 04.09.2026 in Sprint v2-32**, weil er in keiner Historie stand —
+> warum er durch alle Netze fiel, steht im Kasten am Ende.
+
+**Was der Nutzer sah:** „Datei fehlerhaft" beim Hochladen der Visa-Umsätze.
+
+**Was wirklich los war: an der Datei ist nichts fehlerhaft.** Gemessen mit dem echten
+Parser (`routeAndParseCsv`, transpiliert ausgeführt, kein Nachbau): Format `DKB_VISA`
+erkannt, **2.535 Zeilen in 4 ms**, alle mit sieben Feldern, Nutzlast 271 KB und damit
+weit unter dem 1-MB-Limit der Server Action. „Datei fehlerhaft" ist schlicht die
+einzige Meldung, die das Portal für einen RPC-Fehler kennt — **sie beschreibt die
+Ursache nicht, sie ist ein Sammelbegriff.** Wer ihr glaubt, sucht am falschen Ort.
+
+**Die Ursache, gemessen:** `process_csv_import` läuft als **ein** Statement, und die
+Rolle `authenticated` trägt `statement_timeout = 8s` (gegen `pg_roles` gemessen). Die
+Funktion rechnet für jede neue, nicht-interne Zeile gegen jede im Monat aktive Karte
+eine Konfidenz. Bei 2.535 Zeilen reicht das über die acht Sekunden hinaus — der Abbruch
+kam von der Uhr, nicht von den Daten.
+
+**Was gebaut wurde:** Der Import läuft blockweise statt in einem Zug —
+`src/lib/csv-batches.ts`, dazu der Wächter `tests/e2e/csv-blockbildung.spec.ts`.
+
+**Was offen blieb** — beides seit dem 04.09.2026 in der Roadmap, Paket 17:
+
+- **`PF-9`** — der Planer zieht `calculate_match_confidence` vor
+  `is_card_active_in_month` und rechnet deshalb auch in Monaten, in denen **gar keine
+  Karte aktiv** ist. Eine Optimierungs-Sperre kehrt das um: Juni 2023 **128 ms →
+  9,8 ms**, Januar 2025 (28 Karten) 128 → 96 ms. Für die Altjahre wäre das Faktor 13,
+  für einen normalen Monatsimport nur ~25 % — **und die Blockbildung bliebe trotzdem
+  nötig**, weil auch 20 s über 8 s liegen.
+- **Die 2.031 Zahlungen aus 2020–2024** — ob sie überhaupt importiert werden sollen.
+  Sie wirken nicht auf die Sparrate (ohne aktive Karte gibt es nichts zu verrechnen),
+  lägen aber als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung.
+
+**Nebenbefund, der eine eigene Regel betrifft.** CLAUDE.md §6 Stolperfalle 18 nannte
+**77** aktive Karten (Stand v2-24). Am 03.09.2026 gemessen: **178** — mehr als
+verdoppelt. Die Zahl ist am 04.09.2026 mit Datum nachgezogen worden. **LL-28 verlangt
+genau das, und war hier auf sich selbst anzuwenden:** Der Eintrag, der davor warnt,
+dass eine Mengen-Annahme mit der Menge verfällt, trug selbst eine verfallene Zahl.
+
+> ### ⚠️ Warum dieser Eintrag gefehlt hat — und warum das keine Nachlässigkeit war
+>
+> Die Behebung lief als **Fix ohne Sprint**. Damit fiel sie durch **beide** Netze,
+> die dieses Projekt für genau diesen Zweck gespannt hat:
+>
+> - **`sprint-abschluss` greift nur bei Sprints.** Ein Fix hat keinen Abschluss, also
+>   auch keinen Schritt „Historie fortschreiben".
+> - **`doku-vollstaendigkeit.spec.ts` prüft, ob jeder Sprint mit `sprint_v2-NN_review.md`
+>   in der Historie steht.** Ein Fix hat keine Review-Datei — der Wächter sieht ihn
+>   also gar nicht und bleibt grün.
+>
+> **Der Wächter war nicht kaputt; er war für diesen Fall nie zuständig.** Das ist die
+> unangenehmere Sorte Lücke: Sie sieht aus wie Abdeckung. Gefunden hat sie keine
+> Prüfung, sondern die Bestandsaufnahme von v2-32 — und zwar nur, weil dort *alle*
+> Dokumente gegen den tatsächlichen Inhalt von `main` gehalten wurden statt
+> gegeneinander.

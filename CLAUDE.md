@@ -8,11 +8,10 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 27. August 2026 · **nach:** Sprint **v2-30**
-> („Der Import passt wieder in die Zeit" — `PF-6`).
-> **Alles bis einschließlich v2-30 ist in `main`** — PR #48 gemergt, Browser-Smoke
-> bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), nicht gegen den
-> PR-Status.
+> **Letzte Aktualisierung:** 4. September 2026 · **nach:** Sprint **v2-32**
+> („Ein sauberer Tisch für das Re-Design").
+> **Was in `main` liegt, steht an genau EINER Stelle: §9.** Bis zum 04.09.2026 stand
+> es hier ein zweites Mal — und war hier falsch, während §9 recht hatte.
 >
 > ### ⚠️ Am 25.08.2026 hat diese Datei ihre eigene Regel gebrochen — und wurde gekürzt
 >
@@ -587,7 +586,9 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     *„N+1-Pragmatik: bei <20 Karten in V1 akzeptable Latenz (Briefing §K1.4)"* — und
     das war **richtig, als es geschrieben wurde**. Bei **77** Karten waren daraus
     **179 Netzrunden je Dashboard-Aufbau** geworden, und jede neue Karte kostete vier
-    weitere.
+    weitere. **Am 03.09.2026 nachgemessen: 178 aktive Karten** — seit v2-24 mehr als
+    verdoppelt. Die Zahl steht hier mit Datum, weil genau das die Regel dieses
+    Eintrags ist.
     **Kein Wächter dieses Projekts fängt das.** Anker, Prüfsummen und beide
     Invarianten sind grün, weil **jede Zahl richtig ist** — sie kommt nur zu spät.
     Gefunden hat es der Nutzer beim Benutzen.
@@ -1173,13 +1174,16 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-31** („Verlauf je Karte und je Ordner" — `M7` `KAT-4`,
-31.08.2026) · **davor:** v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4`
-`NAV-1`), v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2` `KJ-3`),
-v2-24 (`PF-1` `PF-2` `PF-4`).
-**Alles bis einschließlich v2-30 ist in `main`** — PR #48 gemergt, Browser-Smoke
-bestanden, gegen den Baum geprüft (`git ls-tree origin/main`), **nicht** gegen den
-PR-Status. **v2-31 liegt als Pull Request vor und ist NICHT gemergt.**
+**Letzter Sprint:** **v2-32** („Ein sauberer Tisch für das Re-Design", 04.09.2026)
+· **davor:** v2-31 (`M7` `KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3`
+`ZO-4` `NAV-1`), v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2`
+`KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`).
+
+**Alles bis einschließlich v2-31 ist in `main`**, dazu die beiden Fixes vom
+03.09.2026 (durchgehende Verlaufslinie · blockweiser CSV-Import). Geprüft **gegen den
+Baum** (`git ls-tree origin/main`), **nicht** gegen den PR-Status — der beantwortet
+eine andere Frage. **v2-32 ist dieser Sprint** und liegt bis zur Freigabe als Pull
+Request vor.
 
 > **v2-31 in drei Sätzen.** Karten und Ordner haben einen **Verlauf** bekommen: 24
 > Monate Ist gegen Plan in einem zentrierten Overlay, aus dem Kontextmenü. `M7` und
@@ -1203,12 +1207,12 @@ PR-Status. **v2-31 liegt als Pull Request vor und ist NICHT gemergt.**
 
 ### Wo das Projekt gerade steht
 
-| | Stand 31.08.2026 |
+| | Stand 04.09.2026 |
 |---|---|
 | **2026** | vollständig zugeordnet — **0** offene Zahlungen |
 | **2025** | **ebenfalls vollständig zugeordnet — 0 offene Zahlungen** (642 von Hand, 106 automatisch) |
 | **Goldlinie 2025** | **11.442,30 €** — von 21.708,77 € gefallen, weil zugeordnete Zahlungen die Sparrate ihres Monats senken |
-| **Nächste Arbeit** | **offen.** Die Kuratierung ist durch; der nächste Sprint kommt aus der Roadmap. |
+| **Nächste Arbeit** | **Das Re-Design der Oberfläche** (Roadmap Paket 19), geplant mit Fable 5.1 in einer eigenen Sitzung. Davor nichts Zwingendes — die Kuratierung ist durch. |
 | **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
 
 > **Die Kuratierung 2025 ist abgeschlossen** — gemessen am 31.08.2026: kein einziges
@@ -1227,6 +1231,8 @@ PR-Status. **v2-31 liegt als Pull Request vor und ist NICHT gemergt.**
 | **`ZO-8`** | **Der alphabetische Münzwurf.** Die wortgleiche Stufe von `history_match` prüft **nicht** auf Eindeutigkeit; liegt derselbe Text auf mehreren Karten, entscheidet `ORDER BY score DESC, card_name ASC`. Betrifft 93 der 568 Handzuordnungen. |
 | **`ZO-1`** | `frequency_match` liefert ausnahmslos `1.00` (§6 Stolperfalle 17). Jede Änderung verschiebt **alle** Scores gleichzeitig. |
 | **`ZO-6`** | Kein Wächter dafür, ob eine Händler-Regel auf eine Karte zeigt, **die es gibt** — sie ist nach Kartenname geschlüsselt und greift nach einer Umbenennung **still** nicht mehr. |
+| **`PF-9`** | **Der gemessene Datenbank-Hebel vom 03.09.2026 ist ungenutzt.** Der Planer zieht `calculate_match_confidence` vor `is_card_active_in_month` und rechnet damit auch in Monaten ohne jede aktive Karte. Eine Optimierungs-Sperre kehrt das um: Juni 2023 **128 ms → 9,8 ms**. Für einen normalen Monatsimport bringt es nur ~25 %, und die Blockbildung bliebe trotzdem nötig. Eingriff in `process_csv_import` ⇒ §7 Regel 20. Beleg: `V2/befunde_2026-09-03_visa-import-timeout.md` §5. |
+| **Die 2.031 Zahlungen aus 2020–2024** | Der Visa-Jahresexport enthält sie; die App modelliert 2025 und 2026. Dort ist **keine Karte aktiv** — sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den Export bei der DKB auf 2025+2026 eingrenzen (~504 Zeilen). Jederzeit nachholbar, weil der Import idempotent ist. |
 | **`KAT-5` / `A2`** | entschieden und ungebaut. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt. |
 | **Folgepflicht des Nutzers** | Für Friseurbesuche 2025 gibt es **keine Belege** (Salon erstmals 01/2026). Die passenden Bargeld-Abhebungen gehören bei der Kuratierung an die Friseur-Karte — **sonst zählt dasselbe Geld zweimal.** |
 | **Juli 2025** | hat noch **79 Cent** Luft im Tank-Budget (239,21 bei 240,00). Eine nachträglich zugeordnete Tankfüllung kippt den Monat — und dann bewegt sich die Sparrate. |

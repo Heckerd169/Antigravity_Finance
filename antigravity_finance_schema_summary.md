@@ -4,6 +4,18 @@
 
 **Status:** Datenbankseitig vollständig implementiert (Sprint 0–9 + Pre-Sprint-10-Patches + Sprint v2-04 Mehrkonten Stufe 1 + Sprint v2-05 Karten-Lebenszyklus + Sprint v2-06 B2-Treiber + Sprint v2-11 Vorzeichen-Korrektur + Sprint v2-17 Kategorien + Sprint v2-21 Zuordnung + Sprint v2-22 Treiber-Rundung + Sprint v2-24 gebündelte Lese-Funktionen + Sprint v2-25 Löschriegel und „nicht angefallen" + Sprint v2-28 Händler-Regel + Sprint v2-29 Händler-Gedächtnis + Sprint v2-31 Verlaufs-Reihen)
 
+> **Changelog v3.16.0 (31.08.2026, Sprint v2-31):** Zwei neue, rein **lesende**
+> Funktionen für den Verlauf — `get_card_series` (24 Monate Ist gegen Plan je Karte)
+> und `get_category_series` (dasselbe je Ordner). Beide **rufen** die bestehenden
+> Rechenfunktionen auf, statt sie nachzubauen (§6 Stolperfalle 16); keine
+> Rechenfunktion wurde geändert, keine Spalte kam hinzu. Belegt über unveränderte
+> Prüfsummen und 24/24 byte-identische Sparraten.
+>
+> *(Dieser Eintrag ist am 04.09.2026 in Sprint v2-32 nachgetragen worden. Die
+> Versionsnummer stand seit dem 31.08. auf 3.16.0 und die Status-Zeile nannte v2-31 —
+> nur der Changelog-Eintrag dazu fehlte. Von außen war die Lücke nicht zu sehen, weil
+> die Datei durch die richtige Version vollständig **aussah**.)*
+
 > **Changelog v3.15.0 (27.08.2026, Sprint v2-30):** Eine neue Spalte, ein neuer Index,
 > eine geänderte Funktion. **§1 — `fragments`: +1 Spalte** `merchant_key text
 > GENERATED ALWAYS AS (public.af_merchant_key(description)) STORED`, dazu der
