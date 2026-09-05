@@ -3524,3 +3524,166 @@ davon hängt der ganze Wert dieser Anzeige ab.
 - Unverändert offen: `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `DA-2`, `KJ-9`, `PF-3`, `PF-5`,
   `PF-7`, `SHOW_SUGGESTION_BADGES` bleibt `false`. Der vorgeschlagene **Anker 4** aus
   v2-30 wartet weiter auf eine Entscheidung.
+
+
+---
+
+### Nachtrag zu v2-31 · 03. September 2026 — der Visa-Jahresexport ließ sich nicht importieren
+
+> **Kein Sprint, ein Fix.** Branch `fix/visa-import-grosse-datei`, gemergt als PR #53.
+> **Nachgetragen am 04.09.2026 in Sprint v2-32**, weil er in keiner Historie stand —
+> warum er durch alle Netze fiel, steht im Kasten am Ende.
+
+**Was der Nutzer sah:** „Datei fehlerhaft" beim Hochladen der Visa-Umsätze.
+
+**Was wirklich los war: an der Datei ist nichts fehlerhaft.** Gemessen mit dem echten
+Parser (`routeAndParseCsv`, transpiliert ausgeführt, kein Nachbau): Format `DKB_VISA`
+erkannt, **2.535 Zeilen in 4 ms**, alle mit sieben Feldern, Nutzlast 271 KB und damit
+weit unter dem 1-MB-Limit der Server Action. „Datei fehlerhaft" ist schlicht die
+einzige Meldung, die das Portal für einen RPC-Fehler kennt — **sie beschreibt die
+Ursache nicht, sie ist ein Sammelbegriff.** Wer ihr glaubt, sucht am falschen Ort.
+
+**Die Ursache, gemessen:** `process_csv_import` läuft als **ein** Statement, und die
+Rolle `authenticated` trägt `statement_timeout = 8s` (gegen `pg_roles` gemessen). Die
+Funktion rechnet für jede neue, nicht-interne Zeile gegen jede im Monat aktive Karte
+eine Konfidenz. Bei 2.535 Zeilen reicht das über die acht Sekunden hinaus — der Abbruch
+kam von der Uhr, nicht von den Daten.
+
+**Was gebaut wurde:** Der Import läuft blockweise statt in einem Zug —
+`src/lib/csv-batches.ts`, dazu der Wächter `tests/e2e/csv-blockbildung.spec.ts`.
+
+**Was offen blieb** — beides seit dem 04.09.2026 in der Roadmap, Paket 17:
+
+- **`PF-9`** — der Planer zieht `calculate_match_confidence` vor
+  `is_card_active_in_month` und rechnet deshalb auch in Monaten, in denen **gar keine
+  Karte aktiv** ist. Eine Optimierungs-Sperre kehrt das um: Juni 2023 **128 ms →
+  9,8 ms**, Januar 2025 (28 Karten) 128 → 96 ms. Für die Altjahre wäre das Faktor 13,
+  für einen normalen Monatsimport nur ~25 % — **und die Blockbildung bliebe trotzdem
+  nötig**, weil auch 20 s über 8 s liegen.
+- **Die 2.031 Zahlungen aus 2020–2024** — ob sie überhaupt importiert werden sollen.
+  Sie wirken nicht auf die Sparrate (ohne aktive Karte gibt es nichts zu verrechnen),
+  lägen aber als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung.
+
+**Nebenbefund, der eine eigene Regel betrifft.** CLAUDE.md §6 Stolperfalle 18 nannte
+**77** aktive Karten (Stand v2-24). Am 03.09.2026 gemessen: **178** — mehr als
+verdoppelt. Die Zahl ist am 04.09.2026 mit Datum nachgezogen worden. **LL-28 verlangt
+genau das, und war hier auf sich selbst anzuwenden:** Der Eintrag, der davor warnt,
+dass eine Mengen-Annahme mit der Menge verfällt, trug selbst eine verfallene Zahl.
+
+> ### ⚠️ Warum dieser Eintrag gefehlt hat — und warum das keine Nachlässigkeit war
+>
+> Die Behebung lief als **Fix ohne Sprint**. Damit fiel sie durch **beide** Netze,
+> die dieses Projekt für genau diesen Zweck gespannt hat:
+>
+> - **`sprint-abschluss` greift nur bei Sprints.** Ein Fix hat keinen Abschluss, also
+>   auch keinen Schritt „Historie fortschreiben".
+> - **`doku-vollstaendigkeit.spec.ts` prüft, ob jeder Sprint mit `sprint_v2-NN_review.md`
+>   in der Historie steht.** Ein Fix hat keine Review-Datei — der Wächter sieht ihn
+>   also gar nicht und bleibt grün.
+>
+> **Der Wächter war nicht kaputt; er war für diesen Fall nie zuständig.** Das ist die
+> unangenehmere Sorte Lücke: Sie sieht aus wie Abdeckung. Gefunden hat sie keine
+> Prüfung, sondern die Bestandsaufnahme von v2-32 — und zwar nur, weil dort *alle*
+> Dokumente gegen den tatsächlichen Inhalt von `main` gehalten wurden statt
+> gegeneinander.
+
+---
+
+### Sprint v2-32 · DONE 04. September 2026
+
+**„Ein sauberer Tisch für das Re-Design"** — Branch `sprint/v2-32-aufraeumen`,
+fünf Phasen, fünf Commits. **Kein Byte in `src/` oder `supabase/`.**
+
+**Anlass:** Der Nutzer will die Oberfläche mit **Fable 5.1** neu gestalten, in einer
+eigenen Sitzung. Das schärft eine Anforderung, die sonst leicht zu übersehen ist:
+**Eine fremde Sitzung hat nichts als das Repo.** Das Projekt-Gedächtnis liegt außerhalb
+von git (CLAUDE.md §3). Was das Re-Design braucht, muss also im Repo stehen **und
+stimmen** — beides war nicht der Fall.
+
+#### Was die Bestandsaufnahme zutage gefördert hat
+
+| | |
+|---|---|
+| Der lokale Arbeitsstand hing hinter `origin/main` | **21 Commits** — zwei Sprints und zwei Fixes |
+| Tote Arbeitskopien unter `.claude/worktrees/` | **9 · 4.309 MB** |
+| Branches aus gemergten PRs | **49 lokal · 49 remote** |
+| CLAUDE.md gegen ihre eigene Wächter-Grenze | **1.516 / 1.600** = 95 % |
+
+#### Die drei Funde, die den Sprint tragen
+
+**① CLAUDE.md widersprach sich über ihren eigenen Stand.** Der Kopf sagte „nach
+**v2-30**", §9 sagte „Letzter Sprint **v2-31**", und Zeile 1182 sagte wörtlich
+*„v2-31 liegt als Pull Request vor und ist **NICHT** gemergt"* — während #51, #52 und
+#53 längst gemergt waren.
+
+**Das ist LL-30 in seiner allgemeinen Form**, und die Datei warnt in einem eigenen
+Kasten davor. Sie ist ihrer eigenen Warnung an einer **anderen** Zeile zum Opfer
+gefallen. Deshalb wurde nicht korrigiert, sondern **entdoppelt**: Der Kopf verweist
+jetzt auf §9, und die PR-Nummern sind ganz weg — eine PR-Nummer altert schneller als
+ein Sprintname und ist mit einem Befehl nachschlagbar.
+
+**② Ein Fix ohne Sprint fällt durch BEIDE Netze.** Die Behebung des Visa-Imports vom
+03.09. (PR #53) stand in **keiner** Historie und in **keiner** Roadmap.
+`sprint-abschluss` greift nur bei Sprints; `doku-vollstaendigkeit.spec.ts` prüft nur
+Sprints **mit Review-Datei**. **Der Wächter war nicht kaputt — er war für diesen Fall
+nie zuständig.** Das ist die unangenehmere Sorte Lücke, weil sie wie Abdeckung
+aussieht. Gefunden hat sie keine Prüfung, sondern der Abgleich **aller** Dokumente
+gegen den tatsächlichen Inhalt von `main`.
+
+**③ Der Umfangs-Wächter hatte einen blinden Fleck — und darin lagen 101 Zeilen.**
+Er misst die Erzählzone als *Vorspann + §9 bis zur Überschrift „Die Prüfanker"*. Der
+nacherzählte Roadmap-Stand stand **dahinter** und zählte damit weder als Erzählung noch
+als Regel. **Belegt:** 25 zusätzliche Zeilen dieser Art lösten **nur** die neue Prüfung
+⑤ aus; ①–④ blieben grün, die Datei lag bei 1.422 von 1.600 — bequem im grünen Bereich.
+Genau so sind die 101 entstanden.
+
+#### Wo sich eine Annahme als falsch erwiesen hat
+
+**Die Frage, die dem Nutzer zur Kürzung von CLAUDE.md vorgelegt wurde, war schlecht
+gestellt** — und er hatte ihr bereits zugestimmt. Sie lautete *„1.509 von 1.600, jetzt
+kürzen?"* und nannte nur **eine** der drei Grenzen. Gemessen waren Erzählzone (84 %)
+und Regelanteil (50 %) **grün**, und für genau diesen Fall sagt `claude-md-pflege`:
+*Dann ist die Datei aus Regeln gewachsen, und Kürzen ist die falsche Antwort.*
+
+§6+§7+§8 waren **752 Zeilen**. „Kürzen" hätte hier geheißen: Regeln wegwerfen — und
+mit ihnen die Vorfälle, an denen sie haften. Geschnitten wurde stattdessen
+ausschließlich **doppelt erzählte Beschreibung** (die Dublin-Entscheidung stand in
+**vier** Kästen, dazu in der Roadmap und sechsmal in dieser Historie).
+
+**Ergebnis: 1.516 → 1.407 Zeilen, und der Regelblock ist dabei von 752 auf 759
+GEWACHSEN.** Der Regelanteil stieg von 50 % auf 54 %.
+
+#### Die Aufräum-Routine — und warum eine zehnte Checklisten-Zeile nicht gereicht hätte
+
+Der Nutzer bat darum, dass Arbeitskopien am Sprint-Ende automatisch verschwinden.
+**Der Schritt existierte bereits:** `sprint-abschluss` Schritt 9 sagt seit v2-08
+*„Temporäre Dateien und Arbeitskopien entfernen"* — als beiläufige Halbzeile am Ende
+eines langen Ablaufs. **Über neun Sprints übersehen.** Die gemessene Trefferquote
+dieser Zeile ist damit **null**.
+
+Gebaut wurden deshalb drei Teile: ein Skript mit denselben Sicherheitsprüfungen, die in
+P1 von Hand liefen; ein `SessionStart`-Hook, der **meldet und nie löscht** (eine
+laufende Sitzung kann in einer gemergten Arbeitskopie stehen); und ein echter **Befehl**
+in Schritt 9.
+
+**Die Prüfung, die fast vergessen worden wäre, ist die wichtigste:** `git status` zeigt
+**gitignorierte** Dateien nicht. `.env.local` und `.env.e2e.local` wären lautlos
+mitgelöscht worden — genau der Vorfall zwischen v2-10 und v2-15. Das Skript **bricht
+ab**, wenn sie im Haupt-Checkout fehlen; nachgewiesen mit Exit 1 und unangetasteter
+Arbeitskopie.
+
+#### Zahlen
+
+| | |
+|---|---|
+| Arbeitskopien | 9 → **0** (4.309 MB frei) |
+| Branches lokal / remote | 49 → **1** / 49 → **1** |
+| CLAUDE.md | 1.516 → **1.407** Zeilen · Regelanteil 50 % → **54 %** |
+| Roadmap | Paket 19 neu · offen gesamt 41 → **47** (kein Punkt davon ist neue Arbeit) |
+| Prüfstrecke | `tsc` 0 · Lint 0/0 · Build 0 · `test:visual` **183** · `test:e2e` **192** |
+| Anker | `git diff origin/main -- src/ supabase/` = **0 Zeilen** |
+
+**Offen nach v2-32.** `RD-1`…`RD-4` (das Re-Design selbst), `PF-9`, Hausaufgabe `V1`,
+und unverändert `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `KAT-5`, `KJ-9`, `PF-3`, `PF-5`,
+`PF-7`. Die eingefrorene Sollwert-Tabelle ist weiterhin **nicht** gezogen — dieser
+Sprint hat nicht gemessen und durfte deshalb keinen Sollwert einfrieren.

@@ -53,6 +53,7 @@
       "Bash(pnpm -v)",
       "Bash(pnpm --version)",
 
+      "Bash(.claude/skripte/tote-arbeitskopien.sh *)",
       "Bash(npx eslint *)",
       "Bash(npx tsc *)",
       "Bash(npx playwright *)",
@@ -144,6 +145,22 @@
 
     "additionalDirectories": [
       "/tmp"
+    ]
+  },
+
+  "_hinweis_hooks": "SessionStart meldet tote Arbeitskopien unter .claude/worktrees/ - es LOESCHT nie. Anlass: Sprint v2-32, 04.09.2026, als dort 9 Arbeitskopien mit 4.309 MB lagen. Der Schritt, sie zu entfernen, stand seit v2-08 in sprint-abschluss Schritt 9 und wurde ueber NEUN Sprints uebersehen; nach LL-40 ist eine Checklisten-Zeile eine Zusicherung, ein Automatismus eine Pruefung. Warum nur melden: Eine laufende Sitzung kann in einer Arbeitskopie stehen, deren Branch schon gemergt ist - automatisches Loeschen zoege ihr den Boden weg. Das Skript bleibt still, wenn es nichts zu melden gibt; eine Meldung, die immer kommt, wird weggelesen.",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null)}\"; [ -x \"$d/.claude/skripte/tote-arbeitskopien.sh\" ] && \"$d/.claude/skripte/tote-arbeitskopien.sh\" melden 2>/dev/null; true",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

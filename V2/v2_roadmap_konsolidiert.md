@@ -2,45 +2,18 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 31. August 2026 (nach **v2-31** „Verlauf je Karte und je Ordner" — `M7` und
-> `KAT-4` erledigt, **Paket 10 vollständig**, kein neuer Punkt entstanden. 24 Monate Ist
-> gegen Plan in einem zentrierten Overlay, aus dem Kontextmenü einer Karte **und** einer
-> Ordner-Kachel. **Kein Zahlenwert bewegt** — 24 Sparraten byte-identisch, neun
-> Prüfsummen unverändert. **Der teuerste Fund war eine Zeile dieser Datei:** `M7` galt
-> als „datenseitig bereits abgedeckt", aber `get_year_deviation_drivers` liefert nur
-> **abweichende** Karten — Netflix erschien in keinem einzigen Monat. `KAT-5` wurde
-> zugunsten von `KAT-4` aus dem Sprint genommen und steht unverändert in Paket 7.)
-> Davor: 27. August 2026 (nach **v2-30**). Davor: 25. August 2026
-> (nach **v2-29** „Die App merkt sich, was du entschieden hast" —
-> `ZO-5` erledigt, `ZO-7` und `ZO-8` neu und offen. `history_match` erkennt eine
-> Handzuordnung jetzt am **Händler** statt am Wortlaut; sichtbare 2025-Vorschläge
-> **136 → 195**, Sparrate in allen 24 Monaten unbewegt. Der Vorschlag steht zum ersten Mal
-> in der Rohmasse. **Der teuerste Fund: Die genauere Regel wäre die schlechtere gewesen** —
-> ein gröberer Schlüssel fasst mehr zusammen und wird dadurch öfter mehrdeutig, was 35 der
-> 136 bestehenden Vorschläge gekostet hätte.) Davor: **v2-28** „Was die 2025-Prüfung zutage
-> gefördert hat" — `DA-3`, `ZO-4` und `NAV-1` erledigt, `ZO-5` und `ZO-6` neu und offen. Die 2025-Pläne
-> tragen jetzt die Beträge, die wirklich gezahlt wurden: **22.316,32 € → 21.776,33 €**,
-> exakt die vorher aufgeschriebenen −539,99 €; **2026 unbewegt in allen zwölf Monaten**.
-> Tankstellen und Nahverkehr ordnen sich künftig von allein zu — 65 Zahlungen aus 2025
-> nachverlinkt, **ohne dass sich eine Zahl bewegt**, weil „Tanken" eine BUDGET-Karte ist.
-> Und die Monatsnavigation endet erstmals dort, wo die Daten enden: Die Schranke stand
-> seit **Sprint 3** auf `1900-01`.) Davor: **v2-27** „2025 wird vergleichbar" — `DA-1` und `ZO-3`
-> erledigt, **kein neuer Punkt entstanden**. Die 2025-Sparrate fällt von 48.445,32 € auf
-> **22.567,80 €** und liegt damit erstmals auf 2026-Niveau; 2026 hat sich in keinem der
-> zwölf Monate bewegt. 41 Zahlungen rückwirkend verlinkt, 253 Vorschläge sichtbar, wo
-> vorher null waren.) Davor: **v2-26** — fünf Nachbesserungen aus der Benutzung:
-> `KJ-6` `KJ-7` `KJ-8` neu und erledigt, `KJ-9` neu und offen. **Der Fall des Löschriegels
-> hatte eine zweite Sperre freigelegt, die niemand kannte.**) Davor: **v2-25** (der
-> Löschriegel ist gefallen und ein Monat lässt sich als „nicht angefallen" markieren;
-> `KJ-1` `KJ-2` `KJ-3` erledigt, `KJ-4` **nicht reproduzierbar** und deshalb auf 🔎).
-> Davor am 17.08.: v2-24 (die App
-> reagiert sofort: 233 → ~18 Netzrunden je Dashboard-Aufbau, kein 504 mehr, keine bewegte
-> Zahl; **neues Paket 17**, weil Performance in dieser Datei bis dahin nirgends vorkam)
-> und die Design-Runde (**neues Paket 18**). Davor:
-> 13. August 2026 (nach v2-18 — zwei Befunde aus der Nutzung behoben;
-> davor v2-17 mit `KAT-1`/`KAT-2`/`KAT-3` und der Hausaufgabe `J1`, **Paket 4
-> abgeschlossen**) · **Vorgänger-Struktur:** bis zum
-> 04.08.2026 waren die Themen nach 14 Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
+> **Stand:** 4. September 2026 (nach **v2-32** „Ein sauberer Tisch für das Re-Design" —
+> Repo und Doku aufgeräumt, **Paket 19** für das Re-Design der Oberfläche neu, `PF-8`
+> erledigt und `PF-9` neu aus dem Befund vom 03.09.2026).
+>
+> **Was die einzelnen Sprints gebracht haben, steht in `sprints/projekt_historie.md`.**
+> Hier stand bis zum 04.09.2026 eine Kette von **neun** nacherzählten Sprintständen, die
+> mit jedem Sprint länger wurde — dieselbe Fehlerklasse, die CLAUDE.md in v2-29 aus sich
+> selbst entfernt hat, nur an einer Datei **ohne Wächter**. Was gilt, steht in §0 („Stand
+> in Zahlen") und in den Paketen selbst; was war, gehört in die Historie.
+>
+> **Vorgänger-Struktur:** bis zum 04.08.2026 waren die Themen nach 14
+> Buchstaben-Kategorien (A–N) sortiert. Die Kennungen
 > leben weiter (§5), damit ältere Papiere auflösen — aber sie sind nicht mehr die Ordnung.
 >
 > **Letzte Änderung (Ideen-Runde 04./05.08.2026):** drei neue Pakete eingefügt —
@@ -63,16 +36,36 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 27.08.2026 zeilengenau nachgezählt — nach Sprint **v2-30**.*
+*Alle Zahlen am 04.09.2026 zeilengenau nachgezählt — nach Sprint **v2-32**.*
 
-| | Anzahl | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 | nach v2-26 | nach v2-25 | nach v2-24 |
-|---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **11** | 12 | 12 | 12 | 12 | 12 | 12 | 11 |
-| Themen darin | **37** | 39 | 38 | 37 | 35 | 37 | 36 | 34 |
-| Hausaufgaben ohne eigenen Sprint | **4** | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **41** | 43 | 42 | 41 | 39 | 41 | 40 | 38 |
-| Erledigt | **68** | 66 | 65 | 64 | 61 | 59 | 56 | 53 |
-| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+| | Anzahl | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 | nach v2-26 |
+|---|---|---|---|---|---|---|---|
+| Offene Pakete | **12** | 11 | 12 | 12 | 12 | 12 | 12 |
+| Themen darin | **42** | 37 | 39 | 38 | 37 | 35 | 37 |
+| Hausaufgaben ohne eigenen Sprint | **5** | 4 | 4 | 4 | 4 | 4 | 4 |
+| **Offen gesamt** | **47** | 41 | 43 | 42 | 41 | 39 | 41 |
+| Erledigt | **69** | 68 | 66 | 65 | 64 | 61 | 59 |
+| Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
+
+> **Stand nach Sprint v2-32, zeilengenau ausgezählt.** Paket-Tabellen **71** Zeilen,
+> davon **29 ✅** → **42** offen (⬜ 38, davon 4 mit 🔎 · 🟡 4). Hausaufgaben **5**, alle
+> ⬜. §4 Erledigt **69** Zeilen. §3 unverändert **4**. Pakete **19**, davon **7**
+> vollständig erledigt (1, 2, 3, 4, 10, 15, 16) → **12** offen.
+>
+> **Die Zahl steigt um sechs, und keiner der sechs Punkte ist neue Arbeit.** Fünf davon
+> waren schon da und standen nur nirgends: `PF-9` und die Hausaufgabe `V1` aus dem Befund
+> vom 03.09.2026, und die vier `RD-`Punkte des Re-Designs, das in dieser Datei bis zum
+> 04.09.2026 **null Treffer** hatte — genau wie „Performance" vor v2-24. Der sechste,
+> `PF-8`, war bereits **erledigt**, als er eingetragen wurde.
+>
+> ⚠️ **Beim Auszählen ist ein Zählfehler entstanden und aufgefallen — er gehört hierher,
+> weil er sich wiederholen wird.** Ein Skript nahm die erste Tabellenzelle, die mit einem
+> Statuszeichen **beginnt**. Bei `M6` steht in der *Datenbank*-Spalte **„✅ ja"** — der
+> Punkt wurde damit als erledigt gezählt statt als teilweise, und die Summe stimmte
+> trotzdem (29+3 statt 28+4 ergibt dasselbe). **Der Fehler war nur sichtbar, weil gegen
+> die vorherige Auszählung abgeglichen wurde**, nicht weil eine Summe nicht aufging.
+> Richtig ist: Eine Statuszelle enthält **ausschließlich** Statuszeichen, keine
+> Buchstaben. Und §3 hat gar keine Statusspalte — dort werden Zeilen gezählt.
 
 > **Stand nach Sprint v2-31, zeilengenau ausgezählt.** Paket-Tabellen **65** Zeilen, davon
 > **28 ✅** → **37** offen (⬜ 33, davon 3 mit 🔎 · 🟡 4). Hausaufgaben **4**, alle ⬜.
@@ -796,6 +789,8 @@ allem anderen.
 | PF-5 | Der Middleware-Ausweichpfad ist nie ausgelöst worden | Prüfung | nein | ⬜ | Er ist gebaut, typgeprüft und in zwei vollständigen Prüfläufen **nie angesprungen** (0 Warnungen im Server-Log). Das zeigt, dass er nicht im Weg ist — nicht, dass er im Ernstfall greift. Ein Wächter dafür bräuchte einen einspeisbaren Fehlerfall. |
 | PF-6 | Ein Import mit mehr als vier neuen Zahlungen reißt das 8-Sekunden-Zeitlimit | Fehler | **ja** | ✅ | **In v2-30 behoben, Browser-Smoke bestanden (27.08.2026).** Import von 17 neuen Zahlungen: **23.938 ms → 1.357 ms, Faktor 17,6**, weit unter dem 8-s-Limit. **Der eigentliche Fund war ein anderer als erwartet:** Nicht die Zahl der Aufrufe war das Problem, sondern dass `idx_fragments_merchant_key` als **Ausdrucks-Index über eine SQL-Funktion** nie griff — der Planer **inlined** `af_merchant_key`, danach steht im Plan der Rumpf statt des Aufrufs, und beide treffen sich nie (`Rows Removed by Filter: 1628`, 28-mal je Zahlung). **Die Statistik sagte dabei „wird benutzt" (88.107 Scans), der Plan sagte „hier nicht"** — dieselbe Klasse wie die Regions-Zeile aus LL-30. Behoben durch `fragments.merchant_key` als `GENERATED … STORED` plus gewöhnlichen B-Tree-Index; ein Spalten-Index ist gegen Inlining immun. **Kein Nachbau** (§6 Stolperfalle 16): Die Spalte ruft die Funktion auf. **Zwei naheliegende Fixes wurden gemessen und verworfen** und stehen in der Migration dokumentiert: `PF-3` (274 → 289 ms, kein Effekt) und `af_merchant_key` auf `plpgsql` (285 → 367 ms, schlechter). Verifiziert: Spalten-Äquivalenz **1.628/1.628** ohne Abweichung, `history_match` alt gegen neu **231 Paare** ohne Unterschied, Sparrate **24/24** unverändert, Anker 1 und 2 je **0 Verletzungen**, Prüfsummen **16 von 17 unverändert** (nur `history_match`). Prüfstrecke `tsc` 0 / `test:visual` 148/148. Details: `sprints/sprint_v2-30_briefing.md`. Übrig: **PF-7**. |
 | PF-7 | Der Ausdrucks-Index `idx_fragments_merchant_key` ist funktionslos geworden | Aufräumen | **ja** | ⬜ | **Aus v2-30 übrig geblieben, bewusst nicht mitgenommen.** Seit v2-30 liest `history_match` die materialisierte Spalte `fragments.merchant_key`; der alte Ausdrucks-Index über `af_merchant_key(description)` hat damit seinen Hauptnutzer verloren. **Er wird trotzdem nicht einfach gelöscht:** `pg_stat_user_indexes` weist **88.107 Scans** aus, und welcher Aufrufer sie verursacht, ist **nicht ermittelt** — genau diese Unklarheit war der Grund, ihn im selben Sprint stehen zu lassen (ein Sprint, eine Verschiebung; dieselbe Begründung wie bei `ZO-8` in v2-29). Aufgabe: erst den Verursacher finden, dann entscheiden. Kosten des Behaltens: ein Anteil an den 8,9 ms, die ein `INSERT` mit allen sechs Indizes kostet — also gering, es eilt nicht. |
+| PF-8 | Ein Jahresexport (2.535 Zeilen) reißt das 8-Sekunden-Zeitlimit | Fehler | nein | ✅ | **Am 03.09.2026 im Frontend behoben**, als Fix ohne Sprint (`src/lib/csv-batches.ts`, Wächter `tests/e2e/csv-blockbildung.spec.ts`). **Die Datei war nie fehlerhaft** — der echte Parser las alle 2.535 Zeilen in **4 ms**, Nutzlast 271 KB. Ursache: `process_csv_import` läuft als **ein** Statement gegen `statement_timeout = 8s` der Rolle `authenticated`. „Datei fehlerhaft“ ist die einzige Meldung, die das Portal für einen RPC-Fehler kennt — sie beschreibt die Ursache nicht. Beleg: `V2/befunde_2026-09-03_visa-import-timeout.md`. |
+| PF-9 | Die Konfidenz wird auch in Monaten ohne jede aktive Karte gerechnet | Fehler | **ja** | ⬜ | **Gemessen am 03.09.2026, ungenutzt.** Der Planer zieht `calculate_match_confidence` vor `is_card_active_in_month`. Eine Optimierungs-Sperre (`OFFSET 0` oder ein `MATERIALIZED`-CTE) kehrt das um: **Juni 2023 (0 aktive Karten) 128 ms → 9,8 ms**; Januar 2025 (28 Karten) 128 → 96 ms. Für die Altjahre Faktor 13, für einen normalen Monatsimport nur **~25 %** — und **die Blockbildung bliebe trotzdem nötig**, weil auch 20 s über 8 s liegen. Eingriff in `process_csv_import` ⇒ §7 Regel 20: Probe auf der Übungs-Datenbank, Anker vorher/nachher, menschliche Freigabe. Eigener kleiner Sprint, kein Nebenbei. |
 
 > **Was dieses Paket an Wissen zurückgibt, unabhängig von den Punkten:** Der Anker
 > dieses Projekts misst **Richtigkeit**, nicht **Geschwindigkeit**. Ein N+1 kann
@@ -837,6 +832,33 @@ Design-Doku **v3.9.0** trägt die Spezifikation; gebaut ist nichts davon.
 
 ---
 
+### Paket 19 · Re-Design der Oberfläche
+**Entsperrt:** eine neue Formensprache, ohne dass an der Rechenlogik etwas angefasst wird.
+
+**Neu am 04.09.2026 (Sprint v2-32).** Der Nutzer will die Oberfläche mit **Fable 5.1**
+neu gestalten, in einer eigenen Sitzung. **„Re-Design" kam in dieser Datei bis dahin
+nirgends vor** — null Treffer, genau wie „Performance" vor v2-24. Ein Thema, das nicht
+in der Liste steht, konkurriert unsichtbar mit allem anderen und verliert gegen das,
+was gerade lauter ist.
+
+**Der Zuschnitt steht fest, das Ergebnis nicht:** Optik neu, **Logik und Datenbank
+bleiben unangetastet**. Kein Eingriff in eine Rechenfunktion, kein Schema-Eingriff.
+
+| # | Punkt | Art | Datenbank | Stand | Bemerkung |
+|---|---|---|---|---|---|
+| RD-1 | `design-system/` zeigt nur **3 der 7** sichtbaren Komponenten | Aufgabe | nein | ⬜ | **Gemessen am 04.09.2026.** Die Design-Doku beschreibt sieben sichtbare Komponenten (§5 Ring · §6 Header/Timeline · §7 Karten · §8 Untere Interaktionszone · §9 Welle · §10 Income/Partner-Split · §11 CSV-Import). Seiten gibt es für **Ring, Karten und Welle**, dazu Kategorien und Verlauf als Teilansichten. **Ohne jede Seite: Header/Timeline, Untere Interaktionszone (Rohmasse), Income/Partner-Split, CSV-Import.** Der Design-Direktor beurteilt **Bilder, keine Beschreibungen** (CLAUDE.md §4) — für vier von sieben Komponenten gibt es kein Bild. Das ist die **erste** Arbeit dieses Pakets, nicht die zweite. |
+| RD-2 | Die Foundation-Seiten schreiben die Tokens ab, statt sie zu benutzen | Fehler | nein | ⬜ | **`design-system/foundations/typografie.html` enthält NULL `var(--typo-*)`** und nennt keinen einzigen Token-Namen — sie setzt px-Werte hart hin. `src/styles/tokens.css` definiert **21 `--typo-*`-Tokens**. **Heute stimmen die Werte noch:** alle sieben Größen (34 · 22 · 17 · 13 · 13 · 10 · 9 px) sind auf der Seite vertreten. Aber nur, weil bisher niemand ein Token geändert hat. **Ändert das Re-Design eines, zeigt die Seite still den alten Stand** — und genau sie ist das Anschauungsmaterial, nach dem gestaltet wird. Dieselbe Klasse wie LL-30: derselbe Wert an zwei Stellen. Abhilfe: die Seiten `tokens.css` einbinden lassen, statt Werte zu kopieren. |
+| RD-3 | Die Gestaltungsentscheidung selbst | Diskussion | nein | ⬜ | **Fähigkeit `design-direktor`, VOR dem Bauen** (CLAUDE.md §4), Ergebnis als Record unter `V2/`. Offen ist alles Inhaltliche: Wie weit geht das Re-Design? Bleibt das Ein-Screen-Prinzip? Bleibt der Ring die primäre Figur? Bleibt die Sparrate die eine große Zahl? |
+| RD-4 | Was aus Paket 7 dabei mit erledigt wird | Prüfung | nein | ⬜ 🔎 | Paket 7 („Gestaltungs-Feinschliff") enthält `M2`, `M5`, `A1-F` und `B2-F` — Feinschliff **der heutigen** Oberfläche. Wird sie neu gestaltet, sind mehrere davon gegenstandslos oder anders zu beantworten. **Vor dem Schnitt von Paket 19 prüfen**, was zusammengelegt gehört, statt beides parallel zu bearbeiten. |
+
+> **Was dieses Paket von einem gewöhnlichen unterscheidet:** Es wird **in einer fremden
+> Sitzung** ausgeführt, mit einem anderen Modell. Die hat nichts als das Repo — das
+> Projekt-Gedächtnis liegt außerhalb von git und ist bei einem frischen Klon nicht dabei
+> (CLAUDE.md §3). **Alles, was das Re-Design braucht, muss deshalb im Repo stehen und
+> stimmen.** Genau dafür war Sprint v2-32 da; `RD-1` und `RD-2` sind der Rest davon.
+
+---
+
 ## 2. Hausaufgaben ohne eigenen Sprint
 
 An einen passenden Sprint anhängen, nie als eigenen schneiden.
@@ -847,6 +869,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | M4 | Karten-Deckkraft-Schieber in der Entwicklungsumgebung | ⬜ | Nur Entwicklung, nicht in Produktion. |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
+| V1 | Entscheidung über die 2.031 Visa-Zahlungen aus 2020–2024 | ⬜ | **Aus dem Befund vom 03.09.2026.** Der Jahresexport enthält sie; die App modelliert 2025 und 2026, dort ist für jene Jahre **keine Karte aktiv**. Sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den DKB-Export auf 2025+2026 eingrenzen (~504 Zeilen, überwiegend Duplikate, Sekunden statt Minuten). Jederzeit nachholbar — der Import ist idempotent. |
 
 ---
 
@@ -865,6 +888,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| PF-8 | **Ein Jahresexport passt wieder in die Zeit.** Der Visa-Export mit **2.535 Zeilen** brach mit „Datei fehlerhaft“ab — **an der Datei war nichts fehlerhaft**: Der echte Parser las sie in **4 ms**, Nutzlast 271 KB, weit unter dem 1-MB-Limit. `process_csv_import` läuft als **ein** Statement gegen `statement_timeout = 8s` der Rolle `authenticated`, und die Konfidenz wird für jede neue Zeile gegen jede aktive Karte gerechnet. Der Import läuft jetzt blockweise (`src/lib/csv-batches.ts`, Wächter `tests/e2e/csv-blockbildung.spec.ts`). **Der teuerste Teil war die Meldung selbst:** „Datei fehlerhaft“ist die einzige, die das Portal für einen RPC-Fehler kennt — sie beschreibt die Ursache nicht, und wer ihr glaubt, sucht am falschen Ort. Offen geblieben: `PF-9` und die Entscheidung über die 2.031 Altjahres-Zahlungen (Hausaufgabe `V1`) | Fix 03.09. |
 | M7 | **Karten haben einen Verlauf.** `Verlauf …` im Kontextmenü öffnet ein zentriertes Overlay mit **24 Monaten** Ist gegen Plan — Ist teal (2 px), Plan grau (1 px), beide Werte aus `welle/draw.ts`, **kein neuer Token**. Bis dahin war „wie lief das übers Jahr?" nur durch zwölfmaligen Monatswechsel beantwortbar. **Der teuerste Fund war die Roadmap-Zeile selbst:** Sie führte den Punkt als „datenseitig bereits abgedeckt", aber `get_year_deviation_drivers` trägt `WHERE round(delta,2) <> 0` und liefert nur **abweichende** Karten — Netflix läuft zwölf Monate auf Plan und erschien in **keinem einzigen**; Sep–Dez 2026 lieferte sie **gar nichts** (0 von 22 aktiven Karten). Gebaut wurde deshalb `get_card_amount_series`: rein lesend, **eine Netzrunde statt 36**, 21 ms. Drei Regeln haften im Code — die Ist-Linie endet am laufenden Monat (dort sind alle Werte reine Plan-Kopien), inaktive Monate brechen die Linie statt auf 0 zu fallen (LL-20), isolierte Werte werden als Punkt gezeichnet. Bei GEMEINSAM zeigt die Plan-Linie den **eigenen Anteil**: max. Abstand Miete 41,36 € statt roh ~815 €. Nicht bei `ONCE` — 142 der 178 Karten | v2-31 |
 | KAT-4 | **Ordner haben denselben Verlauf** — dieselbe Fläche, eine Ebene höher, wie Befund `U5` es am 04.08.2026 vorhergesagt hatte. `get_category_amount_series` **holt** den Ist-Wert aus `get_category_amounts_for_month`, statt ihn nachzurechnen: Dort sitzt der Rundungs-Ausgleich, den Anker 1 erzwingt — gemessen trägt in den vier Zukunftsmonaten je ein Ordner **0,01 €**, ein Nachbau zeigte dort einen Cent weniger als die Kachel daneben, **ohne dass eine Zahl falsch aussähe** (LL-25/LL-26). Preis: 254 ms statt 21 ms. Geprüft über **200 Zellen in 11 Ordnern, 0 Verletzungen**. **Die alte Voraussetzung war entfallen, ohne dass es jemand nachgetragen hatte:** Befund `D4` knüpfte den Punkt an eine kuratierte Datenbasis — seit `DA-1`/`DA-3` hat in **allen 20** vergangenen Monaten **jede** aktive Karte eine Zahlung oder einen Tap. „Ohne Kategorie" bekommt bewusst keinen Verlauf (Zufluss, kein Bestand — `D12`) | v2-31 |
 | PF-6 | **Der Import passt wieder in die Zeit.** 17 neue Zahlungen: **23.938 ms → 1.357 ms**, Faktor **17,6**, bei einem `statement_timeout` von 8 s für die Rolle `authenticated`. **Der Fund war nicht das erwartete N+1**, sondern ein Index, der nie griff: `idx_fragments_merchant_key` stand auf `af_merchant_key(description)`, und weil das eine **SQL**-Funktion ist, **inlined der Planer sie** — danach steht im Plan ihr Rumpf statt des Aufrufs, und beide treffen sich nie (`Seq Scan`, `Rows Removed by Filter: 1628`, 28-mal je Zahlung). **Die Statistik verriet es nicht:** 88.107 Scans wiesen den Index als benutzt aus, er griff nur anderswo. Behoben durch `fragments.merchant_key` als `GENERATED … STORED` plus gewöhnlichen B-Tree-Index — ein Spalten-Index ist gegen Inlining immun. **Kein Nachbau:** Die Spalte ruft die Funktion auf. Zwei naheliegende Fixes wurden gemessen und verworfen (`PF-3`: 274 → 289 ms, wirkungslos · `plpgsql`: 285 → 367 ms, schlechter) und stehen in der Migration dokumentiert. Verifiziert: Spalten-Äquivalenz 1.628/1.628, 231 Matrix-Paare ohne Unterschied, Sparrate 24/24, Anker 1+2 je 0 Verletzungen, 16 von 17 Prüfsummen unverändert. | v2-30 |

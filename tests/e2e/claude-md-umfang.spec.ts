@@ -22,7 +22,7 @@ import path from "node:path";
 // Checklisten-Zeile eine Zusicherung; ein Test ist eine Prüfung. Die Fähigkeit
 // `claude-md-pflege` sagt, was bei Rot zu tun ist — dieser Test sagt, DASS.
 //
-// ⚠️ DREI GRENZEN, WEIL EINE NICHT REICHT
+// ⚠️ VIER GRENZEN, WEIL EINE NICHT REICHT — UND DREI EINEN BLINDEN FLECK HATTEN
 //
 //   Eine reine Zeilenzahl misst das Symptom, nicht die Ursache. Bei 1.712 Zeilen war
 //   nicht die Länge das Problem, sondern 443 Zeilen Historie am falschen Ort. Eine
@@ -68,7 +68,16 @@ expect(
     "von den dauerhaft gültigen Ankern.",
 ).toBeGreaterThan(i9);
 
+const iOffeneThemen = zeilen.findIndex((z) => z.startsWith("**Offene Themen:**"));
+expect(
+  iOffeneThemen,
+  'Landmarke "**Offene Themen:**" in §9 nicht gefunden — sie beginnt den Verweis auf die ' +
+    "Roadmap und ist der Anfang der Zone, die Prüfung ⑤ misst. Wurde sie umbenannt, " +
+    "gehört Prüfung ⑤ mit angepasst — nicht gelöscht.",
+).toBeGreaterThan(iAnker);
+
 const gesamt = zeilen.length;
+const roadmapAbschrift = gesamt - iOffeneThemen;
 const vorspann = iVorspannEnde;
 const neunKopf = iAnker - i9;
 const erzaehlzone = vorspann + neunKopf;
@@ -82,6 +91,18 @@ const regelAnteil = (100 * regeln) / gesamt;
 const MAX_ZEILEN = 1600; // ~6 Sprints Luft ab 1.419
 const MAX_ERZAEHLZONE = 150; // vor v2-29 waren es 443
 const MIN_REGELANTEIL = 45; // heute 49 %
+
+// ── Die vierte Grenze, seit v2-32 ───────────────────────────────────────────
+// ANLASS: Die Erzählzone oben endet an „### Die Prüfanker". Alles DAHINTER zählte
+// weder als Erzählung noch als Regel — ein blinder Fleck zwischen zwei Messungen.
+// Dort waren 101 Zeilen nacherzählter Roadmap-Stand gewachsen (welche Pakete
+// erledigt sind, was in Paket 5 offen blieb, welche Rückstände geschlossen wurden),
+// die nach JEDEM Sprint an zwei Stellen nachzuziehen waren — und es zuletzt nicht
+// mehr wurden. Alle drei bestehenden Grenzen waren dabei grün.
+//
+// Das ist LL-30, angewandt auf einen Wächter: Was nicht gemessen wird, wächst. Und
+// es ist der Grund, warum eine Messung ihre eigenen Ränder kennen muss.
+const MAX_ROADMAP_ABSCHRIFT = 30; // Stand nach v2-32: 14
 
 /** Vorwarnung, BEVOR der Test rot wird — damit die Kürzung geplant werden kann, statt
  *  einen laufenden Sprint zu blockieren.
@@ -146,6 +167,20 @@ test.describe("CLAUDE.md bleibt die Verfassung und wird kein Archiv", () => {
     ).toBeGreaterThanOrEqual(MIN_REGELANTEIL);
   });
 
+  test("⑤ der Roadmap-Verweis bleibt ein Verweis und wird keine Abschrift", () => {
+    warnenWennKnapp("Roadmap-Verweis", roadmapAbschrift, MAX_ROADMAP_ABSCHRIFT, "max");
+    expect(
+      roadmapAbschrift,
+      `§9 ab "**Offene Themen:**" umfasst ${roadmapAbschrift} Zeilen (Grenze ` +
+        `${MAX_ROADMAP_ABSCHRIFT}). Bis v2-32 standen hier 101 Zeilen nacherzählter ` +
+        `Roadmap-Stand — welche Pakete erledigt sind, was offen blieb —, die nach jedem ` +
+        `Sprint an ZWEI Stellen nachzuziehen waren. V2/v2_roadmap_konsolidiert.md ist die ` +
+        `einzige Quelle dafür; hierher gehört ein Verweis, keine Abschrift. Diese Zeilen ` +
+        `lagen im blinden Fleck zwischen den Messungen: Die Erzählzone endet an ` +
+        `"### Die Prüfanker", und sie standen dahinter.`,
+    ).toBeLessThanOrEqual(MAX_ROADMAP_ABSCHRIFT);
+  });
+
   test("④ die Grenzen selbst bleiben nachvollziehbar", () => {
     // Ein Wächter, dessen Grenzen jemand still hochsetzt, ist keiner mehr. Diese
     // Prüfung hält fest, dass die drei Zahlen zusammen zum heutigen Stand passen —
@@ -154,5 +189,7 @@ test.describe("CLAUDE.md bleibt die Verfassung und wird kein Archiv", () => {
       .toBeLessThanOrEqual(MAX_ZEILEN / 10);
     expect(MIN_REGELANTEIL, "unter 40 % wäre die Datei kein Regelwerk mehr")
       .toBeGreaterThanOrEqual(40);
+    expect(MAX_ROADMAP_ABSCHRIFT, "ein Verweis über 30 Zeilen ist keiner mehr, sondern eine Abschrift")
+      .toBeLessThanOrEqual(30);
   });
 });
