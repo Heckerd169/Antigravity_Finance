@@ -1,0 +1,65 @@
+/* Antigravity Finance — Design-Tokens v3 (Apple-Redesign, 2026-09-05)
+   Grundtöne unverändert: Schwarz, Türkis #3ECFAF, Rot #FF453A, Gold, Blau.
+   Geändert: Zuweisung (Rot nur noch für echte Abweichung), Deckkraft-Stufen, Flächen. */
+:root,.t-dark{
+  color-scheme:dark;
+  --bg-primary:#0D0D0F;
+  --bg-card:#1C1C1E;            /* eine Fläche für alle Zustände */
+  --bg-card-hover:#2C2C2E;
+  --bg-card-ghost:transparent;  /* Forecast: nur Kontur, keine Fläche */
+  --bg-elevated:#1C1C1E;        /* Popups, Menüs */
+  --bg-category:#1A1A20;        /* Ordner-Kachel: eine Spur kühler als die Karte */
+  --bg-category-stack:#131317;  /* Stapelkanten unter der Kachel */
+  --border-subtle:rgba(255,255,255,.08);
+  --border-ghost:rgba(255,255,255,.14);
+  --text-primary:#FFFFFF;
+  --text-secondary:rgba(235,235,245,.60);
+  --text-tertiary:rgba(235,235,245,.30);
+  --text-quaternary:rgba(235,235,245,.18);
+  --color-teal:#3ECFAF; --color-red:#FF453A;
+  --color-gold:rgba(255,200,60,.75); --color-blue-dot:rgba(100,168,240,.7);
+  --teal-fill:rgba(62,207,175,.16); --red-fill:rgba(255,69,58,.16);
+  --neutral-fill:rgba(235,235,245,.10);
+  --progress-track:rgba(255,255,255,.06);
+  --progress-neutral:rgba(235,235,245,.35);
+  --ring-track:rgba(255,255,255,.06);
+  --wave-forecast:#8A8A90;
+}
+.t-light,[data-theme="light"]{
+  color-scheme:light;
+  --bg-primary:#F2F2F7;
+  --bg-card:#FFFFFF;
+  --bg-card-hover:#FFFFFF;
+  --bg-card-ghost:transparent;
+  --bg-elevated:#FFFFFF;
+  --bg-category:#F7F7FB;
+  --bg-category-stack:#ECECF2;
+  --border-subtle:rgba(0,0,0,.06);
+  --border-ghost:rgba(0,0,0,.16);
+  --text-primary:#000000;
+  --text-secondary:rgba(60,60,67,.60);
+  --text-tertiary:rgba(60,60,67,.30);
+  --text-quaternary:rgba(60,60,67,.18);
+  --color-teal:#1FA588;  /* gleicher Farbton, dunkler — 4,5:1 auf Weiß */
+  --color-red:#E0362C;   /* gleicher Farbton, dunkler — 4,6:1 auf Weiß */
+  --color-gold:rgba(190,140,0,.9); --color-blue-dot:rgba(40,120,220,.8);
+  --teal-fill:rgba(31,165,136,.14); --red-fill:rgba(224,54,44,.12);
+  --neutral-fill:rgba(60,60,67,.08);
+  --progress-track:rgba(0,0,0,.06);
+  --progress-neutral:rgba(60,60,67,.35);
+  --ring-track:rgba(0,0,0,.06);
+  --wave-forecast:#A0A0A8;
+}
+:root{
+  --font-stack-system:-apple-system,BlinkMacSystemFont,system-ui,"Helvetica Neue",sans-serif;
+  /* Typografie v3 — Mindestgröße 11 px */
+  --typo-ring-size:36px; --typo-ring-weight:300; --typo-ring-tracking:-1.4px;
+  --typo-month-active-size:17px; --typo-month-active-weight:600; --typo-month-active-tracking:-.4px;
+  --typo-card-name-size:14px; --typo-card-name-weight:500; --typo-card-name-tracking:-.2px;
+  --typo-card-amount-size:22px; --typo-card-amount-weight:400; --typo-card-amount-tracking:-.6px;
+  --typo-month-flank-size:13px; --typo-month-flank-weight:500; --typo-month-flank-tracking:-.2px;
+  --typo-label-size:11px; --typo-label-weight:600; --typo-label-tracking:.5px;
+  --typo-caption-size:12px; --typo-caption-weight:400; --typo-caption-tracking:0;
+  --typo-numeric-variant:tabular-nums; /* @kind other */
+  --radius-card:16px; --radius-control:10px; --radius-popup:18px;
+}

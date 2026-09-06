@@ -1,0 +1,162 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x1250" name="Overlays & Meldungen" subtitle="Formular-Overlay, Auswahlraster, Kontextmenü, Toast, Schaufenster" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Overlays — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<style>
+/* Overlay-Modal — Breite 300 px 1:1 aus cards.module.css (.overlayModal) */
+.modal{width:300px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px -10px rgba(0,0,0,.45);color:var(--text-primary)}
+.modal.wide{width:330px}
+.mt{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.ms{font-size:13px;color:var(--text-secondary);margin-top:-8px}
+.field{display:flex;flex-direction:column;gap:6px}
+.fl{font-size:12px;font-weight:500;color:var(--text-secondary)}
+.inp{height:44px;padding:0 14px;border-radius:var(--radius-control);border:1px solid var(--border-subtle);background:var(--neutral-fill);font:inherit;font-size:17px;font-weight:400;color:var(--text-primary);font-variant-numeric:tabular-nums;display:flex;align-items:center}
+.inp.focus{border-color:var(--color-teal);box-shadow:0 0 0 3px var(--teal-fill)}
+.inp.err{border-color:var(--color-red)}
+.inp .ph{color:var(--text-tertiary)}
+.errt{font-size:12px;color:var(--color-red)}
+.hint{font-size:12px;line-height:1.5;color:var(--text-tertiary);margin-top:-6px}
+.acts{display:flex;flex-direction:column;gap:8px}
+.btn{height:44px;border-radius:var(--radius-control);border:none;background:var(--neutral-fill);color:var(--text-primary);font:inherit;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn:hover{background:var(--border-ghost)}
+.btn.primary{background:var(--color-teal);color:#fff}
+.btn:disabled{opacity:.4}
+.cancel{height:40px;border:none;background:transparent;color:var(--text-secondary);font:inherit;font-size:15px;font-weight:500;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{height:40px;border-radius:var(--radius-control);border:1px solid var(--border-subtle);background:transparent;color:var(--text-secondary);font:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.opt.sel{background:var(--teal-fill);border-color:var(--color-teal);color:var(--color-teal)}
+/* Kontextmenü — min-width 160 aus cards.module.css */
+.menu{background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:12px;padding:6px;min-width:200px;box-shadow:0 12px 40px -8px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:1px}
+.mi{padding:10px 12px;border-radius:8px;font-size:14px;color:var(--text-primary);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mi:hover{background:var(--neutral-fill)}
+.mi.dis{color:var(--text-tertiary)}
+.mi.destr{color:var(--color-red)}
+.msep{height:1px;background:var(--border-subtle);margin:4px 8px}
+.reason{padding:2px 12px 8px;font-size:12px;line-height:1.45;color:var(--text-tertiary);max-width:220px}
+/* Toast — 260–340 px aus card-action-toast.module.css */
+.toast{position:relative;display:flex;align-items:center;gap:16px;min-width:260px;max-width:360px;padding:12px 16px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:14px;overflow:hidden;box-shadow:0 12px 40px -8px rgba(0,0,0,.5);color:var(--text-primary)}
+.tl{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tt{font-size:13px;font-weight:500}
+.te{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.te.up{color:var(--color-teal)}.te.down{color:var(--color-red)}
+.undo{flex-shrink:0;background:transparent;border:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--color-teal);cursor:pointer}
+.tp{position:absolute;left:0;bottom:0;height:2px;width:62%;background:var(--color-teal)}
+/* Schaufenster */
+.sk{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:12px}
+.hero{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.who{font-size:15px;font-weight:600;letter-spacing:-.2px;line-height:1.3;flex:1;min-width:0}
+.amt{font-size:20px;font-weight:400;letter-spacing:-.5px;white-space:nowrap;color:var(--text-primary)}.amt.pos{color:var(--color-teal)}
+.purp{font-size:13px;line-height:1.55;color:var(--text-secondary);margin-top:8px}
+.rule{height:1px;background:var(--border-subtle);margin:16px 0 8px}
+.srow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0}
+.sk2{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);white-space:nowrap}
+.sv{font-size:13px;color:var(--text-secondary);text-align:right}
+.sv.on{color:var(--text-primary)}.sv.teal{color:var(--color-teal)}
+.shint{font-size:12px;color:var(--text-tertiary);margin-top:2px;text-align:right}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.cap{max-width:300px}
+.two .pane{padding:26px}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a href="header.html">Header</a><a class="here" href="overlays.html">Overlays</a><a href="zone.html">Interaktionszone</a><a href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Overlays &amp; Meldungen</h1>
+<p class="lede">Fünf Flächen, eine Anatomie: Formular-Overlay (Betrag, Fälligkeitstag, Kategorie), Auswahlraster (Wiederholung), Kontextmenü, Toast und Schaufenster. v3 bringt alle auf <code>--bg-elevated</code>, 44-px-Bedienelemente und die vier Textstufen.</p>
+<p class="src">Maße aus <code>cards.module.css</code> (.overlayModal 300 px, .contextMenu), <code>card-action-toast.module.css</code>, <code>interaction-zone.module.css</code> (.showcaseModal 330 px) · Wortlaute aus den Overlay-Komponenten</p>
+
+<h2>Formular-Overlay · Betrag anpassen</h2>
+<div class="row">
+  <div class="modal">
+    <div class="mt">Betrag anpassen</div>
+    <div class="ms">Aktuell: 36,04 €</div>
+    <div class="field"><label class="fl">Neuer Betrag</label><div class="inp focus">38,50</div></div>
+    <div class="acts"><button class="btn">Nur dieser Monat</button><button class="btn">Dauerhaft ab diesem Monat</button></div>
+    <button class="cancel">Abbrechen</button>
+  </div>
+  <div class="modal">
+    <div class="mt">Betrag anpassen</div>
+    <div class="ms">Aktuell: 36,04 €</div>
+    <div class="field"><label class="fl">Neuer Betrag</label><div class="inp err">abc</div><div class="errt">Bitte einen gültigen Betrag &gt; 0 eingeben (max. 2 Dezimalstellen)</div></div>
+    <div class="acts"><button class="btn" disabled>Nur dieser Monat</button><button class="btn" disabled>Dauerhaft ab diesem Monat</button></div>
+    <button class="cancel">Abbrechen</button>
+  </div>
+  <div class="cap"><b>Was sich ändert</b>Titel 14 px / 500 bei 80 % → 17 px / 600 voll (Apple-Alert-Titel). Eingabefeld und Knöpfe 44 px hoch — Apples Mindest-Trefferfläche; heute sind es 38 px. Fokus: türkiser Rand + 3-px-Schein statt 30 % Weiß. Die beiden Aktionen bleiben gleichrangig und neutral — keine ist „die richtige“. Abbrechen als Textknopf in Sekundär.</div>
+</div>
+
+<h2>Auswahlraster · Wiederholung</h2>
+<div class="row">
+  <div class="modal">
+    <div class="mt">Wiederholung</div>
+    <div class="ms">Privathaftpflicht · gilt für alle Monate</div>
+    <div class="grid"><button class="opt">Monatlich</button><button class="opt sel">Quartalsweise</button><button class="opt">Halbjährlich</button><button class="opt">Jährlich</button><button class="opt">Einmalig</button></div>
+    <div class="hint">Gilt auch für vergangene Monate. Wie sich die Sparrate dadurch ändert, steht gleich in der Meldung.</div>
+    <div class="acts"><button class="btn primary">Übernehmen</button></div>
+    <button class="cancel">Abbrechen</button>
+  </div>
+  <div class="cap"><b>Türkis heißt hier „ausgewählt“</b>Die Optionen sind Konturen; die gewählte bekommt Türkis-Fläche, -Rand und -Text — unverändert aus v2 („dieselbe Bedeutung wie beim Anlegen“). Neu: <b>„Übernehmen“ ist gefüllt türkis</b>, weil es hier genau eine richtige Aktion gibt. Das ist der einzige gefüllte Knopf im System — wo zwei Wege gleich gut sind (Betrag anpassen), bleibt beides neutral.</div>
+</div>
+
+<h2>Kontextmenü</h2>
+<div class="row">
+  <div class="menu">
+    <div class="mi">Verlauf …</div>
+    <div class="mi">Betrag anpassen …</div>
+    <div class="mi">Fällig am …</div>
+    <div class="mi">Wiederholung …</div>
+    <div class="mi">Kategorie ändern …</div>
+    <div class="msep"></div>
+    <div class="mi">Karte beenden …</div>
+    <div class="mi destr">Karte löschen</div>
+  </div>
+  <div class="menu">
+    <div class="mi">Verlauf …</div>
+    <div class="mi">Kategorie umbenennen …</div>
+    <div class="msep"></div>
+    <div class="mi dis">Karte löschen</div>
+    <div class="reason">Nicht möglich: 3 verknüpfte Kontoumsätze. Erst lösen, dann löschen.</div>
+  </div>
+  <div class="cap"><b>Rot für „löschen“ ist kein Widerspruch zu Regel 2</b>Regel 2 sagt: Rot ist kein <em>Zustand</em> für „noch nicht“. Ein rotes Menüwort ist etwas anderes — es markiert eine <em>Aktion</em>, die nicht rückgängig ist. Das ist seit iOS 7 Konvention (Löschen, Abmelden) und die Erwartung jedes Nutzers. Ein Trennstrich setzt die irreversiblen Einträge ab. Menüzeilen 12 → 14 px, Zeilenhöhe 40 px, Ecken 12 px. Der ⋯-Knopf auf der Karte bleibt erst bei Hover sichtbar — dort ist es richtig: Die Karte hat mit dem Tippen schon eine Hauptgeste.</div>
+</div>
+
+<h2>Toast · Rückgängig</h2>
+<div class="row">
+  <div class="toast"><div class="tl"><div class="tt">Karte »Netflix« gelöscht</div><div class="te up">Sparrate August +13,99 €</div></div><button class="undo">Rückgängig</button><div class="tp"></div></div>
+  <div class="toast"><div class="tl"><div class="tt">Wiederholung: Quartalsweise</div><div class="te down">Sparrate 2026 −153,60 €</div></div><button class="undo">Rückgängig</button><div class="tp" style="width:85%"></div></div>
+  <div class="toast"><div class="tl"><div class="tt">Kategorie »Hobby« gelöscht · 3 Karten sind jetzt ohne Kategorie</div></div><button class="undo">Rückgängig</button><div class="tp" style="width:40%"></div></div>
+  <div class="cap"><b>Was bleibt</b>Unten Mitte, 5 s, Fortschrittsbalken, Rückgängig rechts. Türkis = Entlastung, Rot = Belastung der Sparrate — das ist eine Zahl mit Vorzeichen, kein Zustand, hier ist die Farbe korrekt. Neu: Fläche deckend statt 92 % + Blur (Blur über bewegtem Inhalt kostet und liest sich unruhig), Text 85 % → 100 %, Balken 1,5 → 2 px voll türkis.</div>
+</div>
+
+<h2>Schaufenster · Kontoumsatz</h2>
+<div class="row">
+  <div class="modal wide" style="gap:0">
+    <div class="sk">Kontoumsatz · 14.08.2026</div>
+    <div class="hero"><div class="who">Mainova AG</div><div class="amt">−36,04 €</div></div>
+    <div class="purp">Abschlag Strom Vertrag 4471-2209 August 2026 Kundennr 88213</div>
+    <div class="rule"></div>
+    <div class="srow"><span class="sk2">Konto</span><span class="sv">DKB Giro</span></div>
+    <div class="srow"><span class="sk2">Zugeordnet</span><div><div class="sv on">Strom – Mainova</div><div class="shint">Fixkosten · Gemeinsam</div></div></div>
+    <div class="srow"><span class="sk2">Vorschlag</span><span class="sv">—</span></div>
+  </div>
+  <div class="cap"><b>Betrag weiß, nicht rot</b><span class="badge" style="margin-left:6px">Beschluss 05.09.</span><br>Ein Kontoumsatz hat ein Vorzeichen, kein Urteil. Abgänge stehen in Primärweiß mit Minus, Zugänge türkis — dieselbe Regel wie in der Rohmasse und auf der Ordner-Kachel. Rot bleibt vollständig „Abweichung“. Alles andere: Kicker 11 px, Empfänger 15 / 600, Betrag 19 / 200 → 20 / 400, Zweck 12,5 → 13 px in Sekundär, Schlüssel-Wert-Zeilen 11 / 13 px.</div>
+</div>
+
+<h2>Light Mode</h2>
+<div class="pane t-light" style="display:inline-block">
+  <div class="row">
+    <div class="modal"><div class="mt">Wiederholung</div><div class="ms">Privathaftpflicht · gilt für alle Monate</div><div class="grid"><button class="opt">Monatlich</button><button class="opt sel">Quartalsweise</button><button class="opt">Halbjährlich</button><button class="opt">Jährlich</button><button class="opt">Einmalig</button></div><div class="acts"><button class="btn primary">Übernehmen</button></div><button class="cancel">Abbrechen</button></div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="menu"><div class="mi">Verlauf …</div><div class="mi">Betrag anpassen …</div><div class="msep"></div><div class="mi destr">Karte löschen</div></div>
+      <div class="toast"><div class="tl"><div class="tt">Karte »Netflix« gelöscht</div><div class="te up">Sparrate August +13,99 €</div></div><button class="undo">Rückgängig</button><div class="tp"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="note"><h3>Warum 44 px</h3>Apple schreibt 44 × 44 pt als Mindest-Trefferfläche seit den ersten HIG vor; Google 48 dp. Es ist die Fläche einer Fingerkuppe. Heutige 38-px-Knöpfe treffen Nutzer auf dem Desktop problemlos — auf dem iPhone daneben. Der Preis: Jedes Overlay wird ~24 px höher. Bei 300 px Breite und maximal fünf Zeilen ist das unproblematisch.</div>
+<div class="note"><h3>Ein gefüllter Knopf, sonst keiner</h3>Die Apple-Regel: Der gefüllte Knopf ist der, den der Nutzer in 90 % der Fälle will. „Betrag anpassen“ hat zwei gleich wahrscheinliche Ausgänge — also zwei neutrale Knöpfe. „Wiederholung“ hat einen — also einen gefüllten. Wer alles füllt, sagt nichts.</div>
+<div class="note"><h3>Backdrop</h3>Bleibt <code>rgba(0,0,0,.55)</code> mit 4 px Blur — das ist das Apple-Sheet-Muster. Im Light Mode <code>rgba(0,0,0,.25)</code>: Ein Overlay auf heller Fläche braucht weniger Abdunklung, um zu tragen.</div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1000x1000" name="Übergabe" subtitle="Token-Tabelle alt → neu, nur CSS, keine Logik" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Übergabe — Antigravity Finance</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="doc.css">
+<style>
+table{border-collapse:collapse;width:100%;max-width:960px;font-size:12.5px}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);padding:8px 10px;border-bottom:1px solid var(--border-subtle)}
+td{padding:9px 10px;border-bottom:1px solid var(--border-subtle);vertical-align:top;color:var(--text-secondary)}
+td:first-child{font-family:ui-monospace,Menlo,monospace;color:var(--text-primary);white-space:nowrap}
+td code{white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid var(--border-ghost)}
+ol{font-size:13px;line-height:1.7;color:var(--text-secondary);max-width:80ch;padding-left:20px}
+ol b{color:var(--text-primary)}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="00-was-aendert-sich.html">00 Analyse</a><a href="foundations/farben.html">Farben</a><a href="foundations/typografie.html">Typografie</a><a href="komponenten/karten.html">Karten</a><a href="komponenten/kategorien.html">Kategorien</a><a href="komponenten/ring.html">Ring</a><a href="komponenten/welle.html">Welle</a><a href="komponenten/verlauf.html">Verlauf</a><a href="komponenten/header.html">Header</a><a href="komponenten/overlays.html">Overlays</a><a href="komponenten/zone.html">Interaktionszone</a><a href="komponenten/einkommen.html">Einkommen</a><a class="here" href="uebergabe.html">Übergabe</a></nav>
+<h1>Übergabe an den Code</h1>
+<p class="lede">Der gesamte Umbau ist ein Wertetausch in <code>src/styles/tokens.css</code> plus Selektor-Änderungen in <code>cards.module.css</code>. Kein <code>.tsx</code>, keine Migration, keine Änderung an <code>card-state.ts</code> oder irgendeiner Rechenregel.</p>
+<p class="src">Die vollständigen v3-Werte liegen in <code>styles.css</code> dieses Projekts</p>
+
+<h2>tokens.css · alt → neu</h2>
+<table>
+<tr><th>Token</th><th>heute</th><th>v3 Dark</th><th>v3 Light</th><th>Anmerkung</th></tr>
+<tr><td>--bg-primary</td><td><span class="sw" style="background:#0D0D0F"></span>#0D0D0F</td><td><span class="sw" style="background:#0D0D0F"></span>#0D0D0F</td><td><span class="sw" style="background:#F2F2F7"></span>#F2F2F7</td><td>unverändert</td></tr>
+<tr><td>--bg-card</td><td><span class="sw" style="background:#141416"></span>#141416</td><td><span class="sw" style="background:#1C1C1E"></span>#1C1C1E</td><td><span class="sw" style="background:#fff"></span>#FFFFFF</td><td>eine Fläche für alle Zustände</td></tr>
+<tr><td>--bg-card-open / -paid / -over</td><td>#160D0D / #0A140E / #160A08</td><td colspan="2">entfällt → <code>--bg-card</code></td><td>Zustand wandert in Punkt + Statuswort</td></tr>
+<tr><td>--bg-card-ghost</td><td>#181818</td><td colspan="2">transparent</td><td>Forecast ist Kontur</td></tr>
+<tr><td>--bg-card-hover <span class="badge neu">neu</span></td><td>—</td><td>#2C2C2E</td><td>#FFFFFF</td><td>ersetzt opacity-Änderung</td></tr>
+<tr><td>--color-teal</td><td><span class="sw" style="background:#3ECFAF"></span>#3ECFAF</td><td><span class="sw" style="background:#3ECFAF"></span>#3ECFAF</td><td><span class="sw" style="background:#1FA588"></span>#1FA588</td><td>Ton gleich, Light dunkler</td></tr>
+<tr><td>--color-red</td><td><span class="sw" style="background:#FF453A"></span>#FF453A</td><td><span class="sw" style="background:#FF453A"></span>#FF453A</td><td><span class="sw" style="background:#E0362C"></span>#E0362C</td><td>nur noch Überschritten / Defizit</td></tr>
+<tr><td>--color-gold</td><td>rgba(255,200,60,.6)</td><td>rgba(255,200,60,.75)</td><td>rgba(190,140,0,.9)</td><td>Vorjahreslinie lauter</td></tr>
+<tr><td>--color-blue-dot</td><td>rgba(100,168,240,.38)</td><td>rgba(100,168,240,.7)</td><td>rgba(40,120,220,.8)</td><td>6-px-Punkt braucht Deckkraft</td></tr>
+<tr><td>--text-primary</td><td>#fff</td><td>#fff</td><td>#000</td><td></td></tr>
+<tr><td>--text-muted → --text-secondary</td><td>rgba(255,255,255,.45)</td><td>rgba(235,235,245,.60)</td><td>rgba(60,60,67,.60)</td><td>umbenannt, Apple-Stufe</td></tr>
+<tr><td>--text-ghost → --text-tertiary</td><td>rgba(255,255,255,.22)</td><td>rgba(235,235,245,.30)</td><td>rgba(60,60,67,.30)</td><td>umbenannt</td></tr>
+<tr><td>--text-quaternary <span class="badge neu">neu</span></td><td>—</td><td>rgba(235,235,245,.18)</td><td>rgba(60,60,67,.18)</td><td>nur Forecast-Punkt, Trennlinien</td></tr>
+<tr><td>--border-subtle</td><td>rgba(255,255,255,.07)</td><td>rgba(255,255,255,.08)</td><td>rgba(0,0,0,.06)</td><td></td></tr>
+<tr><td>--border-teal / --border-red</td><td>.22 / .18</td><td colspan="2">entfällt</td><td>kein Zustandsrand mehr</td></tr>
+<tr><td>--border-ghost <span class="badge neu">neu</span></td><td>—</td><td>rgba(255,255,255,.14)</td><td>rgba(0,0,0,.16)</td><td>Forecast-Kontur</td></tr>
+<tr><td>--typo-ring-*</td><td>34 / 200 / −1,8</td><td colspan="2">36 / 300 / −1,4</td><td></td></tr>
+<tr><td>--typo-card-name-size</td><td>13</td><td colspan="2">14</td><td></td></tr>
+<tr><td>--typo-card-amount-*</td><td>22 / 200 / −1,2</td><td colspan="2">22 / 400 / −0,6</td><td></td></tr>
+<tr><td>--typo-label-small-*</td><td>9 / 600 / 1,1</td><td colspan="2">11 / 600 / 0,5</td><td>Mindestgröße</td></tr>
+<tr><td>--typo-label-meta-*</td><td>10 / 500 / 0,6</td><td colspan="2">11 / 500 / 0 · keine Versalien</td><td></td></tr>
+<tr><td>--font-stack-system</td><td>system-ui, -apple-system, …</td><td colspan="2">-apple-system, BlinkMacSystemFont, system-ui, …</td><td>SF Pro zuerst</td></tr>
+</table>
+
+<h2>cards.module.css · was zu streichen ist</h2>
+<ol>
+<li><b><code>.card { opacity: .75 }</code></b> und <code>.ghost { opacity: .65 }</code> entfernen. Hover: <code>background: var(--bg-card-hover)</code> statt <code>opacity: .95</code>.</li>
+<li>Alle Zustands-Selektoren auf <code>.card</code> (<code>.open</code>, <code>.paid</code>, <code>.expected</code>, <code>.received</code>, <code>.running</code>, <code>.over</code>, <code>.done</code>) verlieren <code>background</code> und <code>border-color</code>. <code>.ghost</code> bekommt <code>background: transparent; border-color: var(--border-ghost)</code>.</li>
+<li><code>.cardLabel</code> ist in allen Zuständen <code>var(--text-tertiary)</code> — die sieben Farbzweige entfallen.</li>
+<li><code>.icon*</code>: Offen/Erwartet/Laufend = <code>border: 1.5px solid var(--text-tertiary)</code>, kein Hintergrund. Bezahlt/Erhalten/Abgeschlossen = <code>background: var(--color-teal)</code>, Haken weiß. Überschritten = <code>background: var(--color-red)</code>, Ausrufezeichen weiß. Ghost = gestrichelt, <code>--text-quaternary</code>.</li>
+<li><code>.stateLabel</code>: 11 px, 600, kein <code>text-transform</code>. Neutral = <code>--text-secondary</code>, erledigt = <code>--color-teal</code>, überschritten = <code>--color-red</code>.</li>
+<li><code>.cardAmount</code>: offen/laufend/erwartet = <code>--text-secondary</code>, erledigt = <code>--text-primary</code>, überschritten = <code>--color-red</code>, ghost = <code>--text-tertiary</code>.</li>
+<li><code>.progressBarNorm</code>: <code>var(--progress-neutral)</code> im Zustand Laufend, <code>var(--color-teal)</code> bei Abgeschlossen. <code>.progressBarOver</code> unverändert rot.</li>
+<li><code>.dueDay</code>, <code>.metaText</code>, <code>.householdAmount</code>: 11 px, <code>--text-tertiary</code>. <code>.metaDot</code> 5 → 6 px.</li>
+<li><code>border-radius</code> der Karte 14 → 16 px; auch in <code>.progressWrap</code> und <code>.tapButton</code>.</li>
+</ol>
+
+<h2>interaction-zone.module.css · Ordner-Kachel (Beschluss A)</h2>
+<ol>
+<li><code>.catTileHasOpen</code>, <code>.catTileAllDone</code>: <code>border-left</code> und <code>padding-left</code> streichen — die Klassen dürfen leer bleiben, damit <code>category-tile.tsx</code> unangetastet bleibt.</li>
+<li><code>.catTile</code>: <code>opacity: .82</code> entfernen; <code>background: var(--bg-category)</code>; Stapelkanten mit <code>var(--bg-category-stack)</code> / <code>var(--border-subtle)</code>; Radius 16 px.</li>
+<li><code>.catOpenFlag</code>: 11 px / 600, <code>color: var(--text-secondary)</code>, kein <code>text-transform</code>. Für „erledigt“ in Türkis: im <code>allDone</code>-Zweig von <code>category-tile.tsx</code> die Klasse <code>catCount</code> gegen eine neue <code>catDoneFlag</code> (<code>color: var(--color-teal)</code>) tauschen — reiner Klassenname, keine Logik.</li>
+<li><code>.catKicker</code>, <code>.catCount</code>: 11 px, <code>--text-tertiary</code>. <code>.catName</code> 14 px. <code>.catAmount</code> 400 / −0,6 px.</li>
+<li><code>.catChev</code>: Textzeichen „›“ durch 8×12-SVG-Chevron ersetzen (<code>currentColor</code>, <code>--text-tertiary</code>), Rotation 90° bei <code>.catTileOpen</code> bleibt.</li>
+<li><code>.childGroup</code>: <code>border-bottom-color: var(--border-ghost)</code>; <code>.childGroup.openFlag</code> entfällt.</li>
+<li>Tokens entfallen: <code>--border-category-open</code>, <code>--border-category-done</code>, <code>--text-category-flag</code>, <code>--border-bracket-open</code>. Neu: <code>--bg-category</code> (#1A1A20 / #F7F7FB), <code>--bg-category-stack</code> (#131317 / #ECECF2).</li>
+</ol>
+
+<h2>cards.module.css · Verlaufs-Overlay</h2>
+<ol>
+<li><code>.verlaufModal</code>: <code>background: var(--bg-elevated)</code>; Rand 1 px <code>--border-subtle</code>; Schatten <code>0 30px 80px -20px rgba(0,0,0,.5)</code>.</li>
+<li><code>.verlaufHero</code>: 26 px / 600 / −0,5 px (statt 38 / 200 / −1,6). <code>.verlaufKicker</code> 11 px / 0,5 px Sperrung. <code>.verlaufSub</code> 12 px, <code>--text-secondary</code>.</li>
+<li><code>.verlaufClose</code>: 28 px, <code>background: var(--neutral-fill)</code>, kein Rand, Farbe <code>--text-secondary</code>; „×“ durch 10×10-SVG ersetzen.</li>
+<li>SVG: <code>.verlaufRaster</code> 1 px <code>--border-subtle</code> · <code>.verlaufJahrGrenze</code> 1 px <code>--border-ghost</code> · <code>.verlaufHeuteLinie</code> 1 px <code>--text-tertiary</code> · alle Labels 11 px <code>--text-tertiary</code> · <code>.verlaufPlanLinie</code> 1,5 px <code>--text-tertiary</code> · <code>.verlaufIstLinie</code> <code>var(--color-teal)</code> voll.</li>
+<li><code>.verlaufFuss</code>: <code>background: var(--neutral-fill)</code>, kein Rand, Radius 10, 12 px.</li>
+</ol>
+
+<h2>header-timeline.module.css</h2>
+<ol>
+<li><code>.chev</code>: <code>opacity: 1</code> dauerhaft, 28 px, <code>background: var(--neutral-fill)</code>; die Hover-Regeln <code>.headerTimeline:hover .chev</code> entfallen. Chevron-Strich 1,6 px, Farbe <code>--text-secondary</code>.</li>
+<li><code>.flankMonth</code>: <code>--text-secondary</code>. <code>.flankSub</code>: 12 px, <code>--text-tertiary</code>; bei offenen Fragmenten <code>--text-secondary</code> — dafür in <code>index.tsx</code> eine Klasse an <code>safeCount &gt; 0</code> hängen (reiner Klassenname).</li>
+<li><code>.pill</code>: 11 px / 600 / 0,2 px, kein <code>text-transform</code>, <code>border: 1px solid transparent</code>. <code>.pillRunning</code>: <code>--neutral-fill</code> / <code>--text-secondary</code>. <code>.pillPast</code>: <code>--teal-fill</code> / <code>--color-teal</code>. <code>.pillFuture</code>: transparent, <code>border-color: var(--border-ghost)</code>, <code>--text-tertiary</code>.</li>
+<li><code>.outlierSub</code>: 12 px / 400, <code>--color-gold</code>. <code>.flankDisabled</code>: <code>opacity: .35</code>.</li>
+</ol>
+
+<h2>cards.module.css + interaction-zone.module.css · Overlays, Menü, Toast</h2>
+<ol>
+<li><code>.overlayModal</code> / <code>.showcaseModal</code>: <code>background: var(--bg-elevated)</code> deckend, Rand 1 px <code>--border-subtle</code>. <code>.overlayBackdrop</code> Light: <code>rgba(0,0,0,.25)</code>.</li>
+<li><code>.overlayTitle</code>: 17 px / 600, <code>--text-primary</code>. <code>.overlayCurrentValue</code>, <code>.overlaySubtitle</code>: 13 px <code>--text-secondary</code>. <code>.overlayHint</code>: 12 px <code>--text-tertiary</code>.</li>
+<li><code>.overlayInput</code>: Höhe 44 px, 17 px / 400, <code>background: var(--neutral-fill)</code>; <code>:focus</code> <code>border-color: var(--color-teal); box-shadow: 0 0 0 3px var(--teal-fill)</code>. <code>.overlayInputError</code> <code>--color-red</code>.</li>
+<li><code>.overlayActionButton</code> / <code>.primaryButton</code>: 44 px, 15 px / 500, <code>--neutral-fill</code>, kein Rand, <code>--text-primary</code>. Neue Klasse <code>.primaryButtonFilled</code> (<code>background: var(--color-teal); color: #fff</code>) nur für „Übernehmen“ in <code>frequency-overlay.tsx</code> — Klassenname, keine Logik. <code>.overlayCancelButton</code>: 15 px, <code>--text-secondary</code>.</li>
+<li><code>.overlayFrequencyButton</code> / <code>.optionButton</code>: 40 px, Kontur <code>--border-subtle</code>, transparent; <code>…Selected</code>: <code>--teal-fill</code> / <code>--color-teal</code> Rand und Text.</li>
+<li><code>.contextMenu</code>: <code>--bg-elevated</code>, Radius 12, Padding 6. <code>.contextMenuItem</code>: 14 px, 10/12 px Padding, Radius 8, <code>--text-primary</code>; Hover <code>--neutral-fill</code>. Neue Klasse <code>.contextMenuItemDestructive</code> (<code>--color-red</code>) für „löschen“ + <code>.contextMenuSep</code>. <code>.contextMenuReason</code> 12 px <code>--text-tertiary</code>.</li>
+<li><code>.toast</code>: <code>--bg-elevated</code> deckend, kein Blur. <code>.toastText</code> <code>--text-primary</code>. <code>.progress</code> 2 px <code>var(--color-teal)</code>. <code>.undoButton</code> 13 px.</li>
+<li>Schaufenster: <code>.showcaseWho</code> 600, <code>.showcaseAmount</code> 20 px / 400 / −0,5, <code>.showcaseAmountNeg</code> → <code>--text-primary</code> (Beschluss B), <code>.showcaseAmountPos</code> bleibt teal, <code>.showcasePurpose</code> 13 px <code>--text-secondary</code>, Kicker/Keys 11 px, Werte 13 px.</li>
+</ol>
+
+<h2>interaction-zone.module.css · Zone</h2>
+<ol>
+<li><code>.zoneLabel</code>, <code>.liquidityWord</code>: 11 px / 0,5 px, <code>--text-tertiary</code>. <code>.liquidityNum</code> 13 px <code>--text-secondary</code>.</li>
+<li><code>.portal</code>: Radius 16, <code>1.5px dashed var(--border-ghost)</code>, transparent. <code>.portalIcon</code> 40 px, Radius 12, <code>--neutral-fill</code>. Labels 12 / 11 px. Drag: <code>--color-teal</code> + <code>--teal-fill</code>; Success: Rand solid teal; Error: <code>--color-red</code> + <code>--red-fill</code>.</li>
+<li><code>.emptySlot</code>: Radius 16, <code>1.5px dashed var(--border-ghost)</code>, transparent; Plus 24 px / 300; Label 12 px. Hover: <code>--text-tertiary</code>.</li>
+<li><code>.chevButton</code>: <code>--neutral-fill</code>, kein Rand, <code>--text-secondary</code>; disabled <code>opacity: .3</code>.</li>
+<li><code>.fragmentCard</code>: <code>opacity: .72</code> entfernen; <code>--bg-card</code>, Radius 12. Hover nur Lift, keine Deckkraft.</li>
+<li><code>.fragmentAmount</code>: 16 px / 400 / −0,4, <code>--text-primary</code>. <code>.fragmentAmountNeg</code> entfällt (Farbe = primary); <code>.fragmentAmountPos</code> <code>--color-teal</code>.</li>
+<li><code>.fragmentDesc</code> 12 px <code>--text-secondary</code>; <code>.fragmentSuggestion</code>, <code>.fragmentDate</code> 11 px <code>--text-tertiary</code>.</li>
+<li><b>Design-Doku §8</b>: Invariante „.22 / .45“ ersetzen durch „Kontur / Sekundär / Fläche“ (Wortlaut auf <a href="komponenten/zone.html">Interaktionszone</a><a href="komponenten/einkommen.html">Einkommen</a>). Dann: <code>.fragmentCardLocked</code>: <code>opacity</code> entfernen → <code>background: transparent; border-color: var(--border-ghost)</code>; Betrag/Text <code>--text-tertiary</code>. <code>.fragmentCardTransfer</code>: <code>opacity</code> entfernen → Text <code>--text-secondary</code>. Wort „· zugeordnet“ an <code>.fragmentDesc</code> anhängen (String in <code>fragment-card.tsx</code>).</li>
+<li><code>.fragmentBadge</code> / <code>.fragmentBadgeTransfer</code>: 10 px / 0,5 px, <code>--neutral-fill</code> / <code>--text-secondary</code>, Radius 5, kein Rand.</li>
+<li><code>.transferToggleBox</code>: 14 px, Radius 4, Rand 1,5 px <code>--text-tertiary</code>; checked <code>--text-secondary</code>. <code>.transferToggle</code> 11 px.</li>
+</ol>
+
+<h2>income-split.module.css</h2>
+<ol>
+<li><code>.dialog</code>: <code>--bg-elevated</code>, Radius 16. <code>.backdrop</code> wie <code>.overlayBackdrop</code> (.55 / Light .25, Blur 4).</li>
+<li><code>.title</code> 17 / 600 / −0,3. <code>.activeMonth</code> 12 px, keine Versalien, <code>--text-tertiary</code>. <code>.label</code> 11 / 600 / 0,5.</li>
+<li><code>.taxClassButton</code>: 40 px, Radius 10, Kontur <code>--border-subtle</code>; <code>Active</code>: <code>--teal-fill</code> / Rand + Text <code>--color-teal</code>.</li>
+<li><code>.sliderValue</code> 28 / 400 / −0,8. <code>.slider</code>: <code>appearance: none</code>; Track 4 px <code>--neutral-fill</code>, Füllung <code>--color-teal</code> (per <code>background: linear-gradient</code> mit <code>--pct</code>-Variable aus <code>index.tsx</code> — eine Style-Prop, keine Logik); Thumb 28 px weiß, <code>box-shadow: 0 1px 4px rgba(0,0,0,.35)</code>. <code>.sliderMeta</code> 12 px.</li>
+<li><code>.splitPreview</code>: <code>--neutral-fill</code>, Radius 12, kein Rand; Zeile 1 14 / 600, Zeile 2 12 px <code>--text-secondary</code>.</li>
+<li><code>.input</code>: 44 px, 17 px, <code>--neutral-fill</code>, Radius 10; <code>.inputManual</code> Rand <code>--text-tertiary</code> (nicht mehr 30 % Weiß); <code>.inputError</code> <code>--color-red</code>. <code>.hintTeal</code> → <code>--text-secondary</code>; <code>.hintDefault</code> 12 px <code>--text-tertiary</code>; <code>.hintError</code> bleibt rot.</li>
+<li><code>.assignment</code> Radius 12, Texte 14 / 12 px. <code>.inheritanceBadge</code>: <code>border-left</code> entfernen, <code>--neutral-fill</code>, Radius 12, 12 px <code>--text-secondary</code>. <code>.pastWarning</code>: kein Rand, <code>--neutral-fill</code>, Text <code>--color-gold</code>.</li>
+<li><code>.buttonPrimary</code>: 44 px, Radius 10, <code>color: #fff</code>, 15 / 600; disabled <code>--neutral-fill</code> / <code>--text-tertiary</code>. <code>.buttonSecondary</code>: 44 px, <code>--neutral-fill</code>, kein Rand, <code>--text-primary</code>.</li>
+<li>Konsequenz: <code>.consequenceHero</code> 34 / 400 / −1; <code>.consequenceSubtitle</code> 12 px <code>--text-secondary</code>; <code>.consequenceCaption</code> 13 px; <code>.consequenceHead</code> 11 / 600 / 0,5; <code>.consequenceRow</code> 13 px; <code>.consequenceCol</code> 72 px; <code>.consequenceSum</code> 600.</li>
+</ol>
+
+<div class="note"><h3>Nach dem Bau</h3>Login und Onboarding folgen denselben Tokens; eigene v3-Seiten dafür erst, wenn v3 im Dashboard steht. M2 (Verben des Karten-Lebenszyklus) ist eine Produktfrage und bekommt eine eigene Drei-Varianten-Runde. Die Kategorien-Kachel ist entschieden — siehe <a href="komponenten/kategorien.html">Kategorien</a>, dort steht auch ihre Übergabe.</div>
+<div class="note"><h3>Prüfstrecke</h3>Der Visual-Pixel-Test (<code>tests/e2e/visual-pixel.spec.ts</code>) wird nach dem Tausch neue Referenzbilder brauchen — das ist erwartet und kein Fehler. Alle anderen E2E-Tests prüfen Wortlaut und Datenfluss und sollten unverändert durchlaufen; die Statuswörter sind identisch.</div>
+</body>
+</html>

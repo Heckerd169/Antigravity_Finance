@@ -85,7 +85,7 @@ export default defineConfig({
     //        Blöcke, zählt die Laufnummer der RPC je Block neu, beide Zeilen
     //        bekommen denselben Hash, und eine echte Zahlung verschwindet als
     //        vermeintliches Duplikat. Anker 1 und 2 bleiben dabei grün.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung)\.spec\.ts/, use: DESKTOP },
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

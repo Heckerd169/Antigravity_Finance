@@ -1,0 +1,93 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1000x820" name="Header · Monatswahl" subtitle="Flanken, Pille, Chevrons — Dark + Light" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Header — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<style>
+/* Header v3 — Layout 1:1 aus header-timeline.module.css */
+.ht{display:flex;align-items:stretch;justify-content:space-between;padding:22px 20px 20px;border-bottom:1px solid var(--border-subtle);max-width:720px;background:var(--bg-primary);color:var(--text-primary);user-select:none}
+.fl{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:4px 0;color:var(--text-secondary);text-decoration:none;border-radius:10px}
+.fl.l{justify-content:flex-start}.fl.r{justify-content:flex-end}
+.fl.dis{opacity:.35;pointer-events:none}
+.ft{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fl.r .ft{align-items:flex-end}
+.fm{font-size:13px;font-weight:500;letter-spacing:-.2px;color:var(--text-secondary);white-space:nowrap}
+.fs{font-size:12px;color:var(--text-tertiary);white-space:nowrap}
+.fs.warn{color:var(--text-secondary)}
+.chev{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--neutral-fill);color:var(--text-secondary);flex-shrink:0}
+.ce{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;padding:0 16px;gap:5px}
+.ml{font-size:17px;font-weight:600;letter-spacing:-.4px;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.2px;padding:3px 10px;border-radius:20px;border:1px solid transparent}
+.pill.run{background:var(--neutral-fill);color:var(--text-secondary)}
+.pill.past{background:var(--teal-fill);color:var(--color-teal)}
+.pill.fut{background:transparent;border-color:var(--border-ghost);color:var(--text-tertiary)}
+.out{min-height:15px;font-size:12px;color:var(--color-gold);white-space:nowrap}
+.alt{background:#0D0D0F;color:#fff}
+.alt .fm{color:rgba(255,255,255,.38);}.alt .fs{color:rgba(255,255,255,.18);font-size:10.5px}
+.alt .chev{background:transparent;opacity:0}
+.alt .pill{font-size:9px;letter-spacing:.8px;text-transform:uppercase}
+.alt .pill.run{background:rgba(255,255,255,.06);color:rgba(255,255,255,.35)}
+.alt .pill.past{background:rgba(62,207,175,.08);color:rgba(62,207,175,.6)}
+.alt .pill.fut{background:rgba(255,255,255,.03);color:rgba(255,255,255,.15);border-color:transparent}
+.alt .out{color:rgba(255,200,60,.65);font-size:11px;font-weight:300}
+.stack{display:flex;flex-direction:column;gap:18px;max-width:720px}
+.cap{max-width:720px}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a class="here" href="header.html">Header</a><a href="overlays.html">Overlays</a><a href="zone.html">Interaktionszone</a><a href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Header · Monatswahl</h1>
+<p class="lede">Der Header ist die Navigation der App: Vormonat links, Folgemonat rechts, in der Mitte der Monat mit seiner Pille. v3 macht die Pfeile sichtbar, hebt die Flanken auf lesbare Stufen und bringt die Pille in die Zustandssprache der Karten.</p>
+<p class="src">Layout 1:1 aus <code>header-timeline.module.css</code>, Wortlaut aus <code>index.tsx</code> (Laufend / Abgeschlossen / Forecast, „N Fragmente offen“, „Kein Ausreißer“)</p>
+
+<h2>Vorher</h2>
+<div class="ht alt">
+  <a class="fl l" href="#"><span class="chev"></span><span class="ft"><span class="fm">Juli 2026</span><span class="fs">3 Fragmente offen</span></span></a>
+  <div class="ce"><div class="ml">August 2026</div><span class="pill run">Laufend</span><div class="out">Autoversicherung 650 €</div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">September 2026</span><span class="fs">Kein Ausreißer</span></span><span class="chev"></span></a>
+</div>
+<div class="cap" style="margin-top:10px">Die Chevrons stehen auf <code>opacity: 0</code> und erscheinen erst beim Hover über den ganzen Header — auf Touch-Geräten also nie. Flanken-Untertitel bei 18 % Weiß.</div>
+
+<h2>v3 · Die drei Pillen</h2>
+<div class="stack">
+<div class="ht">
+  <a class="fl l" href="#"><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ft"><span class="fm">Juli 2026</span><span class="fs warn">3 Fragmente offen</span></span></a>
+  <div class="ce"><div class="ml">August 2026</div><span class="pill run">Laufend</span><div class="out">Autoversicherung 650 €</div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">September 2026</span><span class="fs">Kein Ausreißer</span></span><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+</div>
+<div class="ht">
+  <a class="fl l" href="#"><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ft"><span class="fm">Mai 2026</span><span class="fs">Alles erledigt</span></span></a>
+  <div class="ce"><div class="ml">Juni 2026</div><span class="pill past">Abgeschlossen</span><div class="out">Steuererstattung 2.658 €</div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">Juli 2026</span><span class="fs">Kein Ausreißer</span></span><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+</div>
+<div class="ht">
+  <a class="fl l" href="#"><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ft"><span class="fm">Oktober 2026</span><span class="fs">Alles erledigt</span></span></a>
+  <div class="ce"><div class="ml">November 2026</div><span class="pill fut">Forecast</span><div class="out"></div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">Dezember 2026</span><span class="fs">Kein Ausreißer</span></span><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+</div>
+<div class="ht">
+  <div class="fl l dis"><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ft"><span class="fm">Dezember 2024</span><span class="fs">Alles erledigt</span></span></div>
+  <div class="ce"><div class="ml">Januar 2025</div><span class="pill past">Abgeschlossen</span><div class="out"></div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">Februar 2025</span><span class="fs">Kein Ausreißer</span></span><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+</div>
+</div>
+<div class="cap" style="margin-top:10px">Von oben: Laufend (neutral) · Abgeschlossen (türkis) · Forecast (Kontur) · untere Schranke — die linke Flanke ist deaktiviert und dimmt auf 35 %.</div>
+
+<h2>Light Mode</h2>
+<div class="pane t-light" style="padding:0;overflow:hidden;max-width:720px">
+<div class="ht" style="border-bottom:none">
+  <a class="fl l" href="#"><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ft"><span class="fm">Juli 2026</span><span class="fs warn">3 Fragmente offen</span></span></a>
+  <div class="ce"><div class="ml">August 2026</div><span class="pill run">Laufend</span><div class="out">Autoversicherung 650 €</div></div>
+  <a class="fl r" href="#"><span class="ft"><span class="fm">September 2026</span><span class="fs">Kein Ausreißer</span></span><span class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+</div>
+</div>
+
+<div class="note"><h3>Die Pfeile sind immer da</h3>Ein Navigationselement, das erst beim Hover erscheint, existiert auf dem iPhone nicht. Die Chevrons bekommen einen 28-px-Kreis in <code>--neutral-fill</code> — Apples Muster für Schritt-Knöpfe (Kalender, Fotos). 28 px sind zudem die minimale Trefferfläche, die ohne Frust tappbar ist; die ganze Flanke bleibt Link, der Kreis zeigt nur, wo.</div>
+<div class="note"><h3>Die Pille spricht die Kartensprache</h3>„Laufend“ neutral, „Abgeschlossen“ türkis, „Forecast“ als Kontur ohne Fläche — exakt die drei Zustände, die die Karten mit Punkt, Haken und gestricheltem Kreis zeigen. Wer das Karussell verstanden hat, versteht die Pille ohne Legende. Versalien und 9 px entfallen; 11 px, normale Schreibung, Sperrung 0,2.</div>
+<div class="note"><h3>„3 Fragmente offen“ ist eine Aufgabe, „Alles erledigt“ eine Bestätigung</h3>Der Untertitel der linken Flanke sagt, ob im Vormonat noch Kontoumsätze zuzuordnen sind. Das ist die einzige Stelle im Header, die zu einer Handlung auffordert — deshalb steht er bei offenen Fragmenten eine Stufe heller (Sekundär statt Tertiär). Keine Farbe: Unzugeordnete Fragmente sind kein Fehler, nur Arbeit.</div>
+<div class="note"><b>Unverändert:</b> Aufbau Flanke – Mitte – Flanke, 17 px / 600 für den aktiven Monat, Ausreißer-Zeile in Gold mit reservierter Höhe (kein Sprung beim Monatswechsel), Deaktivierung an der unteren Schranke, alle Wortlaute.</div>
+</body>
+</html>

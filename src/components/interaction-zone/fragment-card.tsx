@@ -153,7 +153,24 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
           KI-Vorschlag: {fragment.suggestedCardName}
         </div>
       )}
-      <div className={styles.fragmentDate}>{formatDateShort(fragment.transaction_date)}</div>
+      {/* v3-01 (Design-Doku §8): Ein zugeordnetes Fragment hat keine Flaeche
+          mehr, nur eine Kontur — und eine Kontur allein sagt nicht, WARUM es
+          leise ist. Deshalb tritt das Wort hinzu.
+
+          ES STEHT AUF DER DATUMSZEILE UND NICHT HINTER DER BESCHREIBUNG, wo
+          der v3-Entwurf es zeigt. Gemessen mit dem echten Schriftstapel: Die
+          Fragment-Karte hat 192 px Inhaltsbreite, und drei von fuenf echten
+          Buchungstexten sind schon OHNE den Zusatz zu lang —
+          „Abrechnung 30.06.2026 siehe Anlage" braucht 218 px. Die Ellipse
+          haette also genau das Wort abgeschnitten, das die Kontur erklaert.
+          Der Entwurf zeigte „Miete August" (76 px), einen kurzen erfundenen
+          Text; die echten Daten sehen anders aus (LL-31).
+
+          Die Datumszeile bricht nicht ab und traegt dieselbe Textstufe. */}
+      <div className={styles.fragmentDate}>
+        {formatDateShort(fragment.transaction_date)}
+        {isLocked && !isTransfer ? " · zugeordnet" : ""}
+      </div>
       {/* v2-04 ② Interim: Markier-Auslösung. Setzen aus UNASSIGNED (Broker-
           Eingang, F3) oder INTERNAL_TRANSFER (Scalable-Fall, E2); Rücknahme
           aus ASSET_REALLOCATION. Verlinkte Fragmente (ASSIGNED/AUTO_ABSORBED)

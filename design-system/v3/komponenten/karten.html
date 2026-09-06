@@ -1,0 +1,106 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x1400" name="Karten" subtitle="Neun Zustände, drei Varianten, Dark + Light" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Karten — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<link rel="stylesheet" href="../karte.css">
+<style>
+/* Variante B: linke Kante statt Punkt */
+.vb .card .dot{display:none}
+.vb .card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 2px 2px 0;background:var(--text-quaternary)}
+.vb .card[data-state="paid"]::before{background:var(--color-teal)}
+.vb .card[data-state="over"]::before{background:var(--color-red)}
+/* Variante C: heutige Flächenfärbung, auf v3-Tokens gehoben */
+.vc .card[data-state="open"],.vc .card[data-state="running"]{background:#2A1A1A;border-color:rgba(255,69,58,.25)}
+.vc .card[data-state="paid"]{background:#14261E;border-color:rgba(62,207,175,.3)}
+.vc .card[data-state="over"]{background:#2C1512;border-color:rgba(255,69,58,.45)}
+.var{padding:22px 24px;border-radius:20px;border:1px solid var(--border-subtle);background:var(--bg-primary)}
+.var h3{margin:0 0 4px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px}
+.var p{margin:0 0 18px;font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.var .kosten{margin-top:16px;font-size:12px;line-height:1.6;color:var(--text-tertiary)}
+.var .kosten b{color:var(--text-secondary);font-weight:600}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:1100px){.three{grid-template-columns:1fr}}
+.theme-wrap{padding:24px;border-radius:20px;background:var(--bg-primary);border:1px solid var(--border-subtle)}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a class="here" href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a href="header.html">Header</a><a href="overlays.html">Overlays</a><a href="zone.html">Interaktionszone</a><a href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Karten</h1>
+<p class="lede">Drei Typen, neun Zustände — dieselbe Zählung wie heute. Neu: Alle Karten teilen eine Fläche. Der Zustand sitzt im Punkt oben rechts und im Statuswort. Rot erscheint auf genau einer Karte: Überschritten.</p>
+<p class="src">Geometrie 1:1 aus <code>cards.module.css</code> · Farben aus <code>styles.css</code> (v3) · Statuswörter und Regeln unverändert aus den Beschluss-Records</p>
+
+<h2>Drei Varianten · Wo sitzt der Zustand?</h2>
+<p class="sub">Entschieden am 05.09.2026 für A. B und C bleiben hier als Beleg stehen, weil sie zeigen, <em>warum</em> Regel 1 gilt — Variante C ist der heutige Zustand.</p>
+<div class="three">
+  <div class="var">
+    <h3>A · Statuspunkt <span class="badge">Entschieden · 05.09.2026</span></h3>
+    <p>Der 18-px-Kreis oben rechts ist der Zustand: leer = noch nicht, türkis mit Haken = erledigt, rot mit Ausrufezeichen = Abweichung. Das Statuswort wiederholt es in Text.</p>
+    <div class="rail" style="gap:12px">
+      <div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div>
+    </div>
+    <div class="kosten"><b>Bringt:</b> Zustand an der Stelle, wo heute schon das Icon sitzt — kein Umlernen. Der Punkt ist auch ohne Farbe lesbar (leer / Haken / Ausrufezeichen) — barrierefrei für Rot-Grün-Schwäche.<br><b>Kostet:</b> Im Karussell muss das Auge auf die rechte obere Ecke springen; die Fläche selbst sagt nichts.</div>
+  </div>
+  <div class="var vb">
+    <h3>B · Linke Kante</h3>
+    <p>Eine 3-px-Linie am linken Rand trägt den Zustand — wie die Kategorien-Kachel es heute schon tut. Kein Icon, das Statuswort erklärt.</p>
+    <div class="rail" style="gap:12px">
+      <div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div>
+    </div>
+    <div class="kosten"><b>Bringt:</b> Beim schnellen Wischen sieht man die Kanten als Reihe farbiger Striche — sehr scanbar. Ruhigster Kopfbereich.<br><b>Kostet:</b> Die Kante ist heute das Erkennungszeichen der <em>Kategorie</em>-Kachel (Befund U3). Karte und Ordner würden sich angleichen — genau das, was die Kategorien-Runde vermeiden wollte. Ohne Symbol ist Farbe die einzige Codierung.</div>
+  </div>
+  <div class="var vc">
+    <h3>C · Fläche färbt <span class="badge warn">heutiges Prinzip</span></h3>
+    <p>Die Fläche trägt den Zustand, wie bisher — nur mit den helleren v3-Tönen. Bewusst als Gegenposition gebaut.</p>
+    <div class="rail" style="gap:12px">
+      <div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Miete</div><div class="amount">1.904,00 €</div><div class="household"></div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md"></i>Ich</div></div>
+      <div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div>
+    </div>
+    <div class="kosten"><b>Bringt:</b> Maximale Fernwirkung — man sieht den Zustand aus zwei Metern.<br><b>Kostet:</b> Offen (Normalfall) und Überschritten (Problem) sind beide rot-getönt und kaum auseinanderzuhalten. Text auf farbiger Fläche verliert Kontrast. Acht Karten nebeneinander ergeben einen Fleckenteppich, in dem die eine wirklich wichtige Karte untergeht. Dieser Vergleich ist der Grund für Regel 1.</div>
+  </div>
+</div>
+
+<h2>Variante A · Alle neun Zustände</h2>
+<p class="sub">Fixkosten (3) · Budget (5 Darstellungen, 4 Zustände) · Einnahmen (2). Alle Wortlaute und Regeln unverändert.</p>
+<div class="rail">
+  <div class="slot"><div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><div class="cap"><b>Offen</b>Leerer Kreis: erwartet, noch nicht abgebucht. Betrag in Sekundärweiß (60 %) — lesbar, aber „noch nicht passiert“.</div></div>
+  <div class="slot"><div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><div class="cap"><b>Bezahlt</b>Gefüllter türkiser Kreis mit weißem Haken, Betrag voll weiß. Der Termin bleibt stehen — Eigenschaft, kein Zustand.</div></div>
+  <div class="slot"><div class="card" data-state="ghost"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Forecast</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><div class="cap"><b>Forecast</b>Nur Kontur, gestrichelter Punkt. Keine Fläche, weil es die Karte noch nicht gibt. Nicht antippbar — und sieht so aus.</div></div>
+</div>
+<div class="rail" style="margin-top:34px">
+  <div class="slot"><div class="card budget" data-state="running"><div class="top"><span class="type">Budget</span><span class="dot"></span></div><div class="name">Auswärts Essen</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Laufend</span></div><div class="rest">Noch 157,20 € frei</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:21%"></i></div></div><div class="cap"><b>Laufend</b>Neutral — der Normalfall eines Budgets. Balken in Grau: Verbrauch ist Information, kein Urteil. Zeigt weiterhin den Plan.</div></div>
+  <div class="slot"><div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div><div class="cap"><b>Überschritten</b>Der einzige rote Zustand. Punkt, Statuswort, Betrag, Zusatz, Balken — hier darf Rot mehrfach auftreten, weil es die Ausnahme markiert.</div></div>
+  <div class="slot"><div class="card budget" data-state="done"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">142,80 €</div><div class="household"></div><div class="row"><span class="state">Abgeschlossen</span></div><div class="rest">57,20 € nicht verbraucht</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:71%"></i></div></div><div class="cap"><b>Abgeschlossen · unter Plan</b>Türkis wie Bezahlt. Balken wird türkis — jetzt ist der Verbrauch ein Ergebnis.</div></div>
+  <div class="slot"><div class="card budget over-accepted" data-state="done"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Abgeschlossen</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div><div class="cap"><b>Abgeschlossen · über Plan</b>Haken türkis: bewusst akzeptiert. Nur Zusatz und Balken bleiben rot — die Abweichung bleibt sichtbar, ohne zu alarmieren.</div></div>
+  <div class="slot"><div class="card budget" data-state="ghost"><div class="top"><span class="type">Budget</span><span class="dot"></span></div><div class="name">Auswärts Essen</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Forecast</span></div><div class="meta"><i class="md"></i>Ich</div></div><div class="cap"><b>Forecast</b>Kein Balken — es wurde nichts verbraucht.</div></div>
+</div>
+<div class="rail" style="margin-top:34px">
+  <div class="slot"><div class="card" data-state="expected"><div class="top"><span class="type">Einnahmen</span><span class="dot"></span></div><div class="name">Nebenjob</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Erwartet</span><span class="due">am 28.</span></div><div class="meta"><i class="md"></i>Ich</div></div><div class="cap"><b>Erwartet</b>Gleiche Sprache wie Offen: leerer Kreis. Heute hat Erwartet einen eigenen Grünton — v3 braucht ihn nicht, weil die Fläche neutral ist.</div></div>
+  <div class="slot"><div class="card" data-state="received"><div class="top"><span class="type">Einnahmen</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Nebenjob</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Erhalten</span><span class="due">am 28.</span></div><div class="meta"><i class="md"></i>Ich</div></div><div class="cap"><b>Erhalten</b>Türkis. Wie Bezahlt — Geld ist bewegt, egal in welche Richtung.</div></div>
+</div>
+
+<h2>Light Mode · dieselben Karten</h2>
+<p class="sub">Kein anderes Layout, keine anderen Tokennamen. Türkis und Rot in der dunkleren Light-Stufe (siehe Farben).</p>
+<div class="theme-wrap t-light">
+  <div class="rail">
+    <div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div>
+    <div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div>
+    <div class="card" data-state="ghost"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Forecast</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div>
+    <div class="card budget" data-state="running"><div class="top"><span class="type">Budget</span><span class="dot"></span></div><div class="name">Auswärts Essen</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Laufend</span></div><div class="rest">Noch 157,20 € frei</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:21%"></i></div></div>
+    <div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div>
+    <div class="card budget" data-state="done"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">142,80 €</div><div class="household"></div><div class="row"><span class="state">Abgeschlossen</span></div><div class="rest">57,20 € nicht verbraucht</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:71%"></i></div></div>
+  </div>
+</div>
+
+<div class="note"><h3>Was auf der Karte nicht mehr steht</h3>Die Zustandsfarbe im Typ-Label („FIXKOSTEN“ in Rot) entfällt — das Label sagt, <em>was</em> die Karte ist, nicht <em>wie</em> es ihr geht. Der eigene Hintergrund für „Erwartet“ (<code>#0D1A16</code>) entfällt. Die Karten-Opacity (<code>.75</code> / <code>.65</code>) entfällt. Hover hebt die Karte um 2 px und hellt die Fläche auf <code>#2C2C2E</code> — statt die Deckkraft zu ändern.</div>
+<div class="note"><h3>Antippbarkeit sichtbar machen</h3>Eine offene Karte ist eine Aufforderung; der leere Kreis ist ihr Zeichen — dasselbe Muster wie eine Checkbox in Erinnerungen. Wer ihn sieht, weiß ohne Erklärung, dass er gefüllt werden kann. Deshalb behält Variante A das Icon, wo Variante B es streicht.</div>
+</body>
+</html>

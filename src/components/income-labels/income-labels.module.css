@@ -14,20 +14,20 @@
 }
 
 .label:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--border-ghost);
 }
 
 .labelActive {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--text-tertiary);
+  background: var(--neutral-fill);
 }
 
 .avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-ghost);
+  background: var(--neutral-fill);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -23,24 +23,11 @@
 /* ---------- Card Base ---------- */
 
 .card {
-  /* Komponenten-lokale CSS-Custom-Properties (analog Sprint-2-Ring-Pattern) */
-  --meta-dot-ich: rgba(255, 255, 255, .22);
-  --meta-dot-gem: rgba(100, 168, 240, .38);
-  --meta-text-color: rgba(255, 255, 255, .20);
-  --rest-pos: rgba(62, 207, 175, .40);
-  --rest-neg: rgba(255, 69, 58, .65);
-  --progress-norm: rgba(62, 207, 175, .45);
-  --progress-over: #FF453A;
-  --icon-open-bg: rgba(255, 69, 58, .1);
-  --icon-open-border: rgba(255, 69, 58, .2);
-  --icon-paid-bg: rgba(62, 207, 175, .1);
-  --icon-paid-border: rgba(62, 207, 175, .28);
-  --icon-ghost-bg: rgba(255, 255, 255, .06);
-  --icon-ghost-border: rgba(255, 255, 255, .1);
-  --icon-over-bg: rgba(255, 69, 58, .16);
-  --icon-over-border: rgba(255, 69, 58, .35);
-  --icon-expected-bg: rgba(62, 207, 175, .1);
-  --icon-expected-border: rgba(62, 207, 175, .25);
+  /* v3-01: Die achtzehn komponenten-lokalen Farbwerte sind ersatzlos entfallen.
+   * Sie waren der Grund, warum eine Aenderung an tokens.css die Karte nicht
+   * erreichte — `--meta-dot-gem` etwa war eine wortgleiche Kopie von
+   * `--color-blue-dot` mit dem alten Wert .38 (LL-26, Gestalt „Nachbauen").
+   * Die Karte liest jetzt ausschliesslich globale Tokens. */
 
   width: 136px;
   flex-shrink: 0;
@@ -49,20 +36,28 @@
    * für Restbudget-Text + Fortschrittsbalken; Fixkosten/Einnahmen füllen den
    * Rest passiv mit Whitespace. border-box bezieht Padding in min-height ein. */
   min-height: 170px;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: 14px 13px 12px;
-  border: 1px solid rgba(255, 255, 255, .07);
-  background: #141416;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
   position: relative;
   cursor: pointer;
-  transition: transform .15s, border-color .15s, background .25s, opacity .25s;
-  opacity: .75;
+  transition: transform .15s, border-color .15s, background .2s;
   scroll-snap-align: start;
 }
 
+/* v3 Regel 3 — kein Dimmen ganzer Elemente.
+ *
+ * Hier stand `opacity: .75`. Sie dimmte ALLES: Flaeche, Rand, Text, Icon. Das
+ * Statuswort „Offen" lag bei 38 % Deckkraft x 0,75 = effektiv 28 % Weiss auf
+ * Fast-Schwarz — unter jeder Lesbarkeitsgrenze. Eine Container-Deckkraft
+ * multipliziert sich mit jeder Deckkraft darin und macht Kontraste
+ * unberechenbar; gedimmt wird deshalb am Text, nie an der Box.
+ *
+ * Der Hover hebt jetzt die FLAECHE statt der Deckkraft. */
 .card:hover:not(.ghost) {
   transform: translateY(-2px);
-  opacity: .95;
+  background: var(--bg-card-hover);
 }
 
 .card:active:not(.ghost) {
@@ -74,65 +69,40 @@
   padding-bottom: 18px;
 }
 
-/* ---------- Fixkosten-Zustände ---------- */
+/* ---------- Zustaende: KEINE eigene Flaeche, kein eigener Rand ----------
+ *
+ * v3 Regel 1 — die Zustandsfarbe verlaesst die Flaeche.
+ *
+ * Hier standen sieben Regeln, die Hintergrund UND Rand je Zustand setzten:
+ * `.open` und `.running` rot getoent, `.paid`/`.received`/`.done` gruen,
+ * `.over` staerker rot, `.expected` mit einem eigenen Gruenton (#0D1A16).
+ * Vier Stellen sagten damit dasselbe — Flaeche, Rand, Typ-Label, Statuswort.
+ * Im Karussell mit acht Karten ergab das einen rot-gruen-gefleckten Teppich,
+ * in dem das Auge nichts mehr priorisieren konnte.
+ *
+ * Ab jetzt sitzt der Zustand an genau ZWEI Stellen: dem 18-px-Punkt oben
+ * rechts (`.icon*`) und dem Statuswort (`.stateLabel`). Wer die Reihe
+ * ueberfliegt, sieht sofort die Ausnahmen — weil nur sie farbig sind.
+ *
+ * `.done` behaelt seine drei Nachfahren-Regeln fuer Name und Betrag; die
+ * Farbzuweisung dort ist unten bei `.cardName` / `.cardAmount` gebuendelt. */
 
-.open {
-  background: var(--bg-card-open);
-  border-color: var(--border-red);
-}
-
-.paid {
-  background: var(--bg-card-paid);
-  border-color: var(--border-teal);
-}
-
-/* ---------- Einnahmen-Zustände ---------- */
-
-.expected {
-  background: #0D1A16;
-  border-color: rgba(62, 207, 175, .18);
-}
-
-.received {
-  background: var(--bg-card-paid);
-  border-color: var(--border-teal);
-}
-
-/* ---------- Budget-Zustände ---------- */
-
-.running {
-  background: var(--bg-card-open);
-  border-color: var(--border-red);
-}
-
-.over {
-  background: var(--bg-card-over);
-  border-color: rgba(255, 69, 58, .35);
-}
-
-/* ---------- Budget-Abgeschlossen (Sprint 7 §9.1) ---------- */
-
-.done {
-  background: var(--bg-card-paid);
-  border-color: var(--border-teal);
-}
-
-.done .cardLabel { color: rgba(62, 207, 175, .45); }
-.done .cardName  { color: var(--text-primary); }
-.done .cardAmount { color: var(--text-primary); }
-
-/* ---------- Ghost (alle Typen) ---------- */
+/* ---------- Ghost (alle Typen) ----------
+ * v3 Regel 5: Zukuenftiges hat keine Flaeche. Vorher eine EIGENE Flaeche
+ * (#181818) plus `opacity: .65` — die Forecast-Karte war damit die dunkelste
+ * und zugleich die einzige „andere" Karte und wirkte wie ein Fehler statt wie
+ * Zukunft. Jetzt nur Kontur; der gestrichelte Punkt sagt „hier kommt etwas
+ * hin". Sie ist nicht antippbar und sieht auch nicht so aus. */
 
 .ghost {
   background: var(--bg-card-ghost);
-  border-color: rgba(255, 255, 255, .10);
-  opacity: .65;
+  border-color: var(--border-ghost);
   cursor: default;
 }
 
 .ghost:hover {
   transform: none;
-  opacity: .65;
+  background: var(--bg-card-ghost);
 }
 
 /* §7 Konflikt 6 (Sprint 8 P0): INCOME-Karte mit Fragment-Link ist nicht tappbar.
@@ -155,27 +125,30 @@
   margin-bottom: 10px;
 }
 
-/* Karten-Typ-Label (FIXKOSTEN | EINNAHMEN | BUDGET) */
+/* Karten-Typ-Label (FIXKOSTEN | EINNAHMEN | BUDGET)
+ *
+ * v3: EINE Farbe in allen Zustaenden. Die sieben Farbzweige, die hier standen,
+ * sind entfallen — das Label sagt, WAS die Karte ist, nicht WIE es ihr geht.
+ * Versalien bleiben: ein Typ-Label liest man nicht, man erkennt es. */
 .cardLabel {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
+  color: var(--text-tertiary);
 }
 
-.open .cardLabel,
-.running .cardLabel { color: rgba(255, 99, 88, .45); }
-
-.paid .cardLabel { color: rgba(62, 207, 175, .45); }
-
-.expected .cardLabel,
-.received .cardLabel { color: rgba(62, 207, 175, .45); }
-
-.over .cardLabel { color: rgba(255, 99, 88, .45); }
-
-.ghost .cardLabel { color: rgba(255, 255, 255, .25); }
-
-/* Icon-Container (18×18px, circle) */
+/* Icon-Container (18x18px, circle) — der Statuspunkt.
+ *
+ * v3 Variante A, entschieden am 05.09.2026. Der Punkt sitzt dort, wo bisher
+ * schon das Icon sass — kein Umlernen. Er ist AUCH OHNE FARBE lesbar
+ * (leer / Haken / Ausrufezeichen) und damit bei Rot-Gruen-Schwaeche benutzbar.
+ *
+ * Drei Formen statt fuenf Farbtoepfe:
+ *   noch nicht   leerer Kreis, 1,5 px Kontur
+ *   erledigt     gefuellt tuerkis, weisser Haken
+ *   Abweichung   gefuellt rot, weisses Ausrufezeichen
+ *   Forecast     gestrichelte Kontur, leiseste Stufe */
 .icon {
   width: 18px;
   height: 18px;
@@ -186,29 +159,65 @@
   flex-shrink: 0;
 }
 
-.iconOpen {
-  background: var(--icon-open-bg);
-  border: 1px solid var(--icon-open-border);
-}
-
-.iconPaid {
-  background: var(--icon-paid-bg);
-  border: 1px solid var(--icon-paid-border);
-}
-
-.iconGhost {
-  background: var(--icon-ghost-bg);
-  border: 1px solid var(--icon-ghost-border);
-}
-
-.iconOver {
-  background: var(--icon-over-bg);
-  border: 1px solid var(--icon-over-border);
-}
-
+/* „Noch nicht" — Offen, Erwartet, Laufend. Ein leerer Kreis ist die
+ * Aufforderung; dasselbe Muster wie ein Kaestchen in Erinnerungen. */
+.iconOpen,
 .iconExpected {
-  background: var(--icon-expected-bg);
-  border: 1px solid var(--icon-expected-border);
+  background: none;
+  border: 1.5px solid var(--text-tertiary);
+}
+
+/* „Erledigt" — Bezahlt, Erhalten, Abgeschlossen. */
+.iconPaid {
+  background: var(--color-teal);
+  border: 1.5px solid var(--color-teal);
+}
+
+/* „Abweichung" — der einzige rote Zustand. */
+.iconOver {
+  background: var(--color-red);
+  border: 1.5px solid var(--color-red);
+}
+
+/* Forecast: gestrichelt, leiseste Stufe. */
+.iconGhost {
+  background: none;
+  border: 1.5px dashed var(--text-quaternary);
+}
+
+/* Haken und Ausrufezeichen auf gefuellter Flaeche sind WEISS.
+ *
+ * Beide SVG tragen ihre Farbe heute als Praesentations-Attribut
+ * (`stroke="rgba(62,207,175,.85)"` bzw. rot) — auf der gefuellten Flaeche
+ * waeren sie unsichtbar. Ein Praesentations-Attribut hat die NIEDRIGSTE
+ * Prioritaet aller Autoren-Stile, jede CSS-Regel schlaegt es. Deshalb geht das
+ * hier ohne eine Zeile TypeScript.
+ *
+ * `--on-accent` statt `--text-primary`: Der Haken bleibt in BEIDEN
+ * Erscheinungen weiss, weil er auf Tuerkis bzw. Rot liegt und nicht auf dem
+ * Grund. `--text-primary` waere im Light Mode schwarz und damit falsch. */
+.iconPaid svg path,
+.iconOver svg path {
+  stroke: var(--on-accent);
+}
+
+/* Die Zustaende „noch nicht" tragen einen LEEREN Kreis — der Ring allein ist
+ * das Zeichen. Ihre vier SVG (roter Punkt bei Offen/Laufend, weisser Punkt bei
+ * Forecast, tuerkiser Ring bei Erwartet, weisser Ring bei Einnahmen-Forecast)
+ * sind Reste des alten Systems und werden ausgeblendet.
+ *
+ * WARUM DAS HIER STEHT UND NICHT IN card.tsx: Bedingung 2 des Sprints laesst in
+ * .tsx nur Klassennamen zu. Ausblenden ist die vollstaendige Loesung, weil die
+ * Glyphen dekorativ sind (aria-hidden) — der Zustand steht im Ring und im Wort.
+ *
+ * WIE ER AUFGEFALLEN IST: gar nicht. Die Prueflaufstrecke war 183/183 gruen,
+ * waehrend „Offen" und „Laufend" einen ROTEN Punkt im grauen Ring trugen —
+ * also genau die Aussage, die Regel 2 abschaffen soll. Gefunden hat es erst der
+ * Blick auf das Bild. Der Waechter dazu: tests/e2e/karten-zustandsfarbe.spec.ts */
+.iconOpen svg,
+.iconExpected svg,
+.iconGhost svg {
+  display: none;
 }
 
 /* Kartenname */
@@ -227,21 +236,24 @@
   text-overflow: ellipsis;
 }
 
-.open .cardName,
-.running .cardName,
-.expected .cardName { color: var(--text-muted); }
+/* v3: Der Name ist in JEDEM Zustand die Primaerstufe — er ist die Identitaet
+ * der Karte, nicht ihr Zustand. Vorher drei Zweige mit drei Toenen. Einzige
+ * Ausnahme bleibt Forecast: die Karte gibt es noch nicht. */
+.cardName { color: var(--text-primary); }
 
-.paid .cardName,
-.received .cardName,
-.over .cardName { color: var(--text-primary); }
+.ghost .cardName { color: var(--text-secondary); }
 
-.ghost .cardName { color: rgba(255, 255, 255, .35); }
-
-/* Kartenbetrag */
+/* Kartenbetrag
+ *
+ * v3 Regel 4: 200 → 400. Bei 22 px ist ein Hairline-Schnitt auf dunklem Grund
+ * optisch duenner als seine geometrische Breite, weil das Auge das helle
+ * Umfeld hineinblutet; auf Retina hat der Strich dort nur noch rund 1,2
+ * Geraetepixel und flimmert. Duenne Schnitte tragen gross (Ring, 36 px),
+ * nicht klein. Die Laufweite geht mit: −1,2 → −0,6 px. */
 .cardAmount {
-  font-size: 22px;
-  font-weight: 200;
-  letter-spacing: -1.2px;
+  font-size: var(--typo-card-amount-size);
+  font-weight: var(--typo-card-amount-weight);
+  letter-spacing: var(--typo-card-amount-tracking);
   font-variant-numeric: tabular-nums;
   line-height: 1;
   /* v2-13: 5px → 2px. Der Abstand zum Status wandert an .householdAmount —
@@ -265,42 +277,56 @@
  * nowrap: verhindert die Fehlerklasse aus v2-10 (Fehler 1), bei der das
  * €-Zeichen auf die nächste Zeile umbrach — hier fatal, weil die Höhe fix ist. */
 .householdAmount {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   line-height: 12px;
   min-height: 12px;
   white-space: nowrap;
-  color: var(--text-muted);
-  margin-bottom: 5px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
 }
 
-.open .cardAmount,
-.running .cardAmount,
-.expected .cardAmount { color: var(--text-muted); }
+/* v3: Der Betrag folgt dem Zustand in DREI Stufen statt in fuenf Toenen.
+ * „Noch nicht passiert" ist sekundaer — lesbar, aber nicht laut. Erledigt ist
+ * primaer. Ueberschritten ist der einzige rote Betrag. */
+.cardAmount {
+  color: var(--text-secondary);
+}
 
 .paid .cardAmount,
-.received .cardAmount { color: var(--text-primary); }
+.received .cardAmount,
+.done .cardAmount { color: var(--text-primary); }
 
 .over .cardAmount { color: var(--color-red); }
 
-.ghost .cardAmount { color: rgba(255, 255, 255, .32); }
+.ghost .cardAmount { color: var(--text-tertiary); }
 
-/* Status-Label (OFFEN | BEZAHLT | LAUFEND | …) */
+/* Status-Label (Offen | Bezahlt | Laufend | …)
+ *
+ * v3 Regel 4 — KEINE Versalien mehr. „BEZAHLT" in 9 px mit 0,6 px Sperrung ist
+ * ein Etikett, „Bezahlt" in 11 px ein Wort. Versalien lesen sich rund 10 %
+ * langsamer, weil die Wortform verlorengeht. Fuer das TYP-Label, das man
+ * erkennt statt liest, bleiben sie; fuer den Zustand, den man wirklich lesen
+ * muss, nicht.
+ *
+ * Der Wortlaut ist unveraendert — nur die Grosschreibung war CSS, nie Text. */
 .stateLabel {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: .6px;
-  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: var(--text-secondary);
 }
 
-.open .stateLabel { color: rgba(255, 99, 88, .38); }
-.paid .stateLabel { color: rgba(62, 207, 175, .45); }
-.expected .stateLabel { color: rgba(62, 207, 175, .45); }
-.received .stateLabel { color: rgba(62, 207, 175, .55); }
-.running .stateLabel { color: rgba(255, 255, 255, .2); }
-.over .stateLabel { color: rgba(255, 69, 58, .55); }
-.ghost .stateLabel { color: var(--text-ghost); }
+/* „Erwartet" bekommt bewusst KEIN Tuerkis, obwohl es das bis v3-01 trug: Es ist
+ * „noch nicht", genau wie „Offen" — die Einnahme ist nicht da. Tuerkis heisst
+ * erledigt, und dafuer gibt es „Erhalten". Deshalb steht `.expected` hier nicht;
+ * es faellt auf die neutrale Grundregel oben zurueck. */
+.paid .stateLabel,
+.received .stateLabel,
+.done .stateLabel { color: var(--color-teal); }
+.over .stateLabel { color: var(--color-red); }
+.ghost .stateLabel { color: var(--text-tertiary); }
 
 /* Statuszeile mit zwei Enden (v2-15, LQ-1) — links Zustand, rechts Termin.
  *
@@ -327,16 +353,18 @@
 }
 
 .dueDay {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: .4px;
-  color: rgba(255, 255, 255, .30);
+  letter-spacing: 0;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
-/* Ghost dimmt den Termin eigenständig mit — die Karten-Opacity allein ließe ihn
-   im Forecast lauter wirken als das Status-Label daneben. */
-.ghost .dueDay { color: rgba(255, 255, 255, .20); }
+/* v3: Der eigene Ghost-Ton des Termins (.20) ist entfallen. Er war noetig,
+ * solange die Karten-Opacity (.65) alles andere mitdimmte und der Termin sonst
+ * lauter gewirkt haette als das Statuswort daneben. Ohne Karten-Opacity gibt es
+ * diesen Effekt nicht mehr — und eine fuenfte Textstufe waere genau die
+ * Beliebigkeit, die v3 abschafft. */
 
 /* v2-25 (KJ-3): „nicht angefallen" — der Monat ist bewusst auf 0 gesetzt.
  *
@@ -357,39 +385,43 @@
  * Forecast trägt. Die Zeilenhöhe bleibt bei 9px/500 exakt gleich, es kommt
  * keine Kartenhöhe dazu. */
 .notIncurred {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: .4px;
-  color: var(--text-ghost);
+  letter-spacing: 0;
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
 /* Standalone State-Label-Varianten für Budget-done (Sprint 7) */
 .stateLabelTeal {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: rgba(62, 207, 175, .55);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: var(--color-teal);
 }
 
 .stateLabelRed {
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: rgba(255, 69, 58, .55);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: var(--color-red);
 }
 
-/* Restbudget (Budget-Karte) */
+/* Restbudget (Budget-Karte)
+ *
+ * v3: „Noch N € frei" ist im Zustand Laufend eine neutrale Auskunft — der
+ * Verbrauch ist Information, kein Urteil. Erst beim ABSCHLUSS wird daraus ein
+ * Ergebnis und darf tuerkis werden. Ueber Plan bleibt rot, auch bei bewusst
+ * akzeptierter Ueberschreitung: die Abweichung bleibt sichtbar. */
 .restAmount {
   font-size: 11px;
   font-weight: 500;
   margin-top: 3px;
 }
 
-.restAmountPos { color: var(--rest-pos); }
-.restAmountNeg { color: var(--rest-neg); }
+.restAmountPos { color: var(--text-secondary); }
+.done .restAmountPos { color: var(--color-teal); }
+.restAmountNeg { color: var(--color-red); }
 
 /* Meta-Zeile (Dot + Attribution-Text) */
 .cardMeta {
@@ -399,21 +431,25 @@
   margin-top: 8px;
 }
 
+/* 5 → 6 px: Ein Punkt dieser Groesse braucht Flaeche UND Deckkraft, sonst
+ * verschwindet er. Beide Toene kommen jetzt aus tokens.css — der
+ * „Gemeinsam"-Punkt las bis v3-01 eine lokale Kopie mit dem alten Wert .38
+ * und haette sich durch die Token-Aenderung nicht bewegt (LL-26). */
 .metaDot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.metaDotIch { background: var(--meta-dot-ich); }
-.metaDotGem { background: var(--meta-dot-gem); }
+.metaDotIch { background: var(--text-tertiary); }
+.metaDotGem { background: var(--color-blue-dot); }
 
 .metaText {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--meta-text-color);
-  letter-spacing: .2px;
+  font-size: var(--typo-label-meta-size);
+  font-weight: var(--typo-label-meta-weight);
+  letter-spacing: var(--typo-label-meta-tracking);
+  color: var(--text-tertiary);
 }
 
 /* Fortschrittsbalken (Budget, position: absolute Unterkante) */
@@ -423,8 +459,8 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: rgba(255, 255, 255, .04);
-  border-radius: 0 0 14px 14px;
+  background: var(--progress-track);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
   overflow: hidden;
 }
 
@@ -433,8 +469,13 @@
   transition: width .3s ease;
 }
 
-.progressBarNorm { background: var(--progress-norm); }
-.progressBarOver { background: var(--progress-over); }
+/* v3: Der Balken einer LAUFENDEN Budget-Karte ist neutral. Er war tuerkis und
+ * sagte damit „gut" ueber etwas, das noch gar nicht entschieden ist —
+ * Verbrauch ist Information, kein Urteil. Tuerkis wird er erst, wenn die Karte
+ * abgeschlossen ist; dann ist der Verbrauch ein Ergebnis. */
+.progressBarNorm { background: var(--progress-neutral); }
+.done .progressBarNorm { background: var(--color-teal); }
+.progressBarOver { background: var(--color-red); }
 
 /* ---------- Interaktions-Layer (CardInteractive) ---------- */
 
@@ -442,7 +483,7 @@
 .tapButton {
   position: absolute;
   inset: 0;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -465,7 +506,7 @@
   cursor: pointer;
   opacity: 0;
   transition: opacity .15s, background .15s;
-  color: rgba(255, 255, 255, .55);
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1;
   z-index: 2;
@@ -477,27 +518,32 @@
 }
 
 .contextIcon:hover {
-  background: rgba(255, 255, 255, .07);
+  background: var(--neutral-fill);
 }
 
-/* Kontext-Menü (position: fixed via JS) */
+/* Kontext-Menü (position: fixed via JS)
+ *
+ * v3: deckende Fläche statt 92 % — ein Menü über bewegtem Inhalt liest sich
+ * mit Halbtransparenz unruhig, und die Ersparnis war nie eine. Einträge von
+ * 12 auf 14 px, Zeilen auf 40 px Höhe, Ecken 8 px innen / 12 px außen. */
 .contextMenu {
-  background: rgba(28, 28, 30, .92);
-  border: .5px solid rgba(255, 255, 255, .1);
-  border-radius: 10px;
-  padding: 4px 0;
-  min-width: 160px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, .5);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 200px;
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, .5);
   z-index: 200;
 }
 
 .contextMenuItem {
   display: block;
   width: 100%;
-  padding: 8px 14px;
-  font-size: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .75);
+  color: var(--text-primary);
   background: none;
   border: none;
   text-align: left;
@@ -507,7 +553,23 @@
 }
 
 .contextMenuItem:hover {
-  background: rgba(255, 255, 255, .06);
+  background: var(--neutral-fill);
+}
+
+/* Trennstrich vor den Einträgen, die nicht rückgängig zu machen sind. */
+.contextMenuSep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 8px;
+}
+
+/* Rot für „löschen" ist KEIN Widerspruch zu Regel 2.
+ *
+ * Regel 2 sagt: Rot ist kein ZUSTAND für „noch nicht". Ein rotes Menüwort ist
+ * etwas anderes — es markiert eine AKTION, die nicht rückgängig ist. Das ist
+ * seit iOS 7 Konvention (Löschen, Abmelden) und die Erwartung jedes Nutzers. */
+.contextMenuItemDestructive {
+  color: var(--color-red);
 }
 
 /* ---------- Betrag-anpassen-Overlay ---------- */
@@ -524,27 +586,36 @@
   -webkit-backdrop-filter: blur(4px);
 }
 
+/* Ein Overlay auf heller Fläche braucht weniger Abdunklung, um zu tragen.
+ * Greift erst mit dem Umschalter, der in v3-01 nicht gebaut wird. */
+:global([data-theme="light"]) .overlayBackdrop {
+  background: rgba(0, 0, 0, .25);
+}
+
 .overlayModal {
-  background: rgba(28, 28, 30, .96);
-  border: .5px solid rgba(255, 255, 255, .1);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 20px;
   width: 300px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, .45);
 }
 
+/* 14 px / 500 bei 80 % → 17 px / 600 voll. Das ist der Apple-Alert-Titel:
+ * Ein Titel, der leiser ist als der Text darunter, ist kein Titel. */
 .overlayTitle {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, .8);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -.3px;
+  color: var(--text-primary);
 }
 
 .overlayCurrentValue {
-  font-size: 12px;
-  color: rgba(255, 255, 255, .35);
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .overlayInputWrap {
@@ -554,45 +625,53 @@
 }
 
 .overlayInputLabel {
-  font-size: 11px;
-  color: rgba(255, 255, 255, .35);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
+/* 44 px — Apples Mindest-Trefferfläche seit den ersten HIG; es ist die Fläche
+ * einer Fingerkuppe. Die bisherigen ~38 px trifft man auf dem Desktop
+ * problemlos und auf einem Telefon daneben. Preis: jedes Overlay wird rund
+ * 24 px höher, bei 300 px Breite unproblematisch. */
 .overlayInput {
   width: 100%;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .12);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 16px;
-  font-weight: 300;
-  color: #ffffff;
+  height: 44px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  padding: 0 14px;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-primary);
   outline: none;
   font-variant-numeric: tabular-nums;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
   font-family: inherit;
 }
 
+/* Fokus war 30 % Weiß — auf einer hellen Fläche praktisch unsichtbar. */
 .overlayInput:focus {
-  border-color: rgba(255, 255, 255, .3);
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px var(--teal-fill);
 }
 
 .overlayInputError {
-  border-color: rgba(255, 69, 58, .45) !important;
+  border-color: var(--color-red) !important;
 }
 
 .overlayInputErrorText {
-  font-size: 11px;
-  color: rgba(255, 69, 58, .85);
+  font-size: 12px;
+  color: var(--color-red);
 }
 
 /* Hinweiszeile im Overlay (v2-15, LQ-1) — Herkunft eines abgeleiteten Werts.
    Leiser als `.overlayCurrentValue` (.35), weil sie erklärt statt zu benennen;
    `line-height` gesetzt, weil der Satz umbricht. */
 .overlayHint {
-  font-size: 11px;
-  line-height: 15px;
-  color: rgba(255, 255, 255, .28);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-tertiary);
   margin-top: -4px;
 }
 
@@ -602,24 +681,29 @@
   gap: 8px;
 }
 
+/* Beide Aktionen bleiben gleichrangig und NEUTRAL — „Nur dieser Monat" und
+ * „Dauerhaft ab diesem Monat" haben zwei gleich wahrscheinliche Ausgänge,
+ * keine ist „die richtige". Ein gefüllter Knopf ist dem Fall vorbehalten, in
+ * dem es genau eine richtige Aktion gibt (Wiederholung → „Übernehmen").
+ * Wer alles füllt, sagt nichts. */
 .overlayActionButton {
   width: 100%;
+  min-height: 44px;
   padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: var(--radius-control);
+  font-size: 15px;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, .1);
-  background: rgba(255, 255, 255, .05);
-  color: rgba(255, 255, 255, .7);
+  border: none;
+  background: var(--neutral-fill);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: background .15s, color .15s;
+  transition: background .15s;
   text-align: left;
   font-family: inherit;
 }
 
 .overlayActionButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .09);
-  color: rgba(255, 255, 255, .9);
+  background: var(--border-ghost);
 }
 
 .overlayActionButton:disabled {
@@ -627,15 +711,27 @@
   cursor: not-allowed;
 }
 
+/* Nur für „Übernehmen" im Wiederholungs-Overlay: der einzige gefüllte Knopf
+ * des Systems. Klassenname, keine Logik (frequency-overlay.tsx). */
+.primaryButtonFilled {
+  background: var(--color-teal);
+  color: var(--on-accent);
+}
+
+.primaryButtonFilled:hover:not(:disabled) {
+  background: var(--color-teal);
+}
+
 .overlayCancelButton {
   width: 100%;
-  padding: 9px 16px;
-  border-radius: 10px;
-  font-size: 12px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-control);
+  font-size: 15px;
   font-weight: 500;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, .3);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: color .15s;
   text-align: center;
@@ -643,10 +739,14 @@
 }
 
 .overlayCancelButton:hover {
-  color: rgba(255, 255, 255, .55);
+  color: var(--text-primary);
 }
 
 /* v2-05: ausgegrauter Lösch-Menüpunkt + Begründungszeile (Lösch-Tor rot) */
+/* Der ausgegraute Eintrag behält seine Container-Deckkraft: Er ist KEIN
+ * Zustand, den man liest, sondern ein abgeschalteter Knopf — dafür ist
+ * `opacity` das übliche und erwartete Mittel, und Regel 3 zielt auf
+ * dauerhaft angezeigte Zustände. */
 .contextMenuItemDisabled {
   opacity: 0.38;
   cursor: not-allowed;
@@ -654,10 +754,10 @@
 
 .contextMenuReason {
   max-width: 220px;
-  padding: 4px 12px 8px;
-  font-size: 10px;
+  padding: 2px 12px 8px;
+  font-size: 12px;
   line-height: 1.45;
-  color: var(--text-tertiary, rgba(255, 255, 255, 0.4));
+  color: var(--text-tertiary);
 }
 
 /* ---------- v2-17 (KAT-1): Kategorie-Auswahl im Overlay ---------- */
@@ -674,7 +774,7 @@
   margin: 0 -4px;
   padding: 0 4px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, .14) transparent;
+  scrollbar-color: var(--border-ghost) transparent;
 }
 
 .categoryList::-webkit-scrollbar {
@@ -682,7 +782,7 @@
 }
 
 .categoryList::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .14);
+  background: var(--border-ghost);
   border-radius: 3px;
 }
 
@@ -696,7 +796,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, .62);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 400;
   font-family: inherit;
@@ -706,8 +806,8 @@
 }
 
 .categoryItem:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .06);
-  color: rgba(255, 255, 255, .9);
+  background: var(--neutral-fill);
+  color: var(--text-primary);
 }
 
 .categoryItem:disabled {
@@ -720,9 +820,9 @@
    „überschritten") und dürfen hier nicht als bloße Auswahl auftauchen
    (Grundsatz „Schmale Palette"). */
 .categoryItemActive {
-  background: rgba(255, 255, 255, .05);
-  border-color: rgba(255, 255, 255, .13);
-  color: #ffffff;
+  background: var(--neutral-fill);
+  border-color: var(--border-ghost);
+  color: var(--text-primary);
 }
 
 .categoryItemName {
@@ -734,7 +834,7 @@
 .categoryItemMark {
   flex-shrink: 0;
   font-size: 11px;
-  color: rgba(255, 255, 255, .45);
+  color: var(--text-secondary);
 }
 
 /* v2-26: Auswahlraster im „Wiederholung"-Overlay.
@@ -753,20 +853,21 @@
 }
 
 .overlayFrequencyButton {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, .1);
-  background: rgba(255, 255, 255, .03);
-  color: var(--text-muted);
+  height: 40px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
   font-family: var(--font-stack-system);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: background .15s, border-color .15s, color .15s;
 }
 
 .overlayFrequencyButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .06);
+  background: var(--neutral-fill);
   color: var(--text-primary);
 }
 
@@ -778,9 +879,9 @@
 /* Türkis heißt hier „ausgewählt", nicht „erledigt" — dieselbe Bedeutung, die
    die Optionsknöpfe beim Anlegen tragen. Keine neue Farbe. */
 .overlayFrequencyButtonSelected {
-  background: rgba(62, 207, 175, .1);
-  border-color: var(--border-teal);
-  color: var(--text-primary);
+  background: var(--teal-fill);
+  border-color: var(--color-teal);
+  color: var(--color-teal);
 }
 
 /* ---------- v2-31 (M7 / KAT-4): Verlaufs-Overlay ---------- */
@@ -789,29 +890,34 @@
  * Zeichenfläche und Fußzeile. §7 verlangt zentriert; der Backdrop ist der
  * bestehende .overlayBackdrop. */
 
+/* v3: Das Overlay liegt auf einer EIGENEN Fläche statt auf dem App-Schwarz.
+ * Ein Sheet, das dieselbe Farbe hat wie der Hintergrund dahinter, braucht
+ * Schatten und Rand, um überhaupt als Fläche zu lesen; eine eigene Stufe hebt
+ * sich von selbst. Der Schatten wird dadurch leiser statt lauter. */
 .verlaufModal {
   width: 680px;
   max-width: calc(100vw - 48px);
-  background: var(--bg-primary);
-  border: .5px solid rgba(255, 255, 255, .08);
-  border-radius: 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-popup);
   padding: 24px 26px 20px;
   position: relative;
-  box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .5);
 }
 
+/* 28 px gefüllt, immer sichtbar — das Apple-Muster für Sheet-Dismiss. */
 .verlaufClose {
   position: absolute;
-  top: 16px;
-  right: 18px;
-  width: 26px;
-  height: 26px;
+  top: 18px;
+  right: 20px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: .5px solid rgba(255, 255, 255, .12);
-  background: none;
-  color: rgba(255, 255, 255, .28);
+  border: none;
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -821,15 +927,15 @@
 
 .verlaufClose:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, .06);
+  background: var(--border-ghost);
 }
 
 .verlaufKicker {
   font-size: var(--typo-label-small-size);
   font-weight: var(--typo-label-small-weight);
-  letter-spacing: 1.4px;
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .28);
+  color: var(--text-tertiary);
 }
 
 /* Der Held ist der NAME, keine Zahl. Das Welle-Popup führt dort die
@@ -837,20 +943,27 @@
  * KURVE. Eine große Zahl daneben konkurrierte mit ihr und mit der Sparrate im
  * Ring — „ein Screen, ein Monat, eine Zahl". Die beiden Jahressummen stehen
  * klein im Fuß (Design-Record §7). */
+/* 38 px / 200 → 26 px / 600.
+ *
+ * Die alte Zeile war der Ring-Stil, auf einen NAMEN angewandt. Für eine Zahl
+ * passt dünn-und-groß: Ziffern sind einfache Formen. Ein Wort wie
+ * „Versicherungen" in 38 px Ultralight ist dagegen eine Zeile Hairlines, die
+ * mit der Kurve um Aufmerksamkeit konkurriert — und die Kurve IST hier die
+ * Aussage. Der Held bleibt der Name; er wird vom Schlagzeilen- zum Titelformat. */
 .verlaufHero {
-  font-size: 38px;
-  font-weight: 200;
-  letter-spacing: -1.6px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -.5px;
   margin-top: 4px;
-  line-height: 1.1;
+  line-height: 1.15;
   color: var(--text-primary);
 }
 
 .verlaufSub {
-  font-size: 11px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, .28);
-  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 3px;
 }
 
 .verlaufChart {
@@ -868,84 +981,87 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-style: italic;
-  color: rgba(255, 255, 255, .28);
+  color: var(--text-tertiary);
 }
 
-/* Werte aus welle/draw.ts, nicht neu gewählt: Raster graS(0.07) bei 0,5 px,
- * Plan graS(0.25) bei 1 px, Ist teal bei 2 px. Kein neuer Token, keine neue
- * Farbe — Teal und Grau tragen hier exakt ihre §9-Bedeutung. */
+/* Achsen von 8 auf 11 px, Raster von 0,5 auf 1 px.
+ *
+ * 8 px liegt unter jeder Lesbarkeitsgrenze — Achsen, die man nicht lesen kann,
+ * sind Dekoration. Und 0,5-px-Linien rendern auf nicht-Retina als 1 px
+ * Halbtransparenz, auf Retina als ein Subpixel: beides unvorhersehbar. 1 px mit
+ * definierter Farbe sieht überall gleich aus.
+ *
+ * Die Plan-Linie geht von 1 auf 1,5 px, damit sie neben der 2-px-Ist-Linie
+ * nicht verschwindet — sie bleibt aber klar die zweite. */
 .verlaufRaster {
-  stroke: rgba(255, 255, 255, .07);
-  stroke-width: .5;
+  stroke: var(--border-subtle);
+  stroke-width: 1;
 }
 
 .verlaufJahrGrenze {
-  stroke: rgba(255, 255, 255, .10);
-  stroke-width: .5;
+  stroke: var(--border-ghost);
+  stroke-width: 1;
 }
 
 .verlaufHeuteLinie {
-  stroke: rgba(255, 255, 255, .13);
-  stroke-width: .5;
+  stroke: var(--text-tertiary);
+  stroke-width: 1;
   stroke-dasharray: 2 3;
 }
 
 .verlaufHeuteLabel {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 500;
-  fill: rgba(255, 255, 255, .26);
+  fill: var(--text-tertiary);
 }
 
 .verlaufYLabel,
 .verlaufXLabel {
-  font-size: 8px;
+  font-size: 11px;
   font-weight: 500;
   font-variant-numeric: var(--typo-numeric-variant);
 }
 
-.verlaufYLabel {
-  fill: rgba(255, 255, 255, .28);
-}
-
+.verlaufYLabel,
 .verlaufXLabel {
-  fill: rgba(255, 255, 255, .22);
+  fill: var(--text-tertiary);
 }
 
 .verlaufPlanLinie {
   fill: none;
-  stroke: rgba(255, 255, 255, .25);
-  stroke-width: 1;
+  stroke: var(--text-tertiary);
+  stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .verlaufPlanPunkt {
-  fill: rgba(255, 255, 255, .25);
+  fill: var(--text-tertiary);
 }
 
 .verlaufIstLinie {
   fill: none;
-  stroke: rgba(62, 207, 175, .85);
+  stroke: var(--color-teal);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .verlaufIstPunkt {
-  fill: rgba(62, 207, 175, .85);
+  fill: var(--color-teal);
 }
 
 /* Fußzeile im Muster von .popupDrivers (welle.module.css). */
 .verlaufFuss {
-  margin-top: 10px;
-  padding: 9px 13px;
-  background: rgba(255, 255, 255, .03);
-  border: .5px solid var(--border-subtle);
-  border-radius: 9px;
-  font-size: 11px;
-  color: var(--text-muted);
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--neutral-fill);
+  border: none;
+  border-radius: var(--radius-control);
+  font-size: 12px;
+  color: var(--text-secondary);
   line-height: 1.55;
   display: flex;
   justify-content: space-between;
@@ -972,17 +1088,17 @@
 
 .verlaufLegendeIst {
   height: 2px;
-  background: rgba(62, 207, 175, .85);
+  background: var(--color-teal);
   border-radius: 1px;
 }
 
 .verlaufLegendePlan {
-  height: 1px;
-  background: rgba(255, 255, 255, .25);
+  height: 1.5px;
+  background: var(--text-tertiary);
 }
 
 .verlaufSummen {
   font-variant-numeric: var(--typo-numeric-variant);
-  color: rgba(255, 255, 255, .28);
+  color: var(--text-tertiary);
   white-space: nowrap;
 }

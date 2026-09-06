@@ -1,7 +1,9 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   padding: 24px;
@@ -20,9 +22,9 @@
 .dialog {
   width: 100%;
   max-width: 400px;
-  background: var(--bg-card);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -43,14 +45,14 @@
   color: var(--text-primary);
   font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .activeMonth {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.6px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -61,7 +63,7 @@
 }
 
 .label {
-  color: var(--text-ghost);
+  color: var(--text-tertiary);
   font-size: var(--typo-label-small-size);
   font-weight: var(--typo-label-small-weight);
   letter-spacing: var(--typo-label-small-tracking);
@@ -78,9 +80,10 @@
   flex: 1;
   min-width: 48px;
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
+  height: 40px;
   padding: 10px 0;
   font: inherit;
   font-family: var(--font-stack-system);
@@ -91,30 +94,94 @@
 
 .taxClassButton:hover {
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: var(--border-ghost);
 }
 
 .taxClassButtonActive {
-  color: var(--text-primary);
+  color: var(--color-teal);
   border-color: var(--color-teal);
-  background: rgba(62, 207, 175, 0.08);
+  background: var(--teal-fill);
 }
 
 .sliderValue {
   color: var(--text-primary);
-  font-size: 22px;
-  font-weight: 200;
-  letter-spacing: -1.2px;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.8px;
 }
 
+/* Der einzige Ort in v3, an dem ein natives Steuerelement ersetzt wird — und
+ * der Grund ist Praezision, nicht Optik.
+ *
+ * `accent-color` ueberlaesst dem Browser die Form: In Safari ist der Griff
+ * 20 px, in Chrome ein anderer, in Firefox eckig. Fuer einen Wert, den man auf
+ * 100 € genau einstellen soll, ist das zu zufaellig. Track 4 px, Griff 28 px —
+ * Apples UISlider-Mass, auf jedem Geraet dasselbe.
+ *
+ * Die Fuellung bis zum Wert kommt aus `--pct`, gesetzt als Style-Prop in
+ * index.tsx. Reine Anzeige: Der Wert selbst kommt unveraendert aus `value`. */
 .slider {
   width: 100%;
-  accent-color: var(--color-teal);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-teal) 0%,
+    var(--color-teal) var(--pct, 0%),
+    var(--neutral-fill) var(--pct, 0%),
+    var(--neutral-fill) 100%
+  );
+}
+
+.slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-teal) 0%,
+    var(--color-teal) var(--pct, 0%),
+    var(--neutral-fill) var(--pct, 0%),
+    var(--neutral-fill) 100%
+  );
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--on-accent);
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  /* Der Griff sitzt auf einem 4-px-Track: (4 − 28) / 2 = −12 px. */
+  margin-top: -12px;
+}
+
+.slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--on-accent);
+  border: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.slider:disabled {
+  cursor: not-allowed;
 }
 
 .sliderMeta {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
 }
@@ -124,27 +191,28 @@
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-radius: 12px;
+  background: var(--neutral-fill);
 }
 
 .splitPreviewLine {
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .splitPreviewIllustrative {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
 }
 
 .input {
-  background: var(--bg-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  background: var(--neutral-fill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  height: 44px;
   padding: 10px 12px;
   color: var(--text-primary);
   font: inherit;
@@ -155,15 +223,16 @@
 }
 
 .input:focus {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px var(--teal-fill);
 }
 
 .inputManual {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--text-tertiary);
 }
 
 .inputError {
-  border-color: rgba(255, 69, 58, 0.4);
+  border-color: var(--color-red);
 }
 
 .input:disabled {
@@ -172,22 +241,22 @@
 }
 
 .hintDefault {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
 }
 
 .hintTeal {
-  color: var(--color-teal);
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
 }
 
 .hintError {
   color: var(--color-red);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
 }
@@ -205,8 +274,8 @@
   gap: 6px;
   padding: 10px 11px;
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  background: transparent;
 }
 
 .assignmentRow {
@@ -218,34 +287,34 @@
 
 .assignmentText {
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
 .assignmentHint {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-tertiary);
+  font-size: 12px;
   line-height: 1.45;
 }
 
 .inheritanceBadge {
-  color: var(--text-ghost);
-  font-size: 11px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
   padding: 8px 10px;
-  border-left: 2px solid var(--color-teal);
-  background: rgba(62, 207, 175, 0.04);
+  border-radius: 12px;
+  background: var(--neutral-fill);
 }
 
 .pastWarning {
   color: var(--color-gold);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   padding: 10px 12px;
-  border: 1px solid var(--color-gold);
-  border-radius: 8px;
-  background: rgba(255, 200, 60, 0.06);
+  border: none;
+  border-radius: 12px;
+  background: var(--neutral-fill);
 }
 
 .actions {
@@ -265,16 +334,16 @@
    ============================================================ */
 
 .consequenceSubtitle {
-  color: var(--text-ghost);
-  font-size: 11.5px;
+  color: var(--text-secondary);
+  font-size: 12px;
   font-weight: 500;
   margin-top: -12px;
 }
 
 .consequenceHero {
-  font-size: 30px;
-  font-weight: 200;
-  letter-spacing: -1.4px;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -1px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   margin-bottom: -10px;
@@ -292,14 +361,14 @@
 
 .consequenceCaption {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .consequenceCaption b {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .consequenceTable {
@@ -311,11 +380,11 @@
 
 .consequenceHead {
   display: flex;
-  font-size: 8.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 1.1px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--text-ghost);
+  color: var(--text-tertiary);
   padding-bottom: 7px;
   border-bottom: 1px solid var(--border-subtle);
   margin-bottom: 2px;
@@ -323,7 +392,7 @@
 
 .consequenceRow {
   display: flex;
-  font-size: 11.5px;
+  font-size: 13px;
   padding: 6px 0;
   align-items: baseline;
 }
@@ -331,21 +400,23 @@
 .consequenceName {
   flex: 1;
   min-width: 0;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 10px;
 }
 
+/* 68 → 72 px: Die Spalten tragen jetzt 13 px statt 11,5 — ohne die vier Pixel
+ * liefen fuenfstellige Betraege an den Rand. */
 .consequenceCol {
-  width: 68px;
+  width: 72px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .consequenceOld {
-  color: var(--text-ghost);
+  color: var(--text-tertiary);
 }
 
 .consequenceNew {
@@ -364,7 +435,7 @@
   border-top: 1px solid var(--border-subtle);
   margin-top: 6px;
   padding-top: 9px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .consequenceSum .consequenceName {
@@ -373,9 +444,10 @@
 
 .buttonPrimary {
   background: var(--color-teal);
-  color: var(--bg-primary);
+  color: var(--on-accent);
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
+  height: 44px;
   padding: 10px 16px;
   font: inherit;
   font-family: var(--font-stack-system);
@@ -388,16 +460,17 @@
 }
 
 .buttonPrimary:disabled {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-ghost);
+  background: var(--neutral-fill);
+  color: var(--text-tertiary);
   cursor: not-allowed;
 }
 
 .buttonSecondary {
-  background: transparent;
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  background: var(--neutral-fill);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-control);
+  height: 44px;
   padding: 10px 16px;
   font: inherit;
   font-family: var(--font-stack-system);

@@ -5,31 +5,39 @@
    ====================================================== */
 
 .interactionZone {
-  /* Lokale Custom-Properties */
-  --portal-border: rgba(255, 255, 255, .12);
-  --portal-border-drag: rgba(62, 207, 175, .5);
-  --portal-bg-drag: rgba(62, 207, 175, .04);
-  --portal-border-processing: rgba(255, 255, 255, .2);
-  --portal-bg-processing: #141416;
-  --portal-border-success: rgba(62, 207, 175, .5);
-  --portal-bg-success: rgba(62, 207, 175, .06);
-  --portal-border-error: rgba(255, 69, 58, .4);
-  --portal-bg-error: rgba(255, 69, 58, .04);
-  --portal-default-bg: #111113;
-  --chev-bg: rgba(255, 255, 255, .03);
-  --chev-bg-hover: rgba(255, 255, 255, .07);
-  --chev-border: rgba(255, 255, 255, .08);
-  --chev-color: rgba(255, 255, 255, .3);
-  --chev-color-hover: rgba(255, 255, 255, .7);
-  --frag-amount-pos: #3ECFAF;
-  --frag-amount-neg: #FF453A;
-  --frag-bg: #141416;
+  /* Lokale Custom-Properties — ab v3-01 ausschliesslich WEITERLEITUNGEN auf
+   * globale Tokens, keine eigenen Farbwerte mehr.
+   *
+   * Bis hierhin standen hier rund dreissig eigene rgba- und Hex-Werte. Sie
+   * waren derselbe Fehler wie in cards.module.css: eine Aenderung an
+   * tokens.css erreichte diese Komponente nicht, weil sie ihre Farben selbst
+   * mitbrachte (`--frag-bg: #141416`, `--frag-amount-neg: #FF453A`,
+   * `--zone-label: rgba(255,255,255,.18)` …). Wer hier einen Wert einsetzt,
+   * statt auf ein Token zu zeigen, baut die Trennung wieder ein. */
+  --portal-border: var(--border-ghost);
+  --portal-border-drag: var(--color-teal);
+  --portal-bg-drag: var(--teal-fill);
+  --portal-border-processing: var(--text-tertiary);
+  --portal-bg-processing: transparent;
+  --portal-border-success: var(--color-teal);
+  --portal-bg-success: transparent;
+  --portal-border-error: var(--color-red);
+  --portal-bg-error: var(--red-fill);
+  --portal-default-bg: transparent;
+  --chev-bg: var(--neutral-fill);
+  --chev-bg-hover: var(--border-ghost);
+  --chev-border: transparent;
+  --chev-color: var(--text-secondary);
+  --chev-color-hover: var(--text-primary);
+  --frag-amount-pos: var(--color-teal);
+  --frag-amount-neg: var(--text-primary);
+  --frag-bg: var(--bg-card);
   /* v2-03 N5: alle Grau-Werte der Fragmente basieren auf dem gemeinsamen
    * Grundton-Token --fragment-hue (tokens.css) — ein Hue, Abstufung nur
    * über Alpha/Opacity. */
-  --frag-border: rgba(var(--fragment-hue), .07);
-  --frag-desc: rgba(var(--fragment-hue), .28);
-  --frag-date: rgba(var(--fragment-hue), .15);
+  --frag-border: var(--border-subtle);
+  --frag-desc: var(--text-secondary);
+  --frag-date: var(--text-tertiary);
   /* KI-Vorschlag-Badge — bis v2-06 ein generischer Gold-Ton für alle Karten
    * (OQ1, Sprint 8). Seit v2-07 A1 bestimmt der Kartenname den Farbton
    * deterministisch: die Fragment-Karte setzt dazu eine der sechs
@@ -43,27 +51,27 @@
    * des KI-Vorschlag-Badges. v2-03 N5: Grundton auf --fragment-hue vereinheit-
    * licht (vorher eigener 140,140,140-Hue → zwei leicht abweichende Grau-Töne
    * nebeneinander); Alphas unverändert, Semantik bleibt (Anti-Drift A4). */
-  --frag-transfer-badge-bg: rgba(var(--fragment-hue), .08);
-  --frag-transfer-badge-color: rgba(var(--fragment-hue), .5);
-  --frag-transfer-badge-border: rgba(var(--fragment-hue), .15);
+  --frag-transfer-badge-bg: var(--neutral-fill);
+  --frag-transfer-badge-color: var(--text-secondary);
+  --frag-transfer-badge-border: transparent;
   /* Backfill-Report-Toast (Sprint 9 §6.2) */
-  --toast-bg: #141416;
-  --toast-border: rgba(255, 255, 255, .08);
-  --toast-text: rgba(255, 255, 255, .45);
-  --slot-border: rgba(255, 255, 255, .12);
-  --slot-border-hover: rgba(62, 207, 175, .35);
-  --slot-border-drag: rgba(62, 207, 175, .5);
-  --slot-bg-drag: rgba(62, 207, 175, .04);
-  --slot-icon: rgba(255, 255, 255, .15);
-  --slot-label: rgba(255, 255, 255, .25);
-  --zone-label: rgba(255, 255, 255, .18);
+  --toast-bg: var(--bg-elevated);
+  --toast-border: var(--border-subtle);
+  --toast-text: var(--text-secondary);
+  --slot-border: var(--border-ghost);
+  --slot-border-hover: var(--text-tertiary);
+  --slot-border-drag: var(--color-teal);
+  --slot-bg-drag: var(--teal-fill);
+  --slot-icon: var(--text-tertiary);
+  --slot-label: var(--text-secondary);
+  --zone-label: var(--text-tertiary);
   /* v2-07 C1: Übertrags-Schalter der Rohmasse. Bewusst auf dem gemeinsamen
    * Grundton --fragment-hue (N5) — der Schalter gehört zur Rohmasse und darf
    * keine eigene Farbfamilie aufmachen. Abstufung nur über Alpha. */
-  --transfer-toggle-color: rgba(var(--fragment-hue), .28);
-  --transfer-toggle-color-hover: rgba(var(--fragment-hue), .5);
-  --transfer-toggle-border: rgba(var(--fragment-hue), .22);
-  --transfer-toggle-fill: rgba(var(--fragment-hue), .42);
+  --transfer-toggle-color: var(--text-tertiary);
+  --transfer-toggle-color-hover: var(--text-secondary);
+  --transfer-toggle-border: var(--text-tertiary);
+  --transfer-toggle-fill: var(--text-secondary);
   --transfer-toggle-check: var(--bg-primary);
   /* K2.1: Overlay-Werte NICHT via Custom-Properties — Overlays werden via
    * createPortal nach document.body gemountet, dort wirken die hier auf
@@ -79,9 +87,9 @@
 }
 
 .zoneLabel {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
   color: var(--zone-label);
   margin-bottom: 10px;
@@ -96,10 +104,13 @@
   flex-direction: column;
 }
 
+/* v3: Radius 16 wie Karte und Leer-Slot, Kontur 1,5 px, keine eigene Flaeche.
+ * Der gestrichelte Umriss heisst „hier kommt etwas hin" — dieselbe Konvention
+ * wie beim Leer-Slot und bei der Forecast-Karte. */
 .portal {
   position: relative;
-  border-radius: 12px;
-  border: 1px dashed var(--portal-border);
+  border-radius: var(--radius-card);
+  border: 1.5px dashed var(--portal-border);
   background: var(--portal-default-bg);
   padding: 24px 14px;
   display: flex;
@@ -125,7 +136,9 @@
   cursor: default;
 }
 
+/* Erfolg zieht die Kontur DURCH: aus „hier fehlt etwas" wird „hier ist etwas". */
 .portalSuccess {
+  border-style: solid;
   border-color: var(--portal-border-success);
   background: var(--portal-bg-success);
   cursor: default;
@@ -138,58 +151,66 @@
 }
 
 .portalIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .08);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--neutral-fill);
+  border: none;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.portalDragOver .portalIcon {
-  background: rgba(62, 207, 175, .1);
-  border-color: rgba(62, 207, 175, .3);
-}
-
+/* Gefuellt statt getoent — auf gefuellter Flaeche wird das Zeichen weiss.
+ * Die SVG im Portal tragen ihre Farbe als Praesentations-Attribut; eine
+ * CSS-Regel schlaegt es (dieselbe Mechanik wie beim Haken auf der Karte). */
+.portalDragOver .portalIcon,
 .portalSuccess .portalIcon {
-  background: rgba(62, 207, 175, .12);
-  border-color: rgba(62, 207, 175, .4);
+  background: var(--color-teal);
+  color: var(--on-accent);
 }
 
 .portalError .portalIcon {
-  background: rgba(255, 69, 58, .08);
-  border-color: rgba(255, 69, 58, .25);
+  background: var(--color-red);
+  color: var(--on-accent);
+}
+
+.portalDragOver .portalIcon svg path,
+.portalSuccess .portalIcon svg path,
+.portalError .portalIcon svg path {
+  stroke: var(--on-accent);
 }
 
 .portalLabel {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .25);
+  color: var(--text-secondary);
   text-align: center;
   line-height: 1.5;
 }
 
 .portalDragOver .portalLabel,
 .portalSuccess .portalLabel {
-  color: rgba(62, 207, 175, .7);
+  color: var(--color-teal);
 }
 
+/* Rot ist hier richtig: „Format nicht erkannt" ist ein echter Fehler, kein
+ * Zustand. Genau dafuer bleibt Rot in v3 reserviert. */
 .portalError .portalLabel {
-  color: rgba(255, 99, 88, .8);
+  color: var(--color-red);
 }
 
 .portalSubLabel {
-  font-size: 9.5px;
-  color: rgba(255, 255, 255, .13);
+  font-size: 11px;
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.5;
   padding: 0 8px;
 }
 
 .portalError .portalSubLabel {
-  color: rgba(255, 99, 88, .45);
+  color: var(--color-red);
 }
 
 @keyframes portalPulse {
@@ -225,11 +246,11 @@
 .devButton {
   padding: 5px 8px;
   border-radius: 6px;
-  border: .5px solid rgba(255, 255, 255, .08);
-  background: rgba(255, 255, 255, .04);
+  border: none;
+  background: var(--neutral-fill);
   font-size: 9px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .3);
+  color: var(--text-secondary);
   cursor: pointer;
   text-align: center;
   transition: background .15s, color .15s;
@@ -237,8 +258,8 @@
 }
 
 .devButton:hover {
-  background: rgba(255, 255, 255, .08);
-  color: rgba(255, 255, 255, .6);
+  background: var(--border-ghost);
+  color: var(--text-primary);
 }
 
 .devButtonLabel {
@@ -246,7 +267,7 @@
   font-weight: 600;
   letter-spacing: 1.1px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .18);
+  color: var(--text-tertiary);
   margin-bottom: 4px;
   margin-top: 6px;
 }
@@ -302,7 +323,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid var(--chev-border);
+  border: none;
   background: var(--chev-bg);
   display: flex;
   align-items: center;
@@ -317,12 +338,11 @@
 
 .chevButton:hover:not(:disabled) {
   background: var(--chev-bg-hover);
-  border-color: rgba(255, 255, 255, .16);
   color: var(--chev-color-hover);
 }
 
 .chevButton:disabled {
-  opacity: .25;
+  opacity: .3;
   cursor: not-allowed;
 }
 
@@ -370,9 +390,9 @@
   flex-shrink: 0;
   width: 136px;
   box-sizing: border-box;
-  border-radius: 14px;
-  border: 1px dashed var(--slot-border);
-  background: rgba(255, 255, 255, .02);
+  border-radius: var(--radius-card);
+  border: 1.5px dashed var(--slot-border);
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -395,17 +415,17 @@
 }
 
 .slotPlus {
-  font-size: 22px;
+  font-size: 24px;
   color: var(--slot-icon);
-  font-weight: 200;
+  font-weight: 300;
   line-height: 1;
 }
 
 .slotLabel {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--slot-label);
   text-align: center;
-  letter-spacing: .3px;
+  letter-spacing: 0;
   font-weight: 500;
 }
 
@@ -470,17 +490,17 @@
 }
 
 .liquidityNum {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .liquidityWord {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
   color: var(--zone-label);
   white-space: nowrap;
@@ -490,8 +510,8 @@
    ein „·" zwischen zwei Beträgen liest sich zu leicht als Rechenzeichen. */
 .liquiditySep {
   width: 1px;
-  height: 9px;
-  background: rgba(255, 255, 255, .10);
+  height: 10px;
+  background: var(--border-ghost);
   flex-shrink: 0;
 }
 
@@ -503,9 +523,9 @@
   flex-shrink: 0;
   cursor: pointer;
   user-select: none;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: .2px;
+  letter-spacing: 0;
   color: var(--transfer-toggle-color);
   transition: color .15s;
   font-variant-numeric: tabular-nums;
@@ -525,13 +545,14 @@
   margin: 0;
 }
 
+/* 9 → 14 px: Ein Kaestchen von 9 px ist kein Ziel, sondern ein Zufallstreffer. */
 .transferToggleBox {
   position: relative;
-  width: 9px;
-  height: 9px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
-  border-radius: 2px;
-  border: 1px solid var(--transfer-toggle-border);
+  border-radius: 4px;
+  border: 1.5px solid var(--transfer-toggle-border);
   transition: background .15s, border-color .15s;
 }
 
@@ -544,12 +565,12 @@
 .transferToggleInput:checked + .transferToggleBox::after {
   content: "";
   position: absolute;
-  left: 2.5px;
-  top: .5px;
-  width: 2px;
-  height: 4.5px;
+  left: 4.5px;
+  top: 1.5px;
+  width: 3px;
+  height: 6.5px;
   border: solid var(--transfer-toggle-check);
-  border-width: 0 1.2px 1.2px 0;
+  border-width: 0 1.6px 1.6px 0;
   transform: rotate(45deg);
 }
 
@@ -606,23 +627,35 @@
 }
 
 .fragmentStack::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .1);
+  background: var(--border-ghost);
   border-radius: 2px;
 }
 
+/* DIE DREI STUFEN — Design-Doku §8, seit v3-01 neu gefasst.
+ *
+ * Bis hierhin lief die Abstufung ueber Container-Deckkraft: arbeitsfaehig .72,
+ * Uebertrag .45, zugeordnet .22. Die AUSSAGE bleibt (zugeordnet ist die
+ * leiseste Stufe, Uebertrag die mittlere), das MITTEL nicht: Deckkraft auf dem
+ * Container multipliziert sich mit jeder Deckkraft darin. Bei .22 x einem
+ * ohnehin gedimmten Text landete die Beschreibung unter jeder
+ * Lesbarkeitsgrenze — und die Rohmasse ist die Flaeche, auf der der Nutzer
+ * arbeitet.
+ *
+ *   arbeitsfaehig   volle Flaeche, Betrag primaer          ziehbar
+ *   Uebertrag       volle Flaeche, Text sekundaer          Etikett, nicht ziehbar
+ *   zugeordnet      KEINE Flaeche, Kontur, Text tertiaer   Wort „· zugeordnet"
+ */
 .fragmentCard {
   background: var(--frag-bg);
   border: 1px solid var(--frag-border);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 11px 12px;
   cursor: grab;
-  transition: transform .15s, opacity .15s, box-shadow .15s;
-  opacity: .72;
+  transition: transform .15s, background .15s, box-shadow .15s;
 }
 
 .fragmentCard:hover {
   transform: translateY(-1px);
-  opacity: .92;
   box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
 }
 
@@ -654,14 +687,14 @@
    Der Zeiger-Cursor ist die einzige neue Rückmeldung — er zeigt, dass es hier
    etwas zu sehen gibt, ohne einen festgeschriebenen Deckkraft-Wert anzufassen. */
 .fragmentCardLocked {
-  opacity: .22;
+  background: transparent;
+  border-color: var(--border-ghost);
   cursor: pointer;
 }
 
 /* Sprint 9 §6.1: Cross-Account-Transfer — gedimmt (0.45, heller als locked),
    kein Drag. Seit v2-16 (RM-2) anklickbar, siehe Block oben. */
 .fragmentCardTransfer {
-  opacity: .45;
   cursor: pointer;
 }
 
@@ -670,7 +703,7 @@
    spätere gewinnt. */
 .fragmentCardLocked:hover,
 .fragmentCardLocked:active {
-  opacity: .22;
+  background: transparent;
   transform: none;
   box-shadow: none;
   cursor: pointer;
@@ -678,7 +711,6 @@
 
 .fragmentCardTransfer:hover,
 .fragmentCardTransfer:active {
-  opacity: .45;
   transform: none;
   box-shadow: none;
   cursor: pointer;
@@ -694,8 +726,8 @@
 
 .fragmentAmount {
   font-size: 16px;
-  font-weight: 200;
-  letter-spacing: -.8px;
+  font-weight: 400;
+  letter-spacing: -.4px;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   /* v2-10 P2 (BF-1): Umbruch-Verbot. Ohne dieses nowrap ist die kleinste
@@ -709,20 +741,24 @@
 }
 
 .fragmentBadge {
-  font-size: 7.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: .6px;
+  letter-spacing: .5px;
   text-transform: uppercase;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
   flex-shrink: 0;
   margin-top: 2px;
   white-space: nowrap;
-  /* v2-07 A1: Deckkraft-Stufen unverändert (.08 Fläche / .5 Text / .15
-     Rahmen) — variabel ist ausschließlich der Farbton. */
-  background: rgba(var(--frag-badge-hue), .08);
-  color: rgba(var(--frag-badge-hue), .5);
-  border: .5px solid rgba(var(--frag-badge-hue), .15);
+  /* v3-01: Das Etikett ist NEUTRAL. 7,5 px waren unter jeder Lesbarkeitsgrenze,
+   * und die sechs Farbtoene aus v2-07 A1 stehen weiter im Code, erscheinen aber
+   * nirgends — das KI-Vorschlags-Kaestchen liegt seit dem 04.08.2026 hinter
+   * SHOW_SUGGESTION_BADGES = false. Eine Farbe, die nirgends erscheint, gehoert
+   * nicht in die Palette; die Klassen .fragmentBadgeHueN bleiben unangetastet,
+   * damit die Entscheidung umkehrbar bleibt. */
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
+  border: none;
 }
 
 /* v2-07 A1: die sechs Farbtöne. Jede Klasse setzt nur die Ton-Variable —
@@ -755,10 +791,10 @@
 }
 
 .fragmentDesc {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--frag-desc);
-  letter-spacing: .1px;
+  letter-spacing: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -783,17 +819,36 @@
    laengste im Bestand hat 105 Zeichen. Der vollstaendige Name bleibt ueber das
    title-Attribut erreichbar, genau wie bei der Beschreibung (RM-1). */
 .fragmentSuggestion {
-  font-size: 9px;
-  color: var(--text-ghost);
-  letter-spacing: .1px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 3px;
 }
 .fragmentDate {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--frag-date);
+}
+
+/* Die Text-Stufen der beiden leiseren Zustaende stehen bewusst HINTER den
+ * Basisregeln von Betrag, Beschreibung und Datum — eine Ueberschreibung, die
+ * vor dem Ueberschriebenen steht, ist schwer zu lesen und war ausserdem die
+ * Ursache eines falsch-roten Waechters: `vorschlagszeile.spec.ts` sucht die
+ * ERSTE Textstelle `.fragmentDesc` und fand sonst eine Regel ohne Schriftgroesse. */
+.fragmentCardLocked .fragmentAmount,
+.fragmentCardLocked .fragmentDesc {
+  color: var(--text-tertiary);
+}
+
+.fragmentCardLocked .fragmentDate {
+  color: var(--text-quaternary);
+}
+
+.fragmentCardTransfer .fragmentAmount,
+.fragmentCardTransfer .fragmentDesc {
+  color: var(--text-secondary);
 }
 
 /* v2-04 ② — Interim-Auslösung Umschichtungs-Markierung (finale Geste = DD).
@@ -851,8 +906,8 @@
 }
 
 .overlayModal {
-  background: rgba(28, 28, 30, .96);
-  border: .5px solid rgba(255, 255, 255, .1);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 20px;
   width: 300px;
@@ -878,8 +933,8 @@
    ============================================================ */
 
 .showcaseModal {
-  background: rgba(28, 28, 30, .96);
-  border: .5px solid rgba(255, 255, 255, .1);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 22px 22px 20px;
   width: 330px;
@@ -889,11 +944,11 @@
 }
 
 .showcaseKicker {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .22);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 }
 
@@ -908,10 +963,10 @@
 
 .showcaseWho {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -.2px;
   line-height: 1.3;
-  color: #fff;
+  color: var(--text-primary);
   /* Der Held ist Text und damit unterschiedlich lang (§11, verworfene
      Variante A nennt genau das als Preis). Er darf umbrechen; der Betrag
      rechts darf es nicht. */
@@ -921,10 +976,11 @@
 }
 
 .showcaseAmount {
-  font-size: 19px;
-  font-weight: 200;
-  letter-spacing: -.8px;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -.5px;
   line-height: 1.2;
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   /* v2-10 P2 (BF-1) sinngemäß: der Betrag wird nie zusammengedrückt, sonst
      rutscht das €-Zeichen in die zweite Zeile. */
@@ -943,15 +999,24 @@
   color: var(--color-teal);
 }
 
+/* BESCHLUSS vom 05.09.2026 (Option B von drei): Ein Abgang ist NICHT rot.
+ *
+ * Ein Kontoumsatz hat ein Vorzeichen, kein Urteil. In einer Rohmasse aus rund
+ * 77 Umsaetzen sind etwa 70 Abgaenge — die Liste war ein roter Block, und Rot
+ * verlor dort seine letzte Bedeutung. Das Minuszeichen traegt die Richtung,
+ * die Farbe nur die Ausnahme (Geld kam herein).
+ *
+ * Gilt ueberall gleich: Rohmasse, Schaufenster, Ordner-Kachel. Die Klasse
+ * bleibt stehen, damit `fragment-showcase.tsx` unangetastet bleibt. */
 .showcaseAmountNeg {
-  color: var(--color-red);
+  color: var(--text-primary);
 }
 
 .showcasePurpose {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.55;
-  color: rgba(255, 255, 255, .45);
+  color: var(--text-secondary);
   margin-top: 8px;
   /* §11 verlangt den Verwendungszweck UNGEKÜRZT — hier also ausdrücklich kein
      `text-overflow: ellipsis` wie auf der Fragment-Karte. */
@@ -960,7 +1025,7 @@
 
 .showcaseRule {
   height: 1px;
-  background: rgba(255, 255, 255, .06);
+  background: var(--border-subtle);
   margin: 16px 0 8px;
 }
 
@@ -973,11 +1038,11 @@
 }
 
 .showcaseRowKey {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.1px;
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .22);
+  color: var(--text-tertiary);
   white-space: nowrap;
 }
 
@@ -987,13 +1052,13 @@
 }
 
 .showcaseRowValue {
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, .45);
+  font-size: 13px;
+  color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
 
 .showcaseRowValueOn {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .showcaseRowValueTeal {
@@ -1001,15 +1066,15 @@
 }
 
 .showcaseRowHint {
-  font-size: 10px;
-  color: rgba(255, 255, 255, .22);
+  font-size: 12px;
+  color: var(--text-tertiary);
   margin-top: 2px;
   line-height: 1.4;
 }
 
 .showcaseNote {
   font-size: 10.5px;
-  color: rgba(255, 255, 255, .22);
+  color: var(--text-tertiary);
   line-height: 1.5;
   text-align: right;
   margin-top: 1px;
@@ -1018,19 +1083,19 @@
 .overlayTitle {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .8);
+  color: var(--text-primary);
 }
 
 .overlaySubtitle {
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .65);
+  color: var(--text-secondary);
   letter-spacing: -.1px;
 }
 
 .overlayMetaLine {
   font-size: 12px;
-  color: rgba(255, 255, 255, .35);
+  color: var(--text-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1043,18 +1108,18 @@
 .overlayFieldLabel {
   font-size: 11px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .35);
+  color: var(--text-secondary);
 }
 
 .overlayInput {
   width: 100%;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .12);
+  background: var(--neutral-fill);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 14px;
   font-weight: 300;
-  color: #ffffff;
+  color: var(--text-primary);
   outline: none;
   font-variant-numeric: tabular-nums;
   transition: border-color .15s;
@@ -1062,22 +1127,23 @@
 }
 
 .overlayInput:focus {
-  border-color: rgba(255, 255, 255, .3);
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px var(--teal-fill);
 }
 
 .overlayInputReadOnly {
-  background: rgba(255, 255, 255, .02);
-  color: rgba(255, 255, 255, .55);
+  background: transparent;
+  color: var(--text-secondary);
   cursor: default;
 }
 
 .overlayInputError {
-  border-color: rgba(255, 69, 58, .45);
+  border-color: var(--color-red);
 }
 
 .overlayInputErrorText {
   font-size: 11px;
-  color: rgba(255, 69, 58, .85);
+  color: var(--color-red);
 }
 
 .optionGrid {
@@ -1091,13 +1157,14 @@
 }
 
 .optionButton {
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .12);
-  border-radius: 8px;
-  padding: 9px 10px;
-  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  height: 40px;
+  padding: 0 10px;
+  font-size: 13px;
   font-weight: 500;
-  color: rgba(255, 255, 255, .55);
+  color: var(--text-secondary);
   cursor: pointer;
   text-align: center;
   transition: background .15s, color .15s, border-color .15s;
@@ -1105,14 +1172,16 @@
 }
 
 .optionButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .09);
-  color: rgba(255, 255, 255, .9);
+  background: var(--neutral-fill);
+  color: var(--text-primary);
 }
 
+/* Tuerkis heisst hier „ausgewaehlt", nicht „erledigt" — dieselbe Bedeutung
+ * wie im Wiederholungs-Raster der Karte. Keine neue Farbe. */
 .optionButtonSelected {
-  background: rgba(62, 207, 175, .1);
-  border-color: rgba(62, 207, 175, .35);
-  color: rgba(62, 207, 175, .9);
+  background: var(--teal-fill);
+  border-color: var(--color-teal);
+  color: var(--color-teal);
 }
 
 .overlayActions {
@@ -1124,13 +1193,14 @@
 /* Primary-Action-Button — visuell identisch zu Sprint-4 .overlayActionButton */
 .primaryButton {
   width: 100%;
+  min-height: 44px;
   padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: var(--radius-control);
+  font-size: 15px;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, .1);
-  background: rgba(255, 255, 255, .05);
-  color: rgba(255, 255, 255, .7);
+  border: none;
+  background: var(--neutral-fill);
+  color: var(--text-primary);
   cursor: pointer;
   transition: background .15s, color .15s;
   text-align: center;
@@ -1138,8 +1208,7 @@
 }
 
 .primaryButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, .09);
-  color: rgba(255, 255, 255, .9);
+  background: var(--border-ghost);
 }
 
 .primaryButton:disabled {
@@ -1156,7 +1225,7 @@
   font-weight: 500;
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, .3);
+  color: var(--text-secondary);
   cursor: pointer;
   transition: color .15s;
   text-align: center;
@@ -1164,7 +1233,7 @@
 }
 
 .cancelButton:hover:not(:disabled) {
-  color: rgba(255, 255, 255, .55);
+  color: var(--text-primary);
 }
 
 .cancelButton:disabled {
@@ -1175,10 +1244,10 @@
 .errorText {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 69, 58, .85);
+  color: var(--color-red);
   padding: 8px 10px;
-  background: rgba(255, 69, 58, .06);
-  border: .5px solid rgba(255, 69, 58, .2);
+  background: var(--red-fill);
+  border: none;
   border-radius: 8px;
 }
 
@@ -1190,8 +1259,8 @@
 }
 
 .linkedRow {
-  background: rgba(255, 255, 255, .04);
-  border: .5px solid rgba(255, 255, 255, .08);
+  background: var(--neutral-fill);
+  border: none;
   border-radius: 10px;
   padding: 10px 12px;
   display: flex;
@@ -1211,14 +1280,14 @@
 .linkedRowAmount {
   font-size: 15px;
   font-weight: 300;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -.5px;
   font-variant-numeric: tabular-nums;
 }
 
 .linkedRowDesc {
   font-size: 10px;
-  color: rgba(255, 255, 255, .28);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1226,7 +1295,7 @@
 
 .linkedRowDate {
   font-size: 9px;
-  color: rgba(255, 255, 255, .18);
+  color: var(--text-tertiary);
   margin-top: 2px;
 }
 
@@ -1235,8 +1304,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 69, 58, .08);
-  border: 1px solid rgba(255, 69, 58, .22);
+  background: var(--neutral-fill);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1247,8 +1316,8 @@
 }
 
 .ejectButton:hover:not(:disabled) {
-  background: rgba(255, 69, 58, .18);
-  border-color: rgba(255, 69, 58, .4);
+  background: var(--border-ghost);
+  border-color: transparent;
 }
 
 .ejectButton:disabled {
@@ -1315,7 +1384,7 @@
   cursor: pointer;
   opacity: 0;
   transition: opacity .15s, background .15s;
-  color: rgba(255, 255, 255, .55);
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1;
   z-index: 2;
@@ -1327,7 +1396,7 @@
 }
 
 .catContextIcon:hover {
-  background: rgba(255, 255, 255, .07);
+  background: var(--neutral-fill);
 }
 
 .catTile {
@@ -1336,28 +1405,26 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   padding: 14px 13px 12px;
-  border: 1px solid var(--border-category);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-category);
   color: var(--text-primary);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  opacity: .82;
-  transition: opacity .13s, transform .13s;
+  transition: background .13s, transform .13s;
   /* Gestapelte Kanten: zwei versetzte Kopien der Form via box-shadow —
      zuverlässiger als Pseudo-Elemente mit negativem z-index, und sie zeigen auf
      einen Blick, dass hinter der Kachel mehr liegt. */
   box-shadow:
     0 5px 0 -1px var(--bg-category-stack),
-    0 5px 0 0 var(--border-category),
+    0 5px 0 0 var(--border-subtle),
     0 10px 0 -2px var(--bg-category-stack),
-    0 10px 0 -1px var(--border-category-stack);
+    0 10px 0 -1px var(--border-subtle);
 }
 
 .catTile:hover {
-  opacity: 1;
   transform: translateY(-2px);
 }
 
@@ -1376,24 +1443,31 @@
    einen Monat, in dem noch gar nichts fällig war. */
 .catTileGhost {
   background: var(--bg-card-ghost);
-  opacity: .5;
+  border-color: var(--border-ghost);
 }
 
-.catTileGhost:hover {
-  opacity: .62;
+.catTileGhost .catName,
+.catTileGhost .catAmount {
+  color: var(--text-secondary);
 }
 
 /* Die linke Kante ist der einzige Ort, an dem Rot und Türkis am Ordner
    auftauchen — in exakt ihrer bisherigen Bedeutung. `padding-left` wird um die
    Kantenbreite reduziert, damit der Inhalt nicht springt. */
-.catTileHasOpen {
-  border-left: 2px solid var(--border-category-open);
-  padding-left: 12px;
-}
-
+/* BESCHLUSS vom 05.09.2026 — Variante A: die linke Zustandskante entfaellt.
+ *
+ * Sie war der einzige Ort, an dem Rot und Tuerkis am Ordner auftraten, und sie
+ * sagte dasselbe wie die Flagge daneben. Zwei Elemente fuer eine Aussage sind
+ * eines zu viel — und Rot fuer „drei Dauerauftraege warten auf den 1." ist
+ * genau die Bedeutung, die Regel 2 abschafft.
+ *
+ * Die Klassen bleiben LEER stehen, damit `category-tile.tsx` unangetastet
+ * bleibt (Bedingung 2 des Sprints: in .tsx nur Klassennamen). Ohne Kante bleibt
+ * ausserdem das Padding beidseitig bei 13 px — Name und Betrag stehen wieder
+ * exakt auf der Flucht der Karten daneben. */
+.catTileHasOpen,
 .catTileAllDone {
-  border-left: 2px solid var(--border-category-done);
-  padding-left: 12px;
+  /* absichtlich leer — siehe Beschluss oben */
 }
 
 .catTop {
@@ -1408,15 +1482,26 @@
 .catKicker {
   font-size: var(--typo-label-small-size);
   font-weight: var(--typo-label-small-weight);
-  letter-spacing: 1px;
+  letter-spacing: var(--typo-label-small-tracking);
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .30);
+  color: var(--text-tertiary);
 }
 
+/* Das Chevron ist das Unterscheidungszeichen zur Karte: Auf der Karte sitzt
+ * oben rechts ein ZUSTAND (Kreis), auf der Kachel eine RICHTUNG. Apple nennt
+ * das disclosure indicator; es heisst „hier geht es weiter" und nie „hier
+ * passiert etwas".
+ *
+ * Seit v3-01 ein SVG statt des Textzeichens „›": Das Zeichen variiert je Font
+ * in Hoehe und Strichstaerke, und mit dem neuen Schriftstapel (-apple-system
+ * zuerst) saesse es sichtbar schief. */
 .catChev {
-  font-size: 10px;
-  line-height: 1;
-  color: rgba(255, 255, 255, .30);
+  width: 8px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
   transition: transform .15s;
 }
 
@@ -1449,19 +1534,31 @@
 }
 
 .catCount {
-  font-size: var(--typo-label-small-size);
-  font-weight: 500;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .28);
+  font-size: var(--typo-label-meta-size);
+  font-weight: var(--typo-label-meta-weight);
+  letter-spacing: var(--typo-label-meta-tracking);
+  color: var(--text-tertiary);
 }
 
+/* „3 offen" ist NEUTRAL — es ist eine Auskunft, kein Alarm. Die Kachel
+ * summiert und urteilt nicht; eine ueberschrittene Budget-Karte zeigt das die
+ * Karte selbst beim Aufklappen. */
 .catOpenFlag {
   font-size: var(--typo-label-small-size);
   font-weight: var(--typo-label-small-weight);
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  color: var(--text-category-flag);
+  letter-spacing: .2px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* „erledigt" DARF tuerkis sein: Ein Ordner, dessen Karten alle bezahlt sind,
+ * IST erledigt — die Aussage stimmt, und Tuerkis heisst in v3 genau das.
+ * Gesetzt im allDone-Zweig von category-tile.tsx anstelle von .catCount. */
+.catDoneFlag {
+  font-size: var(--typo-label-small-size);
+  font-weight: var(--typo-label-small-weight);
+  letter-spacing: .2px;
+  color: var(--color-teal);
   white-space: nowrap;
 }
 
@@ -1478,8 +1575,11 @@
   border-radius: 0 0 3px 3px;
 }
 
+/* Die Klammer ist NEUTRAL, auch wenn drinnen etwas offen ist: Sie zeigt
+ * Zugehoerigkeit, nicht Zustand. Die Klasse bleibt leer stehen, damit
+ * `category-tile.tsx` unangetastet bleibt. */
 .childGroupOpen {
-  border-bottom-color: var(--border-bracket-open);
+  /* absichtlich leer — siehe Kommentar oben */
 }
 
 /* Die Netto-Kachel benutzt die Karten-Optik, ist aber ein Knopf — die

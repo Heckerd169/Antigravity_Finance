@@ -1,24 +1,26 @@
 .headerTimeline {
-  /* Komponent-lokale Farb-Vars aus Design-Doku §6 (analog Sprint-2-Ring-Pattern). */
-  --pill-bg-running: rgba(255, 255, 255, 0.06);
-  --pill-fg-running: rgba(255, 255, 255, 0.35);
-  --pill-bg-past: rgba(62, 207, 175, 0.08);
-  --pill-fg-past: rgba(62, 207, 175, 0.6);
-  --pill-bg-future: rgba(255, 255, 255, 0.03);
-  --pill-fg-future: rgba(255, 255, 255, 0.15);
-  --flank-text: rgba(255, 255, 255, 0.38);
-  --flank-sub: rgba(255, 255, 255, 0.18);
-  --outlier-fg: rgba(255, 200, 60, 0.65);
-  --chev-stroke: rgba(255, 255, 255, 0.55);
-  --chev-bg-hover: rgba(255, 255, 255, 0.07);
-  --divider: rgba(255, 255, 255, 0.06);
+  /* v3-01: nur noch Weiterleitungen auf globale Tokens — vorher zwoelf eigene
+   * Farbwerte, die eine Aenderung an tokens.css nicht durchliessen. */
+  --pill-bg-running: var(--neutral-fill);
+  --pill-fg-running: var(--text-secondary);
+  --pill-bg-past: var(--teal-fill);
+  --pill-fg-past: var(--color-teal);
+  --pill-bg-future: transparent;
+  --pill-fg-future: var(--text-tertiary);
+  --flank-text: var(--text-secondary);
+  --flank-sub: var(--text-tertiary);
+  --outlier-fg: var(--color-gold);
+  --chev-stroke: var(--text-secondary);
+  --chev-bg: var(--neutral-fill);
+  --chev-bg-hover: var(--border-ghost);
+  --divider: var(--border-subtle);
 
   display: flex;
   align-items: stretch;
   justify-content: space-between;
   padding: 22px 20px 20px;
   position: relative;
-  border-bottom: 0.5px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
   user-select: none;
 }
 
@@ -29,14 +31,16 @@
   flex: 1;
   padding: 4px 0;
   min-width: 0;
-  opacity: 0.85;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
   color: var(--flank-text);
   text-decoration: none;
 }
 
-.flank:hover {
-  opacity: 1;
+/* v3 Regel 3: Die Flanke trug `opacity: .85` auf dem Container und dimmte
+ * damit Monat, Untertitel und Chevron zugleich. Die Textstufen tragen das
+ * jetzt selbst. */
+.flank:hover .flankMonth {
+  color: var(--text-primary);
 }
 
 .flank.left {
@@ -47,8 +51,12 @@
   justify-content: flex-end;
 }
 
+/* Ein abgeschalteter Bedienweg — hier ist `opacity` das uebliche Mittel und
+ * Regel 3 nicht beruehrt (dieselbe Begruendung wie beim gesperrten
+ * Menueeintrag). Von .20 auf .35: Bei .20 war nicht mehr erkennbar, DASS dort
+ * eine Schranke ist. */
 .flankDisabled {
-  opacity: 0.2;
+  opacity: 0.35;
   pointer-events: none;
 }
 
@@ -73,8 +81,12 @@
   text-overflow: ellipsis;
 }
 
+/* „3 Fragmente offen" ist eine AUFGABE, „Alles erledigt" eine Bestaetigung —
+ * die einzige Stelle im Header, die zu etwas auffordert. Deshalb steht sie bei
+ * offenen Fragmenten eine Stufe heller. KEINE Farbe: unzugeordnete Fragmente
+ * sind kein Fehler, nur Arbeit. */
 .flankSub {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--flank-sub);
   white-space: nowrap;
@@ -82,26 +94,37 @@
   text-overflow: ellipsis;
 }
 
+/* DIE PFEILE SIND IMMER DA.
+ *
+ * Hier stand `opacity: 0` plus zwei Regeln, die sie erst beim Hover ueber den
+ * ganzen Header einblendeten — auf einem Telefon also nie. Ein
+ * Navigationselement, das nur bei Hover existiert, existiert fuer die Haelfte
+ * der Nutzer nicht.
+ *
+ * 28 px ist zugleich die kleinste Flaeche, die sich ohne Frust treffen laesst;
+ * die ganze Flanke bleibt Link, der Kreis zeigt nur, WO. */
 .chev {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--chev-bg);
+  color: var(--chev-stroke);
   flex-shrink: 0;
-  opacity: 0;
-  transition: background 0.2s, opacity 0.2s;
-}
-
-.headerTimeline:hover .chev,
-.headerTimeline:focus-within .chev {
-  opacity: 1;
+  transition: background 0.2s;
 }
 
 .flank:hover .chev {
   background: var(--chev-bg-hover);
+}
+
+/* Der Strich kommt aus dem SVG-Attribut `strokeWidth="1.4"`; ein
+ * Praesentations-Attribut hat die niedrigste Prioritaet, jede CSS-Regel
+ * schlaegt es. Deshalb geht 1,6 px hier ohne eine Zeile TypeScript. */
+.chev svg path {
+  stroke-width: 1.6;
 }
 
 .center {
@@ -132,16 +155,21 @@
   }
 }
 
+/* Die Pille spricht die KARTENSPRACHE: „Laufend" neutral, „Abgeschlossen"
+ * tuerkis, „Forecast" als Kontur ohne Flaeche — exakt die drei Zustaende, die
+ * die Karten mit Punkt, Haken und gestricheltem Kreis zeigen. Wer das
+ * Karussell verstanden hat, versteht die Pille ohne Legende.
+ * Versalien und 9 px entfallen (Regel 4). */
 .pill {
   display: inline-flex;
   align-items: center;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  letter-spacing: 0.2px;
   padding: 3px 10px;
   border-radius: 20px;
   margin-top: 2px;
+  border: 1px solid transparent;
 }
 
 .pillRunning {
@@ -156,6 +184,7 @@
 
 .pillFuture {
   background: var(--pill-bg-future);
+  border-color: var(--border-ghost);
   color: var(--pill-fg-future);
 }
 
@@ -163,8 +192,8 @@
  * nur die Sichtbarkeit schaltet → kein Layout-Sprung beim Monatswechsel. */
 .outlierSub {
   min-height: 15px;
-  font-size: 11px;
-  font-weight: 300;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--outlier-fg);
   opacity: 0;
   transition: opacity 0.25s;
@@ -173,4 +202,9 @@
 
 .outlierSub[data-visible="true"] {
   opacity: 1;
+}
+
+/* Gesetzt in index.tsx, wenn `safeCount > 0` — reiner Klassenname. */
+.flankSubOpen {
+  color: var(--text-secondary);
 }
