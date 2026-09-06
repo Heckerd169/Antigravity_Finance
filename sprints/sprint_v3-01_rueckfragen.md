@@ -185,3 +185,61 @@ Rückmeldung während einer Geste, kein Zustand.
 Textstufen bzw. auf `--neutral-fill` / `--border-ghost` gezogen — das ist die
 Anwendung von Regel 3, nicht eine eigene Gestaltung. Wären sie stehengeblieben,
 stünden fünf frei gewählte Alpha-Werte mitten im neuen Vierstufen-System.
+
+---
+
+## Schritt 4 · `interaction-zone.module.css` + fünf `.tsx`-Stellen
+
+**Keine offenen Fragen.** Beide Entscheidungen aus Schritt 3 sind eingebaut
+(SVG-Tausche freigegeben, Wächter nachgezogen). Fünf Befunde.
+
+### B13 · Dritter Fundort derselben Sache — 38 lokale Farbwerte
+
+Am `.interactionZone`-Root standen **38** komponenten-lokale Farbwerte, exakt
+dasselbe Muster wie in `cards.module.css`: `--frag-bg: #141416`,
+`--frag-amount-neg: #FF453A`, `--zone-label: rgba(255,255,255,.18)`,
+`--slot-icon`, `--chev-color`, `--portal-*` … Eine Änderung an `tokens.css`
+erreichte diese Komponente nicht, weil sie ihre Farben selbst mitbrachte.
+
+Sie sind jetzt ausnahmslos **Weiterleitungen** auf globale Tokens. Zusammen mit
+`cards` und `card-action-toast` tragen die drei Module danach **null** rohe
+Farbwerte (Schwarz-Schatten ausgenommen).
+
+**Das ist der dritte Fundort in einem Sprint** — nach den achtzehn in `cards`
+und den vier hartkodierten SVG-Farben in `card.tsx`. Gehört als
+Lessons-Learned-Kandidat ins Review.
+
+### B14 · Die Übergabe adressiert BEIDE Module, ich hatte nur eines gelesen
+
+Der Abschnitt „Overlays, Menü, Toast" ist überschrieben mit
+*„cards.module.css **+ interaction-zone.module.css**"*. Beim ersten Durchgang
+habe ich ihn nur auf `cards` angewandt — `.overlayModal`, `.overlayTitle`,
+`.overlayInput` und `.cancelButton` gibt es **in beiden Dateien** mit denselben
+Namen. Nachgeholt; ohne den Abgleich wäre das „Karte anlegen"-Overlay als
+einziges im alten Stand geblieben.
+
+### B15 · „Lösen" wird neutral, nicht rot — abgeleitet, nicht vorgegeben
+
+`.ejectButton` (Fragment von einer Karte lösen) war rot getönt. Die Übergabe
+sagt dazu nichts. Die v3-Seite *Einkommen* begründet für den gleichnamigen
+Knopf im Gehalts-Popup ausdrücklich: *„Lösen neutral (kein Rot: Lösen ist
+rückgängig machbar)."* Dieselbe Handlung, dieselbe Begründung — übernommen.
+
+### B16 · Ein Wächter hat eine echte Ungeschicklichkeit gefunden
+
+`vorschlagszeile.spec.ts` ③ wurde rot: Meine neuen Stufen-Überschreibungen
+(`.fragmentCardLocked .fragmentDesc`) standen **vor** der Basisregel
+`.fragmentDesc`, und der Test greift die **erste** Textstelle — dort steht
+keine Schriftgröße. Der Test hatte recht in der Sache: Eine Überschreibung
+gehört hinter das Überschriebene. Verschoben, nicht der Test angepasst.
+
+### B17 · Die Prüfbedingung für den Light-Umschalter ist erfüllt
+
+Die zwölf Übergangs-Tokens sind entfernt — **nachdem** gemessen war, dass kein
+Modul sie mehr liest, nicht weil der Plan es vorsah. Damit ist die Liste der
+Tokens ohne Light-Wert **leer**; genau das war die Bedingung, die der Kommentar
+in `tokens.css` seit Schritt 1 nennt.
+
+Mit entfallen sind `--border-category` und `--border-category-stack`, die die
+Übergabe **nicht** nennt: Die Ordner-Kachel trägt seit Beschluss A denselben
+Rand wie jede Karte (`--border-subtle`), damit hatten sie keinen Leser mehr.
