@@ -130,7 +130,17 @@ export function VerlaufOverlay({
           onClick={onClose}
           aria-label="Schließen"
         >
-          ×
+          {/* v3-01: SVG statt des Textzeichens „×". Es variiert je Font in
+              Höhe und Strichstärke und sitzt im 28-px-Kreis sonst außermittig;
+              der Pfad stammt aus `design-system/v3/komponenten/verlauf.html`. */}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path
+              d="M1.5 1.5l7 7M8.5 1.5l-7 7"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
         </button>
 
         <div className={styles.verlaufKicker}>Verlauf</div>

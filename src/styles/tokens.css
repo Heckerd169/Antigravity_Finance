@@ -27,13 +27,6 @@
    * damit ein Sheet ohne Schatten als Fläche liest. */
   --bg-elevated: #1C1C1E;
 
-  /* ⚠️ Übergangs-Tokens: gelten bis `cards.module.css` auf v3 steht
-   * (Schritt 3). Danach ersatzlos entfernen — sie haben in v3 keine
-   * Entsprechung mehr, der Zustand färbt keine Fläche. */
-  --bg-card-open: #160D0D;
-  --bg-card-paid: #0A140E;
-  --bg-card-over: #160A08;
-
   /* ── Farben ───────────────────────────────────────────────────── */
   --color-teal: #3ECFAF;
   --color-red: #FF453A;
@@ -83,15 +76,6 @@
    * Leer-Slot, Klammer unter einem Ordner. */
   --border-ghost: rgba(255, 255, 255, 0.14);
 
-  /* ⚠️ Übergangs-Tokens: bis Schritt 3 (cards) bzw. Schritt 4
-   * (interaction-zone). In v3 gibt es keinen Zustandsrand mehr. */
-  --border-teal: rgba(62, 207, 175, 0.22);
-  --border-red: rgba(255, 69, 58, 0.18);
-  --border-category-open: rgba(255, 69, 58, 0.45);
-  --border-category-done: rgba(62, 207, 175, 0.35);
-  --text-category-flag: rgba(255, 99, 88, 0.62);
-  --border-bracket-open: rgba(255, 69, 58, 0.32);
-
   /* Sprint 5 K1.3: Drop-Target-Outline (dezenter Grau-Ton, von Card-Hover
    * und Status-Farben deutlich abgesetzt). */
   --outline-drop: rgba(255, 255, 255, 0.35);
@@ -105,8 +89,6 @@
    * entfällt, der Zustand steht nur noch als Wort in der Statuszeile. */
   --bg-category: #1A1A20;
   --bg-category-stack: #131317;
-  --border-category: rgba(255, 255, 255, 0.13);
-  --border-category-stack: rgba(255, 255, 255, 0.09);
 
   /* Die Klammer unter einem aufgeklappten Ordner (Record B5). */
   --border-bracket: rgba(255, 255, 255, 0.14);
@@ -130,13 +112,6 @@
   --radius-card: 16px;
   --radius-control: 10px;
   --radius-popup: 18px;
-
-  /* v2-03 N5 (§3/§8): Gemeinsamer Grau-Grundton ALLER Rohmasse-Fragmente
-   * (zugeordnet + beide Transfer-Typen INTERNAL_TRANSFER/ASSET_REALLOCATION,
-   * v2-04) als RGB-Triplet für rgba(var(...), a)-Komposition.
-   * ⚠️ Übergangs-Token: v3 stuft die Fragmente über Fläche und Textstufe ab
-   * statt über Deckkraft (§8 neu). Fällt mit Schritt 4. */
-  --fragment-hue: 255, 255, 255;
 
   /* v2-07 A1 (§11, schließt Sprint-8-OQ1): sechs Farbtöne für das
    * KI-Vorschlag-Badge. Welchen Ton ein Badge bekommt, bestimmt der
@@ -217,10 +192,13 @@
  * identisch. Türkis und Rot bekommen eine dunklere Stufe DESSELBEN Farbtons:
  * #3ECFAF auf Weiß hätte nur 1,9:1 Kontrast (v3 Regel 6).
  *
- * ⚠️ Bewusst NICHT aufgeführt sind die oben mit „Übergangs-Token" markierten
- * Werte und `--fragment-hue`. Sie verschwinden in den Schritten 3 und 4;
- * ein Light-Wert dafür wäre eine Zahl für etwas, das es dann nicht mehr gibt.
- * Wer den Umschalter baut, prüft vorher, dass diese Liste leer ist.
+ * ⚠️ Die Liste der Tokens OHNE Light-Wert ist die Prüfbedingung für den
+ * späteren Umschalter — sie ist seit Schritt 4 (06.09.2026) LEER. Die zwölf
+ * Übergangs-Tokens (`--bg-card-open/-paid/-over`, `--border-teal/-red`,
+ * `--border-category-open/-done/-stack`, `--border-category`,
+ * `--text-category-flag`, `--border-bracket-open`, `--fragment-hue`) sind
+ * entfernt, nachdem gemessen war, dass sie kein Modul mehr liest.
+ * Wer hier ein Token ergänzt, ergänzt es in BEIDEN Blöcken.
  */
 [data-theme="light"] {
   color-scheme: light;
@@ -251,8 +229,6 @@
 
   --bg-category: #F7F7FB;
   --bg-category-stack: #ECECF2;
-  --border-category: rgba(0, 0, 0, 0.10);
-  --border-category-stack: rgba(0, 0, 0, 0.07);
   --border-bracket: rgba(0, 0, 0, 0.16);
 
   --progress-track: rgba(0, 0, 0, 0.06);

@@ -146,8 +146,20 @@ export function CategoryTile({ group, isOpen, onToggle, jahr }: CategoryTileProp
       >
         <div className={styles.catTop}>
           <span className={styles.catKicker}>Kategorie</span>
+          {/* v3-01: SVG statt des Textzeichens „›". Das Zeichen variiert je
+              Font in Höhe und Strichstärke; mit dem Schriftstapel ab v3
+              (-apple-system zuerst) säße es sichtbar schief. Der Pfad stammt
+              aus `design-system/v3/komponenten/kategorien.html`. */}
           <span className={styles.catChev} aria-hidden="true">
-            ›
+            <svg width="8" height="12" viewBox="0 0 8 12" fill="none">
+              <path
+                d="M2 1.5l4 4.5-4 4.5"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </span>
         </div>
 
@@ -172,8 +184,12 @@ export function CategoryTile({ group, isOpen, onToggle, jahr }: CategoryTileProp
           <span className={styles.catCount}>
             {group.posten === 1 ? "1 Posten" : `${group.posten} Posten`}
           </span>
+          {/* v3-01: „erledigt" trägt Türkis (`catDoneFlag`), „N offen" ist
+              neutral (`catOpenFlag`). Bis dahin lief der erledigt-Fall über
+              `catCount` und war damit so leise wie die Postenzahl daneben.
+              Reiner Klassenname — die Bedingung ist unverändert. */}
           {wantsFlag && (
-            <span className={hasOpen ? styles.catOpenFlag : styles.catCount}>
+            <span className={hasOpen ? styles.catOpenFlag : styles.catDoneFlag}>
               {hasOpen ? `${group.offen} offen` : "erledigt"}
             </span>
           )}

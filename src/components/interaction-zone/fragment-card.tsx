@@ -123,6 +123,15 @@ export function FragmentCard({ fragment, isLocked }: FragmentCardProps) {
       {/* title traegt bewusst weiterhin den VOLLSTAENDIGEN Text (RM-1). */}
       <div className={styles.fragmentDesc} title={fragment.description}>
         {descShort}
+        {/* v3-01 (Design-Doku §8, neu gefasst): Ein zugeordnetes Fragment
+            traegt seit v3 KEINE Flaeche mehr, sondern nur eine Kontur. Eine
+            Kontur allein sagt aber nicht, WARUM es leise ist — deshalb tritt
+            das Wort hinzu. Der Transfer braucht es nicht, er hat sein Etikett.
+
+            Nebeneffekt, der die Regel aus RM-1 endlich einloest: Das
+            aria-label sagt „(zugeordnet)" seit v2-10 — Vorlesen und Sehen
+            ergeben ab jetzt wirklich dasselbe. */}
+        {isLocked && !isTransfer ? " · zugeordnet" : ""}
       </div>
       {/* v2-29: Der Kartenvorschlag als eigene, leise Zeile — Entscheidungen 1–4
           in V2/design_direktor_2026-08-24_haendler_gedaechtnis.md.

@@ -158,7 +158,7 @@ export function FrequencyOverlay({
         <div className={styles.overlayActions}>
           <button
             type="button"
-            className={styles.overlayActionButton}
+            className={`${styles.overlayActionButton} ${styles.primaryButtonFilled}`}
             onClick={handleApply}
             disabled={isPending}
           >

@@ -518,6 +518,17 @@ export function CardInteractive({
           >
             Kategorie ändern …
           </button>
+          {/* v3-01: Trennstrich vor den Eintraegen, die man nicht zurueckholt.
+              Apple setzt irreversible Aktionen seit iOS 7 in eine eigene
+              Gruppe ab — „Karte beenden" und „Karte loeschen" gehoeren dorthin,
+              „Betrag anpassen" nicht. Rein visuell, keine Logik. */}
+          <div className={styles.contextMenuSep} aria-hidden="true" />
+          {/* v3-01: Der Loeschen-Eintrag traegt Rot. Das ist KEIN Widerspruch
+              zu Regel 2 — die bezieht sich auf ZUSTAENDE („noch nicht" ist
+              nicht rot). Ein rotes Menuewort markiert eine AKTION, die nicht
+              rueckgaengig ist; das ist seit iOS 7 Konvention und die Erwartung
+              jedes Nutzers. Ein gesperrter Eintrag bleibt neutral ausgegraut:
+              Er fordert zu nichts auf, also ruft er auch nicht. */}
           {canEnd && (
             <button
               type="button"
@@ -540,7 +551,7 @@ export function CardInteractive({
           )}
           <button
             type="button"
-            className={`${styles.contextMenuItem}${deleteGate.deletable ? "" : ` ${styles.contextMenuItemDisabled}`}`}
+            className={`${styles.contextMenuItem}${deleteGate.deletable ? ` ${styles.contextMenuItemDestructive}` : ` ${styles.contextMenuItemDisabled}`}`}
             onClick={handleDeleteClick}
             role="menuitem"
             aria-disabled={!deleteGate.deletable}

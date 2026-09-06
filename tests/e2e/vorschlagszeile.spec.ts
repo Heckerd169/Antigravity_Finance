@@ -128,10 +128,10 @@ test.describe("v2-29 · die Vorschlagszeile", () => {
   test("③ ist leise — Ghost-Ton, keine Fläche, kein Rahmen, kein Farbtopf", () => {
     const b = block(css, ".fragmentSuggestion");
 
-    expect(b, "der Vorschlag trägt --text-ghost, den schwächsten Ton im System")
-      .toMatch(/color:\s*var\(--text-ghost\)/);
-    expect(tokens, "--text-ghost muss in tokens.css definiert sein (Regel 4)")
-      .toMatch(/--text-ghost:/);
+    expect(b, "der Vorschlag trägt --text-tertiary, den schwächsten Ton im System")
+      .toMatch(/color:\s*var\(--text-tertiary\)/);
+    expect(tokens, "--text-tertiary muss in tokens.css definiert sein (Regel 4)")
+      .toMatch(/--text-tertiary:/);
 
     expect(b, "eine Fläche macht daraus ein Kästchen").not.toMatch(/background/);
     expect(b, "ein Rahmen macht daraus ein Kästchen").not.toMatch(/border/);
