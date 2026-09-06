@@ -1,8 +1,8 @@
+/* v3-01: Die drei lokalen Farbwerte sind entfallen. `--ring-track` lag hier
+ * mit 0.05 und ueberschattete das gleichnamige globale Token — v3 hebt die
+ * Spur auf 0.06, damit sie als Rahmen SICHTBAR ist statt erraten zu werden.
+ * Genau das waere ohne diese Zeile nicht angekommen. */
 .ringStage {
-  --ring-track: rgba(255, 255, 255, 0.05);
-  --ring-label: rgba(255, 255, 255, 0.20);
-  --ring-subtext-muted: rgba(255, 255, 255, 0.28);
-
   position: relative;
   width: 248px;
   height: 248px;
@@ -35,7 +35,7 @@
 }
 
 .dot {
-  fill: var(--text-ghost);
+  fill: var(--text-tertiary);
 }
 
 .center {
@@ -69,21 +69,24 @@
   color: var(--color-teal);
 }
 
+/* Die Sperrung bleibt weiter als bei den uebrigen Labels (1,2 statt 0,5 px):
+ * „SPARRATE" steht allein unter einer 36-px-Zahl und traegt dort Ruhe, keine
+ * Information. Wert von der v3-Seite `komponenten/ring.html`. */
 .label {
   font-size: var(--typo-label-small-size);
   font-weight: var(--typo-label-small-weight);
-  letter-spacing: 2px;
-  color: var(--ring-label);
+  letter-spacing: 1.2px;
+  color: var(--text-tertiary);
   text-transform: uppercase;
 }
 
 .subtext {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.2px;
+  letter-spacing: 0;
   font-variant-numeric: var(--typo-numeric-variant);
   line-height: 1;
-  min-height: 11px;
+  min-height: 12px;
 }
 
 .subtext[data-color="red"] {
@@ -94,6 +97,8 @@
   color: var(--color-teal);
 }
 
+/* Vorher 28 % — die Unterzeile war leiser als jedes Label auf einer Karte,
+ * obwohl sie die Zahl darueber einordnet. Jetzt die Sekundaerstufe. */
 .subtext[data-color="muted"] {
-  color: var(--ring-subtext-muted);
+  color: var(--text-secondary);
 }

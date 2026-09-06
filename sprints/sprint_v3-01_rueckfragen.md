@@ -243,3 +243,90 @@ in `tokens.css` seit Schritt 1 nennt.
 Mit entfallen sind `--border-category` und `--border-category-stack`, die die
 Übergabe **nicht** nennt: Die Ordner-Kachel trägt seit Beschluss A denselben
 Rand wie jede Karte (`--border-subtle`), damit hatten sie keinen Leser mehr.
+
+---
+
+## Schritt 5 · Ring, Header, Welle
+
+**Zwei Fragen.** Beide betreffen Stellen, an die die Übergabe die v3-Regeln
+schickt, die aber außerhalb der acht Schritte liegen.
+
+### ❓ F3 · Die halbe Welle liegt in `draw.ts` und ist aus CSS nicht erreichbar
+
+Die v3-Seite `komponenten/welle.html` verlangt fünf Dinge. **Drei davon stehen
+hartkodiert im Zeichencode**, nicht im CSS-Modul:
+
+| Was v3 will | Wo es heute steht | Wert |
+|---|---|---|
+| Monatsnamen 9 → 11 px, keine Versalien | `draw.ts:218` | `ctx.font = "500 8px system-ui"` — tatsächlich **8 px** |
+| Aktiver Monat weiß statt 50 % Grau | `draw.ts:219` | `graS(0.5)` gegen `graS(0.18)` |
+| Goldlinie von 60 auf 75 % Deckkraft | `draw.ts:356`, `362` | `goldS(0.55)` / `goldS(0.85)` |
+
+Dazu zwei Stellen, die dieselbe Klasse haben und in der Übergabe gar nicht
+vorkommen: die Achsenbeschriftung des Popups (`draw.ts:378`, ebenfalls **8 px**)
+und der Schriftstapel — der Zeichencode schreibt dreimal `system-ui`, während
+v3 `-apple-system` an die erste Stelle setzt. **Die Welle rendert damit in einer
+anderen Schrift als der Rest der App.**
+
+**Die Token-Änderung `--color-gold: .6 → .75` aus Schritt 1 erreicht die
+Goldlinie nicht.** Sie ist im Diff sichtbar, im Bild nicht — der **vierte**
+Fundort derselben Fehlerklasse in diesem Sprint (nach 18 Werten in `cards`,
+4 SVG-Farben in `card.tsx`, 38 Werten in `interaction-zone`).
+
+`draw.ts` steht **nicht** auf der Verbotsliste von Bedingung 1 (dort stehen
+`src/lib/`, `supabase/`, `card-state.ts`, `verlauf.ts`, `consequence.ts`,
+`liquidity.ts`, `ring-subline.ts` und Server-Actions). Es ist auch keine
+Rechenlogik, sondern Zeichencode. Aber Schritt 5 nennt ausdrücklich nur die drei
+CSS-Module, und Bedingung 2 verbietet „Umbau".
+
+**Deine Entscheidung:** ① fünf Zahlen in `draw.ts` ändern — Schriftgrößen 8 → 11,
+aktiver Monat auf Weiß, Gold auf .75, Schriftstapel aus dem Token. Keine
+Rechnung, keine neue Datei, kein Umbau. ② draußen lassen und als eigenen Punkt
+in die Roadmap. *Ich empfehle ①*: Die Monatsnamen unter der Welle sind die am
+häufigsten gesehene 8-px-Schrift der App, und Regel 4 („nichts unter 11 px")
+ist die einzige der sieben, die ohne sie unerfüllt bleibt.
+
+### ❓ F4 · `.flankSubOpen` braucht eine Prop, die Bedingung 2 ausschließt
+
+Die Übergabe verlangt: *„`.flankSub` … bei offenen Fragmenten
+`--text-secondary` — dafür in `index.tsx` eine Klasse an `safeCount > 0` hängen
+(reiner Klassenname)."*
+
+Das geht nicht ohne neue Prop. `safeCount` wird in der Elternkomponente
+berechnet (`index.tsx:84`); die Zeile rendert die Kindkomponente `Flank`, die
+`sublabel` als **fertigen String** bekommt und weder die Zahl noch die Seite
+kennt. Ein Klassenname allein reicht nicht — es müsste ein Wahrheitswert
+hindurch. **Bedingung 2 schließt neue Props aus.**
+
+Die CSS-Klasse `.flankSubOpen` ist angelegt und **unbenutzt**.
+
+**Deine Entscheidung:** ① eine Boolean-Prop an `Flank` erlauben (eine Zeile in
+der Typdefinition, eine im Aufruf, eine im Klassennamen), ② so lassen — der
+Untertitel des Vormonats bleibt tertiär, auch wenn dort Arbeit wartet.
+*Ich empfehle ①*, aber das ist die kleinste der offenen Fragen: Es geht um eine
+Textstufe auf einer Zeile.
+
+### Befunde
+
+**B18 · `--ring-track` lag lokal und hätte die Änderung geschluckt.**
+`singularity-ring.module.css` definierte es selbst mit `0.05` und überschattete
+damit das gleichnamige globale Token. Die v3-Anhebung auf `0.06` — „die Spur
+soll als Rahmen sichtbar sein, nicht erraten werden" — wäre nicht angekommen.
+Angekündigt in B6 (Schritt 1), jetzt erledigt.
+
+**B19 · Ein sechster Farbton, den die Palette nicht kennt.**
+`--wave-tt-driver-tag: rgba(255, 170, 90, 0.7)` — ein **Orange**, an genau einer
+Stelle im ganzen Produkt (das Treiber-Etikett im Wellen-Fensterchen). Weder in
+§3 noch in der v3-Palette. Ersatzlos auf die Tertiärstufe gezogen: Das Etikett
+benennt den Treiber, es bewertet ihn nicht.
+
+**B20 · Zwölf weitere lokale Farbwerte im Header, drei im Ring, sieben in der
+Welle.** Damit sind es in diesem Sprint **82** komponenten-lokale Farbwerte, die
+eine Token-Änderung nicht durchgelassen hätten.
+
+**B21 · Der Held des Wellen-Popups behält den Ring-Schnitt — anders als der des
+Verlaufs.** Beide Overlays haben dieselbe Anatomie, und in Schritt 3 ist der
+Verlaufs-Held von 38/200 auf 26/600 gegangen. Hier bleibt es beim Ring-Schnitt
+(36/300), weil der Held eine **Zahl** ist: Dünn-und-groß trägt bei Ziffern und
+scheitert bei einem Wort. Gleiche Anatomie, andere Schrift, weil der Inhalt ein
+anderer ist — steht so auf `komponenten/welle.html`.
