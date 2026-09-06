@@ -90,3 +90,98 @@ Steht sie im Kommentar in `tokens.css`.
 `0.06` global. Das globale Token ist angelegt; die lokale Zeile überschattet
 es noch und fällt in **Schritt 5**. Bis dahin bleibt der Ring optisch
 unverändert — das ist gewollt, nicht übersehen.
+
+---
+
+## Schritt 3 · `cards.module.css` + `card-action-toast.module.css`
+
+**Zwei Fragen, die eine Entscheidung von dir brauchen.** Davor sechs Befunde,
+die ich im Sinn der sieben Regeln aufgelöst habe.
+
+### ❓ F1 · Zwei Textzeichen sollen SVG werden — das wäre `.tsx` Nummer fünf und sechs
+
+Die Übergabe verlangt an zwei Stellen, ein Textzeichen durch ein SVG zu
+ersetzen:
+
+| Stelle | heute | Übergabe |
+|---|---|---|
+| `verlauf-overlay.tsx:133` | `×` als Text | 10×10-SVG |
+| `category-tile.tsx:150` | `›` als Text | 8×12-SVG |
+
+**Bedingung 2 des Auftrags lässt in `.tsx` nur Klassennamen zu**, und nennt genau
+vier Stellen — diese beiden sind nicht darunter. Es ist keine Logik und keine
+neue Datei, aber es ist Markup.
+
+**Die Begründung der v3-Seite ist stichhaltig:** Ein Textzeichen variiert je Font
+in Höhe und Strichstärke; `›` steht in SF Pro anders als in Helvetica Neue, und
+der Chevron sitzt dann sichtbar schief. Mit dem neuen Schriftstapel
+(`-apple-system` zuerst) ändert sich genau das.
+
+**Ich habe beide Stellen vorerst als Textzeichen gelassen** und nur ihre Hülle
+auf v3 gebracht (28 px, `--neutral-fill`, kein Rand). Sie funktionieren so.
+
+**Deine Entscheidung:** ① so lassen und in einem eigenen Nachzug erledigen,
+② die beiden SVG-Tausche freigeben — vier Zeilen JSX, keine Logik, keine Props.
+*Ich empfehle ②*, weil die Stelle sonst genau dann schief steht, wenn der neue
+Font greift.
+
+### ❓ F2 · Ein bestehender Wächter verlangt einen Token-Namen, den v3 ablöst
+
+`tests/e2e/vorschlagszeile.spec.ts` Zeile 131–134 prüft wörtlich:
+
+```
+expect(b, "der Vorschlag trägt --text-ghost, den schwächsten Ton im System")
+  .toMatch(/color:\s*var\(--text-ghost\)/);
+```
+
+Die Übergabe will für `.fragmentSuggestion` in Schritt 4 `--text-tertiary`.
+**Beide haben denselben Wert** — `--text-ghost` ist seit Schritt 1 ein Alias
+darauf. Der Test würde also an einem **Namen** scheitern, nicht an der Optik.
+
+Das kollidiert mit der Auflage „alle anderen Tests bleiben unverändert grün".
+
+**Deine Entscheidung:** ① `.fragmentSuggestion` behält `--text-ghost` (Test
+unverändert grün, aber ein Modul liest weiter den Altnamen), ② der Test wird auf
+`--text-tertiary` nachgezogen — eine Zeile, die Aussage des Wächters
+(„schwächster Ton im System") bleibt wortgleich erhalten.
+*Ich empfehle ②*, denn der Wächter meint den **Ton**, nicht den Namen — und mit
+① bliebe eine Stelle übrig, die niemand mehr findet, wenn die Alias-Zeile
+irgendwann fällt.
+
+### Befunde, im Sinn der Regeln entschieden
+
+**B7 · Der weiße Haken braucht keine `.tsx`-Zeile.** `IconCheckmark` und
+`IconOverExclamation` tragen ihre Farbe als **Präsentations-Attribut**
+(`stroke="rgba(62,207,175,.85)"`). Auf der jetzt gefüllten Fläche wären sie
+unsichtbar. Präsentations-Attribute haben die **niedrigste** Priorität aller
+Autoren-Stile — eine CSS-Regel im Modul schlägt sie. Erledigt in CSS.
+
+**B8 · Ein neues Token: `--on-accent: #FFFFFF`.** Was *auf* einer gefüllten
+Türkis- oder Rot-Fläche liegt, muss in **beiden** Erscheinungen weiß sein;
+`--text-primary` wäre im Light Mode schwarz auf Türkis. §7 verbietet Hex-Codes
+inline, deshalb ein Token statt `#fff` an vier Stellen. Nicht in der Übergabe
+vorgesehen — sie schreibt `#fff` direkt, was im Repo gegen die Arbeitsregel
+verstieße.
+
+**B9 · „Erwartet" wird NICHT türkis.** Es trug bis v3-01 denselben Grünton wie
+„Erhalten". `komponenten/karten.html` sagt dazu ausdrücklich: *„Gleiche Sprache
+wie Offen: leerer Kreis."* Erwartet heißt „noch nicht", und dafür gibt es keine
+Farbe. Türkis bleibt „Erhalten" vorbehalten.
+
+**B10 · Der eigene Ghost-Ton des Fälligkeitstags entfällt.** `.ghost .dueDay`
+stand auf `.20` — nötig, solange die Karten-Deckkraft `.65` alles andere
+mitdimmte. Ohne sie gibt es den Effekt nicht mehr, und eine fünfte Textstufe
+wäre genau die Beliebigkeit, die v3 abschafft.
+
+**B11 · Der ausgegraute Lösch-Eintrag behält seine `opacity`.** Regel 3 zielt auf
+**Zustände, die dauerhaft angezeigt werden**. Ein abgeschalteter Knopf ist etwas
+anderes — dort ist `opacity` das übliche und erwartete Mittel. Dieselbe
+Begründung trägt die Deckkraft beim **Drag-Start** (0.35): eine vorübergehende
+Rückmeldung während einer Geste, kein Zustand.
+
+**B12 · Vier Stellen, zu denen die Übergabe schweigt.** `.categoryItem`
+(`.62` / `.9`), `.categoryItemActive`, `.categoryItemMark` (`.45`), `.contextIcon`
+(`.55` / `.07`) und die Scrollbalken (`.14`). Alle auf die nächstliegende der vier
+Textstufen bzw. auf `--neutral-fill` / `--border-ghost` gezogen — das ist die
+Anwendung von Regel 3, nicht eine eigene Gestaltung. Wären sie stehengeblieben,
+stünden fünf frei gewählte Alpha-Werte mitten im neuen Vierstufen-System.

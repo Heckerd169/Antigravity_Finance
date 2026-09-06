@@ -44,6 +44,13 @@
   --color-gold: rgba(255, 200, 60, 0.75);
   --color-blue-dot: rgba(100, 168, 240, 0.7);
 
+  /* Was AUF einer gefüllten Türkis- oder Rot-Fläche liegt: der Haken im
+   * Statuspunkt, das Ausrufezeichen, die Schrift im gefüllten Knopf.
+   * Bewusst KEIN `--text-primary` — das ist im Light Mode schwarz und läge
+   * dann schwarz auf Türkis. Diese Farbe hängt an der Fläche, nicht am Thema,
+   * und ist deshalb in beiden Erscheinungen dieselbe. */
+  --on-accent: #FFFFFF;
+
   /* Flächige Einfärbungen für Auswahl, Fokus und Zustands-Pillen. */
   --teal-fill: rgba(62, 207, 175, 0.16);
   --red-fill: rgba(255, 69, 58, 0.16);

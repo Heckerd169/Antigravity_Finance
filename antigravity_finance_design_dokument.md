@@ -1,8 +1,45 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.13.1 (V2 · Sprint v2-31 — Karten und Ordner haben einen Verlauf)
+**Version:** 3.14.0 (V3 · Sprint v3-01 — Apple-Redesign: Tokens und Fragment-Invariante)
 
 **Status:** Freigegeben — V2-Patches bis Sprint v2-31 eingespielt. *(Die Version der Schema-Doku stand hier bis zum 31.08.2026 als Zahl und war zuletzt zwei Bumps veraltet. Sie ist entfernt statt korrigiert: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch — er steht jetzt nur noch im Header der Schema-Doku selbst. Dieselbe Konsequenz, die CLAUDE.md §9 am 24.08.2026 für sich gezogen hat.)* Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+
+> **Changelog v3.14.0 (06.09.2026, Sprint v3-01 · Apple-Redesign, Teil 1 von 2):**
+> **§3 vollständig ersetzt** und um einen Light-Mode-Block erweitert; **§8 hebt die
+> Deckkraft-Invariante auf**; **§11** (Tabelle „Drag-Verhalten") mitgezogen, weil
+> dort dieselbe Invariante ein zweites Mal stand.
+>
+> Grundlage ist das Design-System **v3**, entschieden am 05.09.2026 und im Repo
+> unter `design-system/v3/` — `uebergabe.html` trägt die Zuordnung alt → neu,
+> `00-was-aendert-sich.html` die sieben Regeln mit Vorher/Nachher je Regel.
+>
+> **Die fünf Grundtöne sind unverändert** (`#0D0D0F`, `#3ECFAF`, `#FF453A`, Gold,
+> Blau). Geändert ist ihre **Zuweisung**: Rot bedeutet ab jetzt ausschließlich
+> *Abweichung* — „Offen", „Laufend" und „Erwartet" sind neutral. Der Grund steht in
+> Regel 2: Eine Stromrechnung, die am 1. abgebucht wird, ist am 28. des Vormonats
+> offen; das ist der Normalzustand von rund 80 % aller Karten an 80 % aller Tage und
+> trug bis hierhin dieselbe Farbe wie „Budget überschritten".
+>
+> **§8 · Was genau aufgehoben ist.** Die Werte `0.22` (zugeordnet) und `0.45`
+> (Übertrag) waren als Invariante festgeschrieben, damit sie sich gegen
+> versehentliche Änderung wehren (`RM-2`, v2-16). Aufgehoben ist der **Mechanismus**,
+> nicht die **Aussage**: Zugeordnet bleibt die leiseste Stufe, Übertrag die mittlere,
+> arbeitsfähig die volle. Sie läuft jetzt über **Fläche und Textstufe** statt über
+> `opacity` auf dem Container. Der Grund ist Regel 3 — eine Container-Deckkraft
+> multipliziert sich mit jeder Deckkraft darin und macht Kontraste unberechenbar; bei
+> `0.22` × einer bereits gedimmten Textfarbe landet man unter jeder Lesbarkeitsgrenze.
+> Weil eine Kontur allein nicht sagt, *warum* ein Fragment leise ist, tritt das Wort
+> `· zugeordnet` an die Beschreibung (§12 in Teil 2).
+>
+> **Was NICHT geändert ist:** alle Statuswörter, alle Menüeinträge, alle Toast-Texte,
+> die Daten-Invariante („klickbar ≠ ziehbar ≠ verlinkbar"), die Drag-Sperre, das
+> TRANSFER-Badge, die Status-Hierarchie aus Sprint 9, die Sortierregel, der
+> Monats-Scope und jede Rechenregel aus §4.
+>
+> **Teil 2 folgt am Sprint-Ende** und zieht §5, §6, §7, §9, §10, §11 und §12 nach —
+> beschreibende Spezifikationen, deren Werte erst nach dem Bau gemessen sind.
+> Solange Teil 2 aussteht, nennen diese Abschnitte Deckkraft- und Schriftwerte, die
+> der Code nicht mehr trägt. **Im Zweifel gilt bis dahin `design-system/v3/`.**
 
 > **Changelog v3.13.1 (03.09.2026, Sprint v2-31 · Nachtrag aus der Anschauung):**
 > Zwei Korrekturen an **§7**, beide vom Nutzer beim Ansehen der ersten Fassung
@@ -486,52 +523,130 @@ Claude Code soll dieses Feld in V1 ignorieren.
 
 ### Farben
 
+Quelle im Code: `src/styles/tokens.css`. Die Werte stammen aus
+`design-system/styles.css` (v3); die Herleitung je Regel steht in
+`design-system/v3/00-was-aendert-sich.html`.
+
+**Der Grundsatz der schmalen Palette gilt unverändert — v3 fügt keinen neuen
+Farbton hinzu.** Was sich geändert hat, ist die Zuweisung und die Zahl der
+Abstufungen: Text kennt ab jetzt genau **vier** Stufen (100 / 60 / 30 / 18 %)
+statt der siebzehn frei gewählten Alpha-Werte, die sich bis v2-31 angesammelt
+hatten. Jeder einzelne war begründet; zusammen ergaben sie keine Ordnung.
+
+#### Dark (Standard)
+
 | Token | Wert | Verwendung |
 |---|---|---|
 | `--bg-primary` | `#0D0D0F` | App-Hintergrund |
-| `--bg-card` | `#141416` | Karten-Hintergrund neutral |
-| `--bg-card-open` | `#160D0D` | Karte offen / laufend |
-| `--bg-card-paid` | `#0A140E` | Karte bezahlt / erhalten |
-| `--bg-card-over` | `#160A08` | Budget überschritten |
-| `--bg-card-ghost` | `#181818` | Ghost / Forecast |
-| `--color-teal` | `#3ECFAF` | Positiv, bezahlt, Sparrate im Plan, Einnahmen |
-| `--color-red` | `#FF453A` | Negativ, offen, Defizit |
-| `--color-gold` | `rgba(255,200,60,.6)` | Vorjahres-Referenz, Ereignisse |
-| `--color-blue-dot` | `rgba(100,168,240,.38)` | Gemeinsam-Attribution |
-| `--text-primary` | `#ffffff` | Aktive Zustände |
-| `--text-muted` | `rgba(255,255,255,.45)` | Offene Zustände |
-| `--text-ghost` | `rgba(255,255,255,.22)` | Labels, Metadaten |
-| `--border-subtle` | `rgba(255,255,255,.07)` | Standard-Border |
-| `--border-teal` | `rgba(62,207,175,.22)` | Bezahlt-Border |
-| `--border-red` | `rgba(255,69,58,.18)` | Offen-Border |
-| `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
-| `--fragment-hue` | gemeinsamer Grau-Grundton | Rohmasse-Fragmente §8 (N5) — Unterscheidung nur via Opacity/Badge |
-| `--badge-hue-1` … `--badge-hue-6` | Gold `255,200,60` · Orange `255,150,90` · Oliv `170,200,110` · Blau `100,168,240` · Violett `170,130,255` · Magenta `240,120,190` | KI-Vorschlag-Badge §11 (A1) — der Kartenname wählt den Ton deterministisch; Deckkraft unverändert `.08` Fläche / `.5` Text / `.15` Rahmen. Türkis und Rot bewusst ausgespart (Statusfarben). |
-| `--bg-category` | `#131318` | Grundton der Ordner-Kachel §8 (`KAT-2`) — eine Spur kühler und heller als `--bg-card` |
-| `--bg-category-stack` | `#101014` | Gestapelte Kanten unter der Ordner-Kachel |
+| `--bg-card` | `#1C1C1E` | **Alle** Karten, **alle** Zustände — eine Fläche |
+| `--bg-card-hover` | `#2C2C2E` | Karten-Hover (ersetzt die Deckkraft-Änderung) |
+| `--bg-card-ghost` | `transparent` | Forecast — Kontur statt Fläche |
+| `--bg-elevated` | `#1C1C1E` | Popups, Kontextmenü, Toast, Verlaufs-Overlay |
+| `--color-teal` | `#3ECFAF` | Erledigt / positiv: bezahlt, erhalten, abgeschlossen, Sparrate über Plan, realisierte Welle, Auswahl |
+| `--color-red` | `#FF453A` | **Nur Abweichung**: überschritten, Defizit im Ring, Welle unter Null, Fehler, destruktive Aktion |
+| `--color-gold` | `rgba(255,200,60,.75)` | Vorjahres-Referenz, Ereignisse, Zeit-Hinweise |
+| `--color-blue-dot` | `rgba(100,168,240,.7)` | Gemeinsam-Attribution |
+| `--teal-fill` | `rgba(62,207,175,.16)` | Türkise Fläche: Auswahl, Fokus-Schein, Pille „Abgeschlossen" |
+| `--red-fill` | `rgba(255,69,58,.16)` | Rote Fläche: Portal-Fehler |
+| `--neutral-fill` | `rgba(235,235,245,.10)` | Neutrale Fläche: Eingabefelder, Knöpfe, Chevron-Kreise, Badges |
+| `--text-primary` | `#FFFFFF` | Kartenname, erledigte Beträge, Menüeinträge, Ring |
+| `--text-secondary` | `rgba(235,235,245,.60)` | Offene Beträge, Statuswort neutral, Fließtext |
+| `--text-tertiary` | `rgba(235,235,245,.30)` | Labels, Termin, Meta, Achsen |
+| `--text-quaternary` | `rgba(235,235,245,.18)` | Nur Forecast-Punkt und Trennlinien — **nie für Text** |
+| `--text-muted` / `--text-ghost` | Alias auf `--text-secondary` / `--text-tertiary` | Übergang: die Bildschirme außerhalb des Dashboards (Login, Onboarding, Fehlerseite) lesen weiter die alten Namen und erben darüber die neuen Stufen |
+| `--border-subtle` | `rgba(255,255,255,.08)` | **Ein** Rand für alle Karten — Zustandsränder entfallen |
+| `--border-ghost` | `rgba(255,255,255,.14)` | Kontur für alles, was es noch nicht gibt: Forecast, Portal, Leer-Slot, Klammer |
+| `--outline-drop` | `rgba(255,255,255,.35)` | Drop-Target-Outline (Sprint 5, K1.3) |
+| `--bg-category` | `#1A1A20` | Grundton der Ordner-Kachel §8 — eine Spur kühler und dunkler als `--bg-card` |
+| `--bg-category-stack` | `#131317` | Gestapelte Kanten unter der Ordner-Kachel |
 | `--border-category` | `rgba(255,255,255,.13)` | Rahmen der Ordner-Kachel |
 | `--border-category-stack` | `rgba(255,255,255,.09)` | Rahmen der zweiten Stapelkante |
-| `--border-category-open` | `rgba(255,69,58,.45)` | Linke Kante: drinnen ist etwas offen |
-| `--border-category-done` | `rgba(62,207,175,.35)` | Linke Kante: alles erledigt |
-| `--text-category-flag` | `rgba(255,99,88,.62)` | `[N] offen` auf der Ordner-Kachel |
-| `--border-bracket` / `--border-bracket-open` | `rgba(255,255,255,.14)` / `rgba(255,69,58,.32)` | Klammer unter einem aufgeklappten Ordner §8 |
+| `--border-bracket` | `rgba(255,255,255,.14)` | Klammer unter einem aufgeklappten Ordner §8 |
+| `--progress-track` | `rgba(255,255,255,.06)` | Spur des Budget-Balkens |
+| `--progress-neutral` | `rgba(235,235,245,.35)` | Balken im Zustand „Laufend" — Verbrauch ist Information, kein Urteil |
+| `--ring-track` | `rgba(255,255,255,.06)` | Spur des Singularity Rings §5 (lag bis v3-01 lokal im Modul) |
+| `--wave-forecast` | `#8A8A90` | Prognose-Anteil der Jahres-Welle §9 |
+| `--radius-card` | `16px` | Karte, Ordner-Kachel, Portal, Leer-Slot |
+| `--radius-control` | `10px` | Eingabefeld, Knopf, Auswahlkachel |
+| `--radius-popup` | `18px` | Verlaufs-Overlay |
+| `--wave-opacity` | `0.80` | Jahres-Welle (§9), festgelegter Produktionswert |
+| `--badge-hue-1` … `--badge-hue-6` | Gold `255,200,60` · Orange `255,150,90` · Oliv `170,200,110` · Blau `100,168,240` · Violett `170,130,255` · Magenta `240,120,190` | KI-Vorschlag-Badge §11 (A1) — der Kartenname wählt den Ton deterministisch. **Liegt weiter hinter `SHOW_SUGGESTION_BADGES = false`;** v3 nimmt die Töne nicht in die Palette auf, weil eine Farbe, die nirgends erscheint, nicht ins Design-System gehört. |
 
-> **Die Kategorie-Tokens bringen KEINE neue Farbe** — das war die Auflage aus dem
-> Grundsatz „Schmale Palette". Der Ordner ist **neutral** getönt; Rot und Türkis bleiben
-> den Karten-Zuständen vorbehalten und erscheinen am Ordner nur als schmale linke Kante
-> (offen / erledigt), also in exakt ihrer bisherigen Bedeutung.
+#### Light
+
+**Vorbereitet, aber nicht erreichbar:** v3-01 baut keinen Umschalter. Die Werte
+stehen in `tokens.css` als `[data-theme="light"]`-Block, damit sie beim späteren
+Einbau nicht neu erfunden werden.
+
+**Gleiche Tokennamen, gleiche Prozentstufen** — deshalb bleibt die Hierarchie
+identisch. Türkis und Rot bekommen eine dunklere Stufe **desselben** Farbtons:
+`#3ECFAF` auf Weiß hätte nur 1,9 : 1 Kontrast. Ein Token ist ein Name für eine
+**Rolle**, nicht für einen Hex-Wert.
+
+| Token | Light-Wert | Anmerkung |
+|---|---|---|
+| `--bg-primary` | `#F2F2F7` | leicht kühl, damit weiße Karten sich abheben |
+| `--bg-card` / `--bg-elevated` | `#FFFFFF` | Rand 6 % Schwarz, kein Schatten |
+| `--bg-card-hover` | `#FFFFFF` | im Light Mode trägt der 2-px-Lift allein |
+| `--color-teal` | `#1FA588` | gleicher Farbton, dunkler — 4,5 : 1 auf Weiß |
+| `--color-red` | `#E0362C` | gleicher Farbton, dunkler — 4,6 : 1 auf Weiß |
+| `--color-gold` | `rgba(190,140,0,.9)` | helles Gelb verschwindet auf Weiß |
+| `--color-blue-dot` | `rgba(40,120,220,.8)` | gesättigter, damit der 6-px-Punkt sichtbar bleibt |
+| `--text-primary` … `--text-quaternary` | `#000000` · `rgba(60,60,67,.60)` · `.30` · `.18` | Apples label-Stufen |
+| `--border-subtle` / `--border-ghost` | `rgba(0,0,0,.06)` / `rgba(0,0,0,.16)` | |
+| `--teal-fill` / `--red-fill` / `--neutral-fill` | `rgba(31,165,136,.14)` · `rgba(224,54,44,.12)` · `rgba(60,60,67,.08)` | |
+| `--bg-category` / `--bg-category-stack` | `#F7F7FB` / `#ECECF2` | |
+| `--progress-track` / `--progress-neutral` / `--ring-track` | `rgba(0,0,0,.06)` · `rgba(60,60,67,.35)` · `rgba(0,0,0,.06)` | |
+| `--wave-forecast` | `#A0A0A8` | |
+
+> **Die Liste der Tokens OHNE Light-Wert ist die Prüfbedingung für den späteren
+> Umschalter.** Sie enthält heute die Übergangs-Tokens aus v3-01
+> (`--bg-card-open/-paid/-over`, `--border-teal`, `--border-red`,
+> `--border-category-open/-done`, `--text-category-flag`, `--border-bracket-open`)
+> und `--fragment-hue`. Alle verschwinden mit den Schritten 3 und 4 dieses Sprints;
+> ein Light-Wert dafür wäre eine Zahl für etwas, das es dann nicht mehr gibt. **Wer
+> den Umschalter baut, prüft zuerst, dass diese Liste leer ist.**
+
+> **Was in v3 ERSATZLOS entfällt.** `--bg-card-open`, `--bg-card-paid`,
+> `--bg-card-over` — der Zustand färbt keine Fläche mehr, er sitzt im Statuspunkt
+> und im Statuswort. `--border-teal`, `--border-red` — es gibt keinen Zustandsrand.
+> `--border-category-open`, `--border-category-done`, `--text-category-flag`,
+> `--border-bracket-open` — die Ordner-Kachel trägt ihren Zustand als **Wort**
+> (Beschluss vom 05.09.2026, Variante A), die Klammer ist neutral.
+> `--fragment-hue` — die Fragment-Abstufung läuft über Fläche und Textstufe (§8).
 
 ### Typographie
 
+**Untergrenze 11 px.** Darunter greift die Rendering-Engine zu Hinting-Tricks, die
+Buchstaben verschwimmen lassen; auf Retina fehlen bei 9 px schlicht die Pixel für
+eine saubere Rundung. Größe, Gewicht und Laufweite sind ein **Dreieck** — wer eines
+ändert, zieht die anderen beiden nach. Dünne Schnitte tragen groß (Ring, 36 px),
+nicht klein (Betrag, 22 px): Strichstärke wächst nicht mit der Schriftgröße mit.
+
 | Element | Font-Size | Font-Weight | Letter-Spacing |
 |---|---|---|---|
-| Primärzahl (Ring) | `34px` | `200` | `-1.8px` |
-| Aktiver Monat (Header) | `17px` | `600` | `-0.5px` |
-| Kartenname | `13px` | `500` | `-0.2px` |
-| Kartenbetrag | `22px` | `200` | `-1.2px` |
+| Primärzahl (Ring) | `36px` | `300` | `-1.4px` |
+| Aktiver Monat (Header) | `17px` | `600` | `-0.4px` |
+| Kartenname | `14px` | `500` | `-0.2px` |
+| Kartenbetrag | `22px` | `400` | `-0.6px` |
 | Flanken-Monat | `13px` | `500` | `-0.2px` |
-| Labels / Meta | `9–10px` | `500–600` | `0.6–1.1px` |
+| Label — Typ, Ring-Unterschrift, Zonen-Kopf | `11px` | `600` | `0.5px` · **Versalien** |
+| Meta — Status, Termin, Zusatzzeile | `11px` | `500` | `0` · **keine Versalien** |
+| Hinweise, Fließtext im Popup | `12–13px` | `400` | `0` |
+| Titel eines Popups | `17px` | `600` | `-0.3px` |
 | Alle Zahlen | — | — | `font-variant-numeric: tabular-nums` |
+
+**Schriftstapel:** `-apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue",
+sans-serif`. SF Pro steht bewusst **vorn** — auf Apple-Geräten *ist* SF Pro die
+Apple-Ästhetik; `system-ui` hätte sie zwar meist ebenfalls geliefert, aber nicht
+verlässlich.
+
+> **Warum das Statuswort keine Versalien mehr trägt.** „BEZAHLT" in 9 px mit 0,6 px
+> Sperrung ist ein Etikett, „Bezahlt" in 11 px ein Wort. Versalien lesen sich um
+> etwa 10 % langsamer, weil die Wortform verlorengeht — alle Buchstaben sind gleich
+> hoch. Für ein **Typ**-Label (`FIXKOSTEN`), das man nicht liest, sondern erkennt,
+> ist das in Ordnung; für den **Zustand**, den man wirklich lesen muss, nicht.
+> Deshalb behält die Zeile „Label" ihre Versalien und die Zeile „Meta" verliert sie.
 
 ---
 
@@ -1866,28 +1981,39 @@ Umsätze des Monats Überträge und der Schalter steht auf „aus", ist die List
 leer — dann ist derselbe Satz richtig, und der Schalter darüber nennt die Zahl und
 führt weiter.
 - **Monats-Scope (v2-01, N1):** Der Stack zeigt ausschließlich Fragmente, deren `transaction_date` im aktuell angezeigten Monat liegt. Ein Fragment mit `transaction_date` in einem anderen Monat erscheint im Stack *jenes* Monats, nicht im aktuell angezeigten. Ein vergangenes Fragment, das einer Karte seines Monats zugeordnet ist, erscheint als *verknüpftes Fragment auf der Karte* (Kontextmenü „Verknüpfte Fragmente"), nicht erneut im Stack. Die Sparrate-Berechnung ist unberührt (sie liest `card_fragment_links`, nicht den Stack). **Folge:** Der manuelle Cross-Monat-Drop aus dem Stack entfällt — konsistent mit der Regel Zuordnungs-Monat = Transaktions-Monat (§4.7). **Umsetzungs-Nachtrag (v2-07, P0):** Der Monats-Scope wird seit v2-07 **server-seitig** abgefragt statt nachträglich in der Anwendung gefiltert. Bis dahin holte die App alle Fragmente aller Monate und filterte anschließend — was ab einem Gesamtbestand von 1000 Fragmenten stillschweigend abschnitt (Befund und Messung: `sprints/sprint_v2-07_review.md` §3). Zusätzlich zum Monats-Scope läuft eine zweite, link-orientierte Abfrage (`assigned_month` = angezeigter Monat), damit ein Fragment aus einem anderen Monat weiterhin als *verknüpftes Fragment auf der Karte* erscheint. An der sichtbaren Regel ändert sich nichts.
-- Zugeordnete Fragmente: `opacity: 0.22` · ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`; gebaut v2-16)**, siehe „Klickbarkeit des Stacks" unten. Die Deckkraft bleibt unverändert — auch im Hover.
+- Zugeordnete Fragmente: **keine Fläche** — Kontur (`--border-ghost`) und Tertiärtext, dazu das Wort `· zugeordnet` hinter der Beschreibung. ~~`opacity: 0.22`~~ — **abgelöst in v3-01 (06.09.2026)**, siehe „Die drei Stufen" unten. ~~`pointer-events: none`~~ — **aufgehoben (06.08.2026, `RM-2`; gebaut v2-16)**, siehe „Klickbarkeit des Stacks" unten. Die Stufe bleibt auch im Hover unverändert; der Hover ändert ausschließlich den Cursor.
 - Eject → Fragment kehrt in Stack zurück, wird wieder aktiv (sofortige Wirkung, kein Toast)
 
 - **Angezeigte Beschreibung (v2-10, RM-1):** Die Fragment-Karte zeigt **den letzten durch `|` getrennten Teil** der gespeicherten Beschreibung; ist dieser leer, fällt sie auf den **ersten** Teil zurück. Damit steht der Verwendungszweck vorn statt des Empfängers, ohne dass die Anzeige die Herkunft des Fragments kennen muss: DKB Visa liefert ein Feld ohne Trennzeichen (unverändert), DKB Giro `Empfänger | Zweck`, Cortal `Sender | Buchungstext | Zweck`. **Ausschließlich Anzeige.** Der gespeicherte Text bleibt unverändert — er ist Bestandteil des Duplikat-Hashes, des Trigram-Index der Zuordnung und des Beschreibungs-Tiebreakers der Sortierung unten. Das `title`-Attribut trägt weiterhin den **vollständigen** Text; das Abschneiden mit „…" bleibt reines CSS (`text-overflow: ellipsis`).
 - **Sortierung:** Unzugeordnete Fragmente zuerst, dann zugeordnete (gedimmt). Innerhalb beider Gruppen: `transaction_date ASC`, Tiebreaker `imported_at ASC`, finaler Tiebreaker Beschreibung alphabetisch aufsteigend (`description ASC`, de-DE). Der Beschreibungs-Tiebreaker ist nötig, weil Same-Day-Buchungen aus derselben Import-Charge identisches `imported_at` haben (PM-Entscheidung 22.05.2026).
-- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert gedimmt (Opacity 0.45 — heller als ein zugeordnetes Fragment) mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment ist **keine Drag-Quelle** und lässt sich keiner Karte zuordnen; ~~`pointer-events: none`~~ ist mit `RM-2` **aufgehoben** (06.08.2026, gebaut v2-16 — siehe „Klickbarkeit des Stacks" unten). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
+- **Status `INTERNAL_TRANSFER` (Sprint 9):** Ein Fragment mit Status `INTERNAL_TRANSFER` rendert auf **voller Fläche mit Sekundärtext** — die mittlere der drei Stufen, lauter als ein zugeordnetes und leiser als ein arbeitsfähiges Fragment (bis v3-01: `Opacity 0.45`) — mit einem Badge „TRANSFER" in neutralem Grau-Soft (bewusst nicht das Yellow-Soft des KI-Vorschlag-Badges, damit visuell unterscheidbar). Das Fragment ist **keine Drag-Quelle** und lässt sich keiner Karte zuordnen; ~~`pointer-events: none`~~ ist mit `RM-2` **aufgehoben** (06.08.2026, gebaut v2-16 — siehe „Klickbarkeit des Stacks" unten). Dieser Status schlägt alle anderen Stati in der Darstellung. In der Stack-Sortierung zählt es zur Gruppe der nicht-unzugeordneten Fragmente (unten), nicht zur Arbeitsfläche oben; es zählt nicht in die „N Fragmente offen"-Zählung der Header-Flanke.
 - **Übertrags-Schalter (v2-07, C1):** Fragmente mit gesetztem `transfer_type` (`INTERNAL_TRANSFER` **oder** `ASSET_REALLOCATION`) sind aus der Arbeitsfläche ausgeblendet. Sie erscheinen nur, wenn der Schalter **„Überträge anzeigen"** eingeschaltet ist; **Standard ist „aus"**. Begründung: ein Fragment mit gesetztem `transfer_type` kann per Daten-Invariante nie einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`) und gehört deshalb nicht auf die Fläche, auf der kuratiert wird.
   **Ort und Form:** rechtsbündig in derselben Zeile wie die Zonen-Überschrift „ROHMASSE" — bewusst nicht in einer eigenen Zeile, damit die Oberkanten von Portal, Karussell und Stack bündig bleiben. Beschriftung `Überträge anzeigen (N)`, wobei **N die Anzahl der Übertrags-Fragmente des angezeigten Monats** ist (beide Typen zusammen, unabhängig von der Schalterstellung). Enthält der Monat keine Überträge, wird der Schalter **nicht gerendert**.
-  **Invarianten:** Der Schalter filtert ausschließlich die Stack-Darstellung. Die Sortierregel ist unberührt — bei eingeschaltetem Schalter steht die Liste exakt so da wie vor v2-07. Ebenso unberührt: die Darstellung eines sichtbaren Übertrags (Opacity `0.45`, Badge „TRANSFER", kein Drag/Tap), die Status-Hierarchie aus Sprint 9, die Drop-Ziele des Karussells und die „N Fragmente offen"-Zählung der Header-Flanke (die zählt `UNASSIGNED` und hat Überträge nie enthalten).
+  **Invarianten:** Der Schalter filtert ausschließlich die Stack-Darstellung. Die Sortierregel ist unberührt — bei eingeschaltetem Schalter steht die Liste exakt so da wie vor v2-07. Ebenso unberührt: die Darstellung eines sichtbaren Übertrags (mittlere Stufe — volle Fläche, Sekundärtext; Badge „TRANSFER"; kein Drag/Tap), die Status-Hierarchie aus Sprint 9, die Drop-Ziele des Karussells und die „N Fragmente offen"-Zählung der Header-Flanke (die zählt `UNASSIGNED` und hat Überträge nie enthalten).
   **Verhalten:** rein clientseitig, ohne Server-Roundtrip und ohne URL-Parameter. Die Stellung überlebt einen Monatswechsel innerhalb der Sitzung — sie ist eine Ansichts-Vorliebe, kein monatsspezifischer Zustand (bewusste Abweichung vom LL-5-Reset-Muster). Ein Neuladen der Seite setzt auf „aus" zurück; es findet keine Persistierung statt.
   **Folge:** Wird ein Fragment bei ausgeschaltetem Schalter als Umschichtung markiert, verschwindet es unmittelbar aus dem Stack. Das ist die beabsichtigte Wirkung; die Rücknahme der Markierung ist folgerichtig nur bei eingeschaltetem Schalter erreichbar.
-- **Grundton-Vereinheitlichung (N5):** Alle Rohmasse-Fragmente teilen **einen gemeinsamen Grau-Grundton-Token** (zugeordnet *und* `INTERNAL_TRANSFER`). Die Unterscheidung läuft ausschließlich über **Opacity** (zugeordnet `0.22` / Transfer `0.45`) **+ das „TRANSFER"-Badge** (Grau-Soft). Kein separater Hue je Zustand — das behebt zwei leicht abweichende Grau-Töne nebeneinander. Der Yellow-Soft (KI-Vorschlag-Badge) bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag.
+- **Die drei Stufen (N5, Mechanismus abgelöst in v3-01):** Alle Rohmasse-Fragmente teilen **eine** Fläche und **eine** Rahmenfarbe; es gibt keinen eigenen Farbton je Zustand — das war schon der Kern von N5 und behebt zwei leicht abweichende Grau-Töne nebeneinander. Die Unterscheidung läuft über **Fläche und Textstufe**:
+
+  | Stufe | Fläche | Text | Zusätzlich |
+  |---|---|---|---|
+  | **Arbeitsfähig** | `--bg-card` | Betrag primär, Beschreibung sekundär | ziehbar |
+  | **Übertrag** | `--bg-card` | sekundär | Badge „TRANSFER" (Grau-Soft), nicht ziehbar |
+  | **Zugeordnet** | keine — Kontur `--border-ghost` | tertiär | Wort `· zugeordnet`, nicht ziehbar |
+
+  **Diese drei Stufen sind invariant; ihre Mittel sind Fläche und Textstufe, nicht Deckkraft.** Die bis v3-01 gültigen Werte `0.22` (zugeordnet) und `0.45` (Übertrag) waren genau dieselbe Aussage mit einem anderen Mittel — **abgelöst, nicht aufgeweicht**. Der Grund ist Regel 3 des v3-Systems: Eine Deckkraft auf dem Container multipliziert sich mit jeder Deckkraft darin. Bei `0.22` × einem ohnehin gedimmten Text landet die Beschreibung unter jeder Lesbarkeitsgrenze; gedimmt wird deshalb am **Text**, nie an der **Box**. Das Wort `· zugeordnet` tritt hinzu, weil eine Kontur allein nicht sagt, *warum* das Fragment leise ist.
+
+  Der Yellow-Soft (KI-Vorschlag-Badge) bleibt für Transfer ausgeschlossen (AD5): Transfer ist Fakt, kein Vorschlag.
 - **Klickbarkeit des Stacks (06.08.2026, `RM-2`) — Aufhebung einer bestehenden Regel:** Bis dahin galt, dass zugeordnete Fragmente **und** Überträge per `pointer-events: none` tot gestellt sind. Diese Regel ist **aufgehoben**: **jedes** Fragment im Stack ist anklickbar und öffnet das Schaufenster-Popup (§11) — auch ein zugeordnetes, auch ein Übertrag.
   **Das betrifft ausschließlich das Öffnen des Popups.** Unberührt bleiben:
   - Die **Daten-Invariante**: Ein Fragment mit gesetztem `transfer_type` kann weiterhin **nie** einer Karte zugeordnet werden (Trigger `trg_oqb_no_transfer_links`, RPC-Filter, Link-Auflösung beim Import). **Klickbar ≠ verlinkbar** — aus dieser Änderung folgt an keiner Stelle, dass Überträge wieder zuordenbar wären.
   - Die **Drag-Sperre**: Weder zugeordnete Fragmente noch Überträge sind Drag-Quellen.
-  - Die **Deckkraft-Werte** `0.22` (zugeordnet) und `0.45` (Übertrag) sowie das TRANSFER-Badge und die Status-Hierarchie aus Sprint 9.
+  - Die **drei Stufen** (arbeitsfähig / Übertrag / zugeordnet) sowie das TRANSFER-Badge und die Status-Hierarchie aus Sprint 9. *(Bis v3-01 waren die Stufen als Deckkraft `0.22` und `0.45` festgeschrieben; der Mechanismus ist abgelöst, die Rangfolge nicht — siehe „Die drei Stufen" oben.)*
   - Die **Hover- und Active-Rückmeldung**: Sie folgte bis v2-16 ebenfalls aus
     `pointer-events: none` und braucht seither eine eigene Regel. Ohne sie spränge die
-    Deckkraft beim Überfahren auf `0.92` — die beiden Werte oben wären damit faktisch
-    aufgehoben, obwohl sie hier als unberührt festgeschrieben sind. Die einzige neue
-    Rückmeldung ist der **Zeiger-Cursor**.
+    Darstellung beim Überfahren auf die volle Stufe — die Rangfolge oben wäre damit
+    faktisch aufgehoben, obwohl sie hier als unberührt festgeschrieben ist. Die
+    einzige neue Rückmeldung ist der **Zeiger-Cursor**. *(Bis v3-01 lautete dieselbe
+    Aussage: „spränge die Deckkraft auf `0.92`".)*
 
   Entschieden am 06.08.2026, **gebaut in Sprint v2-16 (07.08.2026)**. Belege:
   `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §3 und
@@ -2313,10 +2439,16 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 
 | Zustand | Wert |
 |---|---|
-| Default Opacity | `0.72` |
-| Hover | `translateY(-1px)`, `opacity: 0.92` |
+| Default | volle Fläche `--bg-card`, Betrag primär — **keine** Container-Deckkraft (bis v3-01: `0.72`) |
+| Hover | `translateY(-1px)` — **nur Lift, keine Deckkraft** (bis v3-01: zusätzlich `opacity: 0.92`) |
 | Drag-Start | `opacity: 0.35`, `scale(.97)`, cursor: `grabbing` |
-| Zugeordnet | `opacity: 0.22` · **kein Drag** · ~~`pointer-events: none`~~ — aufgehoben, siehe unter der Tabelle |
+| Zugeordnet | keine Fläche — Kontur, Tertiärtext, Wort `· zugeordnet` · **kein Drag** · ~~`pointer-events: none`~~ — aufgehoben, siehe unter der Tabelle (bis v3-01: `opacity: 0.22`) |
+
+> **Die Deckkraft beim Drag-Start bleibt.** Sie ist keine Zustands-Darstellung,
+> sondern eine **vorübergehende Rückmeldung während einer Geste** — das Element ist
+> für den Bruchteil der Bewegung halb durchsichtig, damit man sieht, was darunter
+> liegt. Regel 3 („kein Dimmen ganzer Elemente") zielt auf Zustände, die dauerhaft
+> angezeigt werden; sie ist hier nicht verletzt.
 
 **Zur Zeile „Zugeordnet" (06.08.2026, `RM-2`; gebaut in v2-16):** `pointer-events: none` sperrte **dreierlei in einem** — Klick, Drag und die Hover-Rückmeldung. Aufgehoben ist **ausschließlich die Klick-Sperre** — ein zugeordnetes Fragment öffnet jetzt das Schaufenster-Popup (nächster Abschnitt; Stack-Regel: §8). **Die Drag-Sperre bleibt und braucht ab jetzt einen eigenen Träger:** Sie folgt nicht mehr nebenbei aus `pointer-events`, sondern muss eigenständig gesetzt werden. Dasselbe gilt für Fragmente mit gesetztem `transfer_type` (§8). Kurzform: **klickbar ≠ ziehbar ≠ verlinkbar** — die Daten-Invariante (Trigger `trg_oqb_no_transfer_links`) ist davon ohnehin unberührt. Und die **Hover-/Active-Rückmeldung** braucht seit v2-16 ebenfalls eine eigene Regel, damit `0.22` und `0.45` auch beim Überfahren gelten.
 
