@@ -2,9 +2,8 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 4. September 2026 (nach **v2-32** „Ein sauberer Tisch für das Re-Design" —
-> Repo und Doku aufgeräumt, **Paket 19** für das Re-Design der Oberfläche neu, `PF-8`
-> erledigt und `PF-9` neu aus dem Befund vom 03.09.2026).
+> **Stand:** 6. September 2026 (nach **v3-01** „Apple-Redesign umsetzen" — `RD-1` und
+> `RD-3` erledigt, `RD-4` teilweise, `RD-5` und `RD-6` neu; Design-Doku auf 3.14.0).
 >
 > **Was die einzelnen Sprints gebracht haben, steht in `sprints/projekt_historie.md`.**
 > Hier stand bis zum 04.09.2026 eine Kette von **neun** nacherzählten Sprintständen, die
@@ -36,21 +35,39 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 04.09.2026 zeilengenau nachgezählt — nach Sprint **v2-32**.*
+*Alle Zahlen am 06.09.2026 zeilengenau nachgezählt — nach Sprint **v3-01**.*
 
-| | Anzahl | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 | nach v2-26 |
+| | Anzahl | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 |
 |---|---|---|---|---|---|---|---|
-| Offene Pakete | **12** | 11 | 12 | 12 | 12 | 12 | 12 |
-| Themen darin | **42** | 37 | 39 | 38 | 37 | 35 | 37 |
-| Hausaufgaben ohne eigenen Sprint | **5** | 4 | 4 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **47** | 41 | 43 | 42 | 41 | 39 | 41 |
-| Erledigt | **69** | 68 | 66 | 65 | 64 | 61 | 59 |
+| Offene Pakete | **12** | 12 | 11 | 12 | 12 | 12 | 12 |
+| Themen darin | **42** | 42 | 37 | 39 | 38 | 37 | 35 |
+| Hausaufgaben ohne eigenen Sprint | **5** | 5 | 4 | 4 | 4 | 4 | 4 |
+| **Offen gesamt** | **47** | 47 | 41 | 43 | 42 | 41 | 39 |
+| Erledigt | **71** | 69 | 68 | 66 | 65 | 64 | 61 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach Sprint v2-32, zeilengenau ausgezählt.** Paket-Tabellen **71** Zeilen,
-> davon **29 ✅** → **42** offen (⬜ 38, davon 4 mit 🔎 · 🟡 4). Hausaufgaben **5**, alle
-> ⬜. §4 Erledigt **69** Zeilen. §3 unverändert **4**. Pakete **19**, davon **7**
-> vollständig erledigt (1, 2, 3, 4, 10, 15, 16) → **12** offen.
+> **Stand nach Sprint v3-01, zeilengenau ausgezählt.** Paket-Tabellen **73** Zeilen,
+> davon **31 ✅** → **42** offen (⬜ 37 · 🟡 5). Hausaufgaben **5**, alle ⬜. §4 Erledigt
+> **71** Zeilen. §3 unverändert **4**. Pakete **19**, davon **7** vollständig erledigt
+> (1, 2, 3, 4, 10, 15, 16) → **12** offen.
+>
+> **Die Summe steht still, und darunter hat sich viel bewegt.** v3-01 hat `RD-1` und
+> `RD-3` erledigt, `RD-4` auf teilweise gesetzt — und **zwei neue Punkte eingetragen**
+> (`RD-5` Light-Mode-Umschalter, `RD-6` der Zeichencode liest die Tokens nicht).
+> Erledigt und neu heben sich auf; „47 offen" ist deshalb dieselbe Zahl wie nach v2-32
+> und meint etwas anderes.
+>
+> **Beide neuen Punkte sind Arbeit, die vorher unsichtbar war.** `RD-6` ist ein
+> gemessener Fehler: Das Token `--color-gold` ging in diesem Sprint von `.6` auf `.75`,
+> die Vorjahreslinie in der Welle blieb bei `.55` — der Zeichencode spiegelt die Werte
+> als Konstanten, und sein Kommentar behauptete das Gegenteil. `RD-5` ist der Rest
+> einer Entscheidung, die v3-01 bewusst nicht getroffen hat.
+>
+> **Paket 19 bleibt offen, obwohl seine Hauptarbeit erledigt ist** — `RD-2` (die
+> Foundation-Seiten schreiben die Tokens ab) ist durch v3-01 nicht behoben, sondern
+> **verschoben**: Die v3-Seiten binden `design-system/styles.css` ein, eine zweite
+> Kopie neben `src/styles/tokens.css`. Aus einer Doppelung ist eine Doppelung an
+> anderer Stelle geworden.
 >
 > **Die Zahl steigt um sechs, und keiner der sechs Punkte ist neue Arbeit.** Fünf davon
 > waren schon da und standen nur nirgends: `PF-9` und die Hausaufgabe `V1` aus dem Befund
@@ -846,10 +863,12 @@ bleiben unangetastet**. Kein Eingriff in eine Rechenfunktion, kein Schema-Eingri
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| RD-1 | `design-system/` zeigt nur **3 der 7** sichtbaren Komponenten | Aufgabe | nein | ⬜ | **Gemessen am 04.09.2026.** Die Design-Doku beschreibt sieben sichtbare Komponenten (§5 Ring · §6 Header/Timeline · §7 Karten · §8 Untere Interaktionszone · §9 Welle · §10 Income/Partner-Split · §11 CSV-Import). Seiten gibt es für **Ring, Karten und Welle**, dazu Kategorien und Verlauf als Teilansichten. **Ohne jede Seite: Header/Timeline, Untere Interaktionszone (Rohmasse), Income/Partner-Split, CSV-Import.** Der Design-Direktor beurteilt **Bilder, keine Beschreibungen** (CLAUDE.md §4) — für vier von sieben Komponenten gibt es kein Bild. Das ist die **erste** Arbeit dieses Pakets, nicht die zweite. |
-| RD-2 | Die Foundation-Seiten schreiben die Tokens ab, statt sie zu benutzen | Fehler | nein | ⬜ | **`design-system/foundations/typografie.html` enthält NULL `var(--typo-*)`** und nennt keinen einzigen Token-Namen — sie setzt px-Werte hart hin. `src/styles/tokens.css` definiert **21 `--typo-*`-Tokens**. **Heute stimmen die Werte noch:** alle sieben Größen (34 · 22 · 17 · 13 · 13 · 10 · 9 px) sind auf der Seite vertreten. Aber nur, weil bisher niemand ein Token geändert hat. **Ändert das Re-Design eines, zeigt die Seite still den alten Stand** — und genau sie ist das Anschauungsmaterial, nach dem gestaltet wird. Dieselbe Klasse wie LL-30: derselbe Wert an zwei Stellen. Abhilfe: die Seiten `tokens.css` einbinden lassen, statt Werte zu kopieren. |
-| RD-3 | Die Gestaltungsentscheidung selbst | Diskussion | nein | ⬜ | **Fähigkeit `design-direktor`, VOR dem Bauen** (CLAUDE.md §4), Ergebnis als Record unter `V2/`. Offen ist alles Inhaltliche: Wie weit geht das Re-Design? Bleibt das Ein-Screen-Prinzip? Bleibt der Ring die primäre Figur? Bleibt die Sparrate die eine große Zahl? |
-| RD-4 | Was aus Paket 7 dabei mit erledigt wird | Prüfung | nein | ⬜ 🔎 | Paket 7 („Gestaltungs-Feinschliff") enthält `M2`, `M5`, `A1-F` und `B2-F` — Feinschliff **der heutigen** Oberfläche. Wird sie neu gestaltet, sind mehrere davon gegenstandslos oder anders zu beantworten. **Vor dem Schnitt von Paket 19 prüfen**, was zusammengelegt gehört, statt beides parallel zu bearbeiten. |
+| RD-1 | `design-system/` zeigt nur **3 der 7** sichtbaren Komponenten | Aufgabe | nein | ✅ | **Gemessen am 04.09.2026.** Die Design-Doku beschreibt sieben sichtbare Komponenten (§5 Ring · §6 Header/Timeline · §7 Karten · §8 Untere Interaktionszone · §9 Welle · §10 Income/Partner-Split · §11 CSV-Import). Seiten gibt es für **Ring, Karten und Welle**, dazu Kategorien und Verlauf als Teilansichten. **Ohne jede Seite: Header/Timeline, Untere Interaktionszone (Rohmasse), Income/Partner-Split, CSV-Import.** Der Design-Direktor beurteilt **Bilder, keine Beschreibungen** (CLAUDE.md §4) — für vier von sieben Komponenten gibt es kein Bild. Das ist die **erste** Arbeit dieses Pakets, nicht die zweite. **Erledigt in v3-01 (06.09.2026):** Das v3-Bündel bringt Seiten für **alle sieben** — neu dazu Header, Untere Interaktionszone, Einkommen und Overlays, dazu die Übergabe und die sieben Regeln mit Vorher/Nachher. Sie lagen im Design-Projekt und **nicht im Repo**; der Sprint musste sie zuerst herunterladen. |
+| RD-2 | Die Foundation-Seiten schreiben die Tokens ab, statt sie zu benutzen | Fehler | nein | ⬜ | **`design-system/foundations/typografie.html` enthält NULL `var(--typo-*)`** und nennt keinen einzigen Token-Namen — sie setzt px-Werte hart hin. `src/styles/tokens.css` definiert **21 `--typo-*`-Tokens**. **Heute stimmen die Werte noch:** alle sieben Größen (34 · 22 · 17 · 13 · 13 · 10 · 9 px) sind auf der Seite vertreten. Aber nur, weil bisher niemand ein Token geändert hat. **Ändert das Re-Design eines, zeigt die Seite still den alten Stand** — und genau sie ist das Anschauungsmaterial, nach dem gestaltet wird. Dieselbe Klasse wie LL-30: derselbe Wert an zwei Stellen. Abhilfe: die Seiten `tokens.css` einbinden lassen, statt Werte zu kopieren. **Nach v3-01 unverändert offen — und schärfer:** Die v3-Seiten binden zwar ein Stylesheet ein (`design-system/styles.css`), aber das ist eine **zweite Kopie** der Tokens neben `src/styles/tokens.css`, keine Verbindung zur Quelle. Aus einer Doppelung ist damit eine Doppelung an anderer Stelle geworden. Genau LL-30. |
+| RD-3 | Die Gestaltungsentscheidung selbst | Diskussion | nein | ✅ | **Fähigkeit `design-direktor`, VOR dem Bauen** (CLAUDE.md §4), Ergebnis als Record unter `V2/`. Offen ist alles Inhaltliche: Wie weit geht das Re-Design? Bleibt das Ein-Screen-Prinzip? Bleibt der Ring die primäre Figur? Bleibt die Sparrate die eine große Zahl? **Entschieden am 05.09.2026** und in `design-system/v3/00-was-aendert-sich.html` als sieben Regeln festgehalten, jede mit dem Zustand von heute daneben. Die Antworten: Ein-Screen-Prinzip bleibt, Ring bleibt die primäre Figur, Sparrate bleibt die eine große Zahl, Geometrie bleibt (Karten 136 × ≥170, Ring Radius 98). Geändert ist die **Zuweisung** der fünf Grundtöne — Rot bedeutet ab jetzt ausschließlich Abweichung. Umgesetzt in v3-01. |
+| RD-5 | Der Light-Mode hat keinen Umschalter | Aufgabe | nein | ⬜ | **Neu am 06.09.2026 (v3-01).** `tokens.css` trägt einen vollständigen `[data-theme="light"]`-Block; erreichbar ist er nicht. Die Bedingung dafür ist seit v3-01 erfüllt: Die Liste der Tokens **ohne** Light-Wert ist leer — die zwölf Übergangs-Tokens sind entfernt, nachdem gemessen war, dass kein Modul sie liest. Offen sind die Produktfragen: Wo sitzt der Schalter, folgt er dem System, wird die Wahl gespeichert? |
+| RD-6 | Der Zeichencode liest die Tokens nicht | Fehler | nein | ⬜ | **Neu am 06.09.2026 (v3-01).** `src/components/welle/draw.ts` spiegelt die Farben als Konstanten (`TEAL`, `RED`, `GRAY`, `GOLD`) — Canvas kann keine Custom-Properties lesen. Der Kopfkommentar sagte, sie würden `tokens.css` „spiegeln"; **in v3-01 ist genau das gerissen**: Das Token ging von `.6` auf `.75`, die Vorjahreslinie blieb bei `.55`. Im Diff sichtbar, im Bild nicht. Der saubere Weg steht in derselben Komponente bereits: `readWaveOpacity` liest `--wave-opacity` per `getComputedStyle`. Dieselbe Mechanik für die vier Farben und den Schriftstapel. |
+| RD-4 | Was aus Paket 7 dabei mit erledigt wird | Prüfung | nein | 🟡 🔎 | Paket 7 („Gestaltungs-Feinschliff") enthält `M2`, `M5`, `A1-F` und `B2-F` — Feinschliff **der heutigen** Oberfläche. Wird sie neu gestaltet, sind mehrere davon gegenstandslos oder anders zu beantworten. **Vor dem Schnitt von Paket 19 prüfen**, was zusammengelegt gehört, statt beides parallel zu bearbeiten. **Teilantwort aus v3-01:** `A1-F` und `B2-F` (Deckkraft- und Ton-Feinschliff) sind **gegenstandslos** — v3 lässt nur noch vier Textstufen zu, freie Alpha-Werte gibt es nicht mehr. `M2` (Verben und Gesten des Karten-Lebenszyklus) bleibt und wurde von der Übergabe ausdrücklich als **Produktfrage mit eigener Drei-Varianten-Runde** ausgenommen. `M5` (Reihenfolge) ist von v3 unberührt. |
 
 > **Was dieses Paket von einem gewöhnlichen unterscheidet:** Es wird **in einer fremden
 > Sitzung** ausgeführt, mit einem anderen Modell. Die hat nichts als das Repo — das
@@ -888,6 +907,8 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| RD-1 | **Alle sieben sichtbaren Komponenten sind bebildert.** `design-system/` zeigte drei; das v3-Bündel bringt Seiten für Header, Untere Interaktionszone, Einkommen und Overlays dazu, plus Übergabe und die sieben Regeln. Sie lagen im Design-Projekt und **nicht im Repo** — der Sprint musste sie zuerst herunterladen. | v3-01 |
+| RD-3 | **Die Gestaltungsentscheidung ist gefallen.** Sieben Regeln, entschieden am 05.09.2026, jede mit dem Zustand von heute daneben. Ein-Screen-Prinzip, Ring als primäre Figur, Sparrate als die eine Zahl und die Geometrie bleiben; geändert ist die **Zuweisung** der fünf Grundtöne — Rot bedeutet ab jetzt ausschließlich Abweichung. | v3-01 |
 | PF-8 | **Ein Jahresexport passt wieder in die Zeit.** Der Visa-Export mit **2.535 Zeilen** brach mit „Datei fehlerhaft“ab — **an der Datei war nichts fehlerhaft**: Der echte Parser las sie in **4 ms**, Nutzlast 271 KB, weit unter dem 1-MB-Limit. `process_csv_import` läuft als **ein** Statement gegen `statement_timeout = 8s` der Rolle `authenticated`, und die Konfidenz wird für jede neue Zeile gegen jede aktive Karte gerechnet. Der Import läuft jetzt blockweise (`src/lib/csv-batches.ts`, Wächter `tests/e2e/csv-blockbildung.spec.ts`). **Der teuerste Teil war die Meldung selbst:** „Datei fehlerhaft“ist die einzige, die das Portal für einen RPC-Fehler kennt — sie beschreibt die Ursache nicht, und wer ihr glaubt, sucht am falschen Ort. Offen geblieben: `PF-9` und die Entscheidung über die 2.031 Altjahres-Zahlungen (Hausaufgabe `V1`) | Fix 03.09. |
 | M7 | **Karten haben einen Verlauf.** `Verlauf …` im Kontextmenü öffnet ein zentriertes Overlay mit **24 Monaten** Ist gegen Plan — Ist teal (2 px), Plan grau (1 px), beide Werte aus `welle/draw.ts`, **kein neuer Token**. Bis dahin war „wie lief das übers Jahr?" nur durch zwölfmaligen Monatswechsel beantwortbar. **Der teuerste Fund war die Roadmap-Zeile selbst:** Sie führte den Punkt als „datenseitig bereits abgedeckt", aber `get_year_deviation_drivers` trägt `WHERE round(delta,2) <> 0` und liefert nur **abweichende** Karten — Netflix läuft zwölf Monate auf Plan und erschien in **keinem einzigen**; Sep–Dez 2026 lieferte sie **gar nichts** (0 von 22 aktiven Karten). Gebaut wurde deshalb `get_card_amount_series`: rein lesend, **eine Netzrunde statt 36**, 21 ms. Drei Regeln haften im Code — die Ist-Linie endet am laufenden Monat (dort sind alle Werte reine Plan-Kopien), inaktive Monate brechen die Linie statt auf 0 zu fallen (LL-20), isolierte Werte werden als Punkt gezeichnet. Bei GEMEINSAM zeigt die Plan-Linie den **eigenen Anteil**: max. Abstand Miete 41,36 € statt roh ~815 €. Nicht bei `ONCE` — 142 der 178 Karten | v2-31 |
 | KAT-4 | **Ordner haben denselben Verlauf** — dieselbe Fläche, eine Ebene höher, wie Befund `U5` es am 04.08.2026 vorhergesagt hatte. `get_category_amount_series` **holt** den Ist-Wert aus `get_category_amounts_for_month`, statt ihn nachzurechnen: Dort sitzt der Rundungs-Ausgleich, den Anker 1 erzwingt — gemessen trägt in den vier Zukunftsmonaten je ein Ordner **0,01 €**, ein Nachbau zeigte dort einen Cent weniger als die Kachel daneben, **ohne dass eine Zahl falsch aussähe** (LL-25/LL-26). Preis: 254 ms statt 21 ms. Geprüft über **200 Zellen in 11 Ordnern, 0 Verletzungen**. **Die alte Voraussetzung war entfallen, ohne dass es jemand nachgetragen hatte:** Befund `D4` knüpfte den Punkt an eine kuratierte Datenbasis — seit `DA-1`/`DA-3` hat in **allen 20** vergangenen Monaten **jede** aktive Karte eine Zahlung oder einen Tap. „Ohne Kategorie" bekommt bewusst keinen Verlauf (Zufluss, kein Bestand — `D12`) | v2-31 |
