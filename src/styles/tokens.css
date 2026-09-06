@@ -2,62 +2,133 @@
  * Antigravity Finance — Globale Design-Tokens
  * Quelle: antigravity_finance_design_dokument.md §3
  * Token-Namen 1:1 aus der Design-Doku übernommen.
+ *
+ * v3-01 (Apple-Redesign, 05.09.2026): Werte aus `design-system/styles.css`,
+ * Begründung je Regel in `design-system/v3/00-was-aendert-sich.html`,
+ * Zuordnung alt → neu in `design-system/v3/uebergabe.html`.
+ * Die fünf Grundtöne sind unverändert — geändert ist ihre ZUWEISUNG
+ * (Rot nur noch für echte Abweichung), die Deckkraft-Stufen und die Flächen.
  */
 
 :root {
-  /* ── Farben (§3 Tabelle „Farben") ─────────────────────────────── */
+  /* ── Flächen ──────────────────────────────────────────────────── */
   --bg-primary: #0D0D0F;
-  --bg-card: #141416;
+
+  /* v3 Regel 1: EINE Fläche für alle Kartenzustände. Vorher #141416 plus
+   * drei Zustandsflächen; der Zustand sitzt jetzt im Punkt und im Statuswort.
+   * #1C1C1E ist Apples „secondary system background" im Dark Mode. */
+  --bg-card: #1C1C1E;
+  --bg-card-hover: #2C2C2E;
+
+  /* v3 Regel 5: Forecast ist eine Kontur, keine Fläche. */
+  --bg-card-ghost: transparent;
+
+  /* Popups, Menüs, Toast, Verlaufs-Overlay — eine Stufe über dem Grund,
+   * damit ein Sheet ohne Schatten als Fläche liest. */
+  --bg-elevated: #1C1C1E;
+
+  /* ⚠️ Übergangs-Tokens: gelten bis `cards.module.css` auf v3 steht
+   * (Schritt 3). Danach ersatzlos entfernen — sie haben in v3 keine
+   * Entsprechung mehr, der Zustand färbt keine Fläche. */
   --bg-card-open: #160D0D;
   --bg-card-paid: #0A140E;
   --bg-card-over: #160A08;
-  --bg-card-ghost: #181818;
 
+  /* ── Farben ───────────────────────────────────────────────────── */
   --color-teal: #3ECFAF;
   --color-red: #FF453A;
-  --color-gold: rgba(255, 200, 60, 0.6);
-  --color-blue-dot: rgba(100, 168, 240, 0.38);
 
-  --text-primary: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.45);
-  --text-ghost: rgba(255, 255, 255, 0.22);
+  /* v3: Gold von .6 auf .75 — die Vorjahreslinie war die wichtigste
+   * Referenz und die leiseste Linie. Blau von .38 auf .7 — ein 6-px-Punkt
+   * braucht Deckkraft. */
+  --color-gold: rgba(255, 200, 60, 0.75);
+  --color-blue-dot: rgba(100, 168, 240, 0.7);
 
-  --border-subtle: rgba(255, 255, 255, 0.07);
+  /* Flächige Einfärbungen für Auswahl, Fokus und Zustands-Pillen. */
+  --teal-fill: rgba(62, 207, 175, 0.16);
+  --red-fill: rgba(255, 69, 58, 0.16);
+  --neutral-fill: rgba(235, 235, 245, 0.10);
+
+  /* ── Text: genau vier Stufen ──────────────────────────────────── */
+  /* v3 Regel 3: Hierarchie entsteht über feste Textstufen (100/60/30/18 %),
+   * nicht über `opacity` auf einem Container. Entspricht Apples
+   * label / secondaryLabel / tertiaryLabel / quaternaryLabel. */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(235, 235, 245, 0.60);
+  --text-tertiary: rgba(235, 235, 245, 0.30);
+  --text-quaternary: rgba(235, 235, 245, 0.18);
+
+  /* Alte Namen als Alias auf die neuen Stufen.
+   * Grund: `--text-muted` und `--text-ghost` werden von zehn bzw. acht
+   * Dateien gelesen — darunter login, onboarding, error, page.module.css,
+   * dashboard-ring-stage und income-labels, die in v3-01 NICHT umgebaut
+   * werden. Über den Alias erben sie die neuen Stufen, ohne angefasst zu
+   * werden; genau das meint die Übergabe mit „Login und Onboarding folgen
+   * denselben Tokens". Die Module, die dieser Sprint anfasst, benutzen die
+   * neuen Namen. */
+  --text-muted: var(--text-secondary);
+  --text-ghost: var(--text-tertiary);
+
+  /* ── Ränder ───────────────────────────────────────────────────── */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* Kontur für alles, was es noch nicht gibt: Forecast-Karte, Portal,
+   * Leer-Slot, Klammer unter einem Ordner. */
+  --border-ghost: rgba(255, 255, 255, 0.14);
+
+  /* ⚠️ Übergangs-Tokens: bis Schritt 3 (cards) bzw. Schritt 4
+   * (interaction-zone). In v3 gibt es keinen Zustandsrand mehr. */
   --border-teal: rgba(62, 207, 175, 0.22);
   --border-red: rgba(255, 69, 58, 0.18);
+  --border-category-open: rgba(255, 69, 58, 0.45);
+  --border-category-done: rgba(62, 207, 175, 0.35);
+  --text-category-flag: rgba(255, 99, 88, 0.62);
+  --border-bracket-open: rgba(255, 69, 58, 0.32);
 
   /* Sprint 5 K1.3: Drop-Target-Outline (dezenter Grau-Ton, von Card-Hover
    * und Status-Farben deutlich abgesetzt). */
   --outline-drop: rgba(255, 255, 255, 0.35);
 
-  /* v2-17 (KAT-2): Kategorie-Kachel, Variante A der Gestaltungsrunde.
-   *
-   * KEINE neue Farbe — das war die Auflage aus dem Grundsatz „Schmale Palette".
-   * Der Ordner ist NEUTRAL getönt; Rot und Türkis bleiben den Karten-Zuständen
-   * vorbehalten und erscheinen am Ordner nur als schmale linke Kante (offen /
-   * erledigt), also in exakt ihrer bisherigen Bedeutung.
-   *
-   * Der Grundton liegt eine Spur kühler und heller als `--bg-card` (#141416).
-   * Genau dieser Unterschied plus das fehlende Status-Icon plus die
-   * Stapelkanten müssen die Unterscheidung zur Karte tragen — über jeder Karte
-   * liegt eine unsichtbare Klickfläche, die „bezahlt" umschaltet (Befund U3). */
-  --bg-category: #131318;
-  --bg-category-stack: #101014;
+  /* ── Ordner-Kachel ────────────────────────────────────────────── */
+  /* v2-17 (KAT-2), Werte auf v3 gehoben. KEINE neue Farbe — der Ordner ist
+   * neutral getönt, eine Spur kühler und dunkler als die Karte (#1C1C1E).
+   * Dieser Unterschied plus Stapelkanten plus Chevron statt Statuspunkt
+   * müssen die Unterscheidung zur Karte tragen (Befund U3).
+   * v3-Beschluss vom 05.09.2026 (Variante A): die linke Zustandskante
+   * entfällt, der Zustand steht nur noch als Wort in der Statuszeile. */
+  --bg-category: #1A1A20;
+  --bg-category-stack: #131317;
   --border-category: rgba(255, 255, 255, 0.13);
   --border-category-stack: rgba(255, 255, 255, 0.09);
-  --border-category-open: rgba(255, 69, 58, 0.45);
-  --border-category-done: rgba(62, 207, 175, 0.35);
-  --text-category-flag: rgba(255, 99, 88, 0.62);
 
   /* Die Klammer unter einem aufgeklappten Ordner (Record B5). */
   --border-bracket: rgba(255, 255, 255, 0.14);
-  --border-bracket-open: rgba(255, 69, 58, 0.32);
+
+  /* ── Balken und Spuren ────────────────────────────────────────── */
+  /* v3: Der Verbrauchsbalken einer laufenden Budget-Karte ist neutral —
+   * Verbrauch ist Information, kein Urteil. Türkis erst bei
+   * „Abgeschlossen", rot bei „Überschritten". */
+  --progress-track: rgba(255, 255, 255, 0.06);
+  --progress-neutral: rgba(235, 235, 245, 0.35);
+
+  /* Ring-Spur: von 0.05 auf 0.06 — sie soll als Rahmen sichtbar sein,
+   * nicht erraten werden. Lag bis v3-01 lokal in
+   * `singularity-ring.module.css`. */
+  --ring-track: rgba(255, 255, 255, 0.06);
+
+  /* Prognose-Anteil der Jahres-Welle. */
+  --wave-forecast: #8A8A90;
+
+  /* ── Radien ───────────────────────────────────────────────────── */
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --radius-popup: 18px;
 
   /* v2-03 N5 (§3/§8): Gemeinsamer Grau-Grundton ALLER Rohmasse-Fragmente
    * (zugeordnet + beide Transfer-Typen INTERNAL_TRANSFER/ASSET_REALLOCATION,
-   * v2-04) als RGB-Triplet für rgba(var(...), a)-Komposition. Zustands-
-   * Unterscheidung läuft ausschließlich über Opacity (0.22/0.45) +
-   * TRANSFER-Badge — kein separater Hue je Zustand. */
+   * v2-04) als RGB-Triplet für rgba(var(...), a)-Komposition.
+   * ⚠️ Übergangs-Token: v3 stuft die Fragmente über Fläche und Textstufe ab
+   * statt über Deckkraft (§8 neu). Fällt mit Schritt 4. */
   --fragment-hue: 255, 255, 255;
 
   /* v2-07 A1 (§11, schließt Sprint-8-OQ1): sechs Farbtöne für das
@@ -70,7 +141,8 @@
    * Türkis (--color-teal) und Rot (--color-red) sind bewusst ausgespart —
    * beide tragen in der App Statusbedeutung („bezahlt" / „überschritten").
    * Hue-1 ist der bisherige generische Gold-Ton aus Sprint 8; ein Sechstel
-   * der Karten behält damit exakt das heutige Erscheinungsbild. */
+   * der Karten behält damit exakt das heutige Erscheinungsbild.
+   * Das Badge liegt weiter hinter SHOW_SUGGESTION_BADGES = false. */
   --badge-hue-1: 255, 200, 60;   /* Gold    — Bestand seit Sprint 8 */
   --badge-hue-2: 255, 150, 90;   /* Orange  */
   --badge-hue-3: 170, 200, 110;  /* Oliv    */
@@ -79,43 +151,105 @@
   --badge-hue-6: 240, 120, 190;  /* Magenta */
 
   /* ── Typografie (§3 Tabelle „Typographie") ────────────────────── */
-  /* System-Font-Stack — bewusste Designentscheidung (PM, Sprint 0) */
-  --font-stack-system: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  /* v3 Regel 4: nichts unter 11 px. Größe, Gewicht und Laufweite sind ein
+   * Dreieck — wer eines ändert, zieht die anderen beiden nach. Dünne
+   * Schnitte tragen groß (Ring, 36 px), nicht klein (Betrag, 22 px). */
+
+  /* SF Pro zuerst — auf Apple-Geräten IST SF Pro die Apple-Ästhetik. */
+  --font-stack-system: -apple-system, BlinkMacSystemFont, system-ui,
+    "Helvetica Neue", sans-serif;
 
   /* Primärzahl (Ring) */
-  --typo-ring-size: 34px;
-  --typo-ring-weight: 200;
-  --typo-ring-tracking: -1.8px;
+  --typo-ring-size: 36px;
+  --typo-ring-weight: 300;
+  --typo-ring-tracking: -1.4px;
 
   /* Aktiver Monat (Header) */
   --typo-month-active-size: 17px;
   --typo-month-active-weight: 600;
-  --typo-month-active-tracking: -0.5px;
+  --typo-month-active-tracking: -0.4px;
 
   /* Kartenname */
-  --typo-card-name-size: 13px;
+  --typo-card-name-size: 14px;
   --typo-card-name-weight: 500;
   --typo-card-name-tracking: -0.2px;
 
   /* Kartenbetrag */
   --typo-card-amount-size: 22px;
-  --typo-card-amount-weight: 200;
-  --typo-card-amount-tracking: -1.2px;
+  --typo-card-amount-weight: 400;
+  --typo-card-amount-tracking: -0.6px;
 
   /* Flanken-Monat */
   --typo-month-flank-size: 13px;
   --typo-month-flank-weight: 500;
   --typo-month-flank-tracking: -0.2px;
 
-  /* Labels / Meta — Split der „9–10px"-Range aus §3 */
-  --typo-label-small-size: 9px;
+  /* Label — Typ-Label, Ring-Unterschrift, Zonen-Köpfe. Versalien bleiben:
+   * ein Label liest man nicht, man erkennt es. */
+  --typo-label-small-size: 11px;
   --typo-label-small-weight: 600;
-  --typo-label-small-tracking: 1.1px;
+  --typo-label-small-tracking: 0.5px;
 
-  --typo-label-meta-size: 10px;
+  /* Meta — Status, Termin, Zusatzzeile. KEINE Versalien mehr: „Bezahlt" ist
+   * ein Wort, „BEZAHLT" ein Etikett, und Versalien lesen sich langsamer,
+   * weil die Wortform verlorengeht. */
+  --typo-label-meta-size: 11px;
   --typo-label-meta-weight: 500;
-  --typo-label-meta-tracking: 0.6px;
+  --typo-label-meta-tracking: 0;
 
   /* Alle Zahlen */
   --typo-numeric-variant: tabular-nums;
+}
+
+/*
+ * Light Mode — vorbereitet, aber NICHT erreichbar: v3-01 baut keinen
+ * Umschalter. Die Werte stehen hier, damit sie beim späteren Einbau nicht
+ * neu erfunden werden müssen; Quelle ist `design-system/styles.css`.
+ *
+ * Gleiche Tokennamen, gleiche Prozentstufen — deshalb bleibt die Hierarchie
+ * identisch. Türkis und Rot bekommen eine dunklere Stufe DESSELBEN Farbtons:
+ * #3ECFAF auf Weiß hätte nur 1,9:1 Kontrast (v3 Regel 6).
+ *
+ * ⚠️ Bewusst NICHT aufgeführt sind die oben mit „Übergangs-Token" markierten
+ * Werte und `--fragment-hue`. Sie verschwinden in den Schritten 3 und 4;
+ * ein Light-Wert dafür wäre eine Zahl für etwas, das es dann nicht mehr gibt.
+ * Wer den Umschalter baut, prüft vorher, dass diese Liste leer ist.
+ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-primary: #F2F2F7;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FFFFFF;   /* im Light Mode trägt der 2-px-Lift allein */
+  --bg-card-ghost: transparent;
+  --bg-elevated: #FFFFFF;
+
+  --color-teal: #1FA588;      /* gleicher Farbton, dunkler — 4,5:1 auf Weiß */
+  --color-red: #E0362C;       /* gleicher Farbton, dunkler — 4,6:1 auf Weiß */
+  --color-gold: rgba(190, 140, 0, 0.9);
+  --color-blue-dot: rgba(40, 120, 220, 0.8);
+
+  --teal-fill: rgba(31, 165, 136, 0.14);
+  --red-fill: rgba(224, 54, 44, 0.12);
+  --neutral-fill: rgba(60, 60, 67, 0.08);
+
+  --text-primary: #000000;
+  --text-secondary: rgba(60, 60, 67, 0.60);
+  --text-tertiary: rgba(60, 60, 67, 0.30);
+  --text-quaternary: rgba(60, 60, 67, 0.18);
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-ghost: rgba(0, 0, 0, 0.16);
+  --outline-drop: rgba(0, 0, 0, 0.35);
+
+  --bg-category: #F7F7FB;
+  --bg-category-stack: #ECECF2;
+  --border-category: rgba(0, 0, 0, 0.10);
+  --border-category-stack: rgba(0, 0, 0, 0.07);
+  --border-bracket: rgba(0, 0, 0, 0.16);
+
+  --progress-track: rgba(0, 0, 0, 0.06);
+  --progress-neutral: rgba(60, 60, 67, 0.35);
+  --ring-track: rgba(0, 0, 0, 0.06);
+  --wave-forecast: #A0A0A8;
 }
