@@ -1,0 +1,137 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x900" name="00 Was ändert sich" subtitle="Analyse: Vorher / Nachher, jede Regel begründet" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Was ändert sich — Antigravity Finance</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="doc.css">
+<link rel="stylesheet" href="karte.css">
+<style>
+.alt{--a-bg:#141416;--a-open:#160D0D;--a-paid:#0A140E;--a-over:#160A08}
+.altcard{width:136px;min-height:170px;border-radius:14px;padding:14px 13px 12px;border:1px solid rgba(255,255,255,.07);background:var(--a-bg);opacity:.75;position:relative;color:#fff;font-family:var(--font-stack-system)}
+.altcard.open{background:var(--a-open);border-color:rgba(255,69,58,.18)}
+.altcard.paid{background:var(--a-paid);border-color:rgba(62,207,175,.22)}
+.altcard .t{display:flex;justify-content:space-between;margin-bottom:10px;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.altcard.open .t{color:rgba(255,99,88,.45)}.altcard.paid .t{color:rgba(62,207,175,.45)}
+.altcard .i{width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,69,58,.2);background:rgba(255,69,58,.1)}
+.altcard.paid .i{border-color:rgba(62,207,175,.28);background:rgba(62,207,175,.1)}
+.altcard .n{font-size:13px;font-weight:500;margin-bottom:2px;color:rgba(255,255,255,.45)}
+.altcard.paid .n{color:#fff}
+.altcard .a{font-size:22px;font-weight:200;letter-spacing:-1.2px;line-height:1;margin-bottom:2px;color:rgba(255,255,255,.45)}
+.altcard.paid .a{color:#fff}
+.altcard .h{font-size:10px;line-height:12px;min-height:12px;color:rgba(255,255,255,.45);margin-bottom:5px}
+.altcard .s{display:flex;justify-content:space-between;font-size:9px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,99,88,.38)}
+.altcard.paid .s{color:rgba(62,207,175,.45)}
+.altcard .s span:last-child{color:rgba(255,255,255,.3)}
+.altcard .m{margin-top:8px;font-size:10px;color:rgba(255,255,255,.2)}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;padding:32px 0;border-bottom:1px solid var(--border-subtle);align-items:start}
+.rule h3{margin:0 0 8px;font-size:17px;font-weight:600;letter-spacing:-.3px}
+.rule p{margin:0 0 10px;font-size:13.5px;line-height:1.65;color:var(--text-secondary);max-width:64ch}
+.rule .k{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px}
+.pair{display:flex;gap:14px;align-items:flex-start}
+.pair>div{text-align:center}
+.pair small{display:block;margin-top:8px;font-size:11px;color:var(--text-tertiary)}
+.lern{margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--neutral-fill);font-size:12.5px;line-height:1.6;color:var(--text-secondary)}
+.lern b{color:var(--text-primary)}
+.tl{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+@media (max-width:820px){.rule{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav"><a class="here" href="00-was-aendert-sich.html">00 Analyse</a><a href="foundations/farben.html">Farben</a><a href="foundations/typografie.html">Typografie</a><a href="komponenten/karten.html">Karten</a><a href="komponenten/kategorien.html">Kategorien</a><a href="komponenten/ring.html">Ring</a><a href="komponenten/welle.html">Welle</a><a href="komponenten/verlauf.html">Verlauf</a><a href="komponenten/header.html">Header</a><a href="komponenten/overlays.html">Overlays</a><a href="komponenten/zone.html">Interaktionszone</a><a href="komponenten/einkommen.html">Einkommen</a><a href="uebergabe.html">Übergabe</a></nav>
+<h1>Was sich in v3 ändert — und warum</h1>
+<p class="lede">Sieben Regeln. Jede mit dem Zustand von heute daneben, damit du die Wirkung siehst statt sie zu glauben. Die Rechenlogik der App ist nicht berührt — alles hier ist ausschließlich CSS-Wert und Zuweisung.</p>
+<p class="src">Grundlage: <code>src/styles/tokens.css</code>, <code>cards.module.css</code>, Apple Human Interface Guidelines (Color, Typography, Dark Mode)</p>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 1 · Farbe ist Information, nicht Dekoration</div>
+    <h3>Die Zustandsfarbe verlässt die Fläche</h3>
+    <p>Heute färbt der Zustand die ganze Karte: Hintergrund, Rand, Typ-Label, Statuswort. Vier Stellen sagen dasselbe. Im Karussell mit acht Karten ergibt das einen rot-grün-gefleckten Teppich, in dem das Auge nichts mehr priorisieren kann.</p>
+    <p>In v3 haben alle Karten dieselbe Fläche. Der Zustand sitzt an genau zwei Stellen: einem 18-px-Punkt oben rechts und dem Statuswort. Wer die Reihe überfliegt, sieht sofort die Ausnahmen — weil nur sie farbig sind.</p>
+    <div class="lern"><b>Was du daraus mitnimmst:</b> Wenn alles farbig ist, ist nichts farbig. Apple nutzt Farbe in Listen fast nur für Icons, Statuspunkte und die eine interaktive Hervorhebung — nie für ganze Zellen.</div>
+  </div>
+  <div class="pair alt">
+    <div><div class="altcard open"><div class="t"><span>Fixkosten</span><span class="i"></span></div><div class="n">Strom – Mainova</div><div class="a">36,04 €</div><div class="h">von 63,00 €</div><div class="s"><span>Offen</span><span>am 1.</span></div><div class="m">● Gemeinsam</div></div><small>heute · offen</small></div>
+    <div><div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><small>v3 · offen</small></div>
+  </div>
+</div>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 2 · Rot heißt „hier ist etwas schiefgegangen“</div>
+    <h3>„Offen“ und „Laufend“ sind nicht mehr rot</h3>
+    <p>Eine Stromrechnung, die am 1. abgebucht wird, ist am 28. des Vormonats <em>offen</em>. Das ist kein Problem — das ist der Normalzustand von 80 % aller Karten an 80 % aller Tage. Trotzdem tragen sie heute Rot, dieselbe Farbe wie „Budget überschritten“ und wie das Defizit im Ring.</p>
+    <p>Nutzer lernen Farben schneller als Wörter. Wenn Rot mal „bitte noch bezahlen“ und mal „du hast zu viel ausgegeben“ heißt, verlieren beide Bedeutungen. In v3 gibt es genau einen roten Kartenzustand: <b>Überschritten</b>. Offen, Laufend und Erwartet sind neutral — ein Kreis ohne Füllung, „noch nicht“.</p>
+    <div class="lern"><b>Was du daraus mitnimmst:</b> Semantische Farben brauchen eine Eins-zu-eins-Zuordnung. Ein Zustand ↔ eine Farbe. Sobald zwei Zustände dieselbe Farbe teilen, muss der Nutzer lesen statt sehen.</div>
+  </div>
+  <div class="pair">
+    <div><div class="card budget" data-state="running"><div class="top"><span class="type">Budget</span><span class="dot"></span></div><div class="name">Auswärts Essen</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Laufend</span></div><div class="rest">Noch 157,20 € frei</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:21%"></i></div></div><small>Laufend · neutral</small></div>
+    <div><div class="card budget" data-state="over"><div class="top"><span class="type">Budget</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span></div><div class="name">Auswärts Essen</div><div class="amount">268,40 €</div><div class="household"></div><div class="row"><span class="state">Überschritten</span></div><div class="rest">68,40 € über Plan</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:100%"></i></div></div><small>Überschritten · rot</small></div>
+  </div>
+</div>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 3 · Kein Dimmen ganzer Elemente</div>
+    <h3>Die Karten sind nicht mehr dunkel</h3>
+    <p>Dein Eindruck war richtig, und die Ursache ist eine einzige Zeile: <code>.card { opacity: .75 }</code>. Sie dimmt <em>alles</em> — Fläche, Rand, Text, Icon — um ein Viertel. Der Text „Offen“ steht dann bei 38 % Deckkraft × 0,75 = effektiv 28 % Weiß auf Fast-Schwarz. Das ist unter jeder Lesbarkeitsgrenze.</p>
+    <p>v3 entfernt die Karten-Opacity vollständig. Hierarchie entsteht stattdessen über vier feste Textstufen (100 / 60 / 30 / 18 %), die Apple in dieser Form seit iOS 13 als <em>label, secondaryLabel, tertiaryLabel, quaternaryLabel</em> verwendet. Die Fläche selbst hebt sich mit <code>#1C1C1E</code> deutlich vom Hintergrund ab — das ist Apples Dark-Mode-Stufe „secondary system background“.</p>
+    <div class="lern"><b>Was du daraus mitnimmst:</b> <code>opacity</code> auf einem Container ist fast immer ein Fehler — es multipliziert sich mit jeder Deckkraft darin und macht Kontraste unberechenbar. Dimmen immer am Text, nie an der Box.</div>
+  </div>
+  <div class="pair alt">
+    <div><div class="altcard paid"><div class="t"><span>Fixkosten</span><span class="i"></span></div><div class="n">Strom – Mainova</div><div class="a">36,04 €</div><div class="h">von 63,00 €</div><div class="s"><span>Bezahlt</span><span>am 1.</span></div><div class="m">● Gemeinsam</div></div><small>heute · opacity .75</small></div>
+    <div><div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><small>v3 · volle Deckkraft</small></div>
+  </div>
+</div>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 4 · Nichts unter 11 px</div>
+    <h3>Die kleinen Labels wachsen</h3>
+    <p>Typ-Label, Statuswort und Fälligkeitstag stehen heute bei 9 px. Apple setzt für iOS eine Untergrenze von 11 px (Caption 2) — darunter greift die Rendering-Engine zu Hinting-Tricks, die Buchstaben verschwimmen lassen; auf Retina-Displays fehlen bei 9 px schlicht die Pixel für eine saubere Rundung.</p>
+    <p>v3 hebt alle Labels auf 11 px und reduziert im Tausch die Sperrung: 1,1 px Laufweite bei 9 px war nötig, damit man die Buchstaben überhaupt trennen konnte. Bei 11 px reichen 0,5 px. Der Betrag wechselt von Gewicht 200 auf 400 — bei 22 px ist ein Hairline-Schnitt auf dunklem Grund optisch dünner als seine geometrische Breite, weil das Auge das helle Umfeld „hineinblutet“.</p>
+    <div class="lern"><b>Was du daraus mitnimmst:</b> Größe, Gewicht und Laufweite sind ein Dreieck. Wer eines ändert, muss die anderen beiden nachziehen. Dünne Schnitte funktionieren groß (Ring, 36 px), nicht klein.</div>
+  </div>
+  <div>
+    <div class="tl alt" style="margin-bottom:22px"><span style="font-size:9px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:rgba(255,255,255,.45)">Fixkosten · Offen</span><span style="font-size:22px;font-weight:200;letter-spacing:-1.2px;color:rgba(255,255,255,.45)">1.904,00 €</span><small style="font-size:11px;color:var(--text-tertiary)">heute</small></div>
+    <div class="tl"><span class="type" style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary)">Fixkosten · Offen</span><span style="font-size:22px;font-weight:400;letter-spacing:-.6px;color:var(--text-secondary)">1.904,00 €</span><small style="font-size:11px;color:var(--text-tertiary)">v3</small></div>
+  </div>
+</div>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 5 · Forecast ist eine Kontur</div>
+    <h3>Zukünftiges hat keine Fläche</h3>
+    <p>Eine Forecast-Karte ist eine Karte, die es noch nicht gibt. Heute bekommt sie eine <em>eigene</em> Fläche (<code>#181818</code>) und wird zusätzlich auf 65 % gedimmt — sie ist damit die dunkelste und gleichzeitig die einzige „andere“ Karte. Das wirkt wie ein Fehler, nicht wie Zukunft.</p>
+    <p>v3 nimmt ihr die Fläche ganz: Nur die Kontur bleibt, der Punkt ist gestrichelt. Das ist die Konvention aus Kalendern und Dateisystemen — der gestrichelte Umriss heißt „hier kommt etwas hin“. Sie ist nicht antippbar, und sie <em>sieht</em> nicht antippbar aus.</p>
+  </div>
+  <div class="pair">
+    <div><div class="card" data-state="ghost"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Forecast</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><small>v3 · Forecast</small></div>
+  </div>
+</div>
+
+<div class="rule">
+  <div>
+    <div class="k">Regel 6 · Zwei Erscheinungen, ein Farbton</div>
+    <h3>Light Mode ohne neue Farben</h3>
+    <p>Türkis <code>#3ECFAF</code> auf Weiß hat ein Kontrastverhältnis von 1,9 : 1 — unlesbar. Der Farbton bleibt, aber Light Mode braucht eine dunklere Stufe desselben Tons: <code>#1FA588</code> (4,5 : 1). Dasselbe für Rot: <code>#FF453A</code> → <code>#E0362C</code>. Das ist exakt, was Apple mit <em>systemTeal</em> tut — die Farbe hat pro Erscheinung einen eigenen Wert, der Name bleibt.</p>
+    <p>Grauwerte kippen von „Weiß mit Deckkraft“ auf „Schwarz mit Deckkraft“. Die Prozentstufen bleiben identisch, deshalb bleibt die Hierarchie identisch.</p>
+    <div class="lern"><b>Was du daraus mitnimmst:</b> Ein Token ist ein Name für eine Rolle, nicht für einen Hex-Wert. <code>--color-teal</code> darf pro Theme einen anderen Wert haben — die Bedeutung „erledigt / positiv“ wechselt nie.</div>
+  </div>
+  <div class="pair">
+    <div class="t-light" style="padding:18px;border-radius:20px;background:var(--bg-primary)"><div class="card" data-state="paid"><div class="top"><span class="type">Fixkosten</span><span class="dot"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="name">Strom – Mainova</div><div class="amount">36,04 €</div><div class="household">von 63,00 €</div><div class="row"><span class="state">Bezahlt</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div><small style="color:var(--text-tertiary)">v3 · Light</small></div>
+  </div>
+</div>
+
+<div class="rule" style="border-bottom:none">
+  <div>
+    <div class="k">Regel 7 · Was bewusst bleibt</div>
+    <h3>Geometrie, Grundtöne, Wortlaut</h3>
+    <p>Karten bleiben 136 × ≥170 px, das Karussell springt nicht. Radius wächst um 2 px auf 16 — Apples Standard für Karten dieser Größe. Der Ring behält Radius 98 und Strich 9. Schwarz, Türkis, Rot, Gold, Blau bleiben die einzigen Farben. Alle Statuswörter, alle Regeln aus den Beschluss-Records („Laufend zeigt den Plan“, „Termin bleibt stehen“) gelten unverändert.</p>
+    <p>Der Umbau ist in <code>tokens.css</code> und <code>cards.module.css</code> erledigt — siehe <a href="uebergabe.html">Übergabe</a>. Kein TypeScript wird angefasst.</p>
+  </div>
+</div>
+</body>
+</html>

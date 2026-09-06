@@ -1,0 +1,51 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x760" name="Singularity Ring" subtitle="Geometrie unverändert, Spur und Schrift angepasst" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Singularity Ring — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<style>
+.rail{gap:38px}.slot{width:248px}
+.stage{position:relative;width:248px;height:248px}
+.stage svg{position:absolute;inset:0;width:100%;height:100%}
+.arc{fill:none;stroke-width:9;stroke-linecap:round}
+.track{stroke:var(--ring-track)}
+.arcPos{stroke:var(--color-teal)}.arcNeg{stroke:var(--color-red)}
+.dot{fill:var(--text-tertiary)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.val{font-size:var(--typo-ring-size);font-weight:var(--typo-ring-weight);letter-spacing:var(--typo-ring-tracking);line-height:1}
+.vTeal{color:var(--color-teal)}.vRed{color:var(--color-red)}
+.lab{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-tertiary)}
+.sub{font-size:12px;font-weight:500;color:var(--text-secondary);margin:0;max-width:none}
+.subTeal{color:var(--color-teal)}.subRed{color:var(--color-red)}
+.cap{margin-top:14px;font-size:12px}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a class="here" href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a href="header.html">Header</a><a href="overlays.html">Overlays</a><a href="zone.html">Interaktionszone</a><a href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Singularity Ring</h1>
+<p class="lede">Der Ring war schon Apple: ein Bogen, eine Zahl, kein Schmuck. Radius 98, Strich 9, runde Enden, Wachstum ab 6 Uhr — alles bleibt. Geändert sind nur die Spur, die Schriftgewichte und die Farbstufen der Unterzeile.</p>
+<p class="src">Geometrie, Transformationen und Dash-Werte 1:1 aus <code>src/components/singularity-ring/</code> · Die Rechenregeln (Degeneration unter 100 €, Cap bei 200 %) sind nicht berührt</p>
+
+<h2>Die vier Zustände</h2>
+<div class="rail">
+  <div class="slot"><div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="arc arcPos" cx="124" cy="124" r="98" stroke-dasharray="615.752" stroke-dashoffset="368.00" style="transform:rotate(90deg);transform-box:fill-box;transform-origin:center"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val">1.931 €</div><div class="lab">Sparrate</div><div class="sub">80 % von Plan</div></div></div><div class="cap"><b>Im Plan</b>Weiß. Unterzeile in Sekundär (60 %) statt 45 % — jetzt lesbar, ohne mit der Zahl zu konkurrieren.</div></div>
+  <div class="slot"><div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="arc arcPos" cx="124" cy="124" r="98" stroke-dasharray="615.752" stroke-dashoffset="26.96" style="transform:rotate(90deg);transform-box:fill-box;transform-origin:center"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val vTeal">4.590 €</div><div class="lab">Sparrate</div><div class="sub subTeal">+91 % über Plan</div></div></div><div class="cap"><b>Über Plan</b>Türkis in voller Deckkraft für Zahl und Unterzeile — vorher 75 % für die Unterzeile.</div></div>
+  <div class="slot"><div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="arc arcNeg" cx="124" cy="124" r="98" stroke-dasharray="615.752" stroke-dashoffset="417.59" style="transform:scaleX(-1) rotate(90deg);transform-box:fill-box;transform-origin:center"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val vRed">−1.223 €</div><div class="lab">Sparrate</div><div class="sub subRed">−64 % Defizit</div></div></div><div class="cap"><b>Negativ</b>Hier gehört Rot hin — das ist eine echte Abweichung. Weil Rot auf Karten jetzt selten ist, wirkt es hier stärker.</div></div>
+  <div class="slot"><div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val vRed">−1.223 €</div><div class="lab">Sparrate</div><div class="sub subRed">−1.278 € unter Plan</div></div></div><div class="cap"><b>Plan unter 100 €</b>Nur Spur. Die Spur steigt von 5 auf 6 % — sie soll als Rahmen sichtbar sein, nicht erraten werden.</div></div>
+</div>
+
+<h2>Light Mode</h2>
+<div class="pane t-light" style="display:inline-block">
+  <div class="rail" style="gap:28px">
+    <div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="arc arcPos" cx="124" cy="124" r="98" stroke-dasharray="615.752" stroke-dashoffset="368.00" style="transform:rotate(90deg);transform-box:fill-box;transform-origin:center"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val">1.931 €</div><div class="lab">Sparrate</div><div class="sub">80 % von Plan</div></div></div>
+    <div class="stage"><svg viewBox="0 0 248 248"><circle class="arc track" cx="124" cy="124" r="98"/><circle class="arc arcNeg" cx="124" cy="124" r="98" stroke-dasharray="615.752" stroke-dashoffset="417.59" style="transform:scaleX(-1) rotate(90deg);transform-box:fill-box;transform-origin:center"/><circle class="dot" cx="124" cy="222" r="3.5"/><circle class="dot" cx="124" cy="26" r="3.5"/></svg><div class="center"><div class="val vRed">−1.223 €</div><div class="lab">Sparrate</div><div class="sub subRed">−64 % Defizit</div></div></div>
+  </div>
+</div>
+
+<div class="note"><h3>Warum die Zahl von 200 auf 300 geht</h3>Bei 36 px trägt ein Gewicht 300 noch die Leichtigkeit, die den Ring ruhig macht — aber der Strich ist dick genug, dass er auf einem nicht-Retina-Monitor nicht zerfällt. Apple nutzt für große Zahlen in Health und Fitness genau diese Stufe („Light“ bzw. „Regular“), nie „Ultralight“. Die Laufweite geht mit: −1,8 → −1,4 px.</div>
+<div class="note"><b>Was der Ring weiterhin nicht hat:</b> keinen Leuchteffekt, keinen Verlauf im Bogen, keinen zweiten Ring. Apples Aktivitätsringe haben einen Verlauf — hier bewusst nicht, weil der Bogen über 12 Uhr hinaus in dieselbe Farbe weiterläuft und ein Verlauf dort eine Bruchstelle erzeugte.</div>
+</body>
+</html>

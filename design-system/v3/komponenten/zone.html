@@ -1,0 +1,118 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x1000" name="Interaktionszone" subtitle="Portal, Zonen-Köpfe, Leer-Slot, Rohmasse-Fragmente" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Interaktionszone — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<link rel="stylesheet" href="../karte.css">
+<style>
+/* Raster 1:1 aus interaction-zone.module.css: 180px 1fr 220px, gap 14 */
+.zone{display:grid;grid-template-columns:180px minmax(0,1fr) 220px;gap:14px;align-items:stretch;max-width:1000px;min-width:760px;padding:24px;border-radius:20px;background:var(--bg-primary);border:1px solid var(--border-subtle);color:var(--text-primary)}
+.zl{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;min-height:16px}
+.liq{display:flex;align-items:baseline;gap:12px;text-transform:none;letter-spacing:0}
+.liq b{font-size:13px;font-weight:500;color:var(--text-secondary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.liq span{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);white-space:nowrap}
+.liq i{width:1px;height:10px;background:var(--border-ghost)}
+.portal{border-radius:16px;border:1.5px dashed var(--border-ghost);background:transparent;padding:24px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:180px;text-align:center}
+.pi{width:40px;height:40px;border-radius:12px;background:var(--neutral-fill);display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
+.pl{font-size:12px;font-weight:500;color:var(--text-secondary);line-height:1.5}
+.ps{font-size:11px;color:var(--text-tertiary);line-height:1.5}
+.portal.drag{border-color:var(--color-teal);background:var(--teal-fill)}.portal.drag .pi{background:var(--color-teal);color:#fff}.portal.drag .pl{color:var(--color-teal)}
+.portal.err{border-color:var(--color-red);background:var(--red-fill)}.portal.err .pi{background:var(--color-red);color:#fff}.portal.err .pl{color:var(--color-red)}
+.portal.ok{border-style:solid;border-color:var(--color-teal)}.portal.ok .pi{background:var(--color-teal);color:#fff}.portal.ok .pl{color:var(--color-teal)}
+.crow{display:flex;gap:8px;align-items:stretch;min-width:0}
+.chev{width:28px;height:28px;border-radius:50%;background:var(--neutral-fill);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;align-self:center;flex-shrink:0}
+.chev.dis{opacity:.3}
+.vp{display:flex;gap:10px;flex:1;min-width:0;overflow:hidden;padding:4px 0 16px}
+.slot{flex:0 0 136px;min-height:170px;border-radius:16px;border:1.5px dashed var(--border-ghost);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text-tertiary)}
+.slot .plus{font-size:24px;font-weight:300;line-height:1}
+.slot .sl{font-size:12px;font-weight:500}
+.slot.hover{border-color:var(--text-tertiary);color:var(--text-secondary)}
+.stack{display:flex;flex-direction:column;gap:8px;height:320px;overflow:hidden}
+.frag{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:12px;padding:11px 12px;cursor:grab}
+.frag .ft{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px}
+.frag .fa{font-size:16px;font-weight:400;letter-spacing:-.4px;line-height:1;white-space:nowrap;color:var(--text-primary)}
+.frag .fa.pos{color:var(--color-teal)}
+.frag .fb{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--neutral-fill);color:var(--text-secondary);white-space:nowrap}
+.frag .fd{font-size:12px;font-weight:500;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.frag .fs{font-size:11px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.frag .fdt{font-size:11px;color:var(--text-tertiary)}
+.frag.locked{background:transparent;border-color:var(--border-ghost);cursor:pointer}
+.frag.locked .fa,.frag.locked .fd{color:var(--text-tertiary)}.frag.locked .fdt{color:var(--text-quaternary)}
+.frag.transfer{cursor:pointer}
+.frag.transfer .fa,.frag.transfer .fd{color:var(--text-secondary)}
+.tog{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:var(--text-tertiary);text-transform:none;letter-spacing:0}
+.tog i{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--text-tertiary)}
+.tog.on i{background:var(--text-secondary);border-color:var(--text-secondary)}
+.alt{color:#fff}
+.alt .frag{background:#141416;border-color:rgba(255,255,255,.07);opacity:.72;border-radius:10px}
+.alt .frag .fa{font-weight:200;letter-spacing:-.8px;color:#FF453A}.alt .frag .fd{font-size:10px;color:rgba(255,255,255,.28)}.alt .frag .fdt{font-size:9px;color:rgba(255,255,255,.15)}
+.alt .frag .fb{font-size:7.5px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:.5px solid rgba(255,255,255,.15)}
+.alt .frag.locked{opacity:.22;background:#141416;border-color:rgba(255,255,255,.07)}.alt .frag.transfer{opacity:.45}
+.alt .frag.locked .fa,.alt .frag.transfer .fa{color:#FF453A}.alt .frag.locked .fd{color:rgba(255,255,255,.28)}
+.pair{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.pair>div{width:220px}
+.cap{max-width:320px}
+@media (max-width:900px){.zone{grid-template-columns:1fr;min-width:0}}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a href="header.html">Header</a><a href="overlays.html">Overlays</a><a class="here" href="zone.html">Interaktionszone</a><a href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Untere Interaktionszone</h1>
+<p class="lede">Drei Spalten: Portal für den CSV-Import, Karussell mit Planung, Rohmasse mit den Kontoumsätzen. v3 nimmt den Fragmenten die Deckkraft-Dimmung, gibt Portal und Leer-Slot eine echte Kontur und hebt die Zonen-Köpfe auf 11 px.</p>
+<p class="src">Raster, Maße und Zustände aus <code>interaction-zone.module.css</code> · Wortlaute aus <code>portal.tsx</code>, <code>empty-slot.tsx</code>, <code>fragment-card.tsx</code></p>
+
+<h2>Die Zone im Ganzen</h2>
+<div class="zone">
+  <div><div class="zl">Import</div>
+    <div class="portal"><div class="pi"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pl">CSV hier ablegen</div><div class="ps">DKB Giro · DKB Visa · Cortal Consors</div></div>
+  </div>
+  <div><div class="zl"><span>Planung</span><div class="liq"><b>1.148,18 €</b><span>noch fällig</span><i></i><b>157,20 €</b><span>Budget frei</span></div></div>
+    <div class="crow"><div class="chev dis"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7L9 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="vp">
+        <div class="card" data-state="open"><div class="top"><span class="type">Fixkosten</span><span class="dot"></span></div><div class="name">Miete</div><div class="amount">1.089,26 €</div><div class="household">von 1.904,00 €</div><div class="row"><span class="state">Offen</span><span class="due">am 1.</span></div><div class="meta"><i class="md gem"></i>Gemeinsam</div></div>
+        <div class="card budget" data-state="running"><div class="top"><span class="type">Budget</span><span class="dot"></span></div><div class="name">Auswärts Essen</div><div class="amount">200,00 €</div><div class="household"></div><div class="row"><span class="state">Laufend</span></div><div class="rest">Noch 157,20 € frei</div><div class="meta"><i class="md"></i>Ich</div><div class="bar"><i style="width:21%"></i></div></div>
+        <div class="slot"><div class="plus">+</div><div class="sl">Neue Karte</div></div>
+      </div>
+      <div class="chev"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div>
+  <div><div class="zl"><span>Rohmasse</span><label class="tog on"><i></i>Übertrag</label></div>
+    <div class="stack">
+      <div class="frag"><div class="ft"><span class="fa">−36,04 €</span></div><div class="fd">Mainova AG · Abschlag Strom</div><div class="fs">KI-Vorschlag: Strom – Mainova</div><div class="fdt">14.08.2026</div></div>
+      <div class="frag"><div class="ft"><span class="fa pos">+200,00 €</span></div><div class="fd">Überweisung Nebenjob August</div><div class="fdt">12.08.2026</div></div>
+      <div class="frag transfer"><div class="ft"><span class="fa">−500,00 €</span><span class="fb">Transfer</span></div><div class="fd">Umbuchung Tagesgeld</div><div class="fdt">05.08.2026</div></div>
+      <div class="frag locked"><div class="ft"><span class="fa">−1.089,26 €</span></div><div class="fd">Miete August · zugeordnet</div><div class="fdt">01.08.2026</div></div>
+    </div>
+  </div>
+</div>
+
+<h2>Rohmasse-Fragment · Vorher / Nachher</h2>
+<div class="pair">
+  <div class="alt"><div class="stack" style="height:auto"><div class="frag"><div class="ft"><span class="fa">−36,04 €</span></div><div class="fd">Mainova AG · Abschlag Strom</div><div class="fdt">14.08.2026</div></div><div class="frag transfer"><div class="ft"><span class="fa">−500,00 €</span><span class="fb">Transfer</span></div><div class="fd">Umbuchung Tagesgeld</div><div class="fdt">05.08.2026</div></div><div class="frag locked"><div class="ft"><span class="fa">−1.089,26 €</span></div><div class="fd">Miete August</div><div class="fdt">01.08.2026</div></div></div><div class="cap" style="margin-top:10px">heute · opacity .72 / .45 / .22, Betrag rot bei jedem Abgang</div></div>
+  <div><div class="stack" style="height:auto"><div class="frag"><div class="ft"><span class="fa">−36,04 €</span></div><div class="fd">Mainova AG · Abschlag Strom</div><div class="fdt">14.08.2026</div></div><div class="frag transfer"><div class="ft"><span class="fa">−500,00 €</span><span class="fb">Transfer</span></div><div class="fd">Umbuchung Tagesgeld</div><div class="fdt">05.08.2026</div></div><div class="frag locked"><div class="ft"><span class="fa">−1.089,26 €</span></div><div class="fd">Miete August · zugeordnet</div><div class="fdt">01.08.2026</div></div></div><div class="cap" style="margin-top:10px">v3 · Fläche, Textstufen, Kontur</div></div>
+  <div class="cap" style="width:300px"><b>Drei Zustände, drei Formen</b><b style="display:inline;text-transform:none;letter-spacing:0;font-size:11.5px">Arbeitsfähig</b> — Fläche, Betrag primär, ziehbar. <b style="display:inline;text-transform:none;letter-spacing:0;font-size:11.5px">Transfer</b> — Fläche, Text sekundär, Etikett; nicht ziehbar, aber anschaubar. <b style="display:inline;text-transform:none;letter-spacing:0;font-size:11.5px">Zugeordnet</b> — nur Kontur, Text tertiär, „zugeordnet“ steht dabei. Der Übertrag-Schalter: 9 → 14 px Kästchen, neutral gefüllt.</div>
+</div>
+
+<h2>Portal · Zustände</h2>
+<div class="pair">
+  <div><div class="portal drag"><div class="pi"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pl">Loslassen zum Importieren</div></div><div class="cap" style="margin-top:8px"><b>Drag over</b>Türkis — hier ist Türkis „bereit / positiv“.</div></div>
+  <div><div class="portal ok"><div class="pi"><svg width="14" height="14" viewBox="0 0 9 9" fill="none"><path d="M2 4.5L3.8 6.5L7 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pl">77 Umsätze importiert</div><div class="ps">12 bereits bekannt · 3 Transfers</div></div><div class="cap" style="margin-top:8px"><b>Erfolg</b>Kontur wird durchgezogen — aus „hier fehlt etwas“ wird „hier ist etwas“.</div></div>
+  <div><div class="portal err"><div class="pi"><svg width="14" height="14" viewBox="0 0 9 9" fill="none"><path d="M4.5 2v3M4.5 6.5v.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div><div class="pl">Format nicht erkannt</div><div class="ps">Erwartet: DKB, DKB Visa oder Cortal Consors</div></div><div class="cap" style="margin-top:8px"><b>Fehler</b>Rot — ein echter Fehler, kein Zustand. Genau hierfür ist Rot reserviert.</div></div>
+</div>
+
+<h2>Light Mode</h2>
+<div class="pane t-light" style="display:inline-block">
+  <div class="pair">
+    <div class="portal" style="width:180px"><div class="pi"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pl">CSV hier ablegen</div><div class="ps">DKB Giro · DKB Visa · Cortal Consors</div></div>
+    <div class="slot" style="width:136px;flex:none"><div class="plus">+</div><div class="sl">Neue Karte</div></div>
+    <div><div class="stack" style="height:auto"><div class="frag"><div class="ft"><span class="fa">−36,04 €</span></div><div class="fd">Mainova AG · Abschlag Strom</div><div class="fs">KI-Vorschlag: Strom – Mainova</div><div class="fdt">14.08.2026</div></div><div class="frag locked"><div class="ft"><span class="fa">−1.089,26 €</span></div><div class="fd">Miete August · zugeordnet</div><div class="fdt">01.08.2026</div></div></div></div>
+  </div>
+</div>
+
+<div class="note"><h3>Der Betrag eines Abgangs ist nicht mehr rot <span class="badge">Beschluss 05.09. · Option B</span></h3>Heute ist jeder negative Kontoumsatz rot, jeder positive türkis. In einer Rohmasse aus 77 Umsätzen sind ~70 Abgänge — die Liste ist ein roter Block, und Rot verliert dort seine letzte Bedeutung. v3: Abgänge in Primärweiß mit Minuszeichen, Zugänge türkis. Das Vorzeichen trägt die Richtung, die Farbe nur die Ausnahme (Geld kam herein). Dasselbe Prinzip wie die Ordner-Kachel: Vorzeichen ja, Urteil nein. <b>Gilt überall:</b> Rohmasse, Schaufenster, Ordner-Kachel — ein Kontoumsatz wird nirgends rot. Entschieden am 05.09.2026 (Option B von drei), damit Rot im ganzen System genau eine Bedeutung behält.</div>
+<div class="note"><h3>Zugeordnete Fragmente: Kontur statt 22 % Deckkraft <span class="badge">Beschluss 05.09. · §8 wird angepasst</span></h3>Die Deckkraft-Werte .22 / .45 waren in §8 als Invariante festgeschrieben, weil sie sich in RM-2 gegen versehentliche Änderung wehren sollten. v3 ersetzt den <em>Mechanismus</em>, nicht die <em>Aussage</em>: Zugeordnet ist weiterhin die leiseste Stufe, Transfer die mittlere, arbeitsfähig die volle. Nur läuft die Abstufung jetzt über Fläche und Textstufe — wie überall in v3 — statt über eine Container-Opacity, die die Fehlerklasse aus Regel 3 wieder einführte. Das Wort „zugeordnet“ tritt hinzu, weil eine Kontur allein nicht sagt, warum.<br><br><b>Neuer Wortlaut für §8:</b> „Zugeordnete Fragmente haben keine Fläche (Kontur, Tertiärtext), Transfer-Fragmente volle Fläche mit Sekundärtext, arbeitsfähige Fragmente volle Fläche mit Primärtext. Diese drei Stufen sind invariant; ihre Mittel sind Fläche und Textstufe, nicht Deckkraft.“</div>
+<div class="note"><h3>KI-Vorschlag-Zeile</h3>Bleibt ein Halbsatz ohne Kästchen (Record 24.08.2026) — 9 → 11 px, Tertiär. Die sechs Badge-Farben bleiben ungenutzt.</div>
+</body>
+</html>

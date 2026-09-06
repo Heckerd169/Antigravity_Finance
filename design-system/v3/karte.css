@@ -1,0 +1,38 @@
+/* Karte v3 — Variante A (Statuspunkt). Geometrie 1:1 wie cards.module.css: 136×≥170, Padding 14/13/12. */
+.card{width:136px;flex:0 0 136px;min-height:170px;border-radius:var(--radius-card);padding:14px 13px 12px;border:1px solid var(--border-subtle);background:var(--bg-card);position:relative;color:var(--text-primary);transition:transform .15s,background .2s}
+.card:hover{transform:translateY(-2px);background:var(--bg-card-hover)}
+.card.budget{padding-bottom:18px}
+.card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card .type{font-size:var(--typo-label-size);font-weight:var(--typo-label-weight);letter-spacing:var(--typo-label-tracking);text-transform:uppercase;color:var(--text-tertiary)}
+.card .dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--text-tertiary)}
+.card .dot svg{display:block}
+.card .name{font-size:var(--typo-card-name-size);font-weight:var(--typo-card-name-weight);letter-spacing:var(--typo-card-name-tracking);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary)}
+.card .amount{font-size:var(--typo-card-amount-size);font-weight:var(--typo-card-amount-weight);letter-spacing:var(--typo-card-amount-tracking);line-height:1;margin-bottom:3px;color:var(--text-secondary)}
+.card .household{font-size:11px;line-height:12px;min-height:12px;white-space:nowrap;color:var(--text-tertiary);margin-bottom:6px}
+.card .row{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.card .state{font-size:11px;font-weight:600;letter-spacing:.2px;color:var(--text-secondary)}
+.card .due{font-size:11px;font-weight:500;color:var(--text-tertiary);white-space:nowrap}
+.card .rest{font-size:11px;font-weight:500;margin-top:3px;color:var(--text-secondary)}
+.card .meta{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;font-weight:500;color:var(--text-tertiary)}
+.card .md{width:6px;height:6px;border-radius:50%;background:var(--text-tertiary)}
+.card .md.gem{background:var(--color-blue-dot)}
+.card .bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--progress-track);border-radius:0 0 var(--radius-card) var(--radius-card);overflow:hidden}
+.card .bar i{display:block;height:100%;background:var(--progress-neutral)}
+/* Erledigt: Türkis nur in Punkt, Statuswort und Balken */
+.card[data-state="paid"] .dot,.card[data-state="received"] .dot,.card[data-state="done"] .dot{background:var(--color-teal);border-color:var(--color-teal)}
+.card[data-state="paid"] .state,.card[data-state="received"] .state,.card[data-state="done"] .state{color:var(--color-teal)}
+.card[data-state="paid"] .amount,.card[data-state="received"] .amount,.card[data-state="done"] .amount{color:var(--text-primary)}
+.card[data-state="done"] .bar i{background:var(--color-teal)}
+.card[data-state="done"] .rest{color:var(--color-teal)}
+/* Überschritten: der einzige rote Zustand */
+.card[data-state="over"] .dot{background:var(--color-red);border-color:var(--color-red)}
+.card[data-state="over"] .state,.card[data-state="over"] .amount,.card[data-state="over"] .rest{color:var(--color-red)}
+.card[data-state="over"] .amount{color:var(--color-red)}
+.card[data-state="over"] .bar i,.card.over-accepted .bar i{background:var(--color-red)}
+.card.over-accepted .rest{color:var(--color-red)}
+/* Forecast: Kontur statt Fläche */
+.card[data-state="ghost"]{background:var(--bg-card-ghost);border-color:var(--border-ghost)}
+.card[data-state="ghost"]:hover{transform:none;background:var(--bg-card-ghost)}
+.card[data-state="ghost"] .name{color:var(--text-secondary)}
+.card[data-state="ghost"] .amount,.card[data-state="ghost"] .state{color:var(--text-tertiary)}
+.card[data-state="ghost"] .dot{border-style:dashed;border-color:var(--text-quaternary)}

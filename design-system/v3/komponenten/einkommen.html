@@ -1,0 +1,133 @@
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x1150" name="Einkommen & Konsequenz" subtitle="Gehalts-Popup (Eingabe) und Konsequenz-Anzeige (Ergebnis), Dark + Light" -->
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>v3 · Einkommen — Antigravity Finance</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../doc.css">
+<style>
+/* Dialog — 400 px 1:1 aus income-split.module.css (.dialog), §10 */
+.dlg{width:400px;max-width:100%;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 60px -10px rgba(0,0,0,.45);color:var(--text-primary)}
+.hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ttl{margin:0;padding:0;border:none;font-size:17px;font-weight:600;letter-spacing:-.3px;text-transform:none;color:var(--text-primary)}
+.mon{font-size:12px;font-weight:500;color:var(--text-tertiary)}
+.sec{display:flex;flex-direction:column;gap:8px}
+.lab{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary)}
+.tcs{display:flex;gap:6px}
+.tc{flex:1;height:40px;border-radius:var(--radius-control);border:1px solid var(--border-subtle);background:transparent;color:var(--text-secondary);font:inherit;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tc.on{background:var(--teal-fill);border-color:var(--color-teal);color:var(--color-teal)}
+.sv{font-size:28px;font-weight:400;letter-spacing:-.8px;line-height:1}
+.track{position:relative;height:4px;border-radius:2px;background:var(--neutral-fill);margin:10px 0 4px}
+.track i{position:absolute;left:0;top:0;height:100%;border-radius:2px;background:var(--color-teal);width:31%}
+.track b{position:absolute;top:50%;left:31%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.08)}
+.meta{font-size:12px;color:var(--text-tertiary)}
+.prev{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:12px;background:var(--neutral-fill)}
+.prev .l1{font-size:14px;font-weight:600}
+.prev .l2{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.inp{height:44px;padding:0 14px;border-radius:var(--radius-control);border:1px solid var(--border-subtle);background:var(--neutral-fill);font-size:17px;color:var(--text-primary);font-variant-numeric:tabular-nums;display:flex;align-items:center}
+.inp.manual{border-color:var(--text-tertiary)}
+.hint{font-size:12px;color:var(--text-tertiary)}
+.hint.on{color:var(--text-secondary)}
+.asg{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--border-subtle);border-radius:12px}
+.asg .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.asg .tx{font-size:14px;font-variant-numeric:tabular-nums}
+.asg .ht{font-size:12px;line-height:1.5;color:var(--text-tertiary)}
+.inh{font-size:12px;line-height:1.5;color:var(--text-secondary);padding:10px 14px;border-radius:12px;background:var(--neutral-fill)}
+.past{font-size:13px;font-weight:500;color:var(--color-gold);padding:10px 14px;border-radius:12px;background:var(--neutral-fill)}
+.acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.bp{height:44px;padding:0 20px;border-radius:var(--radius-control);border:none;background:var(--color-teal);color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+.bp:disabled{background:var(--neutral-fill);color:var(--text-tertiary)}
+.bs{height:44px;padding:0 18px;border-radius:var(--radius-control);border:none;background:var(--neutral-fill);color:var(--text-primary);font:inherit;font-size:15px;font-weight:500;cursor:pointer}
+.bs.sm{height:36px;padding:0 14px;font-size:14px}
+/* Konsequenz */
+.csub{font-size:12px;color:var(--text-secondary);margin-top:-12px}
+.chero{font-size:34px;font-weight:400;letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;margin-bottom:-8px}
+.up{color:var(--color-red)}.dn{color:var(--color-teal)}
+.ccap{margin:0;font-size:13px;line-height:1.55;color:var(--text-secondary)}
+.ccap b{color:var(--text-primary);font-weight:600}
+.tbl{display:flex;flex-direction:column;border-top:1px solid var(--border-subtle);padding-top:10px}
+.th{display:flex;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);padding-bottom:8px;border-bottom:1px solid var(--border-subtle);margin-bottom:2px}
+.tr{display:flex;font-size:13px;padding:7px 0;align-items:baseline}
+.nm{flex:1;min-width:0;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
+.col{width:72px;text-align:right;font-variant-numeric:tabular-nums}
+.old{color:var(--text-tertiary)}.new{color:var(--text-primary)}
+.sum{border-top:1px solid var(--border-subtle);margin-top:6px;padding-top:10px;font-weight:600}
+.sum .nm{color:var(--text-primary)}
+.pair{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.cap{max-width:300px}
+</style>
+</head>
+<body>
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="../foundations/farben.html">Farben</a><a href="../foundations/typografie.html">Typografie</a><a href="karten.html">Karten</a><a href="kategorien.html">Kategorien</a><a href="ring.html">Ring</a><a href="welle.html">Welle</a><a href="verlauf.html">Verlauf</a><a href="header.html">Header</a><a href="overlays.html">Overlays</a><a href="zone.html">Interaktionszone</a><a class="here" href="einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
+<h1>Einkommen &amp; Konsequenz</h1>
+<p class="lede">Ein Popup, zwei Zustände: erst Eingabe (Steuerklasse, Jahresbrutto, Netto), nach dem Übernehmen die Konsequenz für den Split. 400 px in beiden Zuständen — unverändert aus §10. v3 bringt Regler, Felder und Knöpfe auf Apple-Maße und die Tabelle auf lesbare Größen.</p>
+<p class="src">Maße aus <code>income-split.module.css</code>, Wortlaute und Zustände aus <code>income-split/index.tsx</code> · Regeln aus Record 06./07.08.2026 (PA-1, GE-1) unverändert</p>
+
+<h2>Zustand 1 · Eingabe</h2>
+<div class="pair">
+  <div class="dlg">
+    <div class="hd"><h2 class="ttl">Ich — Jahresbrutto</h2><span class="mon">August 2026</span></div>
+    <div class="sec"><span class="lab">Steuerklasse</span><div class="tcs"><button class="tc on">1</button><button class="tc">2</button><button class="tc">3</button><button class="tc">4</button><button class="tc">5</button><button class="tc">6</button></div></div>
+    <div class="sec"><span class="lab">Jahresbrutto</span><span class="sv">60.000 €</span><div class="track"><i></i><b></b></div><span class="meta">Schätzung: 3.412,18 €</span></div>
+    <div class="prev"><span class="l1">Ich 57 % · Partner 43 %</span><span class="l2">Beispiel: gemeinsame Fixkosten 1.200 € → mein Anteil 684 € (nur illustrativ)</span></div>
+    <div class="sec"><span class="lab">Monatliches Netto — Pflichtfeld</span><div class="inp manual">3.450</div><span class="hint on">Manuell angepasst</span></div>
+    <div class="asg"><span class="lab">Zugeordnete Zahlung</span><div class="row"><span class="tx">28.07. · 3.487,20 €</span><button class="bs sm">Lösen</button></div><span class="ht">Dieser Monat rechnet mit dem überwiesenen Betrag. Nach dem Lösen gilt wieder der Plan.</span></div>
+    <div class="inh">Gilt ab August 2026 für alle Folgemonate bis zur nächsten Änderung.</div>
+    <div class="acts"><button class="bs">Abbrechen</button><button class="bp">Übernehmen</button></div>
+  </div>
+  <div class="cap"><b>Was sich ändert</b>Regler: nativer <code>accent-color</code> → eigener Track (4 px) mit 28-px-Griff — Apples UISlider-Maß, greifbar auf Touch. Bruttowert 22 / 200 → 28 / 400. Steuerklassen 40 px hoch, gewählte in Türkis-Fläche (Auswahl, wie „Wiederholung“). Netto-Feld 44 px. „Manuell angepasst“ war türkis — jetzt Sekundär: Eine Handeingabe ist kein Erfolg, nur ein Fakt. Vererbungs-Hinweis ohne türkise Kante — er informiert, er bestätigt nichts. „Lösen“ neutral (kein Rot: Lösen ist rückgängig machbar).</div>
+</div>
+
+<h2>Zustand 2 · Konsequenz</h2>
+<div class="pair">
+  <div class="dlg">
+    <div class="hd"><h2 class="ttl">Dein Anteil steigt</h2></div>
+    <span class="csub">Split 52,4 % → 57,2 % · ab August 2026</span>
+    <div class="chero up">+91,39 €</div>
+    <p class="ccap">mehr pro Monat für <b>vier gemeinsame Posten</b>. Die Sparrate sinkt um denselben Betrag.</p>
+    <div class="tbl">
+      <div class="th"><div class="nm">Posten</div><div class="col">Bisher</div><div class="col">Künftig</div><div class="col">Diff.</div></div>
+      <div class="tr"><div class="nm">Miete</div><div class="col old">997,70</div><div class="col new">1.089,26</div><div class="col up">+91,56</div></div>
+      <div class="tr"><div class="nm">Strom – Mainova</div><div class="col old">33,01</div><div class="col new">36,04</div><div class="col up">+3,03</div></div>
+      <div class="tr"><div class="nm">Internet – Vodafone</div><div class="col old">20,95</div><div class="col new">22,87</div><div class="col up">+1,92</div></div>
+      <div class="tr"><div class="nm">Kindergeld</div><div class="col old">131,00</div><div class="col new">143,00</div><div class="col dn">−5,12</div></div>
+      <div class="tr sum"><div class="nm">Zusammen</div><div class="col old">1.182,66</div><div class="col new">1.291,17</div><div class="col up">+91,39</div></div>
+    </div>
+    <div class="acts"><button class="bs">Schließen</button></div>
+  </div>
+  <div class="dlg">
+    <div class="hd"><h2 class="ttl">Dein Anteil sinkt</h2></div>
+    <span class="csub">Split 57,2 % → 50,0 % · ab September 2026</span>
+    <div class="chero dn">−137,04 €</div>
+    <p class="ccap">weniger pro Monat für <b>drei gemeinsame Posten</b>. Die Sparrate steigt um denselben Betrag.</p>
+    <div class="tbl">
+      <div class="th"><div class="nm">Posten</div><div class="col">Bisher</div><div class="col">Künftig</div><div class="col">Diff.</div></div>
+      <div class="tr"><div class="nm">Miete</div><div class="col old">1.089,26</div><div class="col new">952,00</div><div class="col dn">−137,26</div></div>
+      <div class="tr"><div class="nm">Strom – Mainova</div><div class="col old">36,04</div><div class="col new">31,50</div><div class="col dn">−4,54</div></div>
+      <div class="tr"><div class="nm">Kindergeld</div><div class="col old">143,00</div><div class="col new">125,00</div><div class="col up">+4,76</div></div>
+      <div class="tr sum"><div class="nm">Zusammen</div><div class="col old">1.268,30</div><div class="col new">1.108,50</div><div class="col dn">−137,04</div></div>
+    </div>
+    <div class="acts"><button class="bs">Schließen</button></div>
+  </div>
+</div>
+<div class="cap" style="margin-top:12px;max-width:72ch"><b>Rot und Türkis sind hier richtig</b>Die Held-Zahl ist eine Wirkung auf die Sparrate: Sie sinkt (rot) oder steigt (türkis). Das ist keine Zustandsfarbe, sondern dieselbe Bedeutung wie im Ring und im Toast. Unverändert aus PA-1. Neu: Held 30 / 200 → 34 / 400, Tabelle 11,5 → 13 px, Spaltenköpfe 8,5 → 11 px, Spalten 68 → 72 px. Ein Knopf, wie §10 verlangt.</div>
+
+<h2>Light Mode</h2>
+<div class="pane t-light" style="display:inline-block">
+  <div class="pair">
+    <div class="dlg" style="gap:14px">
+      <div class="hd"><h2 class="ttl">Partner — Jahresbrutto</h2><span class="mon">August 2026</span></div>
+      <div class="sec"><span class="lab">Jahresbrutto</span><span class="sv">45.000 €</span><div class="track"><i style="width:19%"></i><b style="left:19%"></b></div><span class="meta">Schätzung: 2.610,40 €</span></div>
+      <div class="sec"><span class="lab">Monatliches Netto — Pflichtfeld</span><div class="inp">2.610,40</div><span class="hint">Vorschlag basiert auf Steuerklasse 1 · Änderbar</span></div>
+      <div class="past">Vergangener Monat — Werte sind eingefroren.</div>
+      <div class="acts"><button class="bs">Abbrechen</button><button class="bp" disabled>Übernehmen</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="note"><h3>Warum der Regler einen echten Griff bekommt</h3><code>accent-color</code> überlässt dem Browser die Form: In Safari ist der Griff 20 px, in Chrome ein anderer, in Firefox eckig. Für einen Wert, den man auf 100 € genau einstellen soll, ist das zu zufällig. v3 legt Track (4 px, neutral, türkise Füllung bis zum Wert) und Griff (28 px, weiß, weicher Schatten) fest — das Apple-Maß, auf jedem Gerät gleich. Das ist der einzige Ort in v3, an dem ein natives Steuerelement durch ein eigenes ersetzt wird; der Grund ist die Präzision, nicht die Optik.</div>
+<div class="note"><h3>Drei Dinge, die nicht mehr türkis sind</h3>„Manuell angepasst“, der Vererbungs-Hinweis („Gilt ab …“) und der Rand des Netto-Felds bei Handeingabe trugen Türkis. Keines davon ist „erledigt“ oder „positiv“ — es sind Sachhinweise. In v3 stehen sie in Sekundär auf neutraler Fläche. Türkis bleibt im Popup für genau zwei Dinge: die ausgewählte Steuerklasse (Auswahl) und den Übernehmen-Knopf (die eine richtige Aktion).</div>
+<div class="note"><h3>Gold für „Vergangener Monat“</h3>Bleibt Gold — es ist ein Hinweis auf Zeit (wie die Vorjahreslinie und die Ausreißer-Zeile), kein Fehler. Neu: ohne goldenen Rand, auf <code>--neutral-fill</code>; der Text trägt die Farbe allein.</div>
+</body>
+</html>
