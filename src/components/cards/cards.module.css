@@ -201,6 +201,25 @@
   stroke: var(--on-accent);
 }
 
+/* Die Zustaende „noch nicht" tragen einen LEEREN Kreis — der Ring allein ist
+ * das Zeichen. Ihre vier SVG (roter Punkt bei Offen/Laufend, weisser Punkt bei
+ * Forecast, tuerkiser Ring bei Erwartet, weisser Ring bei Einnahmen-Forecast)
+ * sind Reste des alten Systems und werden ausgeblendet.
+ *
+ * WARUM DAS HIER STEHT UND NICHT IN card.tsx: Bedingung 2 des Sprints laesst in
+ * .tsx nur Klassennamen zu. Ausblenden ist die vollstaendige Loesung, weil die
+ * Glyphen dekorativ sind (aria-hidden) — der Zustand steht im Ring und im Wort.
+ *
+ * WIE ER AUFGEFALLEN IST: gar nicht. Die Prueflaufstrecke war 183/183 gruen,
+ * waehrend „Offen" und „Laufend" einen ROTEN Punkt im grauen Ring trugen —
+ * also genau die Aussage, die Regel 2 abschaffen soll. Gefunden hat es erst der
+ * Blick auf das Bild. Der Waechter dazu: tests/e2e/karten-zustandsfarbe.spec.ts */
+.iconOpen svg,
+.iconExpected svg,
+.iconGhost svg {
+  display: none;
+}
+
 /* Kartenname */
 .cardName {
   font-size: 13px;
