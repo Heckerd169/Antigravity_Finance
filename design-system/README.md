@@ -17,12 +17,23 @@ beschreiben. Eine Seite hier zu ergänzen beantwortet mehr als drei Absätze Tex
 
 ```
 design-system/
-├── README.md            ← diese Datei
-├── SYNC.md              ← wie die Seiten zu claude.ai/design kommen
-├── foundations/         ← Farben, Typografie
-├── komponenten/         ← Ring, Karten, Welle — der IST-Zustand
-└── entwuerfe/           ← offene Gestaltungsfragen, je genau drei Varianten
+├── README.md                  ← diese Datei
+├── SYNC.md                    ← wie die Seiten zu claude.ai/design kommen
+├── styles.css                 ← DIE TOKENS. Jede Seite bindet sie ein
+├── doc.css · karte.css        ← Chrome der Seiten, Kartenbauteil
+├── 00-was-aendert-sich.html   ← die sieben Regeln von v3, mit Vorher/Nachher
+├── uebergabe.html             ← Zuordnung alt → neu, Selektor für Selektor
+├── foundations/               ← Farben, Typografie
+├── komponenten/               ← neun Seiten — der IST-Zustand
+└── entwuerfe/                 ← ältere Einzelentwürfe
 ```
+
+**Seit v3-01 (06.09.2026) sind alle sieben sichtbaren Komponenten der Design-Doku
+bebildert:** Ring (§5) · Header (§6) · Karten (§7) · Interaktionszone (§8) · Welle
+(§9) · Einkommen (§10) · Overlays und Schaufenster (§11). Dazu Kategorien und
+Verlauf als eigene Seiten. **Vorher waren es drei** — das war Befund `RD-1`, und er
+ist der Grund, warum das Re-Design mit dieser Arbeit anfangen musste und nicht mit
+dem Gestalten.
 
 ## Woher die Werte kommen
 
@@ -31,11 +42,20 @@ Jede Farbe, jede Schriftgröße und jede Geometrie ist aus dem laufenden Code
 
 | Seite | Quelle im Repository |
 |---|---|
-| Farben | `src/styles/tokens.css` · Design-Doku §3 |
-| Typografie | `src/styles/tokens.css` · Design-Doku §3 |
-| Karten | `src/components/cards/cards.module.css` + `card.tsx` · Design-Doku §7 |
+| Farben · Typografie | `src/styles/tokens.css` · Design-Doku §3 |
+| Karten · Kategorien | `src/components/cards/cards.module.css` + `card.tsx` · `interaction-zone.module.css` · Design-Doku §7, §8 |
 | Singularity Ring | `src/components/singularity-ring/` · Design-Doku §5 |
-| Jahres-Welle | `src/components/welle/` · Design-Doku §9 |
+| Header | `src/components/header-timeline/` · Design-Doku §6 |
+| Jahres-Welle · Verlauf | `src/components/welle/` · `verlauf.ts` · Design-Doku §9, §7 |
+| Interaktionszone | `src/components/interaction-zone/` · Design-Doku §8 |
+| Overlays · Schaufenster | `cards.module.css` · `interaction-zone.module.css` · Design-Doku §11 |
+| Einkommen | `src/components/income-split/` · Design-Doku §10 |
+
+> **`styles.css` ist eine Abschrift, keine Verbindung.** Die Seiten binden sie ein,
+> statt Werte hart hinzuschreiben — das war der Kern von `RD-2` und ist damit halb
+> behoben. Die andere Hälfte steht noch: Ändert jemand ein Token in
+> `src/styles/tokens.css`, zeigen diese Seiten still den alten Stand. **Genau das ist
+> in v3-01 an anderer Stelle passiert**, siehe `SYNC.md`.
 
 Bei einem Widerspruch zwischen diesen Seiten und der Design-Doku gilt **die
 Design-Doku**. Sie ist die Wahrheitsquelle, diese Seiten sind ihre Sichtbarmachung.

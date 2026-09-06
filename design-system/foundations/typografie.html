@@ -1,103 +1,49 @@
-<!-- @dsCard group="Grundlagen" -->
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1000x900" name="Typografie" subtitle="Sieben Rollen, Mindestgröße 11 px" -->
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Typografie — Antigravity Finance</title>
+<title>v3 · Typografie — Antigravity Finance</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../doc.css">
 <style>
-  :root {
-    --bg-primary:#0D0D0F; --bg-card:#141416; --color-teal:#3ECFAF;
-    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
-    --border-subtle:rgba(255,255,255,.07);
-  }
-  * { box-sizing:border-box; }
-  body {
-    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
-    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
-    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
-  }
-  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
-  .lede { color:var(--text-muted); font-size:13px; max-width:66ch; line-height:1.6; margin:0 0 12px; }
-  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
-  .row { display:grid; grid-template-columns:1fr 210px; gap:28px; align-items:center;
-         padding:26px 0; border-bottom:1px solid var(--border-subtle); }
-  .row:last-of-type { border-bottom:none; }
-  .spec { font-size:10.5px; color:var(--text-ghost); line-height:1.75;
-          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-  .spec b { color:var(--text-muted); font-weight:400; }
-  .role { font-size:9px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase;
-          color:var(--text-ghost); margin-bottom:10px; }
-
-  .s-ring   { font-size:34px; font-weight:200; letter-spacing:-1.8px; }
-  .s-month  { font-size:17px; font-weight:600; letter-spacing:-.5px; }
-  .s-cname  { font-size:13px; font-weight:500; letter-spacing:-.2px; }
-  .s-camt   { font-size:22px; font-weight:200; letter-spacing:-1.2px; }
-  .s-flank  { font-size:13px; font-weight:500; letter-spacing:-.2px; color:var(--text-muted); }
-  .s-lsmall { font-size:9px;  font-weight:600; letter-spacing:1.1px; text-transform:uppercase;
-              color:var(--text-ghost); }
-  .s-lmeta  { font-size:10px; font-weight:500; letter-spacing:.6px; color:var(--text-muted); }
-
-  .note { margin-top:34px; padding:14px 16px; border-left:2px solid rgba(62,207,175,.22);
-          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
-          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:78ch; }
-  .note b { color:var(--text-primary); font-weight:500; }
-  .demo { display:flex; gap:34px; margin-top:14px; }
-  .demo div { font-size:22px; font-weight:200; letter-spacing:-1.2px; }
-  .demo small { display:block; font-size:9px; letter-spacing:1px; text-transform:uppercase;
-                color:var(--text-ghost); margin-top:6px; font-weight:600; }
+.row{display:grid;grid-template-columns:minmax(0,1fr) 190px 190px;gap:28px;align-items:center;padding:24px 0;border-bottom:1px solid var(--border-subtle)}
+.row:last-of-type{border-bottom:none}
+.spec{font-size:11.5px;line-height:1.75;font-family:ui-monospace,Menlo,monospace;color:var(--text-tertiary)}
+.spec b{color:var(--text-secondary);font-weight:400}
+.spec.alt{color:var(--text-quaternary)}.spec.alt b{color:var(--text-tertiary)}
+.role{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:10px}
+.hd{display:grid;grid-template-columns:minmax(0,1fr) 190px 190px;gap:28px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary);padding-bottom:6px}
+.s-ring{font-size:var(--typo-ring-size);font-weight:var(--typo-ring-weight);letter-spacing:var(--typo-ring-tracking)}
+.s-month{font-size:17px;font-weight:600;letter-spacing:-.4px}
+.s-flank{font-size:13px;font-weight:500;letter-spacing:-.2px;color:var(--text-secondary)}
+.s-cname{font-size:var(--typo-card-name-size);font-weight:500;letter-spacing:-.2px}
+.s-camt{font-size:22px;font-weight:400;letter-spacing:-.6px}
+.s-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-tertiary)}
+.s-cap{font-size:12px;font-weight:400;color:var(--text-secondary)}
+.demo{display:flex;gap:34px;margin-top:14px;align-items:flex-end}
+.demo div{font-size:22px;letter-spacing:-.6px}
+.demo small{display:block;font-size:11px;color:var(--text-tertiary);margin-top:6px;font-weight:500}
+@media (max-width:820px){.row,.hd{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a href="farben.html">Farben</a><a class="here" href="typografie.html">Typografie</a><a href="../komponenten/karten.html">Karten</a><a href="../komponenten/kategorien.html">Kategorien</a><a href="../komponenten/ring.html">Ring</a><a href="../komponenten/welle.html">Welle</a><a href="../komponenten/verlauf.html">Verlauf</a><a href="../komponenten/header.html">Header</a><a href="../komponenten/overlays.html">Overlays</a><a href="../komponenten/zone.html">Interaktionszone</a><a href="../komponenten/einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
 <h1>Typografie</h1>
-<p class="lede">
-  Ein System-Font-Stack, kein Web-Font — bewusste Entscheidung aus Sprint 0.
-  Die Hierarchie entsteht ausschließlich über Größe, Strichstärke und Laufweite.
-  Große Zahlen sind dünn (Gewicht 200) und eng gesetzt, kleine Labels sind fett
-  (600) und weit gesperrt. Das hält die Sparrate als größte Zahl ruhig, statt sie
-  zu brüllen.
-</p>
-<p class="src">Quelle: <code>src/styles/tokens.css</code> · Design-Doku §3 — hier in Originalgröße gesetzt</p>
+<p class="lede">System-Font bleibt — auf Apple-Geräten ist das SF Pro, und SF Pro <em>ist</em> die Apple-Ästhetik. Neu: nichts unter 11 px, Gewichte zwischen 300 und 600, Laufweite folgt der Größe.</p>
+<p class="src">Quelle: <code>styles.css</code> (v3) · Vergleichswerte aus <code>src/styles/tokens.css</code></p>
 
-<div class="row">
-  <div><div class="role">Primärzahl · Ring</div><div class="s-ring">2.910 €</div></div>
-  <div class="spec"><b>34px</b> / Gewicht <b>200</b><br>Laufweite <b>−1,8px</b><br>tabular-nums</div>
-</div>
-<div class="row">
-  <div><div class="role">Aktiver Monat · Header</div><div class="s-month">März 2026</div></div>
-  <div class="spec"><b>17px</b> / Gewicht <b>600</b><br>Laufweite <b>−0,5px</b></div>
-</div>
-<div class="row">
-  <div><div class="role">Flanken-Monat · Header</div><div class="s-flank">Februar</div></div>
-  <div class="spec"><b>13px</b> / Gewicht <b>500</b><br>Laufweite <b>−0,2px</b></div>
-</div>
-<div class="row">
-  <div><div class="role">Kartenname</div><div class="s-cname">Miete</div></div>
-  <div class="spec"><b>13px</b> / Gewicht <b>500</b><br>Laufweite <b>−0,2px</b><br>eine Zeile, Ellipsis</div>
-</div>
-<div class="row">
-  <div><div class="role">Kartenbetrag</div><div class="s-camt">1.904,00 €</div></div>
-  <div class="spec"><b>22px</b> / Gewicht <b>200</b><br>Laufweite <b>−1,2px</b><br>tabular-nums</div>
-</div>
-<div class="row">
-  <div><div class="role">Label klein · Typ und Sublabel</div><div class="s-lsmall">Fixkosten · Sparrate</div></div>
-  <div class="spec"><b>9px</b> / Gewicht <b>600</b><br>Laufweite <b>1,1px</b><br>Versalien</div>
-</div>
-<div class="row">
-  <div><div class="role">Label Meta · Attribution und Status</div><div class="s-lmeta">Gemeinsam · Bezahlt</div></div>
-  <div class="spec"><b>10px</b> / Gewicht <b>500</b><br>Laufweite <b>0,6px</b></div>
-</div>
+<div class="hd"><span>Rolle</span><span>v3</span><span>heute</span></div>
+<div class="row"><div><div class="role">Primärzahl · Ring</div><div class="s-ring">2.910 €</div></div><div class="spec"><b>36 px</b> / <b>300</b><br>Laufweite <b>−1,4 px</b></div><div class="spec alt"><b>34 px</b> / <b>200</b><br>−1,8 px</div></div>
+<div class="row"><div><div class="role">Aktiver Monat</div><div class="s-month">März 2026</div></div><div class="spec"><b>17 px</b> / <b>600</b><br>Laufweite <b>−0,4 px</b></div><div class="spec alt"><b>17 px</b> / <b>600</b><br>−0,5 px</div></div>
+<div class="row"><div><div class="role">Flanken-Monat</div><div class="s-flank">Februar</div></div><div class="spec"><b>13 px</b> / <b>500</b><br>Sekundär 60 %</div><div class="spec alt"><b>13 px</b> / <b>500</b><br>38 %</div></div>
+<div class="row"><div><div class="role">Kartenname</div><div class="s-cname">Strom – Mainova</div></div><div class="spec"><b>14 px</b> / <b>500</b><br>Laufweite <b>−0,2 px</b> · Ellipsis</div><div class="spec alt"><b>13 px</b> / <b>500</b></div></div>
+<div class="row"><div><div class="role">Kartenbetrag</div><div class="s-camt">1.904,00 €</div></div><div class="spec"><b>22 px</b> / <b>400</b><br>Laufweite <b>−0,6 px</b></div><div class="spec alt"><b>22 px</b> / <b>200</b><br>−1,2 px</div></div>
+<div class="row"><div><div class="role">Label · Typ, Ring-Unterschrift</div><div class="s-label">Fixkosten · Sparrate</div></div><div class="spec"><b>11 px</b> / <b>600</b><br>Laufweite <b>0,5 px</b> · Versalien</div><div class="spec alt"><b>9 px</b> / <b>600</b><br>1,1 px</div></div>
+<div class="row"><div><div class="role">Caption · Status, Termin, Meta, Restbudget</div><div class="s-cap">Bezahlt · am 1. · Gemeinsam</div></div><div class="spec"><b>11–12 px</b> / <b>500–600</b><br>Groß-/Kleinschreibung</div><div class="spec alt"><b>9–10 px</b> / <b>500</b><br>Versalien, 0,6 px</div></div>
 
-<div class="note">
-  <b>Alle Zahlen laufen mit <code>font-variant-numeric: tabular-nums</code></b> — global
-  auf <code>body</code> gesetzt, nicht pro Komponente. Damit steht jede Ziffer gleich breit,
-  und untereinander stehende Beträge bilden eine saubere Spalte. Bei einer App, deren
-  ganzer Zweck der Vergleich von Zahlen über Monate hinweg ist, ist das kein Detail.
-  <div class="demo">
-    <div>1.904,00 €<small>tabular — Ziffern fluchten</small></div>
-    <div style="font-variant-numeric:normal">1.904,00 €<small style="color:rgba(255,69,58,.55)">proportional — springt</small></div>
-  </div>
-</div>
-
+<div class="note"><h3>Warum das Statuswort nicht mehr in Versalien steht</h3>„BEZAHLT“ in 9 px Versalien mit 0,6 px Sperrung ist ein Etikett. „Bezahlt“ in 11 px ist ein Wort. Versalien lesen sich um etwa 10 % langsamer, weil die Wortform verloren geht — alle Buchstaben sind gleich hoch. Für ein Typ-Label (FIXKOSTEN), das man nicht liest, sondern erkennt, ist das in Ordnung. Für den Zustand, den man wirklich lesen muss, nicht. Apple setzt in Listen fast nie Versalien; die Ausnahme sind Abschnittsköpfe.</div>
+<div class="note"><h3>Warum der Ring dünn bleiben darf und der Betrag nicht</h3><div class="demo"><div style="font-weight:200">1.904,00 €<small>200 — bei 22 px zu dünn</small></div><div style="font-weight:400">1.904,00 €<small>400 — v3</small></div><div style="font-size:36px;font-weight:300;letter-spacing:-1.4px">2.910 €<small>300 bei 36 px — trägt</small></div></div><p style="margin:14px 0 0">Strichstärke wächst nicht mit der Schriftgröße mit. Ein Hairline-Schnitt bei 36 px hat auf Retina ~2 Gerätepixel Strich; bei 22 px nur ~1,2 — der Strich flimmert. Deshalb: je kleiner, desto kräftiger.</p></div>
+<div class="note"><b>Tabular-nums bleibt global.</b> Bei einer App, deren ganzer Zweck der Vergleich von Zahlen ist, kein Detail. Unverändert aus v2.</div>
 </body>
 </html>

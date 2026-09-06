@@ -1,160 +1,81 @@
-<!-- @dsCard group="Grundlagen" -->
+<!-- @dsCard group="v3 · Apple-Redesign" viewport="1200x1100" name="Farben" subtitle="Grundtöne unverändert, Zuweisung und Stufen neu, Dark + Light" -->
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Farben — Antigravity Finance</title>
+<title>v3 · Farben — Antigravity Finance</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../doc.css">
 <style>
-  :root {
-    --bg-primary:#0D0D0F; --bg-card:#141416; --bg-card-open:#160D0D;
-    --bg-card-paid:#0A140E; --bg-card-over:#160A08; --bg-card-ghost:#181818;
-    --color-teal:#3ECFAF; --color-red:#FF453A;
-    --color-gold:rgba(255,200,60,.6); --color-blue-dot:rgba(100,168,240,.38);
-    --text-primary:#fff; --text-muted:rgba(255,255,255,.45); --text-ghost:rgba(255,255,255,.22);
-    --border-subtle:rgba(255,255,255,.07); --border-teal:rgba(62,207,175,.22);
-    --border-red:rgba(255,69,58,.18);
-  }
-  * { box-sizing:border-box; }
-  body {
-    margin:0; padding:48px 40px 72px; background:var(--bg-primary); color:var(--text-primary);
-    font-family:system-ui,-apple-system,"Helvetica Neue",sans-serif;
-    font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
-  }
-  h1 { font-size:26px; font-weight:200; letter-spacing:-1px; margin:0 0 6px; }
-  .lede { color:var(--text-muted); font-size:13px; max-width:66ch; line-height:1.6; margin:0 0 12px; }
-  .src { color:var(--text-ghost); font-size:11px; letter-spacing:.3px; margin:0 0 40px; }
-  h2 { font-size:9px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
-       color:var(--text-ghost); margin:44px 0 16px; padding-bottom:8px;
-       border-bottom:1px solid var(--border-subtle); }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:12px; }
-  .tok { background:var(--bg-card); border:1px solid var(--border-subtle);
-         border-radius:12px; padding:0; overflow:hidden; }
-  .chip { height:76px; display:flex; align-items:flex-end; padding:9px 11px; }
-  .chip.checker {
-    background-image:linear-gradient(45deg,#1a1a1c 25%,transparent 25%,transparent 75%,#1a1a1c 75%),
-                     linear-gradient(45deg,#1a1a1c 25%,transparent 25%,transparent 75%,#1a1a1c 75%);
-    background-size:12px 12px; background-position:0 0,6px 6px; background-color:#0D0D0F;
-  }
-  .chip span { font-size:9px; letter-spacing:.8px; text-transform:uppercase;
-               color:rgba(255,255,255,.5); mix-blend-mode:difference; }
-  .meta { padding:11px 12px 13px; }
-  .name { font-size:11.5px; font-weight:500; letter-spacing:-.1px; margin-bottom:3px;
-          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-  .val  { font-size:10px; color:var(--text-muted); margin-bottom:7px;
-          font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
-  .use  { font-size:10.5px; color:var(--text-ghost); line-height:1.5; }
-  .note { margin-top:18px; padding:14px 16px; border-left:2px solid var(--border-teal);
-          background:rgba(62,207,175,.04); border-radius:0 8px 8px 0;
-          font-size:11.5px; color:var(--text-muted); line-height:1.65; max-width:78ch; }
-  .note b { color:var(--text-primary); font-weight:500; }
-  .hue { display:flex; gap:0; border-radius:10px; overflow:hidden; margin-top:4px; }
-  .hue div { flex:1; height:52px; display:flex; align-items:center; justify-content:center;
-             font-size:9px; letter-spacing:.5px; font-weight:600; }
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.tok{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:14px;overflow:hidden}
+.chip{height:64px;display:flex;align-items:flex-end;padding:8px 10px;border-bottom:1px solid var(--border-subtle)}
+.chip span{font-size:10px;letter-spacing:.5px;color:var(--text-tertiary);font-family:ui-monospace,Menlo,monospace}
+.meta{padding:10px 12px 12px}
+.name{font-size:12px;font-weight:600;font-family:ui-monospace,Menlo,monospace;color:var(--text-primary);margin-bottom:2px}
+.val{font-size:11px;color:var(--text-tertiary);font-family:ui-monospace,Menlo,monospace;margin-bottom:6px}
+.use{font-size:11.5px;color:var(--text-secondary);line-height:1.5}
+.sem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:1000px}
+.sem>div{padding:16px;border-radius:14px;background:var(--bg-card);border:1px solid var(--border-subtle)}
+.sem .sw{width:22px;height:22px;border-radius:50%;margin-bottom:12px;border:1.5px solid var(--text-tertiary)}
+.sem h4{margin:0 0 4px;font-size:13px;font-weight:600}
+.sem p{margin:0;font-size:12px;color:var(--text-secondary);line-height:1.55}
+.sem ul{margin:8px 0 0;padding:0;list-style:none;font-size:11.5px;color:var(--text-tertiary);line-height:1.6}
+@media (max-width:900px){.sem{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-
+<nav class="nav"><a href="../00-was-aendert-sich.html">00 Analyse</a><a class="here" href="farben.html">Farben</a><a href="typografie.html">Typografie</a><a href="../komponenten/karten.html">Karten</a><a href="../komponenten/kategorien.html">Kategorien</a><a href="../komponenten/ring.html">Ring</a><a href="../komponenten/welle.html">Welle</a><a href="../komponenten/verlauf.html">Verlauf</a><a href="../komponenten/header.html">Header</a><a href="../komponenten/overlays.html">Overlays</a><a href="../komponenten/zone.html">Interaktionszone</a><a href="../komponenten/einkommen.html">Einkommen</a><a href="../uebergabe.html">Übergabe</a></nav>
 <h1>Farben</h1>
-<p class="lede">
-  Sechzehn Grundtöne plus sechs Badge-Farben. Die Palette ist bewusst schmal:
-  Türkis heißt „erledigt oder positiv“, Rot heißt „offen oder negativ“, alles andere
-  ist Grauwert. Gold ist ausschließlich Vorjahres-Referenz, Blau ausschließlich
-  Attribution „Gemeinsam“.
-</p>
-<p class="src">Quelle: <code>src/styles/tokens.css</code> · Design-Doku §3 — Werte 1:1, nicht nachgebaut</p>
+<p class="lede">Fünf Farbtöne, wie bisher: Schwarz, Türkis, Rot, Gold, Blau. Geändert ist, <em>wofür</em> sie stehen und in welchen Stufen sie vorkommen. Rot ist jetzt selten. Neutral ist der Normalfall.</p>
+<p class="src">Quelle: <code>styles.css</code> (v3) · abgeleitet aus <code>src/styles/tokens.css</code></p>
 
-<h2>Flächen</h2>
-<div class="grid">
-  <div class="tok"><div class="chip" style="background:#0D0D0F"><span>0D0D0F</span></div>
-    <div class="meta"><div class="name">--bg-primary</div><div class="val">#0D0D0F</div>
-    <div class="use">App-Hintergrund. Die einzige Fläche, die den ganzen Screen füllt.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#141416"><span>141416</span></div>
-    <div class="meta"><div class="name">--bg-card</div><div class="val">#141416</div>
-    <div class="use">Karten-Hintergrund neutral, vor jeder Zustandsfärbung.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#160D0D"><span>160D0D</span></div>
-    <div class="meta"><div class="name">--bg-card-open</div><div class="val">#160D0D</div>
-    <div class="use">Karte offen bzw. laufend. Rot nur als Ahnung, nicht als Alarm.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#0A140E"><span>0A140E</span></div>
-    <div class="meta"><div class="name">--bg-card-paid</div><div class="val">#0A140E</div>
-    <div class="use">Karte bezahlt, erhalten oder abgeschlossen.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#160A08"><span>160A08</span></div>
-    <div class="meta"><div class="name">--bg-card-over</div><div class="val">#160A08</div>
-    <div class="use">Budget überschritten — der einzige Zustand mit spürbarer Wärme.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#181818"><span>181818</span></div>
-    <div class="meta"><div class="name">--bg-card-ghost</div><div class="val">#181818</div>
-    <div class="use">Ghost / Forecast. Farblos, weil noch nichts passiert ist.</div></div></div>
+<h2>Bedeutung · Ein Zustand, eine Farbe</h2>
+<div class="sem">
+  <div><div class="sw"></div><h4>Neutral · „noch nicht“</h4><p>Der Normalzustand. Leerer Kreis, Grau-Stufen.</p><ul><li>Offen</li><li>Laufend</li><li>Erwartet</li></ul></div>
+  <div><div class="sw" style="background:var(--color-teal);border-color:var(--color-teal)"></div><h4>Türkis · „erledigt, positiv“</h4><p>Etwas ist passiert und es ist gut oder neutral.</p><ul><li>Bezahlt · Erhalten · Abgeschlossen</li><li>Sparrate über Plan</li><li>realisierte Welle</li></ul></div>
+  <div><div class="sw" style="background:var(--color-red);border-color:var(--color-red)"></div><h4>Rot · „Abweichung“</h4><p>Nur wenn wirklich etwas nicht stimmt. Nie für „steht noch aus“.</p><ul><li>Überschritten</li><li>Defizit im Ring</li><li>Welle unter Null</li></ul></div>
+  <div><div class="sw" style="background:transparent;border:1.5px dashed var(--text-quaternary)"></div><h4>Kontur · „noch nicht existent“</h4><p>Forecast: keine Fläche, gestrichelter Punkt.</p><ul><li>Forecast-Karten</li><li>Prognose-Welle (grau)</li></ul></div>
 </div>
 
-<h2>Bedeutungsträger</h2>
-<div class="grid">
-  <div class="tok"><div class="chip" style="background:#3ECFAF"><span>3ECFAF</span></div>
-    <div class="meta"><div class="name">--color-teal</div><div class="val">#3ECFAF</div>
-    <div class="use">Positiv, bezahlt, Sparrate im Plan, Einnahmen, realisierter Teil der Welle.</div></div></div>
-  <div class="tok"><div class="chip" style="background:#FF453A"><span>FF453A</span></div>
-    <div class="meta"><div class="name">--color-red</div><div class="val">#FF453A</div>
-    <div class="use">Negativ, offen, Defizit, Kurvenabschnitt unter der Null-Linie.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(255,200,60,.6)"><span>Gold 60 %</span></div>
-    <div class="meta"><div class="name">--color-gold</div><div class="val">rgba(255,200,60,.6)</div>
-    <div class="use">Ausschließlich Vorjahres-Referenz und Ereignisse. Nie Status.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(100,168,240,.38)"><span>Blau 38 %</span></div>
-    <div class="meta"><div class="name">--color-blue-dot</div><div class="val">rgba(100,168,240,.38)</div>
-    <div class="use">Attributions-Punkt „Gemeinsam“. Kommt sonst nirgends vor.</div></div></div>
+<h2>Dark und Light nebeneinander</h2>
+<p class="sub">Gleiche Tokennamen, gleiche Prozentstufen. Türkis und Rot bekommen im Light Mode eine dunklere Stufe desselben Tons, weil <code>#3ECFAF</code> auf Weiß nur 1,9 : 1 Kontrast hätte.</p>
+<div class="two">
+  <div class="pane t-dark"><h4>Dark</h4>
+    <div class="grid">
+      <div class="tok"><div class="chip" style="background:var(--bg-primary)"><span>0D0D0F</span></div><div class="meta"><div class="name">--bg-primary</div><div class="use">App-Hintergrund. Unverändert.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--bg-card)"><span>1C1C1E</span></div><div class="meta"><div class="name">--bg-card</div><div class="use">Alle Karten, alle Zustände. Vorher #141416 — 3 Stufen heller, hebt sich vom Hintergrund ab.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--bg-card-hover)"><span>2C2C2E</span></div><div class="meta"><div class="name">--bg-card-hover</div><div class="use">Hover. Ersetzt die Deckkraft-Änderung.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-teal)"><span style="color:rgba(0,0,0,.6)">3ECFAF</span></div><div class="meta"><div class="name">--color-teal</div><div class="use">Unverändert. Volle Deckkraft statt .45 — Statuswort wird lesbar.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-red)"><span style="color:rgba(255,255,255,.8)">FF453A</span></div><div class="meta"><div class="name">--color-red</div><div class="use">Unverändert. Nur noch Überschritten / Defizit.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-gold)"><span style="color:rgba(0,0,0,.6)">Gold 75 %</span></div><div class="meta"><div class="name">--color-gold</div><div class="use">Vorjahresreferenz. Von 60 auf 75 % — die gestrichelte Linie war zu leise.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-blue-dot)"><span style="color:rgba(0,0,0,.6)">Blau 70 %</span></div><div class="meta"><div class="name">--color-blue-dot</div><div class="use">Punkt „Gemeinsam“. Von 38 auf 70 % — bei 6 px braucht ein Punkt Deckkraft.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-primary)"><span style="color:#000">100 %</span></div><div class="meta"><div class="name">--text-primary</div><div class="use">Erledigte Beträge, Kartennamen, Ring.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-secondary)"><span style="color:#000">60 %</span></div><div class="meta"><div class="name">--text-secondary</div><div class="use">Offene Beträge, Statuswort neutral. Vorher „muted“ 45 %.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-tertiary)"><span>30 %</span></div><div class="meta"><div class="name">--text-tertiary</div><div class="use">Labels, Termin, Meta. Vorher „ghost“ 22 %.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-quaternary)"><span>18 %</span></div><div class="meta"><div class="name">--text-quaternary</div><div class="use">Nur Forecast-Punkt und Trennlinien. Nie für Text.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--border-subtle)"><span>8 %</span></div><div class="meta"><div class="name">--border-subtle</div><div class="use">Ein Rand für alle Karten. Rot- und Türkis-Ränder entfallen.</div></div></div>
+    </div>
+  </div>
+  <div class="pane t-light"><h4>Light</h4>
+    <div class="grid">
+      <div class="tok"><div class="chip" style="background:var(--bg-primary)"><span>F2F2F7</span></div><div class="meta"><div class="name">--bg-primary</div><div class="use">Apples „grouped background“. Leicht kühl, damit weiße Karten sich abheben.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--bg-card)"><span>FFFFFF</span></div><div class="meta"><div class="name">--bg-card</div><div class="use">Weiß. Rand 6 % Schwarz, kein Schatten.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--bg-card-hover)"><span>FFFFFF</span></div><div class="meta"><div class="name">--bg-card-hover</div><div class="use">Bleibt weiß — im Light Mode trägt der 2-px-Lift allein.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-teal)"><span style="color:#fff">1FA588</span></div><div class="meta"><div class="name">--color-teal</div><div class="use">Gleicher Farbton (Hue 166°), Helligkeit gesenkt. 4,5 : 1 auf Weiß.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-red)"><span style="color:#fff">E0362C</span></div><div class="meta"><div class="name">--color-red</div><div class="use">Gleicher Farbton, 4,6 : 1 auf Weiß.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-gold)"><span style="color:#fff">Gold</span></div><div class="meta"><div class="name">--color-gold</div><div class="use">Dunkles Gold — helles Gelb verschwindet auf Weiß.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--color-blue-dot)"><span style="color:#fff">Blau</span></div><div class="meta"><div class="name">--color-blue-dot</div><div class="use">Gesättigter, damit der 6-px-Punkt sichtbar bleibt.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-primary)"><span style="color:#fff">100 %</span></div><div class="meta"><div class="name">--text-primary</div><div class="use">Schwarz.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-secondary)"><span style="color:#fff">60 %</span></div><div class="meta"><div class="name">--text-secondary</div><div class="use">Apples secondaryLabel: rgba(60,60,67,.6).</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-tertiary)"><span style="color:#fff">30 %</span></div><div class="meta"><div class="name">--text-tertiary</div><div class="use">tertiaryLabel.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--text-quaternary)"><span>18 %</span></div><div class="meta"><div class="name">--text-quaternary</div><div class="use">quaternaryLabel.</div></div></div>
+      <div class="tok"><div class="chip" style="background:var(--border-subtle)"><span>6 %</span></div><div class="meta"><div class="name">--border-subtle</div><div class="use">Schwarz 6 %.</div></div></div>
+    </div>
+  </div>
 </div>
 
-<h2>Text</h2>
-<div class="grid">
-  <div class="tok"><div class="chip" style="background:#fff"><span style="color:#000;mix-blend-mode:normal">FFFFFF</span></div>
-    <div class="meta"><div class="name">--text-primary</div><div class="val">#ffffff</div>
-    <div class="use">Aktive, abgeschlossene Zustände. Volles Weiß heißt: hier ist etwas passiert.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.45)"><span>Weiß 45 %</span></div>
-    <div class="meta"><div class="name">--text-muted</div><div class="val">rgba(255,255,255,.45)</div>
-    <div class="use">Offene, noch erwartete Zustände.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.22)"><span>Weiß 22 %</span></div>
-    <div class="meta"><div class="name">--text-ghost</div><div class="val">rgba(255,255,255,.22)</div>
-    <div class="use">Labels, Metadaten, zugeordnete Rohmasse-Fragmente.</div></div></div>
-</div>
-
-<h2>Ränder</h2>
-<div class="grid">
-  <div class="tok"><div class="chip checker" style="background-color:rgba(255,255,255,.07)"><span>Weiß 7 %</span></div>
-    <div class="meta"><div class="name">--border-subtle</div><div class="val">rgba(255,255,255,.07)</div>
-    <div class="use">Standard-Rand jeder Karte.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(62,207,175,.22)"><span>Türkis 22 %</span></div>
-    <div class="meta"><div class="name">--border-teal</div><div class="val">rgba(62,207,175,.22)</div>
-    <div class="use">Rand im Bezahlt-/Erhalten-/Abgeschlossen-Zustand.</div></div></div>
-  <div class="tok"><div class="chip checker" style="background-color:rgba(255,69,58,.18)"><span>Rot 18 %</span></div>
-    <div class="meta"><div class="name">--border-red</div><div class="val">rgba(255,69,58,.18)</div>
-    <div class="use">Rand im Offen-/Laufend-Zustand.</div></div></div>
-</div>
-
-<h2>Badge-Farbtöne · sechs Stück</h2>
-<div class="hue">
-  <div style="background:rgba(255,200,60,.30);color:rgba(255,200,60,.95)">1 · Gold</div>
-  <div style="background:rgba(255,150,90,.30);color:rgba(255,150,90,.95)">2 · Orange</div>
-  <div style="background:rgba(170,200,110,.30);color:rgba(170,200,110,.95)">3 · Oliv</div>
-  <div style="background:rgba(100,168,240,.30);color:rgba(100,168,240,.95)">4 · Blau</div>
-  <div style="background:rgba(170,130,255,.30);color:rgba(170,130,255,.95)">5 · Violett</div>
-  <div style="background:rgba(240,120,190,.30);color:rgba(240,120,190,.95)">6 · Magenta</div>
-</div>
-<div class="note">
-  <b>Türkis und Rot sind hier bewusst ausgespart.</b> Beide tragen in der App
-  Statusbedeutung — ein Badge in Türkis würde „bezahlt“ suggerieren, wo nur eine
-  Zuordnung vorgeschlagen wird. Welchen der sechs Töne ein Badge bekommt, entscheidet
-  der Kartenname deterministisch; dieselbe Karte hat immer dieselbe Farbe, ohne dass
-  eine Farbe in der Datenbank gespeichert wird. Die Deckkraft bleibt in allen sechs
-  Fällen gleich: <code>.08</code> Fläche, <code>.5</code> Text, <code>.15</code> Rahmen.
-  Ton 1 ist das bisherige generische Gold — ein Sechstel der Karten sieht damit
-  unverändert aus.
-</div>
-
-<div class="note" style="border-left-color:rgba(255,255,255,.14);background:rgba(255,255,255,.02)">
-  <b>Zwei Töne stehen nicht in dieser Tabelle</b>, weil sie keine eigene Farbe sind,
-  sondern eine Deckkraft-Regel: <code>--fragment-hue</code> ist der gemeinsame
-  Grau-Grundton <em>aller</em> Rohmasse-Fragmente. Zugeordnet und Übertrag unterscheiden
-  sich nur über die Deckkraft (0,22 gegenüber 0,45) und ein Textkürzel — nicht über
-  den Farbton. <code>--wave-opacity</code> (0,80) ist der festgelegte Produktionswert
-  der Jahres-Welle.
-</div>
-
+<div class="note"><h3>Warum die Deckkraft-Stufen nicht mehr frei gewählt werden</h3>Heute gibt es in <code>cards.module.css</code> 17 verschiedene Alpha-Werte für Text: .20, .22, .25, .28, .30, .32, .35, .38, .40, .45, .55, .62, .65, .75 … Jeder war einzeln begründet, zusammen ergeben sie keine Ordnung. v3 erlaubt genau vier Textstufen (100 / 60 / 30 / 18 %). Jede Stelle wird einer Stufe zugeordnet — das ist der ganze Trick, mit dem Apple-Oberflächen „aufgeräumt“ wirken: nicht weniger Elemente, sondern weniger <em>Unterschiede</em>.</div>
+<div class="note"><h3>Was mit den sechs Badge-Farben passiert</h3>Sie bleiben im Code, wie im Beschluss vom 04.08.2026 festgelegt (Vorschlags-Kästchen ausgeblendet). v3 nimmt sie nicht in die Palette auf — eine Farbe, die nirgends erscheint, gehört nicht ins Design-System.</div>
 </body>
 </html>

@@ -1,8 +1,51 @@
 # Wie diese Seiten zum Design-Projekt kommen
 
 > Diese Datei ist **nicht** Teil des veröffentlichten Bündels — sie beschreibt nur
-> den Arbeitsweg. Veröffentlicht werden ausschließlich `README.md` und die fünf
-> HTML-Seiten.
+> den Arbeitsweg. Veröffentlicht werden `README.md`, die HTML-Seiten und die beiden
+> Stylesheets.
+
+## Was hier liegt — Stand nach v3-01 (06.09.2026)
+
+| | |
+|---|---|
+| `styles.css` | **die Tokens.** Alle Seiten binden sie ein, statt Werte abzuschreiben |
+| `doc.css` · `karte.css` | Chrome der Seiten und das Kartenbauteil |
+| `00-was-aendert-sich.html` | die **sieben Regeln** von v3, jede mit dem Zustand von vorher daneben |
+| `uebergabe.html` | die Zuordnung alt → neu, Selektor für Selektor |
+| `foundations/` | Farben, Typografie |
+| `komponenten/` | **neun** Seiten: Karten · Kategorien · Ring · Welle · Verlauf · Header · Overlays · Interaktionszone · Einkommen |
+| `entwuerfe/` | ältere Einzelentwürfe, nicht Teil des Bündels |
+
+> **Seit v3-01 sind alle sieben sichtbaren Komponenten der Design-Doku bebildert**
+> (§5 Ring · §6 Header · §7 Karten · §8 Zone · §9 Welle · §10 Einkommen · §11
+> Import/Schaufenster). Vorher waren es drei — das war Befund `RD-1`, und er ist der
+> Grund, warum das Re-Design mit dieser Arbeit anfangen musste und nicht mit dem
+> Gestalten.
+
+> ### ⚠️ `styles.css` ist eine ZWEITE Kopie der Tokens — das ist bekannt und offen
+>
+> Die Seiten binden `styles.css` ein, statt Werte hart hinzuschreiben; das war der
+> Kern von Befund `RD-2` und ist damit halb behoben. **Die andere Hälfte steht noch:**
+> `design-system/styles.css` ist eine Abschrift von `src/styles/tokens.css`, keine
+> Verbindung dorthin. Ändert jemand ein Token im Code, zeigen diese Seiten still den
+> alten Stand.
+>
+> **Genau das ist in v3-01 an einer anderen Stelle passiert** — `draw.ts` spiegelte
+> die Farben ebenfalls, und die Goldlinie blieb bei `.55`, während das Token auf `.75`
+> ging. Dieselbe Fehlerklasse, nur hier noch nicht behoben. `RD-2` bleibt offen.
+
+## Nach jedem Sprint, der die Formensprache berührt
+
+**Zuerst prüfen: Hat sich an Tokens oder Komponenten etwas geändert?** Wenn ja,
+gehören die Seiten mitgezogen — sonst beurteilt der Design-Direktor beim nächsten Mal
+Bilder, die es so nicht mehr gibt. `styles.css` ist dabei die erste Datei, nicht die
+letzte.
+
+> **Und die Drei-Varianten-Regel:** Standen für eine Entscheidung mehrere Entwürfe
+> nebeneinander, bleibt **nach dem Bau nur der Beschluss** stehen — mit seiner
+> Begründung und den verworfenen Alternativen als Text, nicht als Bild. So geschehen
+> auf `komponenten/karten.html` (Varianten B und C, entfernt am 06.09.2026). Ein
+> Entwurf, der nicht gebaut wurde, sieht ein Jahr später aus wie ein Ist-Zustand.
 
 ## Wohin
 
