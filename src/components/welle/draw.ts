@@ -6,6 +6,17 @@
  * Farb-Triplets spiegeln tokens.css (--color-teal #3ECFAF, --color-red #FF453A);
  * Canvas-Fill/Stroke kann keine CSS-Custom-Properties lesen — etabliertes
  * Pattern seit Sprint 10 (Treppe).
+ *
+ * ⚠️ „SPIEGELN" IST EINE ZUSAGE, KEINE VERBINDUNG — und sie ist in v3-01
+ * gerissen. Der Sprint hob `--color-gold` von .6 auf .75; hier stand weiter
+ * `goldS(0.55)`, und die Vorjahreslinie bewegte sich nicht. Die Aenderung war
+ * im Diff sichtbar und im Bild nicht.
+ *
+ * Wer einen Wert in tokens.css anfasst, der hier vorkommt, aendert ihn an
+ * BEIDEN Stellen. Die Alternative waere, die Werte wie `--wave-opacity` per
+ * getComputedStyle einzulesen (siehe `readWaveOpacity` in index.tsx) — das ist
+ * der richtige Weg und steht als eigener Punkt in der Roadmap, nicht in
+ * diesem Sprint.
  */
 
 export type WavePoint = { x: number; y: number; val: number };
@@ -31,6 +42,12 @@ const RED = "255,69,58"; // --color-red (negativer Monat, §9 M10)
 const GRAY = "255,255,255"; // Forecast-Grau (Ghost-Analogie, §9)
 
 const GOLD = "255,200,60"; // --color-gold-Basis (Vorjahr, B6)
+
+/* v3-01: Derselbe Stapel wie `--font-stack-system` in tokens.css. Vorher stand
+ * hier dreimal blosses `system-ui` — die Welle renderte damit in einer anderen
+ * Schrift als der Rest der App, sobald v3 SF Pro nach vorn zog. Canvas kennt
+ * keine Custom-Properties, deshalb hier als Konstante (siehe Kopfkommentar). */
+const FONT = '-apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", sans-serif';
 
 export const tealS = (a: number): string => `rgba(${TEAL},${a})`;
 export const redS = (a: number): string => `rgba(${RED},${a})`;
@@ -213,10 +230,14 @@ export function drawWave(
     ctx.stroke();
   }
 
-  // Monats-Labels
+  // Monats-Labels — v3 Regel 4: nichts unter 11 px. Standen auf 8 px und waren
+  // damit die am haeufigsten gesehene Schrift der App unterhalb der Grenze.
+  // Der aktive Monat traegt jetzt Weiss und 600 statt 50 % Grau: Er ist die
+  // eine Stelle, die sagt, wo man gerade steht.
   for (let i = 0; i < 12; i++) {
-    ctx.font = "500 8px system-ui";
-    ctx.fillStyle = i === activeIndex ? graS(0.5) : graS(0.18);
+    const aktiv = i === activeIndex;
+    ctx.font = `${aktiv ? 600 : 500} 11px ${FONT}`;
+    ctx.fillStyle = aktiv ? graS(1) : graS(0.3);
     ctx.textAlign = "center";
     ctx.fillText(MONTHS_SHORT[i], xOf(i), h - 6);
   }
@@ -240,11 +261,24 @@ export type PopupStairParams = {
   selectedIndex: number;
 };
 
-// Rechter Gutter (58px) reserviert den Platz für den B6-Betrag AUSSERHALB der
+// Rechter Gutter reserviert den Platz für den B6-Betrag AUSSERHALB der
 // Plotfläche (§9: „Betrag steht im rechten Gutter"). Exportiert wie die
 // WAVE_PAD_*-Konstanten, damit die Pixel-Checks die Geometrie nachrechnen können.
+//
+// 58 → 74 px (v3-01). Der Betrag beginnt 8 px im Gutter, es blieben also 50 px.
+// Gemessen mit dem echten Schriftstapel (LL-31), Gewicht 600:
+//
+//        9 px      11 px
+//   48.445 €      42,4       50,6
+//  +48.445 €      48,4       57,9
+//  −123.456 €     52,5       62,7
+//
+// Bei 11 px passt KEIN realistischer Wert mehr — und bei 9 px passte der
+// sechsstellige schon vorher nicht. Der Gutter war zu klein, bevor dieser
+// Sprint ihn angefasst hat; die Schriftvergrößerung hat es nur sichtbar
+// gemacht. 74 px decken −123.456 € mit Rand ab.
 export const POP_PAD_L = 8;
-export const POP_PAD_R = 58;
+export const POP_PAD_R = 74;
 export const POP_PAD_T = 14;
 export const POP_PAD_B = 22;
 
@@ -353,13 +387,15 @@ export function drawPopupStair(
     ctx.beginPath();
     ctx.moveTo(POP_PAD_L, yp);
     ctx.lineTo(POP_PAD_L + cW, yp);
-    ctx.strokeStyle = goldS(0.55);
-    ctx.lineWidth = 1;
+    // v3: --color-gold von .6 auf .75 — die Vorjahreslinie war die wichtigste
+    // Referenz und die leiseste Linie im Bild.
+    ctx.strokeStyle = goldS(0.75);
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
     const ly = Math.max(POP_PAD_T + 6, Math.min(POP_PAD_T + cH - 6, yp));
-    ctx.font = "600 9px system-ui";
-    ctx.fillStyle = goldS(0.85);
+    ctx.font = `600 11px ${FONT}`;
+    ctx.fillStyle = goldS(0.75);
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText(fmtSignedEuro(prevYearEnd), POP_PAD_L + cW + 8, ly);
@@ -375,8 +411,8 @@ export function drawPopupStair(
     ctx.arc(xOf(i), yOf(istCum[i]), sel ? 5 : 2.4, 0, Math.PI * 2);
     ctx.fillStyle = dotColor(sel ? 1 : 0.7);
     ctx.fill();
-    ctx.font = "500 8px system-ui";
-    ctx.fillStyle = graS(0.18);
+    ctx.font = `${sel ? 600 : 500} 11px ${FONT}`;
+    ctx.fillStyle = sel ? graS(1) : graS(0.3);
     ctx.textAlign = "center";
     ctx.fillText(MONTHS_SHORT[i], xOf(i), h - 5);
   }

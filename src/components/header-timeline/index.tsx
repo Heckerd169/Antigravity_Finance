@@ -96,6 +96,7 @@ export function HeaderTimeline({
         ym={prevYm}
         disabled={prevDisabled}
         sublabel={leftSublabel}
+        sublabelOffen={safeCount > 0}
       />
 
       <div className={styles.center}>
@@ -141,9 +142,14 @@ type FlankProps = {
   ym: string;
   disabled: boolean;
   sublabel: string;
+  /* v3-01: „3 Fragmente offen" ist eine AUFGABE, „Alles erledigt" eine
+     Bestätigung — die einzige Stelle im Header, die zu einer Handlung
+     auffordert. Deshalb steht der Untertitel dann eine Textstufe heller.
+     KEINE Farbe: unzugeordnete Fragmente sind kein Fehler, nur Arbeit. */
+  sublabelOffen?: boolean;
 };
 
-function Flank({ side, ym, disabled, sublabel }: FlankProps) {
+function Flank({ side, ym, disabled, sublabel, sublabelOffen = false }: FlankProps) {
   const className = `${styles.flank} ${side === "left" ? styles.left : styles.right} ${
     disabled ? styles.flankDisabled : ""
   }`;
@@ -152,7 +158,11 @@ function Flank({ side, ym, disabled, sublabel }: FlankProps) {
   const textBlock = (
     <div className={styles.flankText}>
       <div className={styles.flankMonth}>{formatMonthLabel(ym)}</div>
-      <div className={styles.flankSub}>{sublabel}</div>
+      <div
+        className={`${styles.flankSub}${sublabelOffen ? ` ${styles.flankSubOpen}` : ""}`}
+      >
+        {sublabel}
+      </div>
     </div>
   );
 
