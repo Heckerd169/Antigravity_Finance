@@ -330,3 +330,63 @@ Verlaufs-Held von 38/200 auf 26/600 gegangen. Hier bleibt es beim Ring-Schnitt
 (36/300), weil der Held eine **Zahl** ist: Dünn-und-groß trägt bei Ziffern und
 scheitert bei einem Wort. Gleiche Anatomie, andere Schrift, weil der Inhalt ein
 anderer ist — steht so auf `komponenten/welle.html`.
+
+---
+
+## Schritte 6, 7 und 8
+
+### B22 · Der Gutter der Vorjahreslinie war schon vorher zu klein
+
+Beim Anheben des Gold-Betrags von 9 auf 11 px habe ich die reservierte Breite
+nachgemessen, statt sie zu schätzen (LL-31). Verfügbar sind 50 px:
+
+| Betrag | 9 px | 11 px |
+|---|---|---|
+| `48.445 €` | 42,4 | **50,6** |
+| `+48.445 €` | 48,4 | **57,9** |
+| `−123.456 €` | **52,5** | **62,7** |
+
+Bei 11 px passt **kein** realistischer Wert — und bei 9 px passte der
+sechsstellige **schon vorher nicht**. Der Gutter war zu klein, bevor dieser
+Sprint ihn angefasst hat; die Schriftvergrößerung hat es nur sichtbar gemacht.
+`POP_PAD_R` 58 → 74 px.
+
+Die Pixel-Checks blieben grün, weil sie die Geometrie aus den exportierten
+Konstanten **nachrechnen** statt sie zu kopieren — genau dafür sind sie
+exportiert. Ein seltener Fall, in dem eine alte Entscheidung eine spätere
+Änderung trägt, ohne dass jemand daran denken musste.
+
+### B23 · Schritt 8 hat keine Grundlage — es gibt keine Referenzbilder
+
+Der Auftrag sagt: *„`tests/e2e/visual-pixel.spec.ts` — neue Referenzbilder
+ziehen"*, und die Übergabe kündigt an, der Pixel-Test werde nach dem Tausch
+neue Bilder brauchen.
+
+**Gemessen: `toMatchSnapshot` und `toHaveScreenshot` kommen im Test null Mal
+vor, und im Repo liegt kein einziges Schnappschuss-Bild.** Der Test
+transpiliert `draw.ts`, rendert es auf einer leeren Seite und **zählt Pixel**,
+die er über die Token-Farben Türkis und Rot klassifiziert.
+
+Beide Farben sind in v3 unverändert — deshalb ist der Test durch den ganzen
+Sprint grün geblieben, auch durch den Eingriff in `draw.ts`. **Es gibt nichts
+nachzuziehen.** Die Annahme der Übergabe beschreibt eine Testbauart, die dieses
+Projekt nicht verwendet.
+
+### B24 · Der Regler ist die einzige Stelle, an der v3 ein natives Element ersetzt
+
+`accent-color` überlässt dem Browser die Form: In Safari ist der Griff 20 px, in
+Chrome ein anderer, in Firefox eckig. Für einen Wert, den man auf 100 € genau
+einstellen soll, ist das zu zufällig. Track 4 px, Griff 28 px — auf jedem Gerät
+dasselbe. Der Grund ist Präzision, nicht Optik; das steht so auf der v3-Seite
+und ist die einzige Ausnahme im ganzen System.
+
+### B25 · Drei Dinge im Einkommens-Popup sind nicht mehr türkis
+
+„Manuell angepasst", der Vererbungs-Hinweis („Gilt ab …") und der Rand des
+Netto-Felds bei Handeingabe trugen Türkis. Keines davon ist „erledigt" oder
+„positiv" — es sind **Sachhinweise**. Türkis bleibt im Popup für genau zwei
+Dinge: die ausgewählte Steuerklasse (Auswahl) und den Übernehmen-Knopf (die
+eine richtige Aktion).
+
+Gold bleibt für „Vergangener Monat" — das ist ein Hinweis auf **Zeit**, wie die
+Vorjahreslinie und die Ausreißer-Zeile, kein Fehler. Nur ohne Rahmen.

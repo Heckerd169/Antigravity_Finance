@@ -284,8 +284,16 @@ function PopupBody({
         <div className={styles.section}>
           <span className={styles.label}>Jahresbrutto</span>
           <span className={styles.sliderValue}>{eur.format(grossAnnual)}</span>
+          {/* v3-01: `--pct` faerbt den Track bis zum eingestellten Wert.
+              Reine Anzeige — der Wert kommt unveraendert aus `value`, hier
+              wird nichts gerechnet, was nicht ohnehin schon dasteht. */}
           <input
             className={styles.slider}
+            style={
+              {
+                "--pct": `${((grossAnnual - GROSS_MIN) / (GROSS_MAX - GROSS_MIN)) * 100}%`,
+              } as React.CSSProperties
+            }
             type="range"
             min={GROSS_MIN}
             max={GROSS_MAX}
