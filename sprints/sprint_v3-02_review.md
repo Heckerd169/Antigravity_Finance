@@ -143,6 +143,10 @@ nicht über ein Bild. Das ist der Grund für S13.
 - **Fehler-Toast „Zuordnen fehlgeschlagen"** (A10) ist eine Annahme — ein Wortlaut für die
   Gestaltungsrunde vor v3-03.
 
+> **Nachzug am selben Abend (nach dem Merge):** Der Login-Umweg ist behoben (`?next=`
+> mit geprüftem Ziel, `/mobile` → `/mobil`), und die 567 Zahlungen aus 2023/2024 sind auf
+> Anweisung des Users gelöscht — `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`.
+
 ## 7. Vorschläge für CLAUDE.md und Roadmap
 
 - **CLAUDE.md:** `sprints/sprint_v3-02_claude_md_patch.md` — §1 Plattform (die Route
