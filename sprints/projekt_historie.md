@@ -3687,3 +3687,123 @@ Arbeitskopie.
 und unverändert `ZO-1`, `ZO-6`, `ZO-7`, `ZO-8`, `KAT-5`, `KJ-9`, `PF-3`, `PF-5`,
 `PF-7`. Die eingefrorene Sollwert-Tabelle ist weiterhin **nicht** gezogen — dieser
 Sprint hat nicht gemessen und durfte deshalb keinen Sollwert einfrieren.
+
+---
+
+### Sprint v3-01 · DONE 06. September 2026
+
+**„Apple-Redesign umsetzen"** — Branch `sprint/v3-01-apple-redesign`, elf Commits,
+gemergt als PR #55. Erster Sprint der **v3**-Reihe; Roadmap Paket 19.
+
+**Auftrag:** Das Design-System v3 lag fertig entschieden im Design-Projekt auf
+`claude.ai/design` — Optik neu, Rechenlogik und Datenbank unberührt. Sieben Regeln,
+deren wichtigste lautet: **Rot bedeutet ab jetzt ausschließlich Abweichung.** „Offen"
+und „Laufend" sind der Normalzustand von rund 80 % aller Karten an 80 % aller Tage
+und trugen bis hierhin dieselbe Farbe wie „Budget überschritten".
+
+**Der Ordner, den es nicht gab.** Der Auftrag setzte `design-system/v3/` voraus. Das
+Bündel lag ausschließlich im Design-Projekt; 15 Dateien wurden über `DesignSync`
+heruntergeladen. Damit sind erstmals **alle sieben** sichtbaren Komponenten
+bebildert — genau der Befund `RD-1`, mit dem Paket 19 eröffnet wurde.
+
+#### Der Fund, der den Sprint trägt: 87 komponenten-lokale Farbwerte
+
+| Fundort | Anzahl |
+|---|---|
+| `cards.module.css` | 18 |
+| `card.tsx` (SVG-Präsentationsattribute) | 4 |
+| `interaction-zone.module.css` | 38 |
+| `header-timeline` · Ring · Welle | 22 |
+| `income-labels.module.css` | 5 |
+
+Jeder war zu seiner Zeit begründet — das etablierte „Sprint-2-Ring-Pattern":
+komponenten-lokale Custom-Properties am Wurzelelement. **Zusammen bildeten sie eine
+Schicht, die jede Änderung an `tokens.css` abfing.**
+
+`--meta-dot-gem: rgba(100,168,240,.38)` ist der klarste Fall: eine wortgleiche Kopie
+von `--color-blue-dot` mit dem alten Wert. Die Übergabe hebt das Token auf `.7` — die
+Änderung wäre im Diff sichtbar und **im Bild unsichtbar** geblieben.
+
+Dazu `draw.ts`, dessen Kopfkommentar behauptete, die Farb-Triplets würden
+`tokens.css` „spiegeln". **Die Goldlinie blieb bei `.55`, während das Token auf `.75`
+ging.** Eine Zusage über eine Verbindung ist keine Verbindung.
+
+#### Zwei Fehler, die nur das Bild gefunden hat — die Prüfstrecke war beide Male grün
+
+**① Der rote Punkt.** Der Statuspunkt war korrekt umgebaut, aber *innerhalb* des
+Rings steckte ein zweites SVG: `IconOpenCircle` mit `fill="rgba(255,69,58,.55)"`,
+exakt `--color-red`, hartkodiert. Jede offene Fixkosten-Karte und jede laufende
+Budget-Karte trug damit weiter einen roten Kern im grauen Ring — die Aussage, die der
+ganze Sprint abschaffen sollte. **183 von 183 Tests waren dabei grün**, weil kein
+Anker, keine Prüfsumme und keine Invariante eine Farbe berührt.
+
+**② Das unsichtbare Wort.** „· zugeordnet" stand hinter der Beschreibung, wie der
+v3-Entwurf es zeigt. `.fragmentDesc` kürzt aber einzeilig mit Ellipsis. Gemessen mit
+dem echten Schriftstapel bei 192 px Inhaltsbreite sind **drei von fünf echten
+Buchungstexten schon ohne den Zusatz zu lang** (`Abrechnung 30.06.2026 siehe Anlage`
+= 218 px). Der Entwurf zeigte „Miete August" — 76 px, ein kurzer erfundener Text.
+**Die Copy-Entscheidung war gegen ein Bild getroffen, das die Daten nicht trifft.**
+
+Beide haben seither einen Wächter, der **einmal absichtlich rot gesehen** wurde
+(§7 Regel 27): `karten-zustandsfarbe.spec.ts` und `rohmasse-stufen.spec.ts`. Letzterer
+schützt zum ersten Mal die §8-Invariante selbst, die seit v2-16 nur im Text der Doku
+stand.
+
+#### Was sonst sichtbar wurde
+
+**Der Gutter der Vorjahreslinie war schon vorher zu klein.** Beim Anheben des Betrags
+auf 11 px wurde die reservierte Breite gemessen (LL-31): Bei 11 px passt kein
+realistischer Wert in die 50 px — **und bei 9 px passte `−123.456 €` mit 52,5 px
+bereits nicht.** Der Sprint hat einen bestehenden Fehler sichtbar gemacht, nicht
+verursacht. `POP_PAD_R` 58 → 74; die Pixel-Checks blieben grün, weil sie die
+Geometrie aus den exportierten Konstanten **nachrechnen**.
+
+**Ein sechster Farbton, den die Palette nicht kennt:** `--wave-tt-driver-tag` war ein
+Orange (255,170,90) an genau einer Stelle im ganzen Produkt — weder in §3 noch in der
+v3-Palette. Ersatzlos auf die Tertiärstufe gezogen.
+
+**Schritt 8 des Auftrags hatte keine Grundlage.** Er verlangte neue Referenzbilder für
+`visual-pixel.spec.ts`. Gemessen: `toMatchSnapshot` und `toHaveScreenshot` kommen dort
+**null Mal** vor. Der Test zählt Pixel, klassifiziert über Türkis und Rot — beide in v3
+unverändert. Die Annahme der Übergabe beschreibt eine Testbauart, die dieses Projekt
+nicht verwendet.
+
+**Präsentations-Attribute schlagen — das ersparte vier `.tsx`-Änderungen.** Die SVG in
+`card.tsx`, im Portal und im Header tragen Farbe und Strichstärke als
+Präsentations-Attribut; solche Attribute haben die niedrigste Priorität aller
+Autoren-Stile. Weißer Haken, weißes Ausrufezeichen, 1,6-px-Chevron und das Ausblenden
+der vier „noch nicht"-Glyphen laufen deshalb vollständig über CSS.
+
+#### Drei Erweiterungen des Auftrags, jede einzeln freigegeben
+
+| | |
+|---|---|
+| Zwei SVG-Tausche (`×`, `›`) | Ein Textzeichen variiert je Font in Höhe und Strichstärke — mit `-apple-system` an erster Stelle säße es sichtbar schief |
+| Eine Boolean-Prop an `Flank` | Die Übergabe verlangt eine Klasse an `safeCount > 0`; ohne Prop kommt kein Wahrheitswert in die Kindkomponente |
+| Fünf Zahlen in `draw.ts` | Die halbe Welle war aus CSS nicht erreichbar |
+
+#### Verifikation
+
+`tsc` **0** · ESLint **0/0** · `pnpm build` **0 Fehler**, Route `/` **40,6 kB**
+(vorher 40,3), First Load **193 kB** · `pnpm test:visual` **191/191** ·
+`pnpm test:e2e` **200/200** inkl. aller sechs Render-Smoke-Tests.
+
+Beide Testzahlen sind um **genau 8** gestiegen — die acht selbst geschriebenen
+Wächter. **Kein Anker gemessen und keiner nötig:** Der Sprint hat keine
+Rechenfunktion, keine RPC, keine Migration und keine Server-Action berührt.
+
+Design-Doku **3.13.1 → 3.14.0** (Minor-Bump: §8 hebt eine Invariante auf). §11 musste
+mit, weil dort dieselbe Invariante ein zweites Mal stand — LL-26 in Doku-Form.
+
+#### Offen nach v3-01
+
+- Der **Light-Mode-Umschalter** ist bewusst nicht gebaut. Die Bedingung dafür ist
+  seit diesem Sprint erfüllt: Die Liste der Tokens ohne Light-Wert ist **leer**.
+- **`draw.ts` spiegelt die Tokens weiterhin als Konstanten.** Der saubere Weg wäre
+  `getComputedStyle`, wie ihn `readWaveOpacity` schon geht.
+- **Login, Onboarding und Fehlerseite** erben die neuen Stufen über die
+  Alias-Zeilen `--text-muted` / `--text-ghost`, haben aber keine eigenen v3-Seiten.
+  Wer die Aliasse entfernt, muss vorher diese sechs Dateien umstellen.
+- In den Produktivdaten ist **jede** Zahlung aus 2025 und 2026 zugeordnet — die
+  Rohmasse besteht durchgehend aus Konturen. Die Stufen „arbeitsfähig" und
+  „Übertrag" waren im automatischen Smoke nicht sichtbar.

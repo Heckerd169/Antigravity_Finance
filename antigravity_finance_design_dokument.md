@@ -1,8 +1,20 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.14.0 (V3 · Sprint v3-01 — Apple-Redesign: Tokens und Fragment-Invariante)
+**Version:** 3.14.1 (V3 · Sprint v3-01 — Apple-Redesign vollständig nachgezogen)
 
 **Status:** Freigegeben — V2-Patches bis Sprint v2-31 eingespielt. *(Die Version der Schema-Doku stand hier bis zum 31.08.2026 als Zahl und war zuletzt zwei Bumps veraltet. Sie ist entfernt statt korrigiert: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch — er steht jetzt nur noch im Header der Schema-Doku selbst. Dieselbe Konsequenz, die CLAUDE.md §9 am 24.08.2026 für sich gezogen hat.)* Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+
+> **Changelog v3.14.1 (06.09.2026, Sprint v3-01 · Teil 2 von 2):** Die
+> beschreibenden Abschnitte sind an den gebauten Stand angeglichen — §5
+> (Zentrumszahl), §6 (Flanken, Chevrons, Schranke), §7 (Karten-Maße,
+> Zustands-Katalog, Haushaltsbetrag, Fälligkeitstag) und §11 (Fragment-Typografie).
+> **Keine Regel ändert sich**, deshalb Patch-Bump.
+>
+> Zusätzlich zwei Token-Zeilen aus §3 entfernt, die Teil 1 selbst überholt hat:
+> `--border-category` und `--border-category-stack` gibt es seit Schritt 4 nicht
+> mehr — die Ordner-Kachel trägt denselben Rand wie jede Karte (`--border-subtle`).
+> Sie wurden aus `tokens.css` gelöscht, **nachdem** gemessen war, dass kein Modul
+> sie mehr liest.
 
 > **Changelog v3.14.0 (06.09.2026, Sprint v3-01 · Apple-Redesign, Teil 1 von 2):**
 > **§3 vollständig ersetzt** und um einen Light-Mode-Block erweitert; **§8 hebt die
@@ -559,8 +571,6 @@ hatten. Jeder einzelne war begründet; zusammen ergaben sie keine Ordnung.
 | `--outline-drop` | `rgba(255,255,255,.35)` | Drop-Target-Outline (Sprint 5, K1.3) |
 | `--bg-category` | `#1A1A20` | Grundton der Ordner-Kachel §8 — eine Spur kühler und dunkler als `--bg-card` |
 | `--bg-category-stack` | `#131317` | Gestapelte Kanten unter der Ordner-Kachel |
-| `--border-category` | `rgba(255,255,255,.13)` | Rahmen der Ordner-Kachel |
-| `--border-category-stack` | `rgba(255,255,255,.09)` | Rahmen der zweiten Stapelkante |
 | `--border-bracket` | `rgba(255,255,255,.14)` | Klammer unter einem aufgeklappten Ordner §8 |
 | `--progress-track` | `rgba(255,255,255,.06)` | Spur des Budget-Balkens |
 | `--progress-neutral` | `rgba(235,235,245,.35)` | Balken im Zustand „Laufend" — Verbrauch ist Information, kein Urteil |
@@ -846,9 +856,9 @@ Herzstück des Dashboards. Zeigt die tatsächliche Sparrate im Zentrum. Der Arc 
 
 | Eigenschaft | Wert |
 |---|---|
-| Font-Size | `34px` |
-| Font-Weight | `200` |
-| Letter-Spacing | `-1.8px` |
+| Font-Size | `36px` |
+| Font-Weight | `300` |
+| Letter-Spacing | `-1.4px` |
 | Font-Variant | `tabular-nums` |
 
 ### Farblogik Zentrumszahl
@@ -949,16 +959,24 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 **Hinweis:** „Abgeschlossen" für vergangene Monate folgt aus dem Verstreichen der Zeit + Modell α — keine explizite Zustandsänderung im Datenmodell. Der Zustand wird im Frontend aus dem Vergleich von angezeigtem Monat zum aktuellen Datum abgeleitet.
 
 **Flanken:**
-- Font: `13px`, `font-weight: 500`, `rgba(255,255,255,.38)`
-- Opacity Default: `0.85` · Disabled: `0.2`
-- Subzeile: `10.5px`, `rgba(255,255,255,.18)`
+- Font: `13px`, `font-weight: 500`, `--text-secondary`
+- **Keine Container-Deckkraft** (bis v3-01: `0.85`) — die Textstufen tragen die
+  Abstufung selbst. Disabled: `opacity: 0.35`
+- Subzeile: `12px`, `--text-tertiary`. **Bei offenen Fragmenten eine Stufe heller**
+  (`--text-secondary`): „3 Fragmente offen" ist eine Aufgabe, „Alles erledigt" eine
+  Bestätigung — die einzige Stelle im Header, die zu einer Handlung auffordert.
+  Keine Farbe, denn unzugeordnete Fragmente sind kein Fehler, nur Arbeit.
 
 **Chevrons:**
-- `26×26px`, `border-radius: 50%`
-- Default: `opacity: 0` (unsichtbar)
-- Hover: `opacity: 1`, Background: `rgba(255,255,255,.07)`
+- `28×28px`, `border-radius: 50%`, Fläche `--neutral-fill`, Strich `1.6px`
+- **Dauerhaft sichtbar.** Bis v3-01 standen sie auf `opacity: 0` und erschienen erst
+  beim Hover über den ganzen Header — auf einem Telefon also nie. Ein
+  Navigationselement, das nur bei Hover existiert, existiert für die Hälfte der
+  Nutzer nicht. 28 px sind zugleich die kleinste ohne Frust treffbare Fläche; die
+  ganze Flanke bleibt Link, der Kreis zeigt nur, **wo**.
+- Hover: Fläche `--border-ghost`
 
-**Trennlinie:** `0.5px solid rgba(255,255,255,.06)`
+**Trennlinie:** `1px solid --border-subtle`
 
 ### Interaktionslogik
 
@@ -966,7 +984,7 @@ Navigationsanker für die Zeitachse. Zeigt den aktiven Monat zentral, Vormonat l
 |---|---|
 | Klick linke Flanke | Navigation zum Vormonat |
 | Klick rechte Flanke | Navigation zum Folgemonat |
-| Kein Vormonat | Linke Flanke `opacity: 0.2`, `pointer-events: none` |
+| Kein Vormonat | Linke Flanke `opacity: 0.35`, `pointer-events: none` — bei `0.2` war nicht mehr erkennbar, **dass** dort eine Schranke ist |
 
 **Wann „kein Vormonat" gilt (v2-28):** Die untere Grenze der Zeitachse ist der
 **früheste Monat, in dem eine Karte aktiv ist** — `min(cards.first_active_month)`
@@ -1018,12 +1036,10 @@ weit.
 |---|---|
 | Breite | `136px` |
 | Kartenname-Overflow | Eine Zeile, abgeschnitten mit Ellipsis (`…`) innerhalb der 136px-Breite (Pattern wie Fragment-Beschreibung §8) |
-| Border-Radius | `14px` |
+| Border-Radius | `16px` (`--radius-card`) |
 | Padding | `14px 13px 12px` |
-| Opacity (aktiv) | `0.75` |
-| Opacity (Ghost) | `0.65` |
-| Hover Opacity | `0.95` |
-| Hover Transform | `translateY(-2px)` |
+| Deckkraft | **keine** — v3 Regel 3: eine Deckkraft auf dem Container multipliziert sich mit jeder Deckkraft darin. Das Statuswort „Offen" lag bei 38 % × 0,75 = effektiv 28 % Weiß. Gedimmt wird am Text, nie an der Box |
+| Hover | `translateY(-2px)` **und** Fläche `--bg-card-hover` (bis v3-01: `opacity: 0.95`) |
 | Active Transform | `scale(0.97)` |
 
 **Karussell-Sortierung:** Fixkosten-Karten zuerst, dann Einnahmen-Karten, dann Budget-Karten. Ein gemeinsames Karussell, keine getrennten Reihen.
@@ -1060,8 +1076,8 @@ Eine gemeinsame Karte zeigt als große Zahl den **eigenen Anteil** (§4.5) und d
 |---|---|
 | Reihenfolge auf der Karte | Name → Betrag → **`von X €`** → Status → Attribution |
 | Wortlaut | `von [N] €` — **kein** Label, kein neues Substantiv (§12.3) |
-| Schriftgröße | `10px`, Weight `400`, `tabular-nums`, `white-space: nowrap` |
-| Farbe | `--text-muted` (`rgba(255,255,255,.45)`) in **allen** Zuständen |
+| Schriftgröße | `11px`, Weight `400`, `tabular-nums`, `white-space: nowrap` |
+| Farbe | `--text-tertiary` in **allen** Zuständen |
 | Abstand nach oben | `2px` zum Betrag — eng gebunden |
 | Abstand nach unten | `5px` zum Status — abgesetzt |
 | Zeilenhöhe | `min-height: 12px`, auf **jeder** Karte permanent reserviert |
@@ -1105,8 +1121,8 @@ Die Statuszeile bekommt zwei Enden: **links der Zustand, rechts der Termin** —
 |---|---|
 | Ort | rechter Anschlag der **Statuszeile** — **keine** neue Zeile, **keine** zusätzliche Kartenhöhe |
 | Wortlaut | `am [N].` (§12.3) |
-| Schriftgröße | `9px`, Weight `500`, `white-space: nowrap` |
-| Farbe | `rgba(255,255,255,.30)` |
+| Schriftgröße | `11px`, Weight `500`, `white-space: nowrap` |
+| Farbe | `--text-tertiary` |
 
 **Alle Karten behalten ihre Maße.** Weil keine Zeile hinzukommt, bleibt die Vorgabe gleicher Kartenmaße unberührt — anders als bei der Haushaltsbetrag-Zeile oben ist hier keine Höhe zu reservieren.
 
@@ -1120,7 +1136,7 @@ Die Statuszeile bekommt zwei Enden: **links der Zustand, rechts der Termin** —
 
 **Herkunft:** Die Werte sind aus der Buchungshistorie **abgeleitet** (Sprint v2-14, `LQ-1`), nicht vom Nutzer bestätigt. Genau deshalb sind sie sichtbar: Ein geratener Wert, der eine sichtbare Zahl treibt (§8, `LQ-2`), darf nicht selbst unsichtbar sein.
 
-**Im Ghost-/Forecast-Zustand dimmt der Termin eigenständig auf `rgba(255,255,255,.20)`.** Die Karten-Opacity (`0.65`) allein ließe ihn lauter wirken als das Status-Label daneben, das zusätzlich auf `--text-ghost` (`.22`) fällt. *Anders als bei der Haushaltsbetrag-Zeile oben, wo ausdrücklich **kein** eigener Ghost-Ton vorgesehen ist — dort wäre ein eigener Ton genau die Unsichtbarkeit, die schon gegen die Alternativvariante sprach; hier stellt er das Verhältnis der beiden Zeilen-Enden wieder her, das in allen anderen Zuständen von selbst stimmt. Der Unterschied ist gewollt.* Wert aus der Entwurfsseite, Variante A1.
+**Im Ghost-/Forecast-Zustand trägt der Termin dieselbe Stufe wie sonst** (`--text-tertiary`). Der eigene, dunklere Ton ist mit v3-01 entfallen: Er war nötig, solange die Karten-Deckkraft (`0.65`) alles andere mitdimmte — ohne sie gibt es diesen Effekt nicht mehr, und eine fünfte Textstufe wäre genau die Beliebigkeit, die v3 abschafft. Die Karten-Opacity (`0.65`) allein ließe ihn lauter wirken als das Status-Label daneben, das zusätzlich auf `--text-ghost` (`.22`) fällt. *Anders als bei der Haushaltsbetrag-Zeile oben, wo ausdrücklich **kein** eigener Ghost-Ton vorgesehen ist — dort wäre ein eigener Ton genau die Unsichtbarkeit, die schon gegen die Alternativvariante sprach; hier stellt er das Verhältnis der beiden Zeilen-Enden wieder her, das in allen anderen Zuständen von selbst stimmt. Der Unterschied ist gewollt.* Wert aus der Entwurfsseite, Variante A1.
 
 Beleg der Gestaltung: `V2/design_direktor_2026-08-06_liquiditaet_fragment_split.md` §2.
 
@@ -1278,6 +1294,24 @@ mit `Rückgängig` ist die bewusste Alternative dazu, gebaut in v2-20.
 
 Beleg der Gestaltung: `V2/design_direktor_2026-08-17_loeschen_und_nicht-angefallen.md`
 (Entscheidungen 1–5).
+
+> ### ⚠️ Die Flächen- und Randangaben der folgenden Zustände sind ab v3-01 hinfällig
+>
+> **Alle Karten teilen EINE Fläche (`--bg-card`) und EINEN Rand
+> (`--border-subtle`).** Der Zustand sitzt an genau zwei Stellen: dem 18-px-Punkt
+> oben rechts und dem Statuswort. Die je Zustand genannten Hintergründe
+> (`#160D0D`, `#0A140E`, `#160A08`, `#0D1A16`) und Zustandsränder gibt es nicht
+> mehr; die Tokens dafür sind aus `tokens.css` entfernt.
+>
+> **Der Grund steht in Regel 1 und 2 des v3-Systems:** Vier Stellen sagten
+> dasselbe — Fläche, Rand, Typ-Label und Statuswort. Und „Offen" ist der
+> Normalzustand von rund 80 % aller Karten an 80 % aller Tage; er trug dieselbe
+> Farbe wie „Budget überschritten".
+>
+> **Was unverändert gilt:** die Zustände selbst, ihre Wortlaute, die
+> Tap-Interaktionen und die Regel „Realität gewinnt" je Kartentyp. Nur die
+> Darstellung ist eine andere. Die gebauten Werte je Zustand stehen in
+> `design-system/v3/komponenten/karten.html`.
 
 ### Fixkosten-Karte — 3 Zustände
 
@@ -1656,11 +1690,11 @@ Fenster wie beim leeren Platz**, nur mit vorausgewählter Kategorie.
 | Eigenschaft | Wert |
 |---|---|
 | Breite / Höhe | `136px` / `min-height: 170px` — **identisch mit einer Karte** |
-| Grundton | `--bg-category` (`#131318`) — **neutral**, nicht rot oder türkis getönt |
-| Rahmen | `1px solid --border-category` |
-| Status-Icon | **keines** |
+| Grundton | `--bg-category` (`#1A1A20`) — **neutral**, eine Spur kühler und dunkler als die Karte |
+| Rahmen | `1px solid --border-subtle` — **derselbe Rand wie jede Karte** |
+| Status-Icon | **keines** — stattdessen ein Chevron (Richtung, nicht Zustand) |
 | Stapelkanten | zwei versetzte Kopien der Form via `box-shadow`; entfallen im aufgeklappten Zustand |
-| Linke Kante | `2px` rot (`--border-category-open`), solange drinnen etwas offen ist · `2px` türkis (`--border-category-done`), wenn alles erledigt ist |
+| Linke Kante | **entfällt (Beschluss A, 05.09.2026).** Sie war der einzige Ort, an dem Rot und Türkis am Ordner auftraten, und sagte dasselbe wie die Flagge daneben. Rot für „drei Daueraufträge warten auf den 1." ist genau die Bedeutung, die v3 Regel 2 abschafft. Der Zustand steht jetzt nur als **Wort**: `[N] offen` neutral, `erledigt` türkis |
 | Zeilen | `KATEGORIE` → Name → **Betrag mit Vorzeichen** → *(leere Zeile)* → `[N] Posten` / `[N] offen` bzw. `erledigt` → `Ordner` |
 | Geste | **Klick klappt auf.** Kein Tap-Catcher, kein `manually_paid` |
 
@@ -2419,8 +2453,8 @@ Werte änderbar nur via Service-Role (Admin-Eingriff).
 | Feld | Typographie | Farbe |
 |---|---|---|
 | Betrag | `16px`, `font-weight: 200`, `tabular-nums` | Negativ: `#FF453A` · Positiv: `#3ECFAF` |
-| Beschreibung | `10px`, `font-weight: 500` | `rgba(255,255,255,.28)` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
-| Datum | `9px` | `rgba(255,255,255,.15)` |
+| Beschreibung | `12px`, `font-weight: 500` | `--text-secondary` · truncated · zeigt den Verwendungszweck (§8, `RM-1`) |
+| Datum | `11px` | `--text-tertiary` · trägt bei zugeordneten Fragmenten zusätzlich das Wort `· zugeordnet` |
 | Vorschlag-Badge (nur 0.60–0.95) | `7.5px`, `font-weight: 600`, uppercase | **Seit v2-10 nicht mehr gerendert** (`BF-1`) — Spezifikation bleibt für die Wiedereinschaltung stehen. **Seit v2-29 steht an seiner Stelle eine eigene Zeile** unter der Beschreibung (siehe unten); das Kästchen selbst bleibt aus |
 
 **Badge-Farbe (v2-07, A1):** Welchen der sechs Töne ein Badge trägt, bestimmt allein der **Kartenname** — über eine deterministische Funktion, nicht über eine Datenbank-Spalte. Damit ist die Farbe stabil über Renders, Sitzungen und Geräte hinweg und unabhängig von Anzahl, Reihenfolge oder Anlage-Zeitpunkt der Karten; eine Karte behält ihre Farbe, wenn andere Karten angelegt oder gelöscht werden. Groß-/Kleinschreibung und Randleerzeichen im Namen ändern den Ton nicht. Bei mehr Karten als Tönen teilen sich Karten einen Ton — die Farbe ist ein **Gruppierungs-Hinweis, kein Identitätsmerkmal**; der Kartenname steht daneben. Deckkraft, Typografie und Geometrie des Badges sind unverändert; variabel ist ausschließlich der Farbton. Das **TRANSFER-Badge ist vom Mapping ausgenommen** und behält den neutralen Grau-Soft-Ton auf `--fragment-hue` (AD5, Sprint 9: Transfer ist Fakt, kein Vorschlag).
