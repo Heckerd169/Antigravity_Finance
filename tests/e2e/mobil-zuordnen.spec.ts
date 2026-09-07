@@ -64,6 +64,12 @@ const d = laden("src/lib/description.ts") as {
   splitDescription: (raw: string) => { empfaenger: string; zweck: string | null };
 };
 
+const g = laden("src/components/mobil/zuordnen/gruppen.ts") as {
+  GRUPPEN_REIHENFOLGE: string[];
+  gruppenTitel: (x: string) => string;
+  kartenGruppe: (typ: string, rhythmus: string) => string;
+};
+
 const A: Kandidat = { cardId: "a", name: "Haushaltsgeld", treffer: 6 };
 const B: Kandidat = { cardId: "b", name: "Privates Budget", treffer: 4 };
 const V: Vorschlag = { cardId: "a", name: "Haushaltsgeld", treffer: 6, konfidenz: 0.94 };
@@ -246,5 +252,42 @@ test.describe("Buchungstext → Empfänger und Zweck (lib/description.ts)", () =
 
   test("leerer erster Teil fällt auf den ganzen Text zurück", () => {
     expect(d.splitDescription(" | Zweck").empfaenger).toBe("| Zweck");
+  });
+});
+
+test.describe("Sheet-Gruppen: jede (Typ, Rhythmus)-Kombination genau EINE Gruppe (A6, LL-26)", () => {
+  const TYPEN = ["FIXED_COST", "BUDGET", "INCOME"];
+  const RHYTHMEN = ["MONTHLY", "QUARTERLY", "SEMIANNUAL", "ANNUAL", "ONCE"];
+
+  test("Reihenfolge und Titel wie im Handoff", () => {
+    expect(g.GRUPPEN_REIHENFOLGE).toEqual(["fixkosten", "budget", "einmalig", "einnahmen"]);
+    expect(g.GRUPPEN_REIHENFOLGE.map(g.gruppenTitel)).toEqual([
+      "Fixkosten",
+      "Budget",
+      "Einmalig",
+      "Einnahmen",
+    ]);
+  });
+
+  test("Vollständigkeit: 15 Kombinationen, jede in einer der vier Gruppen", () => {
+    const gesehen = new Map<string, number>();
+    for (const t of TYPEN) {
+      for (const r of RHYTHMEN) {
+        const gr = g.kartenGruppe(t, r);
+        expect(g.GRUPPEN_REIHENFOLGE).toContain(gr);
+        gesehen.set(gr, (gesehen.get(gr) ?? 0) + 1);
+      }
+    }
+    // 3 × 5 = 15 — und keine Gruppe bleibt leer
+    expect(Array.from(gesehen.values()).reduce((a, b) => a + b, 0)).toBe(15);
+    expect(gesehen.size).toBe(4);
+  });
+
+  test("Einnahme schlägt Rhythmus, ONCE schlägt den Ausgaben-Typ", () => {
+    expect(g.kartenGruppe("INCOME", "ONCE")).toBe("einnahmen");
+    expect(g.kartenGruppe("FIXED_COST", "ONCE")).toBe("einmalig");
+    expect(g.kartenGruppe("BUDGET", "ONCE")).toBe("einmalig");
+    expect(g.kartenGruppe("BUDGET", "MONTHLY")).toBe("budget");
+    expect(g.kartenGruppe("FIXED_COST", "ANNUAL")).toBe("fixkosten");
   });
 });

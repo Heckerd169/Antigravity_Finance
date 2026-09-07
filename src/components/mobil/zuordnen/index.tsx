@@ -21,10 +21,12 @@ import {
   VORSCHAU_ZEILEN,
 } from "./zustand";
 import { MobilToast, useMobilToast } from "./toast";
+import { KartenSheet } from "./karten-sheet";
 import type {
   KartenTyp,
   NachbarMonat,
   OffeneZahlung,
+  SheetKarte,
   ZuordnenDaten,
 } from "./zuordnen.types";
 import styles from "./zuordnen.module.css";
@@ -34,8 +36,10 @@ import styles from "./zuordnen.module.css";
  *
  * v3-02 P3: Übernehmen schreibt (Server Action, Link `MANUAL_DROP`), der Toast
  * zeigt das echte Δ der Sparrate, „Rückgängig" löst den Link fünf Sekunden
- * lang, „Später" schiebt die Zahlung lokal ans Stapelende. Noch offen:
- * Zweifelsfall-Auswahl (P4), Sheet (P5), offline (P6). */
+ * lang, „Später" schiebt die Zahlung lokal ans Stapelende.
+ * P4: Zweifelsfall — Kandidaten als Konturen, nichts vorbelegt, Übernehmen
+ * gesperrt bis zur Wahl; „kein Vorschlag" ohne gefüllten Knopf (A1).
+ * P5: Sheet „Karte wählen". Noch offen: offline (P6). */
 
 type Props = {
   daten: ZuordnenDaten;
@@ -54,6 +58,7 @@ export function ZuordnenScreen({ daten }: Props) {
   }, [daten.monat]);
 
   const [laufend, setLaufend] = useState(false);
+  const [sheetOffen, setSheetOffen] = useState(false);
   const { toast, zeigen, schliessen } = useMobilToast();
 
   const offene = stapelReihenfolge(daten.offene, spaeter);
@@ -162,10 +167,22 @@ export function ZuordnenScreen({ daten }: Props) {
         <>
           <FokusKarte zahlung={fokus} daten={daten} />
           <Aktionsflaeche
+            key={fokus.id}
             zahlung={fokus}
             laufend={laufend}
             onZuordnen={(karte) => zuordnen(fokus, karte)}
+            onAndereKarte={() => setSheetOffen(true)}
             onSpaeter={() => spaeterLegen(fokus)}
+          />
+          <KartenSheet
+            offen={sheetOffen}
+            karten={daten.karten}
+            kontext={`${fokus.empfaenger} · ${eur(fokus.betrag, { plus: true })}`}
+            onSchliessen={() => setSheetOffen(false)}
+            onWahl={(k: SheetKarte) => {
+              setSheetOffen(false);
+              void zuordnen(fokus, { cardId: k.cardId, name: k.name, typ: k.typ });
+            }}
           />
         </>
       )}
@@ -275,14 +292,20 @@ function Aktionsflaeche({
   zahlung,
   laufend,
   onZuordnen,
+  onAndereKarte,
   onSpaeter,
 }: {
   zahlung: OffeneZahlung;
   laufend: boolean;
   onZuordnen: (karte: Zielkarte) => void;
+  onAndereKarte: () => void;
   onSpaeter: () => void;
 }) {
   const zustand = bestimmeZustand(zahlung);
+  // Zweifelsfall: NICHTS vorbelegt (Record #2). Der Aufrufer setzt `key` auf die
+  // Zahlung — mit der nächsten Buchung beginnt die Auswahl wieder bei null.
+  const [gewaehltId, setGewaehltId] = useState<string | null>(null);
+  const gewaehlt = zahlung.kandidaten.find((k) => k.cardId === gewaehltId) ?? null;
 
   return (
     <div className={styles.aktionen}>
@@ -313,18 +336,32 @@ function Aktionsflaeche({
             <span>{kandidatenLabel(zahlung.kandidaten.length, zahlung.empfaenger)}</span>
             <span>Nicht eindeutig</span>
           </div>
-          {zahlung.kandidaten.map((k) => (
-            <div key={k.cardId} className={styles.kandidat}>
-              <span className={styles.kandidatName}>{k.name}</span>
-              <span className={styles.kandidatZaehler}>{k.treffer} × zuvor</span>
-            </div>
-          ))}
+          {zahlung.kandidaten.map((k) => {
+            const istGewaehlt = k.cardId === gewaehltId;
+            return (
+              <button
+                key={k.cardId}
+                type="button"
+                className={`${styles.knopf} ${styles.kandidat} ${istGewaehlt ? styles.kandidatGewaehlt : ""}`}
+                aria-pressed={istGewaehlt}
+                // erneutes Tippen hebt die Auswahl auf (Handoff §1 mehrdeutig)
+                onClick={() => setGewaehltId(istGewaehlt ? null : k.cardId)}
+              >
+                <span className={styles.kandidatName}>{k.name}</span>
+                <span className={styles.kandidatZaehler}>{k.treffer} × zuvor</span>
+              </button>
+            );
+          })}
           <button
             type="button"
-            className={`${styles.knopf} ${styles.uebernehmen} ${styles.uebernehmenGesperrt}`}
-            aria-disabled="true"
+            className={`${styles.knopf} ${styles.uebernehmen} ${gewaehlt ? "" : styles.uebernehmenGesperrt}`}
+            aria-disabled={gewaehlt ? undefined : "true"}
+            aria-busy={laufend || undefined}
+            onClick={() => {
+              if (gewaehlt) onZuordnen({ cardId: gewaehlt.cardId, name: gewaehlt.name, typ: gewaehlt.typ });
+            }}
           >
-            {uebernehmenText(null)}
+            {uebernehmenText(gewaehlt)}
           </button>
         </>
       )}
@@ -333,7 +370,11 @@ function Aktionsflaeche({
         <div className={`${styles.label} ${styles.aktionenLabel}`}>Kein Vorschlag</div>
       )}
 
-      <button type="button" className={`${styles.knopf} ${styles.andereKarte}`}>
+      <button
+        type="button"
+        className={`${styles.knopf} ${styles.andereKarte}`}
+        onClick={onAndereKarte}
+      >
         Andere Karte …
       </button>
 

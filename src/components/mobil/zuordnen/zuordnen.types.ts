@@ -43,6 +43,18 @@ export type OffeneZahlung = {
   kandidaten: KandidatenKarte[];
 };
 
+/** Eine Zeile im Sheet „Karte wählen" — nur im Monat aktive Karten. Die
+ *  rechte Spalte ist SERVER-seitig aus den Zustandsregeln der Karten gebildet
+ *  (`card-state.ts`), der Client zeigt den Text. */
+export type SheetKarte = {
+  cardId: string;
+  name: string;
+  typ: KartenTyp;
+  gruppe: "fixkosten" | "budget" | "einmalig" | "einnahmen";
+  /** „1.180,00 € unbezahlt" · „bezahlt" · „62,24 € frei" · „Einnahme" */
+  rechts: string;
+};
+
 export type MonatsStatus = "laufend" | "vorbei" | "forecast";
 
 export type NachbarMonat = {
@@ -72,6 +84,8 @@ export type ZuordnenDaten = {
   offene: OffeneZahlung[];
   zurueck: NachbarMonat | null;
   vor: NachbarMonat | null;
+  /** Für das Sheet „Karte wählen": alle im Monat aktiven Karten, gruppiert. */
+  karten: SheetKarte[];
   /** ISO-Zeitstempel des Server-Aufbaus — „Stand von HH:MM" im Offline-Fall. */
   geladenUm: string;
 };
