@@ -1,0 +1,36 @@
+-- ============================================================================
+-- v3-02 · fragments_with_status liest ab jetzt mit den Rechten des AUFRUFERS
+--
+-- BEFUND (07.09.2026, beim Bau der Kandidaten-Funktion gemessen): Die View
+-- gehört `postgres`, und diese Rolle trägt BYPASSRLS. Eine View läuft in
+-- Postgres mit den Rechten ihres Eigentümers, nicht des Aufrufers — die
+-- Zeilenregeln (RLS) der Tabellen dahinter greifen deshalb NICHT. Gemessen als
+-- Rolle `authenticated` mit einer FREMDEN Nutzer-ID auf Produktion:
+--
+--     fragments_with_status  → 2.219 Zeilen (alle Zahlungen des Nutzers)
+--     fragments              → 0
+--     card_fragment_links    → 0
+--
+-- Heute ohne sichtbare Wirkung, weil es genau einen Nutzer gibt. Es ist
+-- trotzdem ein Loch: Jede weitere angemeldete Identität sähe über die View
+-- alle Kontobewegungen — und die App liest Rohmasse, Schaufenster-Bestand und
+-- Nachbar-Zähler AUSSCHLIESSLICH über diese View. Dass es nie auffiel, hat
+-- denselben Grund wie die Regions-Zeile aus LL-30: Mit einem Nutzer sieht die
+-- richtige Antwort genauso aus wie die falsche.
+--
+-- ABHILFE: security_invoker (Postgres ≥ 15). Die View wertet die Zeilenregeln
+-- der Tabellen dann für den Aufrufer aus. Für den Eigentümer der Daten ändert
+-- sich nichts — er sieht dieselben Zeilen wie vorher, nur jetzt, weil RLS es
+-- erlaubt, statt weil die View daran vorbeiläuft.
+--
+-- WAS SICH SONST NICHT ÄNDERT: Definition, Spalten und Status-Ableitung der
+-- View bleiben byte-identisch (kein CREATE OR REPLACE). Funktionen, die die
+-- View lesen, laufen als SECURITY INVOKER ohnehin unter dem Aufrufer; über die
+-- Dienst-Rolle (MCP, Import-Verifikation) bleibt alles sichtbar, weil
+-- service_role BYPASSRLS trägt.
+--
+-- Beleg vorher/nachher auf Übungs- und Produktiv-Datenbank:
+-- sprints/sprint_v3-02_anker.md (Testreihe V1–V3).
+-- ============================================================================
+
+ALTER VIEW public.fragments_with_status SET (security_invoker = true);

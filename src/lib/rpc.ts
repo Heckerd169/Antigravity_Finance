@@ -827,3 +827,45 @@ export async function getCategoryAmountSeries(
   if (error) throw error;
   return (data as unknown as AmountSeriesPoint[]) ?? [];
 }
+
+// ── v3-02 (MB-2): Kandidaten für das Zuordnen ohne Ziehen auf /mobil ────────
+
+/** Eine Karte, auf der derselbe Händler wie bei der offenen Zahlung bisher
+ *  VON HAND lag — mit der Zahl dieser Handzuordnungen. */
+export type FragmentCandidate = {
+  fragment_id: string;
+  card_id: string;
+  /** Manuelle Verknüpfungen dieses Händlers auf dieser Karte
+   *  (`origin = MANUAL_DROP`); automatische zählen nicht. */
+  treffer: number;
+};
+
+/** Die Kandidaten ALLER offenen Zahlungen eines Monats in EINEM Aufruf.
+ *
+ *  Beantwortet für jede offene Zahlung des Monats: Auf welchen Karten lag
+ *  derselbe Händler bisher von Hand, und wie oft? `/mobil` macht daraus den
+ *  Zähler im Vorschlag („7 × so zugeordnet") und die Kandidaten-Liste im
+ *  Zweifelsfall (Design-Record 07.09.2026, Entscheidung 2).
+ *
+ *  Die Funktion wiederholt die Regel von `history_match` Stufe 1 wortgleich
+ *  (`merchant_key`, `MANUAL_DROP`, kein Übertrag, nicht die Zahlung selbst) —
+ *  nur als Liste statt als Ja/Nein, denn jene schweigt, sobald der Händler auf
+ *  mehreren Karten liegt. Und sie liefert NUR Karten, die im angezeigten Monat
+ *  aktiv sind (`is_card_active_in_month`, aufgerufen, nicht nachgebaut).
+ *  Belegt im Trockenlauf: `sprints/sprint_v3-02_anker.md`, Testreihe T1–T7.
+ *
+ *  Ein Aufruf je Aufbau, nicht einer je Zahlung: Ein N+1 hier wäre dieselbe
+ *  Fehlerklasse wie die 179 Netzrunden vor v2-24 (LL-28/LL-29, §9 Anker 3).
+ *  Throw-on-Error (LL-2); der Aufrufer fängt und lässt den Zähler leer, statt
+ *  die Seite mitzunehmen — dieselbe Haltung wie bei `categoryAmounts`. */
+export async function getOpenFragmentCandidates(
+  client: AppSupabaseClient,
+  args: { userId: string; month: string },
+): Promise<FragmentCandidate[]> {
+  const { data, error } = await client.rpc("get_open_fragment_candidates", {
+    p_user_id: args.userId,
+    p_month: args.month,
+  });
+  if (error) throw error;
+  return (data as unknown as FragmentCandidate[]) ?? [];
+}

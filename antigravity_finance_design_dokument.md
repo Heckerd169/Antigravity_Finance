@@ -1,8 +1,16 @@
 # Antigravity Finance — Konsolidiertes Design-Dokument
 
-**Version:** 3.14.1 (V3 · Sprint v3-01 — Apple-Redesign vollständig nachgezogen)
+**Version:** 3.14.2 (V3 · Sprint v3-02 — die Route `/mobil` ist per Verweis dokumentiert)
 
 **Status:** Freigegeben — V2-Patches bis Sprint v2-31 eingespielt. *(Die Version der Schema-Doku stand hier bis zum 31.08.2026 als Zahl und war zuletzt zwei Bumps veraltet. Sie ist entfernt statt korrigiert: Ein Wert, der an zwei Stellen steht, ist an einer davon irgendwann falsch — er steht jetzt nur noch im Header der Schema-Doku selbst. Dieselbe Konsequenz, die CLAUDE.md §9 am 24.08.2026 für sich gezogen hat.)* Aus den Runden vom 06.08. und 07./08.08.2026 ist alles umgesetzt; `B4` ist seit v2-18 **abgelöst** (siehe §8). Die drei Spezifikationen der Runde vom 17.08.2026 sind gebaut (Sprint v2-25) — eine davon mit einer gemessenen Korrektur an §7, siehe Changelog v3.9.1.
+
+> **Changelog v3.14.2 (07.09.2026, Sprint v3-02):** Die Route **`/mobil`** existiert
+> (Tab „Zuordnen", 430 px). Dieses Dokument bleibt die Bibel der **Schreibtisch**-Ansicht;
+> die Spezifikation von `/mobil` steht im Handoff-README
+> (`design-system/handoff/mobile/README.md`) und im Design-Record
+> (`V2/design_direktor_2026-09-07_mobil.md`). Hier nur der Verweis in §13, damit das
+> Ein-Screen-Prinzip aus §1 nicht ohne Erklärung neben einer zweiten Route steht. Keine
+> Regel dieses Dokuments ändert sich.
 
 > **Changelog v3.14.1 (06.09.2026, Sprint v3-01 · Teil 2 von 2):** Die
 > beschreibenden Abschnitte sind an den gebauten Stand angeglichen — §5
@@ -2988,6 +2996,14 @@ das ist am 16.08.2026 passiert.
 ---
 
 ## 13. Bekannte Limitationen V1
+
+> **`/mobil` (seit v3-02, 07.09.2026):** eine zweite, eigene Route zum Zuordnen per Tipp —
+> **kein** Responsive-Umbau dieser Ansicht. Ihre Spezifikation liegt nicht hier, sondern im
+> Handoff-README (`design-system/handoff/mobile/README.md`) und im Design-Record
+> (`V2/design_direktor_2026-09-07_mobil.md`); bei Widerspruch gilt dort der Record. Was
+> beide Ansichten teilen, steht hier: die Tokens (§3), die Sparrate (§4) und die
+> Schreibregel für Zuordnungen (§8, Schema-Doku §5) — eine Zuordnung vom Handy ist in der
+> Datenbank von einer per Drag & Drop ununterscheidbar (`src/lib/card-links.ts`).
 
 | Limitation | Workaround V1 | V2-Plan |
 |---|---|---|
