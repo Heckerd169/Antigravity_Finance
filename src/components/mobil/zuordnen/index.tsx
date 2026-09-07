@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { ymToDbDate } from "@/lib/months";
+import { rueckgaengigAction, zuordnenAction } from "@/app/mobil/zuordnen/actions";
 import { eur, formatDatumLang } from "../format";
 import {
   bestimmeZustand,
@@ -10,30 +13,111 @@ import {
   offenZeile,
   pillenWort,
   positionsZaehler,
+  stapelReihenfolge,
   stapelRest,
+  toastZeile,
   uebernehmenText,
   vorschlagsLabel,
   VORSCHAU_ZEILEN,
 } from "./zustand";
-import type { NachbarMonat, OffeneZahlung, ZuordnenDaten } from "./zuordnen.types";
+import { MobilToast, useMobilToast } from "./toast";
+import type {
+  KartenTyp,
+  NachbarMonat,
+  OffeneZahlung,
+  ZuordnenDaten,
+} from "./zuordnen.types";
 import styles from "./zuordnen.module.css";
 
 /* Der Tab „Zuordnen" (Handoff-README §1). Eine Buchung im Fokus, der Vorschlag
  * als einziger gefüllter Knopf, darunter „Andere Karte …" und „Später".
  *
- * v3-02 P2: die LESENDE Fassung — Zustände normal und leer; die Knöpfe stehen,
- * schreiben aber noch nicht (P3: Übernehmen, Toast, Rückgängig, Später;
- * P4: Zweifelsfall und kein Vorschlag; P5: Sheet; P6: offline). */
+ * v3-02 P3: Übernehmen schreibt (Server Action, Link `MANUAL_DROP`), der Toast
+ * zeigt das echte Δ der Sparrate, „Rückgängig" löst den Link fünf Sekunden
+ * lang, „Später" schiebt die Zahlung lokal ans Stapelende. Noch offen:
+ * Zweifelsfall-Auswahl (P4), Sheet (P5), offline (P6). */
 
 type Props = {
   daten: ZuordnenDaten;
 };
 
+/** Eine Karte, auf die zugeordnet wird — aus Vorschlag, Kandidat oder Sheet. */
+export type Zielkarte = { cardId: string; name: string; typ: KartenTyp };
+
 export function ZuordnenScreen({ daten }: Props) {
-  const offene = daten.offene;
+  // „Später": lokal, in Reihenfolge der Rückstellung. Monatswechsel setzt
+  // zurück — Soft-Navigation un-mountet den Bildschirm nicht (LL-5), und ein
+  // im August zurückgestellter Stapel gehört nicht in den September.
+  const [spaeter, setSpaeter] = useState<string[]>([]);
+  useEffect(() => {
+    setSpaeter([]);
+  }, [daten.monat]);
+
+  const [laufend, setLaufend] = useState(false);
+  const { toast, zeigen, schliessen } = useMobilToast();
+
+  const offene = stapelReihenfolge(daten.offene, spaeter);
   const fokus: OffeneZahlung | null = offene[0] ?? null;
   const vorschau = offene.slice(1, 1 + VORSCHAU_ZEILEN);
   const sparrateText = daten.sparrate === null ? null : eur(daten.sparrate);
+  const monthDb = ymToDbDate(daten.monat);
+
+  const zuordnen = useCallback(
+    async (zahlung: OffeneZahlung, karte: Zielkarte) => {
+      if (laufend) return;
+      setLaufend(true);
+      try {
+        const erg = await zuordnenAction({
+          fragmentId: zahlung.id,
+          cardId: karte.cardId,
+          month: monthDb,
+        });
+        // Die Zeile kommt aus dem ECHTEN Δ — beide Werte aus der Datenbank.
+        // Fehlt einer, bleibt sie weg (keine Null-Zeile, LL-20).
+        const zeile =
+          erg.vorher !== null && erg.nachher !== null
+            ? toastZeile({
+                delta: erg.nachher - erg.vorher,
+                monatName: daten.monatName,
+                istEinnahme: karte.typ === "INCOME",
+                deltaText: eur(erg.nachher - erg.vorher, { plus: true }),
+              })
+            : null;
+        zeigen({
+          titel: `Zugeordnet · ${karte.name}`,
+          zeile,
+          rueckgaengig: () => {
+            rueckgaengigAction({ fragmentId: zahlung.id, month: monthDb }).catch((e) =>
+              console.error("Rückgängig fehlgeschlagen", e),
+            );
+          },
+        });
+      } catch (e) {
+        console.error("Zuordnen fehlgeschlagen", e);
+        zeigen({ titel: "Zuordnen fehlgeschlagen", zeile: null, rueckgaengig: null });
+      } finally {
+        setLaufend(false);
+      }
+    },
+    [laufend, monthDb, daten.monatName, zeigen],
+  );
+
+  const spaeterLegen = useCallback(
+    (zahlung: OffeneZahlung) => {
+      setSpaeter((prev) => (prev.includes(zahlung.id) ? prev : [...prev, zahlung.id]));
+      zeigen({
+        titel: `Zurückgestellt · ${zahlung.empfaenger}`,
+        zeile: { text: "Steht jetzt am Ende des Stapels", ton: "neutral" },
+        rueckgaengig: null,
+      });
+    },
+    [zeigen],
+  );
+
+  const rueckgaengig = useCallback(() => {
+    toast?.rueckgaengig?.();
+    schliessen();
+  }, [toast, schliessen]);
 
   return (
     <section className={styles.screen} aria-label="Zuordnen">
@@ -77,9 +161,16 @@ export function ZuordnenScreen({ daten }: Props) {
       ) : (
         <>
           <FokusKarte zahlung={fokus} daten={daten} />
-          <Aktionsflaeche zahlung={fokus} />
+          <Aktionsflaeche
+            zahlung={fokus}
+            laufend={laufend}
+            onZuordnen={(karte) => zuordnen(fokus, karte)}
+            onSpaeter={() => spaeterLegen(fokus)}
+          />
         </>
       )}
+
+      <MobilToast toast={toast} onRueckgaengig={rueckgaengig} />
     </section>
   );
 }
@@ -180,7 +271,17 @@ function Haken() {
   );
 }
 
-function Aktionsflaeche({ zahlung }: { zahlung: OffeneZahlung }) {
+function Aktionsflaeche({
+  zahlung,
+  laufend,
+  onZuordnen,
+  onSpaeter,
+}: {
+  zahlung: OffeneZahlung;
+  laufend: boolean;
+  onZuordnen: (karte: Zielkarte) => void;
+  onSpaeter: () => void;
+}) {
   const zustand = bestimmeZustand(zahlung);
 
   return (
@@ -194,6 +295,11 @@ function Aktionsflaeche({ zahlung }: { zahlung: OffeneZahlung }) {
             type="button"
             className={`${styles.knopf} ${styles.uebernehmen}`}
             aria-label={`Übernehmen: ${zahlung.vorschlag.name}`}
+            aria-busy={laufend || undefined}
+            onClick={() => {
+              const v = zahlung.vorschlag;
+              if (v) onZuordnen({ cardId: v.cardId, name: v.name, typ: v.typ });
+            }}
           >
             <Haken />
             <span className={styles.uebernehmenName}>{zahlung.vorschlag.name}</span>
@@ -232,7 +338,7 @@ function Aktionsflaeche({ zahlung }: { zahlung: OffeneZahlung }) {
       </button>
 
       <div className={styles.spaeterZeile}>
-        <button type="button" className={`${styles.knopf} ${styles.spaeter}`}>
+        <button type="button" className={`${styles.knopf} ${styles.spaeter}`} onClick={onSpaeter}>
           Später
         </button>
       </div>

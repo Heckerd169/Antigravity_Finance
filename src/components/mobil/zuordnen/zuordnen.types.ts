@@ -6,9 +6,15 @@
  * Schwelle. Die Zustandsentscheidung selbst (normal · mehrdeutig · kein
  * Vorschlag) steht als reine Funktion in `zustand.ts`. */
 
+import type { Database } from "@/lib/supabase/types";
+
+export type KartenTyp = Database["public"]["Enums"]["card_type"];
+
 export type KandidatenKarte = {
   cardId: string;
   name: string;
+  /** Der Toast unterscheidet Einnahme und Ausgabe („Einnahme · im Plan"). */
+  typ: KartenTyp;
   /** Manuelle Zuordnungen desselben Händlers zu dieser Karte — „N × zuvor". */
   treffer: number;
 };
@@ -16,6 +22,7 @@ export type KandidatenKarte = {
 export type Vorschlag = {
   cardId: string;
   name: string;
+  typ: KartenTyp;
   /** „N × so zugeordnet"; 0, wenn der Vorschlag aus Händler-Regel oder
    *  Ähnlichkeit stammt und nie von Hand so lag. */
   treffer: number;

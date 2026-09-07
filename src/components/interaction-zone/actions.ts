@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { deleteCardLink, upsertManualCardLink } from "@/lib/card-links";
 import {
   createCardDirect,
   createCardFromFragment,
@@ -24,7 +25,11 @@ import type {
 // ── Drop Fragment auf existierende Karte ────────────────────────────────────
 
 /** UPSERT card_fragment_links: ON CONFLICT(fragment_id) → re-assign auf neue
- *  Karte. month = aktuell angezeigter Monat (Konflikt 4 §7 / A19). */
+ *  Karte. month = aktuell angezeigter Monat (Konflikt 4 §7 / A19).
+ *
+ *  v3-02: Der Schreibvorgang selbst liegt in `lib/card-links.ts` — /mobil
+ *  ruft DIESELBE Funktion. Eine Zuordnung vom Handy muss in der Datenbank
+ *  von einer vom Schreibtisch ununterscheidbar sein (LL-26). */
 export async function linkFragmentToCard(
   fragmentId: string,
   cardId: string,
@@ -36,20 +41,12 @@ export async function linkFragmentToCard(
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Nicht authentifiziert");
 
-  const { error } = await supabase
-    .from("card_fragment_links")
-    .upsert(
-      {
-        user_id: user.id,
-        fragment_id: fragmentId,
-        card_id: cardId,
-        month,
-        origin: "MANUAL_DROP",
-      },
-      { onConflict: "fragment_id" },
-    );
-
-  if (error) throw error;
+  await upsertManualCardLink(supabase, {
+    userId: user.id,
+    fragmentId,
+    cardId,
+    month,
+  });
 
   revalidatePath("/", "page");
 }
@@ -154,12 +151,8 @@ export async function ejectFragment(fragmentId: string): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Nicht authentifiziert");
 
-  const { error } = await supabase
-    .from("card_fragment_links")
-    .delete()
-    .eq("fragment_id", fragmentId);
-
-  if (error) throw error;
+  // v3-02: dieselbe Lösch-Logik wie „Rückgängig" auf /mobil (`lib/card-links.ts`).
+  await deleteCardLink(supabase, { fragmentId });
 
   revalidatePath("/", "page");
 }
