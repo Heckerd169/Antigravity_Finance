@@ -173,3 +173,14 @@ export function toastZeile(z: {
     ton: z.delta < 0 ? "rot" : "teal",
   };
 }
+
+/** Offline (Record #4): neutrale Pille oben rechts — „Stand von 14:32 ·
+ *  offline" — NICHT rot; und die Hinweiszeile unter den gesperrten Knöpfen.
+ *  `uhrzeit` ist der Zeitpunkt des letzten Aufbaus („HH:MM"). */
+export function offlinePille(uhrzeit: string): string {
+  return `Stand von ${uhrzeit} · offline`;
+}
+
+export function offlineHinweis(uhrzeit: string): string {
+  return `Zuordnen braucht Netz. Der Stapel ist der von ${uhrzeit}.`;
+}

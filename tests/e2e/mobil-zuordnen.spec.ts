@@ -58,6 +58,8 @@ const z = laden("src/components/mobil/zuordnen/zustand.ts") as {
     istEinnahme: boolean;
     deltaText: string;
   }) => { text: string; ton: string };
+  offlinePille: (uhrzeit: string) => string;
+  offlineHinweis: (uhrzeit: string) => string;
 };
 
 const d = laden("src/lib/description.ts") as {
@@ -289,5 +291,14 @@ test.describe("Sheet-Gruppen: jede (Typ, Rhythmus)-Kombination genau EINE Gruppe
     expect(g.kartenGruppe("BUDGET", "ONCE")).toBe("einmalig");
     expect(g.kartenGruppe("BUDGET", "MONTHLY")).toBe("budget");
     expect(g.kartenGruppe("FIXED_COST", "ANNUAL")).toBe("fixkosten");
+  });
+});
+
+test.describe("Offline (Record #4): neutraler Wortlaut, Stand des letzten Aufbaus", () => {
+  test("Pille und Hinweis nennen die Uhrzeit des Standes", () => {
+    expect(z.offlinePille("14:32")).toBe("Stand von 14:32 · offline");
+    expect(z.offlineHinweis("14:32")).toBe(
+      "Zuordnen braucht Netz. Der Stapel ist der von 14:32.",
+    );
   });
 });

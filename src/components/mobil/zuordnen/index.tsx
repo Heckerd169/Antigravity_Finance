@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ymToDbDate } from "@/lib/months";
 import { rueckgaengigAction, zuordnenAction } from "@/app/mobil/zuordnen/actions";
-import { eur, formatDatumLang } from "../format";
+import { eur, formatDatumLang, formatUhrzeit } from "../format";
+import { useOnline } from "../use-online";
 import {
   bestimmeZustand,
   kandidatenLabel,
   leerText,
   nachbarUnterzeile,
   offenZeile,
+  offlineHinweis,
+  offlinePille,
   pillenWort,
   positionsZaehler,
   stapelReihenfolge,
@@ -39,7 +42,9 @@ import styles from "./zuordnen.module.css";
  * lang, „Später" schiebt die Zahlung lokal ans Stapelende.
  * P4: Zweifelsfall — Kandidaten als Konturen, nichts vorbelegt, Übernehmen
  * gesperrt bis zur Wahl; „kein Vorschlag" ohne gefüllten Knopf (A1).
- * P5: Sheet „Karte wählen". Noch offen: offline (P6). */
+ * P5: Sheet „Karte wählen".
+ * P6: offline — neutrale Pille „Stand von HH:MM · offline", Schreibknöpfe
+ * gesperrt (Opacity .4, kein Handler), „Später" bleibt (Record #4). */
 
 type Props = {
   daten: ZuordnenDaten;
@@ -60,6 +65,8 @@ export function ZuordnenScreen({ daten }: Props) {
   const [laufend, setLaufend] = useState(false);
   const [sheetOffen, setSheetOffen] = useState(false);
   const { toast, zeigen, schliessen } = useMobilToast();
+  const online = useOnline();
+  const standUhrzeit = formatUhrzeit(daten.geladenUm);
 
   const offene = stapelReihenfolge(daten.offene, spaeter);
   const fokus: OffeneZahlung | null = offene[0] ?? null;
@@ -132,6 +139,7 @@ export function ZuordnenScreen({ daten }: Props) {
           <div className={styles.sparrate}>{sparrateText ?? "—"}</div>
         </div>
         <div className={styles.kopfRechts}>
+          {!online && <span className={styles.pille}>{offlinePille(standUhrzeit)}</span>}
           <div className={styles.offenZeile}>
             {offenZeile({ offen: offene.length, gesamt: daten.buchungenGesamt })}
           </div>
@@ -170,6 +178,8 @@ export function ZuordnenScreen({ daten }: Props) {
             key={fokus.id}
             zahlung={fokus}
             laufend={laufend}
+            online={online}
+            standUhrzeit={standUhrzeit}
             onZuordnen={(karte) => zuordnen(fokus, karte)}
             onAndereKarte={() => setSheetOffen(true)}
             onSpaeter={() => spaeterLegen(fokus)}
@@ -291,17 +301,25 @@ function Haken() {
 function Aktionsflaeche({
   zahlung,
   laufend,
+  online,
+  standUhrzeit,
   onZuordnen,
   onAndereKarte,
   onSpaeter,
 }: {
   zahlung: OffeneZahlung;
   laufend: boolean;
+  online: boolean;
+  standUhrzeit: string;
   onZuordnen: (karte: Zielkarte) => void;
   onAndereKarte: () => void;
   onSpaeter: () => void;
 }) {
   const zustand = bestimmeZustand(zahlung);
+  // Offline: Schreiben gesperrt — Opacity .4 und KEIN Handler (Record #4).
+  // „Später" ist lokal und bleibt.
+  const schreibenGesperrt = !online;
+  const sperrKlasse = schreibenGesperrt ? styles.gesperrt : "";
   // Zweifelsfall: NICHTS vorbelegt (Record #2). Der Aufrufer setzt `key` auf die
   // Zahlung — mit der nächsten Buchung beginnt die Auswahl wieder bei null.
   const [gewaehltId, setGewaehltId] = useState<string | null>(null);
@@ -316,13 +334,18 @@ function Aktionsflaeche({
           </div>
           <button
             type="button"
-            className={`${styles.knopf} ${styles.uebernehmen}`}
+            className={`${styles.knopf} ${styles.uebernehmen} ${sperrKlasse}`}
             aria-label={`Übernehmen: ${zahlung.vorschlag.name}`}
+            aria-disabled={schreibenGesperrt || undefined}
             aria-busy={laufend || undefined}
-            onClick={() => {
-              const v = zahlung.vorschlag;
-              if (v) onZuordnen({ cardId: v.cardId, name: v.name, typ: v.typ });
-            }}
+            onClick={
+              schreibenGesperrt
+                ? undefined
+                : () => {
+                    const v = zahlung.vorschlag;
+                    if (v) onZuordnen({ cardId: v.cardId, name: v.name, typ: v.typ });
+                  }
+            }
           >
             <Haken />
             <span className={styles.uebernehmenName}>{zahlung.vorschlag.name}</span>
@@ -354,12 +377,16 @@ function Aktionsflaeche({
           })}
           <button
             type="button"
-            className={`${styles.knopf} ${styles.uebernehmen} ${gewaehlt ? "" : styles.uebernehmenGesperrt}`}
-            aria-disabled={gewaehlt ? undefined : "true"}
+            className={`${styles.knopf} ${styles.uebernehmen} ${gewaehlt && !schreibenGesperrt ? "" : styles.uebernehmenGesperrt}`}
+            aria-disabled={gewaehlt && !schreibenGesperrt ? undefined : "true"}
             aria-busy={laufend || undefined}
-            onClick={() => {
-              if (gewaehlt) onZuordnen({ cardId: gewaehlt.cardId, name: gewaehlt.name, typ: gewaehlt.typ });
-            }}
+            onClick={
+              schreibenGesperrt
+                ? undefined
+                : () => {
+                    if (gewaehlt) onZuordnen({ cardId: gewaehlt.cardId, name: gewaehlt.name, typ: gewaehlt.typ });
+                  }
+            }
           >
             {uebernehmenText(gewaehlt)}
           </button>
@@ -370,10 +397,15 @@ function Aktionsflaeche({
         <div className={`${styles.label} ${styles.aktionenLabel}`}>Kein Vorschlag</div>
       )}
 
+      {schreibenGesperrt && (
+        <div className={styles.hinweis}>{offlineHinweis(standUhrzeit)}</div>
+      )}
+
       <button
         type="button"
-        className={`${styles.knopf} ${styles.andereKarte}`}
-        onClick={onAndereKarte}
+        className={`${styles.knopf} ${styles.andereKarte} ${sperrKlasse}`}
+        aria-disabled={schreibenGesperrt || undefined}
+        onClick={schreibenGesperrt ? undefined : onAndereKarte}
       >
         Andere Karte …
       </button>
