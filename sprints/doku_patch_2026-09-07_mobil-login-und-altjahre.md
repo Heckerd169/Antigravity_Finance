@@ -80,6 +80,27 @@ die App startet danach in `/mobil` mit Statusleiste über der Seite, so wie der 
 
 ---
 
+## ③ Sheet „Karte wählen": die Kontextzeile war eingedrückt
+
+**Befund vom iPhone (Screenshot des Users, 22:10 Uhr):** Unter „Karte wählen" war die
+Zeile „Aldi · −75,48 €" nur halb zu sehen — Name und Betrag unlesbar. Ursache: Das Sheet
+ist eine Flex-Spalte mit `max-height: 640px`; sobald die Liste die Höhe sprengt, drückt
+der Browser **alle** Kinder zusammen, auch Griff, Kopfzeile und Kontextzeile
+(`flex-shrink` ist standardmäßig 1). Die Kontextzeile trägt `overflow: hidden` für die
+Ellipse und wurde so von unten beschnitten.
+
+**Behoben:** `flex-shrink: 0` auf Griff, Kopfzeile und Kontextzeile (plus eine
+Mindesthöhe von 18 px); nur die Liste schrumpft und scrollt, mit
+`overscroll-behavior: contain`, damit die Seite dahinter nicht mitscrollt.
+
+**Belegt mit Bild:** `render-smoke-mobil.spec.ts` öffnet das Sheet jetzt read-only (nur
+wenn eine offene Zahlung da ist), misst, dass Titel und Kontextzeile ihre volle Höhe haben
+und nicht überlappen, fotografiert (`test-results/mobil-sheet.png`) und schließt über
+„Abbrechen". Mit echten Daten (2 offene Zahlungen im September): 7 von 7 grün, im Bild
+„Aldi · −75,48 €" vollständig lesbar.
+
+---
+
 ## Nebenwirkungen auf die Führungs-Dokumente
 
 - Roadmap: `V1` erledigt (§4), §0 nachgezählt.
