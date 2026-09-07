@@ -83,13 +83,16 @@ export default defineConfig({
     //        „Zuordnen" (Zweifelsfall schlägt Vorschlag, Labels, Später-Reihenfolge,
     //        Toast-Ton) und die Zerlegung des Buchungstextes. Keine davon macht
     //        eine Zahl falsch, wenn sie bricht.
+    // 07.09.2026 (Nachzug zu v3-02): `login-ziel` kommt dazu — die Prüfung des
+    //        `?next=`-Ziels nach dem Anmelden. Ein offenes Weiterleitungs-Ziel
+    //        macht keine Zahl falsch; es schickt nur den Nutzer woandershin.
     // 03.09.2026: `csv-blockbildung` kommt dazu — der Wächter über die
     //        Blockbildung des CSV-Imports. Der Bruch, den er fängt, macht keine
     //        Zahl falsch: Fällt eine Gruppe byte-identischer Zeilen auf zwei
     //        Blöcke, zählt die Laufnummer der RPC je Block neu, beide Zeilen
     //        bekommen denselben Hash, und eine echte Zahlung verschwindet als
     //        vermeintliches Duplikat. Anker 1 und 2 bleiben dabei grün.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen)\.spec\.ts/, use: DESKTOP },
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen|login-ziel)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

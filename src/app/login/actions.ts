@@ -2,10 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/next-path";
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  // Nachzug 07.09.2026 (v3-02): das geprüfte Ziel aus dem Formular — die
+  // Middleware hat es als `?next=` an die Anmeldeseite gegeben, die Seite
+  // reicht es als verstecktes Feld weiter. Ungültig oder leer → Dashboard.
+  const next = safeNextPath(String(formData.get("next") ?? "")) ?? "/";
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -14,7 +19,9 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    redirect("/login?error=1");
+    redirect(
+      next === "/" ? "/login?error=1" : `/login?error=1&next=${encodeURIComponent(next)}`,
+    );
   }
 
   // Profile auto-create: idempotenter Upsert.
@@ -29,5 +36,5 @@ export async function login(formData: FormData) {
       .upsert({ user_id: data.user.id }, { onConflict: "user_id", ignoreDuplicates: true });
   }
 
-  redirect("/");
+  redirect(next);
 }
