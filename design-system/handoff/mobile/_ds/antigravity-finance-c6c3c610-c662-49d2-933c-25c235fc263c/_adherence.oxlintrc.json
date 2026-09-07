@@ -1,0 +1,149 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": []
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {},
+    "tokens": [
+      "--bg-card",
+      "--bg-card-ghost",
+      "--bg-card-hover",
+      "--bg-category",
+      "--bg-category-stack",
+      "--bg-elevated",
+      "--bg-primary",
+      "--border-ghost",
+      "--border-subtle",
+      "--color-blue-dot",
+      "--color-gold",
+      "--color-red",
+      "--color-teal",
+      "--font-stack-system",
+      "--neutral-fill",
+      "--progress-neutral",
+      "--progress-track",
+      "--radius-card",
+      "--radius-control",
+      "--radius-popup",
+      "--red-fill",
+      "--ring-track",
+      "--teal-fill",
+      "--text-primary",
+      "--text-quaternary",
+      "--text-secondary",
+      "--text-tertiary",
+      "--typo-caption-size",
+      "--typo-caption-tracking",
+      "--typo-caption-weight",
+      "--typo-card-amount-size",
+      "--typo-card-amount-tracking",
+      "--typo-card-amount-weight",
+      "--typo-card-name-size",
+      "--typo-card-name-tracking",
+      "--typo-card-name-weight",
+      "--typo-label-size",
+      "--typo-label-tracking",
+      "--typo-label-weight",
+      "--typo-month-active-size",
+      "--typo-month-active-tracking",
+      "--typo-month-active-weight",
+      "--typo-month-flank-size",
+      "--typo-month-flank-tracking",
+      "--typo-month-flank-weight",
+      "--typo-numeric-variant",
+      "--typo-ring-size",
+      "--typo-ring-tracking",
+      "--typo-ring-weight",
+      "--wave-forecast"
+    ],
+    "tokenKinds": {
+      "--bg-primary": "color",
+      "--bg-card": "color",
+      "--bg-card-hover": "color",
+      "--bg-card-ghost": "color",
+      "--bg-elevated": "color",
+      "--bg-category": "color",
+      "--bg-category-stack": "color",
+      "--border-subtle": "color",
+      "--border-ghost": "color",
+      "--text-primary": "font",
+      "--text-secondary": "font",
+      "--text-tertiary": "font",
+      "--text-quaternary": "font",
+      "--color-teal": "color",
+      "--color-red": "color",
+      "--color-gold": "color",
+      "--color-blue-dot": "color",
+      "--teal-fill": "color",
+      "--red-fill": "color",
+      "--neutral-fill": "color",
+      "--progress-track": "color",
+      "--progress-neutral": "color",
+      "--ring-track": "color",
+      "--wave-forecast": "color",
+      "--font-stack-system": "font",
+      "--typo-ring-size": "spacing",
+      "--typo-ring-weight": "font",
+      "--typo-ring-tracking": "font",
+      "--typo-month-active-size": "spacing",
+      "--typo-month-active-weight": "font",
+      "--typo-month-active-tracking": "font",
+      "--typo-card-name-size": "spacing",
+      "--typo-card-name-weight": "font",
+      "--typo-card-name-tracking": "font",
+      "--typo-card-amount-size": "spacing",
+      "--typo-card-amount-weight": "font",
+      "--typo-card-amount-tracking": "font",
+      "--typo-month-flank-size": "spacing",
+      "--typo-month-flank-weight": "font",
+      "--typo-month-flank-tracking": "font",
+      "--typo-label-size": "spacing",
+      "--typo-label-weight": "font",
+      "--typo-label-tracking": "font",
+      "--typo-caption-size": "spacing",
+      "--typo-caption-weight": "font",
+      "--typo-caption-tracking": "font",
+      "--typo-numeric-variant": "other",
+      "--radius-card": "radius",
+      "--radius-control": "radius",
+      "--radius-popup": "radius"
+    },
+    "fontFamilies": []
+  }
+}

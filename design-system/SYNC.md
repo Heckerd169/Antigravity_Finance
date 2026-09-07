@@ -15,6 +15,7 @@
 | `foundations/` | Farben, Typografie |
 | `komponenten/` | **neun** Seiten: Karten · Kategorien · Ring · Welle · Verlauf · Header · Overlays · Interaktionszone · Einkommen |
 | `entwuerfe/` | ältere Einzelentwürfe, nicht Teil des Bündels |
+| `handoff/` | Übergabe-Pakete **aus** dem Design-Projekt (Richtung umgekehrt zu allem anderen hier): `mobile/` mit Prototyp, Beschluss-Artboards, Screenshots und README für `/mobil` (07.09.2026). Der Record dazu liegt unter `V2/`, die Token-Kopie unter `_ds/` liest die App nie |
 
 > **Seit v3-01 sind alle sieben sichtbaren Komponenten der Design-Doku bebildert**
 > (§5 Ring · §6 Header · §7 Karten · §8 Zone · §9 Welle · §10 Einkommen · §11

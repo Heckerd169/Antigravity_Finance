@@ -13,28 +13,47 @@ tatsächlich auf dem Bildschirm steht.
 **Der User sieht gerenderte Seiten, der Agent nicht.** Deshalb gilt: zeigen statt
 beschreiben. Eine Seite hier zu ergänzen beantwortet mehr als drei Absätze Text.
 
+## v3 — Apple-Redesign (05.09.2026)
+
+Liegt unter `v3/` **neben** dem Bestand; `foundations/` und `komponenten/` bleiben der
+Ist-Zustand von v2. Einstieg: `v3/00-was-aendert-sich.html` (sieben Regeln, jede mit
+Vorher/Nachher), Umsetzung: `v3/uebergabe.html` (Token-Tabelle alt → neu). Die
+v3-Tokens liegen in `styles.css` (Dark + Light). Grundtöne unverändert; geändert sind
+Zuweisung (Rot nur noch für echte Abweichung), Deckkraft-Stufen und Flächen. Keine
+Rechenlogik berührt.
+
+### Entschieden in der Runde vom 05.09.2026 (v3)
+
+| Thema | Entscheidung | Seite |
+|---|---|---|
+| Karten-Zustand | **Variante A** — Statuspunkt oben rechts + Statuswort; Fläche einheitlich; Rot nur für Überschritten | `v3/komponenten/karten.html` |
+| Kategorie-Kachel | **Variante A** — keine Zustandskante; „N offen“ neutral, „erledigt“ türkis; Chevron statt Punkt; Klammer immer neutral | `v3/komponenten/kategorien.html` |
+| „Offen“ / „Laufend“ / „Erwartet“ | neutral statt Rot/Türkis-Tönung (Regel 2) | `v3/00-was-aendert-sich.html` |
+| Light Mode | ja, gleiche Tokennamen, Türkis/Rot in dunklerer Stufe | `v3/foundations/farben.html` |
+| Verlaufs-Overlay | Sheet auf `--bg-elevated`, Held 26/600 statt 38/200, Achsen 11 px | `v3/komponenten/verlauf.html` |
+| Header | Chevrons dauerhaft sichtbar (28-px-Kreis), Pille in Kartensprache (neutral / türkis / Kontur) | `v3/komponenten/header.html` |
+
+| Overlays & Meldungen | `--bg-elevated` deckend, 44-px-Bedienelemente, genau ein gefüllter Knopf („Übernehmen“), Rot nur für irreversible Menü-Aktionen | `v3/komponenten/overlays.html` |
+| Interaktionszone | Fragmente ohne Container-Opacity (Fläche / Sekundär / Kontur), Abgänge nicht mehr rot, Portal und Leer-Slot als Kontur | `v3/komponenten/zone.html` |
+
+| Kontoumsatz-Beträge | **Option B** — überall weiß mit Vorzeichen (Rohmasse, Schaufenster), Zugänge türkis; Rot nirgends | `v3/komponenten/zone.html`, `overlays.html` |
+| §8-Invariante .22 / .45 | **Option A** — abgelöst durch Kontur / Sekundär / Fläche; neuer §8-Wortlaut auf der Seite | `v3/komponenten/zone.html` |
+| Einkommen & Konsequenz | Regler mit 28-px-Griff, 44-px-Felder, Türkis nur für Auswahl + Übernehmen; Konsequenz-Farben (rot/türkis = Wirkung auf Sparrate) unverändert | `v3/komponenten/einkommen.html` |
+
+**v3 ist damit vollständig für den Bau.** Reihenfolge der Umsetzung: `v3/uebergabe.html`.
+
+Nach dem Bau: Login, Onboarding (Token-Nachzug). Eigene Runde: M2.
+
 ## Ablage
 
 ```
 design-system/
-├── README.md                  ← diese Datei
-├── SYNC.md                    ← wie die Seiten zu claude.ai/design kommen
-├── styles.css                 ← DIE TOKENS. Jede Seite bindet sie ein
-├── doc.css · karte.css        ← Chrome der Seiten, Kartenbauteil
-├── 00-was-aendert-sich.html   ← die sieben Regeln von v3, mit Vorher/Nachher
-├── uebergabe.html             ← Zuordnung alt → neu, Selektor für Selektor
-├── foundations/               ← Farben, Typografie
-├── komponenten/               ← neun Seiten — der IST-Zustand
-├── entwuerfe/                 ← ältere Einzelentwürfe
-└── handoff/                   ← Übergabe-Pakete AUS claude.ai/design (mobile/: Prototyp, Screenshots, README)
+├── README.md            ← diese Datei
+├── SYNC.md              ← wie die Seiten zu claude.ai/design kommen
+├── foundations/         ← Farben, Typografie
+├── komponenten/         ← Ring, Karten, Welle — der IST-Zustand
+└── entwuerfe/           ← offene Gestaltungsfragen, je genau drei Varianten
 ```
-
-**Seit v3-01 (06.09.2026) sind alle sieben sichtbaren Komponenten der Design-Doku
-bebildert:** Ring (§5) · Header (§6) · Karten (§7) · Interaktionszone (§8) · Welle
-(§9) · Einkommen (§10) · Overlays und Schaufenster (§11). Dazu Kategorien und
-Verlauf als eigene Seiten. **Vorher waren es drei** — das war Befund `RD-1`, und er
-ist der Grund, warum das Re-Design mit dieser Arbeit anfangen musste und nicht mit
-dem Gestalten.
 
 ## Woher die Werte kommen
 
@@ -43,20 +62,11 @@ Jede Farbe, jede Schriftgröße und jede Geometrie ist aus dem laufenden Code
 
 | Seite | Quelle im Repository |
 |---|---|
-| Farben · Typografie | `src/styles/tokens.css` · Design-Doku §3 |
-| Karten · Kategorien | `src/components/cards/cards.module.css` + `card.tsx` · `interaction-zone.module.css` · Design-Doku §7, §8 |
+| Farben | `src/styles/tokens.css` · Design-Doku §3 |
+| Typografie | `src/styles/tokens.css` · Design-Doku §3 |
+| Karten | `src/components/cards/cards.module.css` + `card.tsx` · Design-Doku §7 |
 | Singularity Ring | `src/components/singularity-ring/` · Design-Doku §5 |
-| Header | `src/components/header-timeline/` · Design-Doku §6 |
-| Jahres-Welle · Verlauf | `src/components/welle/` · `verlauf.ts` · Design-Doku §9, §7 |
-| Interaktionszone | `src/components/interaction-zone/` · Design-Doku §8 |
-| Overlays · Schaufenster | `cards.module.css` · `interaction-zone.module.css` · Design-Doku §11 |
-| Einkommen | `src/components/income-split/` · Design-Doku §10 |
-
-> **`styles.css` ist eine Abschrift, keine Verbindung.** Die Seiten binden sie ein,
-> statt Werte hart hinzuschreiben — das war der Kern von `RD-2` und ist damit halb
-> behoben. Die andere Hälfte steht noch: Ändert jemand ein Token in
-> `src/styles/tokens.css`, zeigen diese Seiten still den alten Stand. **Genau das ist
-> in v3-01 an anderer Stelle passiert**, siehe `SYNC.md`.
+| Jahres-Welle | `src/components/welle/` · Design-Doku §9 |
 
 Bei einem Widerspruch zwischen diesen Seiten und der Design-Doku gilt **die
 Design-Doku**. Sie ist die Wahrheitsquelle, diese Seiten sind ihre Sichtbarmachung.
@@ -108,38 +118,24 @@ Die Entwurfsseiten bleiben, bis der jeweilige Bau-Sprint durch ist.
 |---|---|---|
 | `LQ-2` Ausstehend-Anzeige | Kopfzeile „Planung", rechtsbündig · `noch fällig` / `Budget frei` | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/` |
 | `LQ-1` Fälligkeitstag | rechter Anschlag der Statuszeile · Menüpunkt „Fällig am …" | ✅ **gebaut (v2-15)** — Entwurf gelöscht, Ergebnis in `komponenten/karten.html` |
-| `RM-2` Schaufenster-Popup | Empfänger führt, Betrag rechts daneben | ✅ **gebaut (v2-16)** — Entwurf gelöscht (v2-17) |
-| `PA-1` Konsequenz-Anzeige | Popup tauscht Inhalt, Summe als Held, 400 px | ✅ **gebaut (v2-16)** — Entwurf gelöscht (v2-17) |
-
-### Entschieden in der Runde vom 07./08.08.2026
-
-Beschluss-Record: `V2/design_direktor_2026-08-07_kategorien.md` (Teil A/B/C).
-
-| Thema | Entscheidung | Entwurf |
-|---|---|---|
-| **Paket 4** Kategorien im Karussell | **Variante A** — Stapel-Kachel im Kartenformat, neutraler Ton, kein Status-Icon, linke Kante rot/türkis; Klick klappt auf; beim Ziehen öffnet sich alles | ✅ **gebaut (v2-17)** — Entwurf gelöscht, Ergebnis in `komponenten/kategorien.html` |
-
-> **Der Ordner ist die erste Komponente, die eine Karte NACHAHMT, ohne eine zu sein.**
-> Wer sie anfasst, liest vorher den Kasten „Was die Kachel bewusst NICHT hat" auf der
-> Komponenten-Seite: Über jeder tappbaren Karte liegt eine unsichtbare Klickfläche, die
-> „bezahlt" umschaltet und die Sparrate bewegt. Die Kachel hat sie nicht — und der Ton,
-> das fehlende Icon und die Stapelkante sind das Einzige, was das sichtbar macht.
+| `RM-2` Schaufenster-Popup | Empfänger führt, Betrag rechts daneben | `entwuerfe/rm2-schaufenster.html` |
+| `PA-1` Konsequenz-Anzeige | Popup tauscht Inhalt, Summe als Held, 400 px | `entwuerfe/pa1-konsequenz.html` |
 
 ### Noch offen
 
 1. **`M2`** — Verben und Gesten des Karten-Lebenszyklus (Beenden, Löschen, Lösen)
-2. **`M5`** — Reihenfolge der Ordner untereinander. **Seit v2-17 hat die Frage einen
-   Ort:** `card_categories.sort_order` ist änderbar, ohne dass eine Migration nötig
-   wird. Innerhalb eines Ordners gilt weiterhin Fixkosten → Einnahmen → Budget
-3. **Zwei Reste aus der Kategorien-Runde:** wie zwei gleichnamige Karten in einem
-   Ordner auseinanderzuhalten sind, und ob ein Ordner kenntlich macht, dass seine Zahl
-   abgeleitet ist
+2. **`M5`** — Kartenreihenfolge im Karussell (heute Fixkosten → Einnahmen → Budget)
+3. **Paket 4** — Kategorien im Karussell; die größere Frage, eigene Runde
 
 Erledigt und deshalb nicht mehr aufgeführt: Ring-Unterzeile bei kleinem Plan (v2-12,
 `BF-2`/`E3`) · Vorschlags-Kästchen auf Fragment-Karten (v2-10, `BF-1`) ·
 Haushaltsbetrag auf gemeinsamen Karten (v2-13, `BF-4`).
 
 ## Stand
+
+Zuletzt nachgezogen am **05. September 2026**: v3 (Apple-Redesign) angelegt, Karten- und
+Kategorien-Runde entschieden (je Variante A), Varianten gemäß Drei-Varianten-Regel von den
+Seiten entfernt, Beschluss als Kasten auf der jeweiligen Seite dokumentiert.
 
 Erstellt am 04. August 2026, aus `main` @ `41ca3d2` zuzüglich des Struktur-Sprints
 v2-08. Zuletzt nachgezogen am **06. August 2026 nach Sprint v2-15**: Die Karten-Seite
