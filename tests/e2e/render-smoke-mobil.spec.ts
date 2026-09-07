@@ -59,3 +59,34 @@ test("angemeldet: /login?next=//evil.com wird verworfen — Dashboard", async ({
   await page.goto("/login?next=%2F%2Fevil.com");
   await expect(page).toHaveURL(/\/$/);
 });
+
+// 07.09.2026: Das Sheet „Karte wählen" — geöffnet, fotografiert, über „Abbrechen"
+// geschlossen. Strikt read-only: kein Tipp auf eine Karte. Läuft nur, wenn der
+// Monat eine offene Zahlung hat (sonst gibt es keinen Knopf „Andere Karte …").
+// Anlass: Am iPhone war die Kontextzeile unter dem Titel abgeschnitten — das
+// Flex-Layout drückte Kopf und Kontext zusammen, sobald die Liste die Höhe
+// sprengte.
+test("sheet „Karte wählen“: Kopf und Kontextzeile bleiben vollständig sichtbar", async ({ page }) => {
+  await page.goto("/mobil/zuordnen");
+  const andere = page.getByRole("button", { name: "Andere Karte …" });
+  if ((await andere.count()) === 0) {
+    test.skip(true, "keine offene Zahlung im laufenden Monat — kein Sheet zu öffnen");
+  }
+  await andere.click();
+  const sheet = page.getByRole("dialog", { name: "Karte wählen" });
+  await expect(sheet).toBeVisible();
+
+  // Titel und Kontextzeile müssen ihre volle Höhe haben — nicht eingedrückt.
+  const titel = sheet.getByText("Karte wählen", { exact: true });
+  const kontext = sheet.locator("div").filter({ hasText: /·/ }).first();
+  const tBox = await titel.boundingBox();
+  const kBox = await kontext.boundingBox();
+  expect(tBox?.height ?? 0).toBeGreaterThanOrEqual(18);
+  expect(kBox?.height ?? 0).toBeGreaterThanOrEqual(17);
+  // und die Kontextzeile liegt vollständig UNTER dem Titel, ohne Überlappung
+  expect((kBox?.y ?? 0) >= (tBox?.y ?? 0) + (tBox?.height ?? 0) - 1).toBe(true);
+
+  await page.screenshot({ path: "test-results/mobil-sheet.png", fullPage: false });
+  await sheet.getByRole("button", { name: "Abbrechen" }).click();
+  await expect(sheet).toBeHidden();
+});
