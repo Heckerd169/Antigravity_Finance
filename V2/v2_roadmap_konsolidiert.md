@@ -38,19 +38,21 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 07.09.2026 zeilengenau nachgezählt — nach Sprint **v3-02**.*
+*Alle Zahlen am 07.09.2026 zeilengenau nachgezählt — nach Sprint **v3-02** und dem
+Nachzug vom selben Abend (`V1` erledigt).*
 
 | | Anzahl | v3-02 P0 | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 |
 |---|---|---|---|---|---|---|---|---|
 | Offene Pakete | **13** | 13 | 12 | 12 | 11 | 12 | 12 | 12 |
 | Themen darin | **43** | 48 | 42 | 42 | 37 | 39 | 38 | 37 |
-| Hausaufgaben ohne eigenen Sprint | **8** | 8 | 5 | 5 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **51** | 56 | 47 | 47 | 41 | 43 | 42 | 41 |
-| Erledigt | **77** | 71 | 71 | 69 | 68 | 66 | 65 | 64 |
+| Hausaufgaben ohne eigenen Sprint | **7** | 8 | 5 | 5 | 4 | 4 | 4 | 4 |
+| **Offen gesamt** | **50** | 56 | 47 | 47 | 41 | 43 | 42 | 41 |
+| Erledigt | **78** | 71 | 71 | 69 | 68 | 66 | 65 | 64 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand nach Sprint v3-02 (07.09.2026), zeilengenau ausgezählt.** Paket-Tabellen **79**
-> Zeilen, davon **36 ✅** → **43** offen. Hausaufgaben **8**, alle ⬜. §4 Erledigt **77**
+> **Stand nach Sprint v3-02 und Nachzug (07.09.2026), zeilengenau ausgezählt.**
+> Paket-Tabellen **79** Zeilen, davon **36 ✅** → **43** offen. Hausaufgaben **7**, alle ⬜
+> (`V1` am Abend durch Löschen der Altjahre entschieden). §4 Erledigt **78**
 > Zeilen. §3 unverändert **4**. Pakete **20**, davon **7** vollständig erledigt → **13** offen.
 >
 > **Ein Sprint, der am Morgen noch nicht in dieser Datei stand.** Phase 0 hat Paket 20 mit
@@ -936,7 +938,6 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | MB-H3 | Light-Mode-Abnahme von `/mobil` gegen `foundations/farben.html` | ⬜ | Im Prototyp als Tweak gebaut, nicht abgenommen. Hängt an `RD-5` (kein Umschalter). |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
-| V1 | Entscheidung über die 2.031 Visa-Zahlungen aus 2020–2024 | ⬜ | **Gemessen am 07.09.2026 (v3-02): 567 Zeilen aus 2023–2024 liegen bereits in der Datenbank — 476 offen, 91 Überträge.** Ein Teil ist also drin; CLAUDE.md §9 führt die Altjahre noch als „noch nicht importiert". Auf `/mobil` sind diese Monate nicht erreichbar (Navigationsgrenze 2025-01). **Aus dem Befund vom 03.09.2026.** Der Jahresexport enthält sie; die App modelliert 2025 und 2026, dort ist für jene Jahre **keine Karte aktiv**. Sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den DKB-Export auf 2025+2026 eingrenzen (~504 Zeilen, überwiegend Duplikate, Sekunden statt Minuten). Jederzeit nachholbar — der Import ist idempotent. |
 
 ---
 
@@ -955,6 +956,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| V1 | **Die Altjahre gehören nicht in die App — entschieden durch Löschen.** 567 Zahlungen aus 2023/2024 (384 + 183, davon 91 Überträge, keine verknüpft) am 07.09.2026 auf Anweisung des Users gelöscht, als dokumentierte Daten-Migration mit Abbruch-Sicherung; 24 Sparraten byte-identisch. Der DKB-Export wird künftig auf 2025 und 2026 eingegrenzt. Protokoll: `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`. | Nachzug 07.09.2026 |
 | MB-1 | **Zahlungen zuordnen ohne Ziehen.** Route `/mobil/zuordnen` (430 px): eine Buchung im Fokus, der Vorschlag als einziger gefüllter Knopf, Toast mit dem **echten** Δ der Sparrate (vorher/nachher aus `calculate_sparrate_for_month`, rot nur bei Δ < 0), Rückgängig fünf Sekunden, „Später" ans Stapelende, Monatsnavigation mit Nachbar-Zählern. Elf Netzrunden je Aufbau. Eine Zuordnung vom Handy ist in der Datenbank von einer vom Schreibtisch ununterscheidbar (`lib/card-links.ts`). | v3-02 |
 | MB-2 | **Die Datenbank sagt, auf welchen Karten ein Händler von Hand lag** — `get_open_fragment_candidates`, dieselbe Regel wie `history_match` Stufe 1 als Liste mit Zähler, nur Karten aktiv im Monat. Geprobt auf der Übungs-DB (T1–T7), byte-gleich in Produktion (`c48042ff…`), 4 ms unter der App-Rolle. | v3-02 |
 | MB-3 | **Der Zweifelsfall zeigt Kandidaten statt zu raten** — Konturen, nichts vorbelegt, Übernehmen gesperrt bis zur Wahl. Die alphabetische Vorbelegung (`ZO-8`) gilt auf `/mobil` nicht. | v3-02 |
@@ -1067,6 +1069,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | F5 | Paket 9 (mit M9) |
 | G1, G2 | Paket 13 |
 | H1, I1, M4 | §2 Hausaufgaben |
+| V1 | §4 Erledigt (Nachzug 07.09.2026) — Altjahre gelöscht |
 | J1 | §4 Erledigt (v2-17) |
 | M2, M5 | Paket 7 |
 | M6 | Paket 5 |
@@ -1135,4 +1138,5 @@ Entscheidung mehr Arbeit.*** · fortgeschrieben am 07. August 2026 nach **Sprint
 vier der fünf Kettenglieder fertig und der Riegel vor Paket 5 ist gefallen) ·
 fortgeschrieben am **07. September 2026** (Sprint v3-02, Phase 0: **Paket 20** `/mobil` mit
 `MB-1`…`MB-6` und den Hausaufgaben `MB-H1`…`MB-H3`) · **nach Sprint v3-02** (`MB-1`…`MB-5`
-und `NB-3` erledigt; `MB-6` ist v3-03)*
+und `NB-3` erledigt; `MB-6` ist v3-03) · **Nachzug 07.09.2026** (`V1` erledigt: Altjahre gelöscht;
+Login merkt sich das Ziel, `/mobile` → `/mobil`)*

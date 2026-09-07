@@ -46,3 +46,16 @@ test("/mobil leitet auf den Tab Zuordnen", async ({ page }) => {
   await page.goto("/mobil");
   await expect(page).toHaveURL(/\/mobil\/zuordnen/);
 });
+
+// Nachzug 07.09.2026: Angemeldet ist die Anmeldeseite nicht erreichbar — mit
+// einem geprüften Ziel führt sie dorthin, ohne Ziel aufs Dashboard.
+test("angemeldet: /login?next=/mobil/zuordnen führt zum Ziel", async ({ page }) => {
+  await page.goto("/login?next=%2Fmobil%2Fzuordnen");
+  await expect(page).toHaveURL(/\/mobil\/zuordnen$/);
+  await expect(page.getByText(/^Sparrate ·/).first()).toBeVisible();
+});
+
+test("angemeldet: /login?next=//evil.com wird verworfen — Dashboard", async ({ page }) => {
+  await page.goto("/login?next=%2F%2Fevil.com");
+  await expect(page).toHaveURL(/\/$/);
+});

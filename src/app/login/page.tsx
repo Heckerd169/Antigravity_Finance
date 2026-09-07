@@ -1,17 +1,24 @@
 import { login } from "./actions";
+import { safeNextPath } from "@/lib/next-path";
 import styles from "./login.module.css";
 
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: { error?: string; next?: string | string[] };
 }) {
   const hasError = searchParams.error === "1";
+  // Nachzug 07.09.2026 (v3-02): das Ziel nach dem Anmelden, geprüft — nur ein
+  // interner Pfad kommt ins Formular, alles andere fällt still weg.
+  const next = safeNextPath(
+    typeof searchParams.next === "string" ? searchParams.next : null,
+  );
 
   return (
     <main className={styles.main}>
       <form className={styles.form} action={login}>
         <h1 className={styles.title}>Anmeldung</h1>
+        {next !== null && <input type="hidden" name="next" value={next} />}
 
         <label className={styles.label} htmlFor="email">
           E-Mail

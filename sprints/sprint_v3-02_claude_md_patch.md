@@ -145,7 +145,7 @@ vor. Dazu die beiden Fixes vom
 **Patch-Satz (nur der Anfang der Zelle wird ersetzt; der Rest bleibt):**
 
 ```
-| **Die 2.031 Zahlungen aus 2020–2024** | **Gemessen am 07.09.2026: 567 davon (2023–2024) liegen bereits in der Datenbank, 476 offen.** Der Visa-Jahresexport enthält den Rest; die App modelliert 2025 und 2026.
+| **Die 2.031 Zahlungen aus 2020–2024** | **Entschieden am 07.09.2026: Die Altjahre gehören nicht in die App.** 567 davon (2023–2024) lagen bereits in der Datenbank und wurden auf Anweisung des Users gelöscht (`V1` erledigt, Protokoll `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`). Der DKB-Export wird künftig auf 2025 und 2026 eingegrenzt; die App modelliert 2025 und 2026.
 ```
 
 ---

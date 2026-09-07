@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { createTimeoutFetch } from "./fetch-retry";
+import { safeNextPath } from "@/lib/next-path";
 import type { Database } from "./types";
 
 /**
@@ -94,12 +95,6 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isLoginRoute = pathname === "/login";
 
-  const redirectTo = (target: string) => {
-    const url = request.nextUrl.clone();
-    url.pathname = target;
-    return NextResponse.redirect(url);
-  };
-
   let user: Awaited<
     ReturnType<typeof supabase.auth.getUser>
   >["data"]["user"] = null;
@@ -120,12 +115,27 @@ export async function updateSession(request: NextRequest) {
 
   if (!user) {
     // Auf der Anmeldeseite selbst darf niemand im Kreis geschickt werden.
-    return isLoginRoute ? supabaseResponse : redirectTo("/login");
+    if (isLoginRoute) return supabaseResponse;
+    // Nachzug 07.09.2026 (v3-02): Das Ziel wandert als `?next=` mit — wer am
+    // Handy `/mobil` aufruft, soll nach dem Anmelden dort landen, nicht auf dem
+    // Dashboard. Nur ein interner Pfad kommt durch (`safeNextPath`); das
+    // Dashboard selbst braucht keinen Parameter. Die ursprüngliche Suchanfrage
+    // (`?month=`) gehört zum Ziel, nicht an die Anmeldeseite.
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    const next = safeNextPath(pathname + request.nextUrl.search);
+    if (next !== null && next !== "/") url.searchParams.set("next", next);
+    return NextResponse.redirect(url);
   }
 
   // Angemeldet — die Anmeldeseite ist nicht mehr erreichbar. Der Gegenpart für
   // `/onboarding` liegt seit v2-24 in der Seite selbst (Begründung oben).
-  if (isLoginRoute) return redirectTo("/");
+  // Trägt der Aufruf ein geprüftes Ziel, geht es dorthin; sonst aufs Dashboard.
+  if (isLoginRoute) {
+    const next = safeNextPath(request.nextUrl.searchParams.get("next"));
+    return NextResponse.redirect(new URL(next ?? "/", request.url));
+  }
 
   return supabaseResponse;
 }

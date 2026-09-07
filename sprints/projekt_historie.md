@@ -3891,3 +3891,23 @@ Schreibpfads ist Prüfschritt S13 des Users vor dem Merge.
   beginnt künftig mit dem Prüfsummen-Vergleich.
 - CLAUDE.md-Patch (§1, §7, §9, neue Stolperfalle View/RLS) liegt vor und wartet auf
   Freigabe; `doku-vollstaendigkeit.spec.ts` kennt nur `v2-NN`.
+
+#### Nachzug 07.09.2026 · Altjahre gelöscht, Login merkt sich das Ziel
+
+Zwei Aufträge des Users am Abend nach dem Merge von v3-02, protokolliert in
+`sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`.
+
+- **567 Zahlungen aus 2023/2024 gelöscht** (384 + 183, 91 Überträge, keine verknüpft) —
+  als Daten-Migration mit Abbruch-Sicherung (Links > 0 oder Zahl ≠ 567 → Abbruch),
+  Trockenlauf vorher, 24 Sparraten byte-identisch nachher. Hausaufgabe `V1` ist damit
+  durch Handeln entschieden: Die Altjahre gehören nicht in die App.
+- **Die mobile Ansicht war live und trotzdem unsichtbar.** Beide Deploys erfolgreich, aber
+  die Middleware leitete ohne Anmeldung jede Adresse auf `/login` und danach immer auf
+  `/`. Wer `/mobil` aufrief, landete auf dem Dashboard. Jetzt trägt die Umleitung ein
+  geprüftes `?next=`-Ziel (`safeNextPath`: nur interne Pfade, sonst Dashboard — ein
+  offenes Weiterleitungs-Ziel macht keine Zahl falsch, LL-26), die Anmeldung führt
+  dorthin, und `/mobile` leitet auf `/mobil`. Wächter `login-ziel.spec.ts` (LL-40: einmal
+  rot gesehen), Unauth- und Render-Smoke-Tests erweitert.
+- **Die Annahme, die hier falsch war:** „Deploy erfolgreich" hieß nicht „Ansicht
+  erreichbar". Ein Weg, der auf dem Schreibtisch nie auffiel, weil dort niemand eine
+  andere Startseite als `/` erwartet.
