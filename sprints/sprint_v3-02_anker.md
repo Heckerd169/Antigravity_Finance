@@ -259,3 +259,19 @@ Prüfsumme auf beiden Projekten weiterhin `c48042ff…`.
 nichts verloren, **eine** dazu (`get_open_fragment_candidates`). Kein
 `<claude-code-hint>`-Rest. Wrapper `getOpenFragmentCandidates` in `src/lib/rpc.ts`;
 `tsc --noEmit` 0 Fehler, ESLint 0 Hinweise.
+
+---
+
+## Anker 3 und Schluss-Messung — 07.09.2026, 20:55 Uhr
+
+**Anker 3 (Anfragen je Aufbau), Edge-Log der letzten 45 Minuten:** 15 Aufbauten von
+`/mobil/zuordnen` (je einmal `calculate_sparrate_for_month` und
+`get_open_fragment_candidates`), parallel 47 Schreibtisch-Aufbauten
+(`get_split_factor` 47). Je Pfad nachgerechnet ergibt `/mobil/zuordnen` **11 Anfragen je
+Aufbau** — Anmeldung 1 · `profiles` 1 · `cards` 1 · `fragments_with_status` 4 (Stapel,
+verknüpfte Zahlungen, zwei Nachbar-Zähler) · Sparrate 1 · Kandidaten 1 ·
+`get_cards_for_month` 1 · `app_config` 1. Der Schreibtisch liegt bei ~18.
+
+**Sparrate am Ende des Sprints (24 Monate, Ist und Plan):** byte-identisch zur
+Vorher-Messung von 17:50 Uhr — kein Eingriff dieses Sprints hat eine Zahl bewegt. Die
+Benutzung wird es tun, und der Toast zeigt es (Prüfschritt S13).

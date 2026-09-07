@@ -94,7 +94,9 @@ unverändert · im Plan" (Einnahmen-Karte: „Einnahme · im Plan") · Δ > 0 �
 
 **Netzrunden je Aufbau (P2):** Anmeldung 1 · `profiles` 1 · Sparrate 1 · Stapel 1 ·
 Kandidaten 1 · Karten (Tabelle) 1 · `get_cards_for_month` 1 · `app_config` 1 ·
-Nachbar-Zähler 2 = **10**.
+Nachbar-Zähler 2 = **10**. **Seit P5 elf:** dazu die im Monat verknüpften Zahlungen
+für „Rest frei" im Sheet — auch die aus einem anderen Buchungsmonat (LL-26,
+Form „Monatsbezug").
 
 ### P1 im Detail (Fähigkeit `db-eingriff`)
 
@@ -154,6 +156,8 @@ Baseline aus v3-01: `test:visual` 191, `test:e2e` 200.
 | A7 | Tabs Übersicht · Karten · Verlauf bis v3-03 | sichtbar in der Leiste, `--text-tertiary`, ohne Handler (Muster „ohne Nachbar") |
 | A8 | Statusleiste/Signalbalken des Prototyps | wird nicht gezeichnet — das ist die echte iOS-Leiste (Home-Bildschirm-App) |
 | A9 | Handoff-Paket inkl. sechs PNG (1,3 MB, Prototyp-Daten = Annahmen) | committet; die Token-Kopie unter `_ds/` liest die App nie (Hinweis bei `RD-2`) |
+| A10 | Schlägt die Server Action fehl (Netz bricht mitten im Tippen ab) | ein einzeiliger Toast „Zuordnen fehlgeschlagen" ohne Rückgängig — nicht im Record; stumm scheitern wäre schlechter. **Nachgetragen in P3.** |
+| A11 | Sheet ohne aktive Karte im Monat (heute nur vor 2025 möglich, dort nicht erreichbar) | eine Zeile „Keine Karte in diesem Monat aktiv" statt einer leeren Fläche. **Nachgetragen in P5.** |
 
 ## 8. Nebenbefunde — nicht Teil des Sprints, kommen ins Review
 

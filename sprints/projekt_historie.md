@@ -3807,3 +3807,87 @@ mit, weil dort dieselbe Invariante ein zweites Mal stand — LL-26 in Doku-Form.
 - In den Produktivdaten ist **jede** Zahlung aus 2025 und 2026 zugeordnet — die
   Rohmasse besteht durchgehend aus Konturen. Die Stufen „arbeitsfähig" und
   „Übertrag" waren im automatischen Smoke nicht sichtbar.
+
+---
+
+### Sprint v3-02 · DONE 07. September 2026
+
+**„`/mobil` — Zahlungen zuordnen ohne Ziehen"** — Branch `sprint/v3-02-mobil`, sechs
+Code-Commits (P0–P6) und ein Doku-Commit, Pull Request zur Freigabe. Roadmap **Paket 20**
+(neu in diesem Sprint), `MB-1`…`MB-5` erledigt, `MB-6` bleibt für v3-03.
+
+**Auftrag:** Der Design-Record vom 07.09.2026 (Vorschlag 1a „ein Tipp"; Kartenliste 1b
+und Wischen 1c verworfen) sollte als eigene Route nachgebaut werden — 430 px, vier Tabs,
+Kern ist der Tab **Zuordnen**: eine Buchung im Fokus, der Vorschlag als einziger gefüllter
+Knopf, Zweifelsfall als gleichrangige Konturen, die Konsequenz erst danach im Toast. Tokens
+nur aus dem Design-System, Konsequenz aus den echten Rechenfunktionen. Die Rückfrage ergab
+den Schnitt: v3-02 baut den Tab Zuordnen vollständig, Übersicht · Karten · Verlauf sind
+v3-03.
+
+#### Die tragenden Entscheidungen
+
+- **Die Kandidaten kommen aus der Datenbank.** `get_open_fragment_candidates` wiederholt
+  die Regel von `history_match` Stufe 1 wortgleich — `merchant_key`, `MANUAL_DROP`, kein
+  Übertrag, nicht die Zahlung selbst — nur als Liste mit Zähler statt als Ja/Nein, denn
+  jene schweigt, sobald der Händler auf mehreren Karten liegt. Gemessen liegt er bei
+  **121 von 476** offenen Zahlungen auf zwei oder drei Karten. Ein Aufruf je Aufbau für den
+  ganzen Stapel, 4 ms unter der App-Rolle.
+- **Eine Schreibregel für Handy und Schreibtisch** (`lib/card-links.ts`): `origin =
+  MANUAL_DROP`, Monat = der angezeigte. Nur so ist die Zuordnung vom Handy in der Datenbank
+  von einer per Drag & Drop ununterscheidbar — und nur so lernt `history_match` daraus.
+- **Der Toast holt die Konsequenz, statt sie zu rechnen:** Sparrate vorher und nachher aus
+  `calculate_sparrate_for_month`, beide einmal am Ende gerundet, die Differenz Cent-exakt.
+  Der Prototyp rechnete `−max(0, |Betrag| − Restbudget)`; das war ausdrücklich Modell.
+- **Der Zweifelsfall schlägt den Vorschlag der Datenbank.** Zwei Kandidaten → Konturen ohne
+  Vorbelegung, auch wenn `suggested_card_id` gesetzt ist; die alphabetische Vorbelegung
+  (`ZO-8`) gilt auf `/mobil` nicht. Als reine Funktion mit Wächter, einmal absichtlich
+  gebrochen und rot gesehen (LL-40).
+- **„Einmalig" ist kein Kartentyp.** Das Sheet gruppiert nach Typ **und** Rhythmus; ein
+  benanntes Prädikat mit Vollständigkeits-Wächter über alle 15 Kombinationen.
+
+#### Wo sich eine Annahme als falsch erwies
+
+- **Die View `fragments_with_status` umging RLS.** Gefunden beim Bau der Funktion, weil
+  die View `postgres` gehört (BYPASSRLS) und kein `security_invoker` trug. Gemessen als
+  angemeldeter Fremder: **2.219 Zeilen** über die View, **0** über die Tabellen. Mit einem
+  Nutzer sah die falsche Antwort genauso aus wie die richtige — dieselbe Klasse wie LL-30.
+  Vom User freigegeben, mit einer Zeile behoben, auf beiden Projekten vorher/nachher belegt
+  (Fremder 0, Eigentümer unverändert).
+- **Die Übungs-DB stand bei v2-26, Produktion bei v2-31.** Sieben Schema-Migrationen
+  fehlten; der erste Testlauf brach an `merchant_key` ab. Eine Probe gegen diesen Stand
+  hätte etwas anderes geprüft, als in Produktion läuft (LL-32). Wortgleich nachgeholt — und
+  dabei fiel auf, dass **vier Lesefunktionen** aus denselben Repo-Dateien in Produktion eine
+  andere Prüfsumme tragen. Die Dateien sind für diese vier nicht mehr wortgleich mit dem,
+  was läuft.
+- **Der Kopfkommentar der Migration behauptete, `is_card_active_in_month` werde „einmal je
+  (Zahlung, Karte)" geprüft.** Der Plan zeigte: Der Planer schiebt die Prüfung an die
+  Verknüpfungs-Zeilen vor. Eine Zusage ohne Messung (LL-22) — korrigiert, nicht erzwungen,
+  bei 4 ms.
+- **Der Eigentümer-Test lieferte zuerst 0 / 0** — nicht wegen der View, sondern weil
+  `(select user_id from profiles limit 1)` unter `SET LOCAL ROLE authenticated` selbst RLS
+  unterliegt. Wer unter der App-Rolle misst, setzt die Nutzer-ID als Literal.
+- **Der ESLint-Aufruf meldete Exit 1 bei „No issues found"** — der Ausgabefilter, nicht
+  ESLint. Der Rohlauf: Exit 0, keine Zeile.
+
+#### Verifikation
+
+`tsc` 0 · ESLint 0/0 · Build 0 Fehler (`/mobil/zuordnen` 6,28 kB, First Load 102 kB) ·
+`test:visual` **221/221** (191 + 30) · `test:e2e` **234/234** (200 + 34) · Sparrate 24
+Monate byte-identisch vorher/nachher/Ende · Anker 1 und 2 in 24/24 · neun Prüfsummen
+unverändert · neue Funktion `c48042ff…` auf Übungs-DB und Produktion · Übungs-DB 2.200,00 €
+· Anker 3: **11 Anfragen je Aufbau** von `/mobil/zuordnen` (15 Aufbauten im Edge-Log
+nachgezählt).
+
+**Was nicht belegt ist:** In 2026 gibt es keine einzige offene Zahlung. Jeder Zustand außer
+„leer" ist über Wächter und Code belegt, nicht über ein Bild. Der Live-Beleg des
+Schreibpfads ist Prüfschritt S13 des Users vor dem Merge.
+
+#### Offen nach v3-02
+
+- `MB-6`: Übersicht · Karten · Verlauf (v3-03) — vorher den Ring-Bogen klären (Prototyp
+  100 %, §5 200 %; §5 gewinnt).
+- Nach dem Anmelden führt die Middleware auf `/`, nicht zurück auf `/mobil`.
+- Vier Migrationsdateien sind nicht mehr wortgleich mit Produktion; die Übungs-DB-Probe
+  beginnt künftig mit dem Prüfsummen-Vergleich.
+- CLAUDE.md-Patch (§1, §7, §9, neue Stolperfalle View/RLS) liegt vor und wartet auf
+  Freigabe; `doku-vollstaendigkeit.spec.ts` kennt nur `v2-NN`.

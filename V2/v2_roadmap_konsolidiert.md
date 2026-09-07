@@ -5,6 +5,8 @@
 > **Stand:** 6. September 2026 (nach **v3-01** „Apple-Redesign umsetzen" — `RD-1` und
 > `RD-3` erledigt, `RD-4` teilweise, `RD-5` und `RD-6` neu; Design-Doku auf 3.14.0).
 > **Ergänzt am 07.09.2026 (Sprint v3-02, Phase 0):** Paket 20 „`/mobil`" neu, Kennung `MB`.
+> **Nach v3-02 (07.09.2026):** `MB-1`…`MB-5` erledigt, `MB-6` bleibt (v3-03); dazu `NB-3`,
+> ein Sicherheitsbefund, der im selben Sprint behoben ist.
 >
 > **Was die einzelnen Sprints gebracht haben, steht in `sprints/projekt_historie.md`.**
 > Hier stand bis zum 04.09.2026 eine Kette von **neun** nacherzählten Sprintständen, die
@@ -36,23 +38,30 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 06.09.2026 zeilengenau nachgezählt — nach Sprint **v3-01** — und am
-07.09.2026 um **Paket 20** ergänzt (Sprint v3-02, Phase 0).*
+*Alle Zahlen am 07.09.2026 zeilengenau nachgezählt — nach Sprint **v3-02**.*
 
-| | Anzahl | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 | nach v2-27 |
+| | Anzahl | v3-02 P0 | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **13** | 12 | 12 | 11 | 12 | 12 | 12 | 12 |
-| Themen darin | **48** | 42 | 42 | 37 | 39 | 38 | 37 | 35 |
-| Hausaufgaben ohne eigenen Sprint | **8** | 5 | 5 | 4 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **56** | 47 | 47 | 41 | 43 | 42 | 41 | 39 |
-| Erledigt | **71** | 71 | 69 | 68 | 66 | 65 | 64 | 61 |
+| Offene Pakete | **13** | 13 | 12 | 12 | 11 | 12 | 12 | 12 |
+| Themen darin | **43** | 48 | 42 | 42 | 37 | 39 | 38 | 37 |
+| Hausaufgaben ohne eigenen Sprint | **8** | 8 | 5 | 5 | 4 | 4 | 4 | 4 |
+| **Offen gesamt** | **51** | 56 | 47 | 47 | 41 | 43 | 42 | 41 |
+| Erledigt | **77** | 71 | 71 | 69 | 68 | 66 | 65 | 64 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
+> **Stand nach Sprint v3-02 (07.09.2026), zeilengenau ausgezählt.** Paket-Tabellen **79**
+> Zeilen, davon **36 ✅** → **43** offen. Hausaufgaben **8**, alle ⬜. §4 Erledigt **77**
+> Zeilen. §3 unverändert **4**. Pakete **20**, davon **7** vollständig erledigt → **13** offen.
+>
+> **Ein Sprint, der am Morgen noch nicht in dieser Datei stand.** Phase 0 hat Paket 20 mit
+> sechs Themen und drei Hausaufgaben eingetragen (Spalte „v3-02 P0": 56 offen), Phase 1 bis
+> 6 haben fünf davon erledigt (`MB-1`…`MB-5`); `MB-6` (Übersicht · Karten · Verlauf) ist
+> v3-03. **Dazu `NB-3`**, ein Befund, der beim Bau auffiel und im selben Sprint behoben
+> wurde: Die View `fragments_with_status` umging RLS. Er zählt in §4, nicht in einem Paket.
+>
 > **Ergänzt am 07.09.2026 (Sprint v3-02, Phase 0):** Paket 20 „`/mobil`" mit sechs Themen
-> (`MB-1`…`MB-6`) und drei Hausaufgaben (`MB-H1`…`MB-H3`). Nichts erledigt, nichts hinfällig —
-> die Summe steigt um **neun**, und alle neun sind neue Arbeit aus dem Design-Record vom
-> 07.09.2026 (`V2/design_direktor_2026-09-07_mobil.md`). Die Spalte „nach v3-01" hält den
-> Stand vom 06.09.2026 fest.
+> (`MB-1`…`MB-6`) und drei Hausaufgaben (`MB-H1`…`MB-H3`) — alle neun neue Arbeit aus dem
+> Design-Record vom 07.09.2026 (`V2/design_direktor_2026-09-07_mobil.md`).
 >
 > **Stand nach Sprint v3-01, zeilengenau ausgezählt.** Paket-Tabellen **73** Zeilen,
 > davon **31 ✅** → **42** offen (⬜ 37 · 🟡 5). Hausaufgaben **5**, alle ⬜. §4 Erledigt
@@ -898,11 +907,11 @@ im Scope") — der Patch kommt mit dem Abschluss von v3-02.
 
 | # | Punkt | Art | Datenbank | Stand | Bemerkung |
 |---|---|---|---|---|---|
-| MB-1 | Tab „Zuordnen" — Fokus-Karte, Vorschlag als einziger gefüllter Knopf, Toast mit echtem Δ und Rückgängig, „Später", Monatsnavigation | Feature | nein | ⬜ | **Sprint v3-02.** Die Zuordnung schreibt `card_fragment_links` mit `origin = MANUAL_DROP` und dem **angezeigten** Monat — in der Datenbank von einer Schreibtisch-Zuordnung ununterscheidbar; sonst lernt `history_match` nicht daraus. Das Toast-Δ kommt aus `calculate_sparrate_for_month` vorher/nachher, nie aus einer Rechnung im Frontend (§7 Regel 1). |
-| MB-2 | Lese-Funktion `get_open_fragment_candidates` — auf welchen Karten lag dieser Händler bisher von Hand | Datenbank | **ja** | ⬜ | **Sprint v3-02.** Dieselbe Regel wie `history_match` Stufe 1 (`merchant_key`, `MANUAL_DROP`, kein Übertrag, nicht das Fragment selbst), nur als **Liste mit Zähler** statt als Ja/Nein — ein Aufruf je Aufbau für den ganzen Stapel, nur Karten aktiv im Monat (`is_card_active_in_month` aufgerufen, nicht nachgebaut). Rein lesend, Rechenfunktionen unangetastet; Probe auf der Übungs-DB (`db-eingriff`). **Gemessen am 07.09.2026:** bei 121 von 476 offenen Zahlungen liegt der Händler auf zwei oder drei Karten. |
-| MB-3 | Zweifelsfall: Kandidaten als gleichrangige Konturen, nichts vorbelegt | Feature | nein | ⬜ | **Sprint v3-02.** Die alphabetische Vorbelegung (`ORDER BY card_name`, `ZO-8`) gilt auf `/mobil` nicht — auch dann nicht, wenn die Datenbank einen Vorschlag trägt. „Übernehmen" ist gesperrt, bis ein Kandidat gewählt ist. Zustand „kein Vorschlag" ist im Record nicht definiert; Annahme im Briefing (A1). |
-| MB-4 | Sheet „Karte wählen" | Feature | nein | ⬜ | **Sprint v3-02.** Gruppen Fixkosten · Budget · Einmalig · Einnahmen; nur im Monat aktive Karten; rechts „unbezahlt" / „bezahlt" / „frei" / „Einnahme" (Record #11). „Einmalig" ist kein Kartentyp, sondern Rhythmus `ONCE` — benanntes Prädikat mit Vollständigkeits-Test. |
-| MB-5 | Offline-Zustand | Feature | nein | ⬜ | **Sprint v3-02.** Neutrale Pille „Stand von HH:MM · offline", Schreiben gesperrt, „Später" bleibt. **Nicht rot** (Record #4). |
+| MB-1 | Tab „Zuordnen" — Fokus-Karte, Vorschlag als einziger gefüllter Knopf, Toast mit echtem Δ und Rückgängig, „Später", Monatsnavigation | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Route `/mobil/zuordnen`, elf Netzrunden je Aufbau, 30 Wächter über die Regeln (`mobil-zuordnen.spec.ts`), Render-Smoke bei 430 × 932. Die Schreibregel liegt in `lib/card-links.ts` — Schreibtisch und Handy rufen dieselbe Funktion. Die Zuordnung schreibt `card_fragment_links` mit `origin = MANUAL_DROP` und dem **angezeigten** Monat — in der Datenbank von einer Schreibtisch-Zuordnung ununterscheidbar; sonst lernt `history_match` nicht daraus. Das Toast-Δ kommt aus `calculate_sparrate_for_month` vorher/nachher, nie aus einer Rechnung im Frontend (§7 Regel 1). |
+| MB-2 | Lese-Funktion `get_open_fragment_candidates` — auf welchen Karten lag dieser Händler bisher von Hand | Datenbank | **ja** | ✅ | **Erledigt in v3-02 (07.09.2026).** Geprobt auf der Übungs-DB (T1–T7), Prüfsumme `c48042ff…` auf beiden Projekten, 4 ms unter der App-Rolle, neun Rechenfunktionen unverändert, 24 Monate byte-identisch. **Nebenbefund:** Die Übungs-DB stand bei v2-26 und wurde um sieben Schema-Migrationen nachgeholt. Dieselbe Regel wie `history_match` Stufe 1 (`merchant_key`, `MANUAL_DROP`, kein Übertrag, nicht das Fragment selbst), nur als **Liste mit Zähler** statt als Ja/Nein — ein Aufruf je Aufbau für den ganzen Stapel, nur Karten aktiv im Monat (`is_card_active_in_month` aufgerufen, nicht nachgebaut). Rein lesend, Rechenfunktionen unangetastet; Probe auf der Übungs-DB (`db-eingriff`). **Gemessen am 07.09.2026:** bei 121 von 476 offenen Zahlungen liegt der Händler auf zwei oder drei Karten. |
+| MB-3 | Zweifelsfall: Kandidaten als gleichrangige Konturen, nichts vorbelegt | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Zwei oder mehr Kandidaten schlagen den Datenbank-Vorschlag (Wächter). Zustand „kein Vorschlag" nach Briefing A1. Die alphabetische Vorbelegung (`ORDER BY card_name`, `ZO-8`) gilt auf `/mobil` nicht — auch dann nicht, wenn die Datenbank einen Vorschlag trägt. „Übernehmen" ist gesperrt, bis ein Kandidat gewählt ist. Zustand „kein Vorschlag" ist im Record nicht definiert; Annahme im Briefing (A1). |
+| MB-4 | Sheet „Karte wählen" | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Gruppen als benanntes Prädikat mit Vollständigkeits-Wächter (15 Kombinationen); rechte Spalte aus `card-state.ts`, nicht nachgebaut. Gruppen Fixkosten · Budget · Einmalig · Einnahmen; nur im Monat aktive Karten; rechts „unbezahlt" / „bezahlt" / „frei" / „Einnahme" (Record #11). „Einmalig" ist kein Kartentyp, sondern Rhythmus `ONCE` — benanntes Prädikat mit Vollständigkeits-Test. |
+| MB-5 | Offline-Zustand | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** `navigator.onLine` plus Ereignisse; Uhrzeit des letzten Server-Aufbaus. Neutrale Pille „Stand von HH:MM · offline", Schreiben gesperrt, „Später" bleibt. **Nicht rot** (Record #4). |
 | MB-6 | Tabs Übersicht · Karten · Verlauf | Feature | nein | ⬜ | **Sprint v3-03.** Ring aus `singularity-ring/` (Maße stimmen bereits: r 98, Strich 9, 248 × 248), Welle aus `welle/draw.ts` ohne Marker und ohne senkrechten Strich (Parameter, kein Nachbau; hängt mit `RD-6` zusammen), Kartenliste mit Balken, Verlauf sechs Monate. **Vor dem Bau zu klären:** der Prototyp schließt den Ring-Bogen bei 100 %, §5 und die Komponente bei 200 % — §5 gewinnt (CLAUDE.md §5), sonst gäbe es zwei Wahrheiten für dieselbe Figur. |
 
 > **Was dieses Paket vom Re-Design (Paket 19) unterscheidet:** Dort wurde die bestehende
@@ -927,7 +936,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | MB-H3 | Light-Mode-Abnahme von `/mobil` gegen `foundations/farben.html` | ⬜ | Im Prototyp als Tweak gebaut, nicht abgenommen. Hängt an `RD-5` (kein Umschalter). |
 | I1 | Eigene Domain statt Vercel-Subdomain | ⬜ | |
 | H1 | Vercel Coding Agent Plugin bewerten | ⬜ | |
-| V1 | Entscheidung über die 2.031 Visa-Zahlungen aus 2020–2024 | ⬜ | **Aus dem Befund vom 03.09.2026.** Der Jahresexport enthält sie; die App modelliert 2025 und 2026, dort ist für jene Jahre **keine Karte aktiv**. Sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den DKB-Export auf 2025+2026 eingrenzen (~504 Zeilen, überwiegend Duplikate, Sekunden statt Minuten). Jederzeit nachholbar — der Import ist idempotent. |
+| V1 | Entscheidung über die 2.031 Visa-Zahlungen aus 2020–2024 | ⬜ | **Gemessen am 07.09.2026 (v3-02): 567 Zeilen aus 2023–2024 liegen bereits in der Datenbank — 476 offen, 91 Überträge.** Ein Teil ist also drin; CLAUDE.md §9 führt die Altjahre noch als „noch nicht importiert". Auf `/mobil` sind diese Monate nicht erreichbar (Navigationsgrenze 2025-01). **Aus dem Befund vom 03.09.2026.** Der Jahresexport enthält sie; die App modelliert 2025 und 2026, dort ist für jene Jahre **keine Karte aktiv**. Sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den DKB-Export auf 2025+2026 eingrenzen (~504 Zeilen, überwiegend Duplikate, Sekunden statt Minuten). Jederzeit nachholbar — der Import ist idempotent. |
 
 ---
 
@@ -946,6 +955,12 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 
 | # | Punkt | Sprint |
 |---|---|---|
+| MB-1 | **Zahlungen zuordnen ohne Ziehen.** Route `/mobil/zuordnen` (430 px): eine Buchung im Fokus, der Vorschlag als einziger gefüllter Knopf, Toast mit dem **echten** Δ der Sparrate (vorher/nachher aus `calculate_sparrate_for_month`, rot nur bei Δ < 0), Rückgängig fünf Sekunden, „Später" ans Stapelende, Monatsnavigation mit Nachbar-Zählern. Elf Netzrunden je Aufbau. Eine Zuordnung vom Handy ist in der Datenbank von einer vom Schreibtisch ununterscheidbar (`lib/card-links.ts`). | v3-02 |
+| MB-2 | **Die Datenbank sagt, auf welchen Karten ein Händler von Hand lag** — `get_open_fragment_candidates`, dieselbe Regel wie `history_match` Stufe 1 als Liste mit Zähler, nur Karten aktiv im Monat. Geprobt auf der Übungs-DB (T1–T7), byte-gleich in Produktion (`c48042ff…`), 4 ms unter der App-Rolle. | v3-02 |
+| MB-3 | **Der Zweifelsfall zeigt Kandidaten statt zu raten** — Konturen, nichts vorbelegt, Übernehmen gesperrt bis zur Wahl. Die alphabetische Vorbelegung (`ZO-8`) gilt auf `/mobil` nicht. | v3-02 |
+| MB-4 | **Sheet „Karte wählen"** mit vier Gruppen; „Einmalig" ist Rhythmus ONCE einer Ausgaben-Karte (Vollständigkeits-Wächter über 15 Kombinationen). | v3-02 |
+| MB-5 | **Offline:** neutrale Pille, Schreiben gesperrt, „Später" bleibt. | v3-02 |
+| NB-3 | **Die View `fragments_with_status` umging RLS** — sie gehörte `postgres` (BYPASSRLS) und lieferte einem angemeldeten Fremden alle 2.219 Zahlungen, während die Tabellen dahinter 0 lieferten. Gefunden beim Bau von `MB-2`, gemessen, mit `security_invoker = true` behoben (Übungs-DB und Produktion, Testreihe V1–V4). Mit einem Nutzer sah die falsche Antwort genauso aus wie die richtige — dieselbe Klasse wie LL-30. | v3-02 |
 | RD-1 | **Alle sieben sichtbaren Komponenten sind bebildert.** `design-system/` zeigte drei; das v3-Bündel bringt Seiten für Header, Untere Interaktionszone, Einkommen und Overlays dazu, plus Übergabe und die sieben Regeln. Sie lagen im Design-Projekt und **nicht im Repo** — der Sprint musste sie zuerst herunterladen. | v3-01 |
 | RD-3 | **Die Gestaltungsentscheidung ist gefallen.** Sieben Regeln, entschieden am 05.09.2026, jede mit dem Zustand von heute daneben. Ein-Screen-Prinzip, Ring als primäre Figur, Sparrate als die eine Zahl und die Geometrie bleiben; geändert ist die **Zuweisung** der fünf Grundtöne — Rot bedeutet ab jetzt ausschließlich Abweichung. | v3-01 |
 | PF-8 | **Ein Jahresexport passt wieder in die Zeit.** Der Visa-Export mit **2.535 Zeilen** brach mit „Datei fehlerhaft“ab — **an der Datei war nichts fehlerhaft**: Der echte Parser las sie in **4 ms**, Nutzlast 271 KB, weit unter dem 1-MB-Limit. `process_csv_import` läuft als **ein** Statement gegen `statement_timeout = 8s` der Rolle `authenticated`, und die Konfidenz wird für jede neue Zeile gegen jede aktive Karte gerechnet. Der Import läuft jetzt blockweise (`src/lib/csv-batches.ts`, Wächter `tests/e2e/csv-blockbildung.spec.ts`). **Der teuerste Teil war die Meldung selbst:** „Datei fehlerhaft“ist die einzige, die das Portal für einen RPC-Fehler kennt — sie beschreibt die Ursache nicht, und wer ihr glaubt, sucht am falschen Ort. Offen geblieben: `PF-9` und die Entscheidung über die 2.031 Altjahres-Zahlungen (Hausaufgabe `V1`) | Fix 03.09. |
@@ -1068,7 +1083,9 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | NB-1, NB-2 | §4 Erledigt (v2-18) — Befunde aus der Nutzung |
 | KAT-4 | Paket 10 (mit M7) |
 | RD-1 … RD-6 | Paket 19 |
-| MB-1 … MB-6 | Paket 20 |
+| MB-1 … MB-5 | §4 Erledigt (v3-02) |
+| MB-6 | Paket 20 — offen, v3-03 |
+| NB-3 | §4 Erledigt (v3-02) — Befund beim Bau, im selben Sprint behoben |
 | MB-H1 … MB-H3 | §2 Hausaufgaben (an v3-02 oder v3-03 anhängen) |
 
 > **Achtung bei älteren Papieren:** Die Paket-Nummern 2–11 aus Fassungen vor der
@@ -1117,4 +1134,5 @@ Entscheidung mehr Arbeit.*** · fortgeschrieben am 07. August 2026 nach **Sprint
 (`KAT-1`, `KAT-2`, `KAT-3` und die Hausaufgabe `J1`; **Paket 4 weggefallen**, damit sind
 vier der fünf Kettenglieder fertig und der Riegel vor Paket 5 ist gefallen) ·
 fortgeschrieben am **07. September 2026** (Sprint v3-02, Phase 0: **Paket 20** `/mobil` mit
-`MB-1`…`MB-6` und den Hausaufgaben `MB-H1`…`MB-H3`)*
+`MB-1`…`MB-6` und den Hausaufgaben `MB-H1`…`MB-H3`) · **nach Sprint v3-02** (`MB-1`…`MB-5`
+und `NB-3` erledigt; `MB-6` ist v3-03)*
