@@ -79,13 +79,17 @@ export default defineConfig({
     //        am laufenden Monat, inaktive Monate brechen die Linie statt auf 0
     //        zu fallen, isolierte Werte werden als Punkt gezeichnet. Anker,
     //        Prüfsummen und beide Invarianten blieben dabei grün.
+    // v3-02 (/mobil): `mobil-zuordnen` kommt dazu — die Regeln des Tabs
+    //        „Zuordnen" (Zweifelsfall schlägt Vorschlag, Labels, Später-Reihenfolge,
+    //        Toast-Ton) und die Zerlegung des Buchungstextes. Keine davon macht
+    //        eine Zahl falsch, wenn sie bricht.
     // 03.09.2026: `csv-blockbildung` kommt dazu — der Wächter über die
     //        Blockbildung des CSV-Imports. Der Bruch, den er fängt, macht keine
     //        Zahl falsch: Fällt eine Gruppe byte-identischer Zeilen auf zwei
     //        Blöcke, zählt die Laufnummer der RPC je Block neu, beide Zeilen
     //        bekommen denselben Hash, und eine echte Zahlung verschwindet als
     //        vermeintliches Duplikat. Anker 1 und 2 bleiben dabei grün.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen)\.spec\.ts/, use: DESKTOP },
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
@@ -95,6 +99,22 @@ export default defineConfig({
             testMatch: /render-smoke\.spec\.ts/,
             dependencies: ["setup"],
             use: { ...DESKTOP, storageState: "playwright/.auth/user.json" },
+          },
+          // v3-02: /mobil bei 430 × 932 (iPhone 15 Pro Max), in Chromium mit
+          // Touch — kein zweiter Browser nötig, und der Rahmen (Safe Areas,
+          // 430 px) ist genau das, was der Prototyp annimmt.
+          {
+            name: "render-smoke-mobil",
+            testMatch: /render-smoke-mobil\.spec\.ts/,
+            dependencies: ["setup"],
+            use: {
+              ...DESKTOP,
+              viewport: { width: 430, height: 932 },
+              deviceScaleFactor: 2,
+              isMobile: true,
+              hasTouch: true,
+              storageState: "playwright/.auth/user.json",
+            },
           },
         ]
       : []),

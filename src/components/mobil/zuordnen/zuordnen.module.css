@@ -1,0 +1,450 @@
+/* Tab „Zuordnen" auf /mobil — Handoff-README §1, Design-Record 07.09.2026.
+ *
+ * Farben, Flächen, Ränder, Radien, Schrift: ausschließlich Tokens.
+ * Typo-Stufen als px mit der README-Stufe daneben — sechs der elf Stufen
+ * haben in keiner Token-Datei einen Namen (Briefing §3). Kein Hover: Touch.
+ * Zahlen erben `tabular-nums` vom body (globals.css). */
+
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 0;
+}
+
+/* ── Knöpfe: Browser-Reset, damit Maße und Farben allein hier stehen ─────── */
+
+.knopf {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Kopf ───────────────────────────────────────────────────────────────── */
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 8px;
+  gap: 12px;
+}
+
+.kopfLinks {
+  min-width: 0;
+}
+
+.label {
+  /* README-Stufe 11/600 uppercase */
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.sparrate {
+  /* README-Stufe 36/300 */
+  margin-top: 6px;
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: -1.4px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.kopfRechts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.offenZeile {
+  /* README-Stufe 12 */
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* ── Stapel-Vorschau ────────────────────────────────────────────────────── */
+
+.vorschau {
+  padding: 0 8px;
+}
+
+.vorschauKopf {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.vorschauZeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.vorschauText {
+  min-width: 0;
+}
+
+.vorschauWer {
+  /* README-Stufe 13/500 */
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vorschauWas {
+  /* README-Stufe 11 */
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vorschauBetrag {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.vorschauLeer {
+  min-height: 46px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.vorschauSchluss {
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── Monatsnavigation ───────────────────────────────────────────────────── */
+
+.monatsNav {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nachbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 4px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.nachbarOhne {
+  opacity: 0.3;
+}
+
+.nachbarRechts {
+  flex-direction: row-reverse;
+}
+
+.chevron {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--neutral-fill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nachbarText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nachbarRechts .nachbarText {
+  align-items: flex-end;
+}
+
+.nachbarName {
+  /* README-Stufe 13/500 */
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.nachbarUnter {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.nachbarRechts .nachbarUnter {
+  color: var(--text-tertiary);
+}
+
+.monatMitte {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.monatName {
+  /* README-Stufe 17/600 */
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+.pille {
+  /* README-Stufe 11/600, Pille r 20 */
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Fokus-Karte ────────────────────────────────────────────────────────── */
+
+.fokus {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 14px 16px 16px;
+}
+
+.fokusKopf {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fokusDatum {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fokusPosition {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fokusBetrag {
+  /* README-Stufe 22/400 */
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  line-height: 1;
+}
+
+.fokusWer {
+  /* README-Stufe 17/600, ungekürzt */
+  margin-top: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.fokusWas {
+  /* README-Stufe 13, ungekürzt */
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* ── Aktionsfläche ──────────────────────────────────────────────────────── */
+
+.aktionen {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.aktionenLabel {
+  padding: 0 4px 2px;
+}
+
+.aktionenLabelZeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 2px;
+}
+
+.uebernehmen {
+  /* der EINZIGE gefüllte Knopf — 52 px, r 10, Türkis, 15/600 */
+  height: 52px;
+  border-radius: var(--radius-control);
+  background: var(--color-teal);
+  color: var(--on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.uebernehmenGesperrt {
+  /* Opacity .4, kein Handler (Record #2, #4) */
+  opacity: 0.4;
+  cursor: default;
+}
+
+.uebernehmenName {
+  /* der 105-Zeichen-Name kürzt hier; der Knopf wächst nicht (Record §2) */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.haken {
+  flex-shrink: 0;
+  display: block;
+}
+
+.kandidat {
+  height: 48px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-ghost);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.kandidatGewaehlt {
+  border-color: var(--color-teal);
+  background: var(--teal-fill);
+}
+
+.kandidatName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.kandidatZaehler {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.andereKarte {
+  height: 44px;
+  border-radius: var(--radius-control);
+  background: var(--neutral-fill);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 500;
+  width: 100%;
+}
+
+.gesperrt {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.spaeterZeile {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.spaeter {
+  height: 44px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.hinweis {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  padding: 0 4px;
+}
+
+/* ── Leer ───────────────────────────────────────────────────────────────── */
+
+.leer {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.leerTitel {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.leerText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
