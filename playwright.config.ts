@@ -92,7 +92,13 @@ export default defineConfig({
     //        Blöcke, zählt die Laufnummer der RPC je Block neu, beide Zeilen
     //        bekommen denselben Hash, und eine echte Zahlung verschwindet als
     //        vermeintliches Duplikat. Anker 1 und 2 bleiben dabei grün.
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen|login-ziel)\.spec\.ts/, use: DESKTOP },
+    // v3-03 (/mobil, MB-6): `mobil-uebersicht`, `mobil-karten` und
+    //        `mobil-verlauf` kommen dazu — die Regeln der drei neuen Sichten.
+    //        Auch hier macht kein Bruch eine Zahl falsch: Ein Rest hieße „frei"
+    //        statt „unbezahlt", ein Marker-Punkt stünde hinter dem Ring, ein
+    //        Filter zeigte die falsche Gruppe. Der Marker wird als PIXEL
+    //        gemessen, nicht am Quelltext abgelesen (LL-40).
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen|mobil-uebersicht|mobil-karten|mobil-verlauf|login-ziel)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [

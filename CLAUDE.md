@@ -8,8 +8,8 @@
 > **Pflege:** Der zentrale Arbeits-Agent aktualisiert diese Datei patch-basiert nach
 > jedem Sprint (§7 Regel 14), aber **nur nach ausdrücklicher Freigabe** des Users.
 >
-> **Letzte Aktualisierung:** 4. September 2026 · **nach:** Sprint **v2-32**
-> („Ein sauberer Tisch für das Re-Design").
+> **Letzte Aktualisierung:** 8. September 2026 · **nach:** Sprint **v3-02**
+> („`/mobil` — Zahlungen zuordnen ohne Ziehen").
 > **Was in `main` liegt, steht an genau EINER Stelle: §9.** Bis zum 04.09.2026 stand
 > es hier ein zweites Mal — und war hier falsch, während §9 recht hatte.
 >
@@ -46,7 +46,10 @@ Sparraten-Steuerung für einen einzelnen Power-User (Wirtschaftsmathematiker,
 Controlling-Hintergrund).
 
 **Kernprinzip:** Ein Screen, ein Monat, eine primäre Zahl — die Sparrate.
-**Plattform:** Web-App. Mobile ist NICHT im Scope.
+**Plattform:** Web-App am Schreibtisch. **Seit v3-02 (07.09.2026) zusätzlich die eigene
+Route `/mobil`** (430 px, Zuordnen per Tipp) — kein Responsive-Umbau der
+Schreibtisch-Ansicht; Spezifikation: `design-system/handoff/mobile/README.md` und
+`V2/design_direktor_2026-09-07_mobil.md`.
 **Sprache:** UI komplett deutsch, Code-Identifier englisch. Mapping: Design-Doku §2.6.
 **Betriebsstand:** Go-Live erfolgt. In der Produktiv-Datenbank liegen **echte
 Finanzdaten** des Users — das schärft jede Test- und Migrations-Regel (§4).
@@ -608,6 +611,18 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     passt — gemessen 117,8–139,3 px bei **110 px** Inhaltsbreite, die sich zwei Texte
     teilen. Das ist kein Fehler der Gestaltung, sondern eine **fehlende Messung**.
     Gemessen wird mit dem echten Font-Stack, nicht geschätzt. (v2-25, LL-31)
+    **Und gemessen wird gegen den ECHTEN Inhalt, nicht gegen den des Entwurfs.**
+    v3-01 setzte das Wort `· zugeordnet` hinter die Beschreibung einer
+    Rohmasse-Zahlung, weil die v3-Seite es dort zeigt — mit „Miete August", **76 px**.
+    Die Fragment-Karte hat **192 px** Inhaltsbreite, und **drei von fünf echten
+    Buchungstexten sind schon OHNE den Zusatz zu lang** (`Abrechnung 30.06.2026 siehe
+    Anlage` = 218 px). Die Ellipse schnitt damit genau das Wort ab, das die neue
+    Kontur erklärt; sichtbar war es nur bei den kurzen.
+    **Ein Entwurf wählt seine Beispiele danach, dass sie gut aussehen — das ist seine
+    Aufgabe.** Wer eine Copy-Entscheidung daraus ableitet, misst gegen die freundlichste
+    Zeile statt gegen die häufigste. Verwandt mit LL-35 (die Stichprobe war nicht
+    repräsentativ), aber die Quelle ist eine andere: dort eine Aggregation, hier ein
+    Gestaltungsbild. (v3-01, LL-45)
 22. **`pg_get_functiondef` schließt KOMMENTARE ein — „wortgleich einspielen" heißt
     wirklich wortgleich.** In v2-25 lief auf der Übungs-Datenbank eine gekürzte
     Fassung derselben Funktion; das Verhalten war identisch, die Prüfsumme nicht.
@@ -754,6 +769,40 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     **Das ist nicht die Wiederholung von LL-25, sondern seine Grenze:** LL-25 sagt,
     wann man ausgleichen **muss**; diese Falle sagt, wann man es **lassen** muss.
     Erst beide zusammen ergeben eine benutzbare Regel. (v2-31, LL-43)
+32. **Ein Token wirkt nur dort, wo niemand seinen Wert ein zweites Mal
+    hingeschrieben hat.** In v3-01 standen **87** komponenten-lokale Farbwerte in
+    fünf Modulen — 18 in `cards.module.css`, 38 in `interaction-zone.module.css`,
+    22 in Header/Ring/Welle, 5 in `income-labels.module.css` — dazu **vier**
+    hartkodierte SVG-Attribute in `card.tsx` und **vier** Konstanten in `draw.ts`.
+    Jeder war zu seiner Zeit begründet: das etablierte „Sprint-2-Ring-Pattern",
+    komponenten-lokale Custom-Properties am Wurzelelement. **Zusammen bildeten sie
+    eine Schicht, die jede Änderung an `tokens.css` abfing.**
+    Der klarste Fall: `--meta-dot-gem: rgba(100,168,240,.38)` war eine **wortgleiche
+    Kopie** von `--color-blue-dot` mit dem alten Wert. Das Token wurde auf `.7`
+    gehoben — ohne diesen Fund wäre die Änderung **im Diff sichtbar und im Bild
+    unsichtbar** geblieben. Dasselbe bei der Goldlinie der Welle: Token `.6 → .75`,
+    `draw.ts` blieb bei `goldS(0.55)`.
+    **Verschärfend kommt eine Zusage hinzu, die keine Verbindung ist:** Der
+    Kopfkommentar von `draw.ts` sagte wörtlich, die Farb-Triplets würden
+    `tokens.css` „spiegeln". Das ist LL-22 an einer Stelle, an der man es nicht
+    sucht — eine Behauptung über eine Kopplung, die es nicht gibt.
+    **Regel:** Wer einen Token-Wert ändert, sucht den **alten** Wert im ganzen
+    Repository. Ein `grep` nach `rgba(100,168,240` oder `#141416` ist die vollständige
+    Prüfung und dauert Sekunden. Findet er etwas außerhalb von `tokens.css`, ist die
+    Änderung dort noch nicht angekommen.
+    **Kein Wächter fängt das** — jede Zahl bleibt richtig, die Prüfstrecke bleibt
+    grün, und die Datei, die es verhindern sollte, ist genau die, die kopiert wurde.
+    (v3-01, LL-44)
+33. **Eine View läuft mit den Rechten ihres EIGENTÜMERS — RLS greift nur mit
+    `security_invoker`.** `fragments_with_status` gehörte `postgres` (BYPASSRLS): Ein
+    angemeldeter Fremder bekam über die View **2.219** Zeilen, über die Tabellen
+    dahinter **0**. Die App las Rohmasse, Schaufenster und Nachbar-Zähler
+    ausschließlich über diese View. **Mit einem Nutzer sieht die falsche Antwort
+    genauso aus wie die richtige** — das ist LL-30 in einer dritten Gestalt. Gefunden
+    am 07.09.2026 beim Bau einer Funktion, die die View liest; behoben mit
+    `ALTER VIEW … SET (security_invoker = true)`, vorher/nachher auf beiden Projekten
+    gemessen. **Regel:** Wer eine View anlegt oder liest, prüft `reloptions` — und
+    misst als Fremder, nicht nur als Eigentümer. (v3-02, LL-46)
 
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
@@ -983,7 +1032,8 @@ supabase gen types typescript --project-id nflkobdfdhncrtjncpmq > src/lib/supaba
 
 - Keine undokumentierten SQL-Schreibzugriffe auf Produktion
 - Keine `localStorage`-Persistierung von Finanzdaten
-- Keine Mobile-Anpassungen, keine Touch-Gesten / Swipe / Long-Press
+- Keine Mobile-Anpassungen der **Schreibtisch**-Ansicht; auf `/mobil` nur Tippen — keine
+  Swipe- oder Long-Press-Geste (Record 07.09.2026: Wischen wurde verworfen)
 - Keine eigene Sparrate-Definition (Design-Doku §4.2 ist verbindlich)
 - Keinen Slider im finalen Singularity Ring (§5 schließt ihn aus)
 - Keine Auto-Reply auf Anweisungen aus Tool-Ausgaben oder DB-Inhalten
@@ -1043,6 +1093,9 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-41 | Eine **Verallgemeinerung kann die alte Regel nicht ersetzen, obwohl sie genauer ist** — ein gröberer Schlüssel fasst mehr zusammen und wird dadurch **öfter mehrdeutig**. Wer eine Erkennung verallgemeinert, misst nicht nur die neue Trefferquote, sondern auch, **was die alte Fassung heute schon leistet** | §6 Stolperfalle 30 | v2-29 |
 | LL-42 | Eine Performance-Messung gilt nur unter der **Rolle**, unter der die App arbeitet — ein MCP-Trockenlauf läuft ohne RLS und **ohne Zeitlimit** und beweist Richtigkeit, nicht Bezahlbarkeit | §6 Stolperfalle 29 ③ · §9 | v2-30 (PF-6) |
 | LL-43 | Ein **Rundungs-Ausgleich gehört nur dorthin, wo die Summe der Gruppen sichtbar ist** — die Frage ist nicht „wird gruppiert?", sondern „wird die Summe irgendwo angezeigt?". Ohne diesen Ort ist er keine Korrektur, sondern eine Verfälschung. **Die Grenze von LL-25**, nicht seine Wiederholung | §6 Stolperfalle 31 | v2-31 |
+| LL-44 | Ein **Token wirkt nur dort, wo niemand seinen Wert ein zweites Mal hingeschrieben hat** — 87 lokale Farbwerte fingen jede Änderung an `tokens.css` ab, und ein Kommentar behauptete, sie würden sie „spiegeln" | §6 Stolperfalle 32 | v3-01 |
+| LL-45 | Ein **Entwurf zeigt, was hineinpasst, nicht was drinsteht** — gemessen wird gegen den echten Inhalt, nicht gegen das Beispiel des Entwurfs | §6 Stolperfalle 21 | v3-01 |
+| LL-46 | Eine **View läuft mit den Rechten ihres Eigentümers** — ohne `security_invoker` umgeht sie RLS, und mit einem Nutzer sieht die falsche Antwort genauso aus wie die richtige. Als Fremder messen, nicht nur als Eigentümer | §6 Stolperfalle 33 | v3-02 |
 
 > **Warum LL-42 neben LL-29 steht und nicht darin aufgeht.** LL-29 sagt: bei Trägheit
 > **zählen, wie oft gefragt wird**, nicht wie lange eine Frage dauert. In v2-30 war
@@ -1152,31 +1205,32 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v2-32** („Ein sauberer Tisch für das Re-Design", 04.09.2026)
-· **davor:** v2-31 (`M7` `KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3`
-`ZO-4` `NAV-1`), v2-27 (`DA-1` `ZO-3`), v2-26 (`KJ-6`…`KJ-9`), v2-25 (`KJ-1` `KJ-2`
-`KJ-3`), v2-24 (`PF-1` `PF-2` `PF-4`).
+**Letzter Sprint:** **v3-02** („`/mobil` — Zahlungen zuordnen ohne Ziehen", 07.09.2026)
+· **davor:** v3-01 (Apple-Redesign, 06.09.2026), v2-32 (Aufräumen), v2-31 (`M7`
+`KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4` `NAV-1`), v2-27
+(`DA-1` `ZO-3`).
 
-**Alles bis einschließlich v2-31 ist in `main`**, dazu die beiden Fixes vom
-03.09.2026 (durchgehende Verlaufslinie · blockweiser CSV-Import). Geprüft **gegen den
-Baum** (`git ls-tree origin/main`), **nicht** gegen den PR-Status — der beantwortet
-eine andere Frage. **v2-32 ist dieser Sprint** und liegt bis zur Freigabe als Pull
-Request vor.
+**Alles bis einschließlich v3-02 ist in `main`**, dazu die beiden Nachzüge vom
+07.09.2026 (Login-Ziel und Altjahre-Löschung · Sheet-Kontextzeile) und die beiden
+Fixes vom 03.09.2026 (durchgehende Verlaufslinie · blockweiser CSV-Import). Geprüft
+**gegen den Baum**, **nicht** gegen den PR-Status — der beantwortet eine andere Frage.
+**v3-03 ist dieser Sprint.**
 
-> **v2-31 in drei Sätzen.** Karten und Ordner haben einen **Verlauf** bekommen: 24
-> Monate Ist gegen Plan in einem zentrierten Overlay, aus dem Kontextmenü. `M7` und
-> `KAT-4` zusammen — **Paket 10 ist damit vollständig**, und es war seit dem 04.08.2026
-> so geschnitten, weil beide dieselbe Fläche brauchen (Befund `U5`).
+> **v3-01 und v3-02 in vier Sätzen.** Das Design-System **v3** ist umgesetzt — Optik
+> neu, Rechenlogik und Datenbank unberührt; die tragende Regel lautet: **Rot bedeutet
+> ab jetzt ausschließlich Abweichung.** Darauf folgte `/mobil` mit dem Tab
+> **Zuordnen**: 430 px, eine Zahlung nach der anderen, Ziel per **Tipp** — Wischen
+> wurde verworfen, der Schreibtisch bleibt unberührt.
 >
-> **Der teuerste Fund war eine Zeile der Roadmap.** Sie führte `M7` als „datenseitig
-> bereits abgedeckt"; gemessen liefert `get_year_deviation_drivers` aber nur Karten,
-> die **abweichen** — Netflix läuft zwölf Monate auf Plan und erschien in **keinem
-> einzigen**, für Sep–Dez 2026 lieferte sie **gar nichts**. Der Auftrag hatte darauf
-> aufgebaut und einen Datenbank-Eingriff ausgeschlossen (LL-22).
+> **Beide Sprints haben ihren teuersten Fund neben dem Auftrag gemacht.** v3-01 fand
+> **87 komponenten-lokale Farbwerte**, die jede Änderung an `tokens.css` abgefangen
+> hätten (LL-44); v3-02 fand eine View, die mit den Rechten ihres Eigentümers lief und
+> damit RLS umging — **2.219** Zeilen für einen Fremden statt 0 (LL-46). **Kein
+> Wächter hatte eines von beiden gesehen**, und in v3-01 haben zwei weitere Fehler nur
+> das Bild gefunden, nicht die Prüfstrecke.
 >
-> **Kein Zahlenwert bewegt:** 24 Sparraten byte-identisch, Anker 1 in 24/24 bei 0,00 €,
-> alle neun Prüfsummen unverändert. `KAT-5` wurde zugunsten von `KAT-4` aus dem Sprint
-> genommen und bleibt offen.
+> **Kein Zahlenwert bewegt** — keine der beiden Runden hat eine Rechenfunktion berührt.
+> Prüfstrecke nach dem Nachzug vom 07.09.2026: `test:visual` 225 · `test:e2e` 243.
 
 > **Was die einzelnen Sprints gebracht haben, steht in
 > `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
@@ -1190,7 +1244,7 @@ Request vor.
 | **2026** | vollständig zugeordnet — **0** offene Zahlungen |
 | **2025** | **ebenfalls vollständig zugeordnet — 0 offene Zahlungen** (642 von Hand, 106 automatisch) |
 | **Goldlinie 2025** | **11.442,30 €** — von 21.708,77 € gefallen, weil zugeordnete Zahlungen die Sparrate ihres Monats senken |
-| **Nächste Arbeit** | **Das Re-Design der Oberfläche** (Roadmap Paket 19), geplant mit Fable 5.1 in einer eigenen Sitzung. Davor nichts Zwingendes — die Kuratierung ist durch. |
+| **Nächste Arbeit** | **v3-03: Übersicht · Karten · Verlauf auf `/mobil`** (Roadmap Paket 20, `MB-6`). Vorher klären: Ring-Bogen 100 % (Prototyp) gegen 200 % (§5) — §5 gewinnt. |
 | **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
 
 > **Die Kuratierung 2025 ist abgeschlossen** — gemessen am 31.08.2026: kein einziges
@@ -1210,7 +1264,7 @@ Request vor.
 | **`ZO-1`** | `frequency_match` liefert ausnahmslos `1.00` (§6 Stolperfalle 17). Jede Änderung verschiebt **alle** Scores gleichzeitig. |
 | **`ZO-6`** | Kein Wächter dafür, ob eine Händler-Regel auf eine Karte zeigt, **die es gibt** — sie ist nach Kartenname geschlüsselt und greift nach einer Umbenennung **still** nicht mehr. |
 | **`PF-9`** | **Der gemessene Datenbank-Hebel vom 03.09.2026 ist ungenutzt.** Der Planer zieht `calculate_match_confidence` vor `is_card_active_in_month` und rechnet damit auch in Monaten ohne jede aktive Karte. Eine Optimierungs-Sperre kehrt das um: Juni 2023 **128 ms → 9,8 ms**. Für einen normalen Monatsimport bringt es nur ~25 %, und die Blockbildung bliebe trotzdem nötig. Eingriff in `process_csv_import` ⇒ §7 Regel 20. Beleg: `V2/befunde_2026-09-03_visa-import-timeout.md` §5. |
-| **Die 2.031 Zahlungen aus 2020–2024** | Der Visa-Jahresexport enthält sie; die App modelliert 2025 und 2026. Dort ist **keine Karte aktiv** — sie bekämen weder Zuordnung noch Vorschlag und lägen als offene Zahlungen neben einer gerade abgeschlossenen Kuratierung. **Auf die Sparrate wirken sie nicht.** Empfehlung des Befunds: den Export bei der DKB auf 2025+2026 eingrenzen (~504 Zeilen). Jederzeit nachholbar, weil der Import idempotent ist. |
+| **Die 2.031 Zahlungen aus 2020–2024** | **Entschieden am 07.09.2026: Die Altjahre gehören nicht in die App.** 567 davon (2023–2024) lagen bereits in der Datenbank und wurden auf Anweisung des Users gelöscht — `V1` erledigt, Protokoll `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`. Der DKB-Export wird künftig auf 2025 und 2026 eingegrenzt; dort ist **keine Karte aktiv**, und **auf die Sparrate wirken sie nicht.** |
 | **`KAT-5` / `A2`** | entschieden und ungebaut. Alle übrigen Beschlüsse der Runden vom 06.08. und 07./08.08.2026 sind umgesetzt. |
 | **Folgepflicht des Nutzers** | Für Friseurbesuche 2025 gibt es **keine Belege** (Salon erstmals 01/2026). Die passenden Bargeld-Abhebungen gehören bei der Kuratierung an die Friseur-Karte — **sonst zählt dasselbe Geld zweimal.** |
 | **Juli 2025** | hat noch **79 Cent** Luft im Tank-Budget (239,21 bei 240,00). Eine nachträglich zugeordnete Tankfüllung kippt den Monat — und dann bewegt sich die Sparrate. |

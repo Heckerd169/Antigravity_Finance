@@ -1,0 +1,193 @@
+/* Tab „Übersicht" auf /mobil — Handoff-README §4, Design-Record #10.
+ *
+ * Farben, Flächen, Ränder, Radien: ausschließlich Tokens (LL-44 — ein zweites
+ * Mal hingeschriebener Farbwert fängt jede Änderung an `tokens.css` ab).
+ * Typo-Stufen als px mit der README-Stufe daneben. Kein Hover: Touch.
+ * Zahlen erben `tabular-nums` vom body (globals.css). */
+
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 16px 0;
+}
+
+/* ── Kopfzeile ──────────────────────────────────────────────────────────── */
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.monat {
+  margin: 0;
+  font-size: 17px; /* Stufe 17/600 */
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+
+.pille {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
+  font-size: 11px; /* Stufe 11/600 */
+  font-weight: 600;
+}
+
+/* ── Bühne: Welle im Hintergrund, Ring davor ────────────────────────────── */
+
+.buehne {
+  position: relative;
+  /* Volle Breite — hebt die 16 px Seitenrand des Bildschirms auf (Handoff §4). */
+  margin: 0 -16px;
+  height: 282px;
+  overflow: hidden;
+}
+
+.welleCanvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.ringWrap {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Der Ring ist auf /mobil reine Anzeige: kein Scrubbing, kein Popup. */
+  pointer-events: none;
+}
+
+/* Deckende Innenfläche r 94 (Record #10): schneidet die Welle aus dem Ring
+   aus, damit die Zahl in der Mitte auf ruhigem Grund steht. Sie liegt UNTER
+   dem Ring-SVG und ÜBER dem Canvas. */
+.ringMaske {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 188px;
+  height: 188px;
+  margin: -94px 0 0 -94px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+}
+
+/* ── Drei Kacheln ───────────────────────────────────────────────────────── */
+
+.kacheln {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.kachel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+
+.kachelTitel {
+  font-size: 11px; /* Stufe 11/600 uppercase */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kachelPlan {
+  font-size: 17px; /* Stufe 17/600 */
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kachelUnten {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Einstiegskarte ─────────────────────────────────────────────────────── */
+
+.einstieg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* ≥ 44 px Tap-Fläche (Handoff „Rahmen") — 14 + 14 Padding plus zwei Zeilen. */
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--bg-card);
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.einstiegText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.einstiegTitel {
+  font-size: 15px; /* Stufe 15/600 */
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.einstiegUnten {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.einstiegKreis {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-teal);
+  color: var(--on-accent);
+}
+
+/* Leerer Stapel: der Kreis wird neutral — es gibt nichts mehr zu holen. */
+.einstieg[data-leer="true"] .einstiegKreis {
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
+}
+
+/* ── Fußzeile ───────────────────────────────────────────────────────────── */
+
+.fuss {
+  margin: 0 0 12px;
+  padding: 0 2px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

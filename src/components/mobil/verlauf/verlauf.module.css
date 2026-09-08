@@ -1,0 +1,244 @@
+/* Tab „Verlauf" auf /mobil — Handoff-README §6.
+ *
+ * Farben, Flächen, Ränder, Radien: ausschließlich Tokens (LL-44).
+ * Typo-Stufen als px mit der README-Stufe daneben. Kein Hover: Touch. */
+
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px 16px 0;
+}
+
+/* ── Kopf ───────────────────────────────────────────────────────────────── */
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.titel {
+  margin: 0;
+  font-size: 17px; /* Stufe 17/600 */
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+}
+
+.kopfRechts {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Panel ──────────────────────────────────────────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-elevated);
+}
+
+.held {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.heldWert {
+  font-size: 26px; /* Stufe 26/600 */
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.heldLabel {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Balkenfeld ─────────────────────────────────────────────────────────── */
+
+.feld {
+  position: relative;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Planlinie: gestrichelt, weil sie eine Absicht markiert und keinen Messwert
+   (Handoff §6). Die Beschriftung steht LINKS über der Linie. */
+.planLinie {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px dashed var(--border-ghost);
+  pointer-events: none;
+  /* UNTER den Balkenwerten. Wo beide auf dieselbe Höhe fallen, gewinnt der
+     Messwert: Er ist die Aussage, die Planlinie ist die Referenz — und die
+     bleibt als gestrichelte Linie erkennbar, auch wenn ihre Beschriftung
+     angeschnitten wird. Umgekehrt verdeckte sie eine echte Zahl, und das sah
+     im optischen Smoke dieses Sprints wie ein Darstellungsfehler aus. */
+  z-index: 1;
+}
+
+/* 16 px über der Linie und links (Handoff §6). Der Grund deckt, damit die
+   Zeile nicht mit einem Balkenwert verschmilzt. */
+.planText {
+  position: absolute;
+  left: 0;
+  bottom: 16px;
+  padding-right: 6px;
+  background: var(--bg-elevated);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.balken {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.saeuleKnopf {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Der Wert liegt über der Planlinien-Beschriftung und bringt seinen eigenen
+   deckenden Grund mit — sonst laufen zwei Zahlen ineinander, und keine ist
+   mehr lesbar. */
+.saeuleWert {
+  position: relative;
+  z-index: 2;
+  padding: 0 2px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.saeuleWert[data-ton="rot"] {
+  color: var(--color-red);
+}
+
+.saeuleWert[data-ton="teal"] {
+  color: var(--color-teal);
+}
+
+.saeule {
+  display: block;
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: var(--neutral-fill);
+  border: 1px solid transparent;
+  transition: height 0.4s ease;
+}
+
+/* Gewählt: gefüllt und gerandet — die Auswahl hebt hervor, sie färbt nicht um.
+   Ein negativer Monat bleibt rot, auch wenn er gewählt ist. */
+.saeule[data-gewaehlt="true"] {
+  background: var(--teal-fill);
+  border-color: var(--color-teal);
+}
+
+.saeule[data-ton="rot"][data-gewaehlt="true"] {
+  background: var(--red-fill);
+  border-color: var(--color-red);
+}
+
+.saeuleLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.saeuleLabel[data-gewaehlt="true"] {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saeule {
+    transition: none;
+  }
+}
+
+/* ── Detailkarte ────────────────────────────────────────────────────────── */
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+
+.detailTitel {
+  font-size: 11px; /* Stufe 11/600 uppercase */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.detailWert {
+  font-size: 22px; /* Stufe 22/400 */
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  color: var(--text-primary);
+}
+
+.detailWert[data-ton="rot"] {
+  color: var(--color-red);
+}
+
+.detailWert[data-ton="teal"] {
+  color: var(--color-teal);
+}
+
+.detailUnten {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.detailUnten[data-ton="rot"] {
+  color: var(--color-red);
+}
+
+.detailUnten[data-ton="teal"] {
+  color: var(--color-teal);
+}

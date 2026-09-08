@@ -64,6 +64,21 @@ export function fmtSignedEuro(v: number): string {
   return `${sign}${Math.abs(Math.round(v)).toLocaleString("de-DE")}${NBSP}€`;
 }
 
+/** Fallback für `--wave-opacity` (§9). Nur Defense-in-Depth — das Token ist da. */
+export const DEFAULT_WAVE_OPACITY = 0.8;
+
+/** Liest das Token `--wave-opacity` vom übergebenen Element (§9).
+ *
+ *  Lag bis v3-03 in `welle/index.tsx`. Seit `/mobil` eine zweite Bühne mit
+ *  derselben Welle zeichnet, steht der Helfer hier: Ein zweites Mal
+ *  hingeschriebener Token-Wert wäre genau LL-44 — die Datei, die es verhindern
+ *  soll, wäre die kopierte. */
+export function readWaveOpacity(el: HTMLElement): number {
+  const raw = getComputedStyle(el).getPropertyValue("--wave-opacity");
+  const parsed = Number.parseFloat(raw);
+  return Number.isFinite(parsed) ? parsed : DEFAULT_WAVE_OPACITY;
+}
+
 export type WaveParams = {
   /** CSS-Pixel-Breite/-Höhe des Felds (DPR-Transform macht der Aufrufer). */
   width: number;
@@ -76,6 +91,15 @@ export type WaveParams = {
   activeIndex: number;
   /** Token --wave-opacity (0.80). */
   opacity: number;
+  /** `/mobil` zeichnet die Welle OHNE Marker-Kreis (Design-Record 07.09.2026,
+   *  #10: „ohne Marker-Punkt, ohne senkrechten Strich"). Dort steht der Ring
+   *  davor — ein zweiter Blickfang daneben wäre einer zu viel.
+   *
+   *  Der Parameter schaltet **nur den Kreis** ab, nicht `activeIndex`: Die
+   *  Monatsbeschriftung hebt den laufenden Monat weiterhin hervor, denn sie ist
+   *  die eine Stelle, die sagt, wo man steht (v3 Regel 4). Standard `true` —
+   *  der Schreibtisch bleibt unverändert. */
+  showActiveMarker?: boolean;
 };
 
 /** Catmull-Rom-artige Bezier-Segmente durch alle Punkte (Prototyp `smoothInto`). */
@@ -139,7 +163,15 @@ export function drawWave(
   ctx: CanvasRenderingContext2D,
   params: WaveParams,
 ): WavePoint[] {
-  const { width: w, height: h, values, realizedIndex, activeIndex, opacity } = params;
+  const {
+    width: w,
+    height: h,
+    values,
+    realizedIndex,
+    activeIndex,
+    opacity,
+    showActiveMarker = true,
+  } = params;
   ctx.clearRect(0, 0, w, h);
 
   const cW = w - WAVE_PAD_L - WAVE_PAD_R;
@@ -216,8 +248,9 @@ export function drawWave(
     ctx.restore();
   }
 
-  // Aktiver-Monat-Marker — genau EIN Kreis (§9, kein Hover-Punkt, kein Ereignis-Kreis)
-  const ap = pts[activeIndex];
+  // Aktiver-Monat-Marker — genau EIN Kreis (§9, kein Hover-Punkt, kein Ereignis-Kreis).
+  // Auf `/mobil` abgeschaltet: dort steht der Ring davor (Record #10).
+  const ap = showActiveMarker ? pts[activeIndex] : undefined;
   if (ap) {
     ctx.beginPath();
     ctx.arc(ap.x, ap.y, 5, 0, Math.PI * 2);

@@ -2,11 +2,12 @@
 
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
-> **Stand:** 6. September 2026 (nach **v3-01** „Apple-Redesign umsetzen" — `RD-1` und
-> `RD-3` erledigt, `RD-4` teilweise, `RD-5` und `RD-6` neu; Design-Doku auf 3.14.0).
+> **Stand:** 8. September 2026 (nach **v3-03** „Die drei Sichten auf `/mobil`" — `MB-6`
+> erledigt, **Paket 20 vollständig**).
 > **Ergänzt am 07.09.2026 (Sprint v3-02, Phase 0):** Paket 20 „`/mobil`" neu, Kennung `MB`.
-> **Nach v3-02 (07.09.2026):** `MB-1`…`MB-5` erledigt, `MB-6` bleibt (v3-03); dazu `NB-3`,
-> ein Sicherheitsbefund, der im selben Sprint behoben ist.
+> **Nach v3-02 (07.09.2026):** `MB-1`…`MB-5` erledigt; dazu `NB-3`, ein Sicherheitsbefund,
+> der im selben Sprint behoben ist.
+> **Nach v3-03 (08.09.2026):** `MB-6` erledigt — **Paket 20 ist vollständig.**
 >
 > **Was die einzelnen Sprints gebracht haben, steht in `sprints/projekt_historie.md`.**
 > Hier stand bis zum 04.09.2026 eine Kette von **neun** nacherzählten Sprintständen, die
@@ -38,18 +39,24 @@
 
 ## 0. Stand in Zahlen
 
-*Alle Zahlen am 07.09.2026 zeilengenau nachgezählt — nach Sprint **v3-02** und dem
-Nachzug vom selben Abend (`V1` erledigt).*
+*Alle Zahlen am 08.09.2026 zeilengenau nachgezählt — nach Sprint **v3-03**
+(`MB-6` erledigt, Paket 20 vollständig).*
 
-| | Anzahl | v3-02 P0 | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 | nach v2-28 |
+| | Anzahl | nach v3-02 | v3-02 P0 | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 | nach v2-29 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **13** | 13 | 12 | 12 | 11 | 12 | 12 | 12 |
-| Themen darin | **43** | 48 | 42 | 42 | 37 | 39 | 38 | 37 |
-| Hausaufgaben ohne eigenen Sprint | **7** | 8 | 5 | 5 | 4 | 4 | 4 | 4 |
-| **Offen gesamt** | **50** | 56 | 47 | 47 | 41 | 43 | 42 | 41 |
-| Erledigt | **78** | 71 | 71 | 69 | 68 | 66 | 65 | 64 |
+| Offene Pakete | **12** | 13 | 13 | 12 | 12 | 11 | 12 | 12 |
+| Themen darin | **42** | 43 | 48 | 42 | 42 | 37 | 39 | 38 |
+| Hausaufgaben ohne eigenen Sprint | **7** | 7 | 8 | 5 | 5 | 4 | 4 | 4 |
+| **Offen gesamt** | **49** | 50 | 56 | 47 | 47 | 41 | 43 | 42 |
+| Erledigt | **79** | 78 | 71 | 71 | 69 | 68 | 66 | 65 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
+> **Stand nach Sprint v3-03 (08.09.2026), zeilengenau ausgezählt.** Paket-Tabellen
+> **79** Zeilen, davon **37 ✅** → **42** offen. Genau **eine** Zeile hat sich bewegt:
+> `MB-6` von ⬜ auf ✅. Hausaufgaben **7**, alle ⬜. §4 Erledigt **79** Zeilen.
+> §3 unverändert **4**. Pakete **20**, davon **8** vollständig erledigt → **12** offen —
+> **Paket 20 ist als achtes vollständig.**
+>
 > **Stand nach Sprint v3-02 und Nachzug (07.09.2026), zeilengenau ausgezählt.**
 > Paket-Tabellen **79** Zeilen, davon **36 ✅** → **43** offen. Hausaufgaben **7**, alle ⬜
 > (`V1` am Abend durch Löschen der Altjahre entschieden). §4 Erledigt **78**
@@ -914,7 +921,7 @@ im Scope") — der Patch kommt mit dem Abschluss von v3-02.
 | MB-3 | Zweifelsfall: Kandidaten als gleichrangige Konturen, nichts vorbelegt | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Zwei oder mehr Kandidaten schlagen den Datenbank-Vorschlag (Wächter). Zustand „kein Vorschlag" nach Briefing A1. Die alphabetische Vorbelegung (`ORDER BY card_name`, `ZO-8`) gilt auf `/mobil` nicht — auch dann nicht, wenn die Datenbank einen Vorschlag trägt. „Übernehmen" ist gesperrt, bis ein Kandidat gewählt ist. Zustand „kein Vorschlag" ist im Record nicht definiert; Annahme im Briefing (A1). |
 | MB-4 | Sheet „Karte wählen" | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Gruppen als benanntes Prädikat mit Vollständigkeits-Wächter (15 Kombinationen); rechte Spalte aus `card-state.ts`, nicht nachgebaut. Gruppen Fixkosten · Budget · Einmalig · Einnahmen; nur im Monat aktive Karten; rechts „unbezahlt" / „bezahlt" / „frei" / „Einnahme" (Record #11). „Einmalig" ist kein Kartentyp, sondern Rhythmus `ONCE` — benanntes Prädikat mit Vollständigkeits-Test. |
 | MB-5 | Offline-Zustand | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** `navigator.onLine` plus Ereignisse; Uhrzeit des letzten Server-Aufbaus. Neutrale Pille „Stand von HH:MM · offline", Schreiben gesperrt, „Später" bleibt. **Nicht rot** (Record #4). |
-| MB-6 | Tabs Übersicht · Karten · Verlauf | Feature | nein | ⬜ | **Sprint v3-03.** Ring aus `singularity-ring/` (Maße stimmen bereits: r 98, Strich 9, 248 × 248), Welle aus `welle/draw.ts` ohne Marker und ohne senkrechten Strich (Parameter, kein Nachbau; hängt mit `RD-6` zusammen), Kartenliste mit Balken, Verlauf sechs Monate. **Vor dem Bau zu klären:** der Prototyp schließt den Ring-Bogen bei 100 %, §5 und die Komponente bei 200 % — §5 gewinnt (CLAUDE.md §5), sonst gäbe es zwei Wahrheiten für dieselbe Figur. |
+| MB-6 | Tabs Übersicht · Karten · Verlauf | Feature | nein | ✅ | **Erledigt in v3-03 (08.09.2026).** Drei Server-Seiten mit **8 · 6 · 5** Netzrunden je Aufbau (Zuordnen 11, Schreibtisch ~18); 50 neue Wächter, jeder einmal absichtlich rot gesehen (LL-40). **Die offene Frage ist entschieden: Der Ring-Bogen schließt bei 200 %** — §5 gewinnt, und `singularity-ring/` wird deshalb **unverändert** eingesetzt; ein zweiter Modus hätte dieselbe Figur auf zwei Geräten Verschiedenes bedeuten lassen. Die Welle bekam **einen Parameter** (`showActiveMarker`), keinen zweiten Zeichencode — Farben, Skala und Geometrie bleiben; die Paddings passten ohne Eingriff (18 links/rechts ergibt bei 430 px exakt die Punktabstände des Entwurfs), und **Rot lag bereits nur zwischen Kurve und Nulllinie**. Statuspunkt, Balken und Wortlaute kommen aus `card-state.ts`, nicht aus einer zweiten Formulierung. **Kein Zahlenwert bewegt:** 24 Sparraten byte-identisch, Anker 1 und 2 je 0,00 € in 24/24. Offen bleibt der Browser-Smoke am iPhone. |
 
 > **Was dieses Paket vom Re-Design (Paket 19) unterscheidet:** Dort wurde die bestehende
 > Oberfläche neu gezeichnet, hier kommt eine **zweite** dazu — eigene Route, eigene
@@ -958,6 +965,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 |---|---|---|
 | V1 | **Die Altjahre gehören nicht in die App — entschieden durch Löschen.** 567 Zahlungen aus 2023/2024 (384 + 183, davon 91 Überträge, keine verknüpft) am 07.09.2026 auf Anweisung des Users gelöscht, als dokumentierte Daten-Migration mit Abbruch-Sicherung; 24 Sparraten byte-identisch. Der DKB-Export wird künftig auf 2025 und 2026 eingegrenzt. Protokoll: `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`. | Nachzug 07.09.2026 |
 | MB-1 | **Zahlungen zuordnen ohne Ziehen.** Route `/mobil/zuordnen` (430 px): eine Buchung im Fokus, der Vorschlag als einziger gefüllter Knopf, Toast mit dem **echten** Δ der Sparrate (vorher/nachher aus `calculate_sparrate_for_month`, rot nur bei Δ < 0), Rückgängig fünf Sekunden, „Später" ans Stapelende, Monatsnavigation mit Nachbar-Zählern. Elf Netzrunden je Aufbau. Eine Zuordnung vom Handy ist in der Datenbank von einer vom Schreibtisch ununterscheidbar (`lib/card-links.ts`). | v3-02 |
+| MB-6 | **Die drei anderen Sichten auf `/mobil` — Paket 20 ist vollständig.** Übersicht mit dem Ring vor der Jahres-Welle, drei Kacheln und der Einstiegskarte; Karten als Liste mit Filter-Pillen, Statuspunkt, Balken und aufklappbaren Buchungen; Verlauf als sechs Monate Sparrate mit Planlinie. **8 · 6 · 5** Netzrunden je Aufbau. **Die offene Frage ist entschieden: Der Ring schließt bei 200 %** (Design-Doku §5 schlägt den Prototyp), und die Komponente wird deshalb **unverändert** eingesetzt — ihre Maße waren bereits exakt die des Entwurfs. Die Welle bekam **einen Parameter** statt eines zweiten Zeichencodes; ihre Paddings ergaben bei 430 px ohne Eingriff die Punktabstände des Entwurfs, und Rot lag bereits nur zwischen Kurve und Nulllinie. 50 neue Wächter, jeder einmal absichtlich rot gesehen — der Marker wird als **Pixel** gemessen, nicht am Quelltext abgelesen. Kein Zahlenwert bewegt. | v3-03 |
 | MB-2 | **Die Datenbank sagt, auf welchen Karten ein Händler von Hand lag** — `get_open_fragment_candidates`, dieselbe Regel wie `history_match` Stufe 1 als Liste mit Zähler, nur Karten aktiv im Monat. Geprobt auf der Übungs-DB (T1–T7), byte-gleich in Produktion (`c48042ff…`), 4 ms unter der App-Rolle. | v3-02 |
 | MB-3 | **Der Zweifelsfall zeigt Kandidaten statt zu raten** — Konturen, nichts vorbelegt, Übernehmen gesperrt bis zur Wahl. Die alphabetische Vorbelegung (`ZO-8`) gilt auf `/mobil` nicht. | v3-02 |
 | MB-4 | **Sheet „Karte wählen"** mit vier Gruppen; „Einmalig" ist Rhythmus ONCE einer Ausgaben-Karte (Vollständigkeits-Wächter über 15 Kombinationen). | v3-02 |
@@ -1087,7 +1095,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | KAT-4 | Paket 10 (mit M7) |
 | RD-1 … RD-6 | Paket 19 |
 | MB-1 … MB-5 | §4 Erledigt (v3-02) |
-| MB-6 | Paket 20 — offen, v3-03 |
+| MB-6 | §4 Erledigt (v3-03) |
 | NB-3 | §4 Erledigt (v3-02) — Befund beim Bau, im selben Sprint behoben |
 | MB-H1 … MB-H3 | §2 Hausaufgaben (an v3-02 oder v3-03 anhängen) |
 
@@ -1139,4 +1147,5 @@ vier der fünf Kettenglieder fertig und der Riegel vor Paket 5 ist gefallen) ·
 fortgeschrieben am **07. September 2026** (Sprint v3-02, Phase 0: **Paket 20** `/mobil` mit
 `MB-1`…`MB-6` und den Hausaufgaben `MB-H1`…`MB-H3`) · **nach Sprint v3-02** (`MB-1`…`MB-5`
 und `NB-3` erledigt; `MB-6` ist v3-03) · **Nachzug 07.09.2026** (`V1` erledigt: Altjahre gelöscht;
-Login merkt sich das Ziel, `/mobile` → `/mobil`)*
+Login merkt sich das Ziel, `/mobile` → `/mobil`) · **nach Sprint v3-03** (08.09.2026:
+`MB-6` erledigt — Übersicht · Karten · Verlauf; **Paket 20 vollständig**)*
