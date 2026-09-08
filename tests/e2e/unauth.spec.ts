@@ -27,6 +27,22 @@ test("unauthentifiziert: /mobil/zuordnen leitet auf /login um — und merkt sich
   await expect(page.locator('input[name="next"]')).toHaveValue("/mobil/zuordnen?month=2026-08");
 });
 
+// v3-03 (MB-6): Dieselbe Schranke für die drei neuen Sichten — Prüfschritt S1.
+// Jede von ihnen liest Sparrate, Karten oder Zahlungen; keine darf unangemeldet
+// auch nur anfangen zu rendern.
+for (const pfad of ["uebersicht", "karten", "verlauf"]) {
+  test(`unauthentifiziert: /mobil/${pfad} leitet auf /login um — mit Ziel`, async ({
+    page,
+  }) => {
+    await page.goto(`/mobil/${pfad}?month=2026-08`);
+    await page.waitForURL("**/login**");
+    await expect(page.getByRole("heading", { name: "Anmeldung" })).toBeVisible();
+    expect(new URL(page.url()).searchParams.get("next")).toBe(
+      `/mobil/${pfad}?month=2026-08`,
+    );
+  });
+}
+
 test("unauthentifiziert: / bekommt KEIN next — das Dashboard ist das Standardziel", async ({ page }) => {
   await page.goto("/");
   await page.waitForURL("**/login**");

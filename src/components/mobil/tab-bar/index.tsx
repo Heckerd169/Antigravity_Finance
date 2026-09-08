@@ -17,15 +17,21 @@ type Props = {
 /** Die Tab-Leiste von `/mobil` (Handoff-README „Rahmen": 49 px Tabs plus
  *  Home-Indikator-Bereich, `--bg-primary`, `border-top --border-subtle`).
  *
- *  Bis v3-03 gibt es nur den Tab „Zuordnen". Die drei anderen stehen sichtbar
- *  in der Leiste, in `--text-tertiary` und ohne Ziel — dasselbe Muster wie die
- *  Monatsnavigation ohne Nachbar („Opacity .3, kein Handler"), Briefing A7. */
+ *  **Seit v3-03 haben alle vier Tabs ihr Ziel** (`MB-6`). Bis dahin standen drei
+ *  davon ohne Handler in der Leiste (Briefing v3-02, A7) — die Klasse
+ *  `tabOhneZiel` und der `<span>`-Zweig unten sind seither ungenutzt, bleiben
+ *  aber stehen: Ein Tab ohne Ziel ist ein Zustand, den diese Leiste wieder
+ *  braucht, sobald ein fünfter Bereich vorbereitet wird.
+ *
+ *  Der Monat wandert als `?month=` in JEDEN Link. Ohne ihn spränge ein
+ *  Tab-Wechsel zurück auf den laufenden Monat, und der Nutzer verlöre beim
+ *  Blättern durch alte Monate seinen Platz. */
 export function MobilTabBar({ aktiv, offen, monat }: Props) {
   const tabs: { id: MobilTab; label: string; icon: JSX.Element; href: string | null }[] = [
-    { id: "uebersicht", label: "Übersicht", icon: <IconUebersicht />, href: null },
+    { id: "uebersicht", label: "Übersicht", icon: <IconUebersicht />, href: `/mobil/uebersicht?month=${monat}` },
     { id: "zuordnen", label: "Zuordnen", icon: <IconZuordnen />, href: `/mobil/zuordnen?month=${monat}` },
-    { id: "karten", label: "Karten", icon: <IconKarten />, href: null },
-    { id: "verlauf", label: "Verlauf", icon: <IconVerlauf />, href: null },
+    { id: "karten", label: "Karten", icon: <IconKarten />, href: `/mobil/karten?month=${monat}` },
+    { id: "verlauf", label: "Verlauf", icon: <IconVerlauf />, href: `/mobil/verlauf?month=${monat}` },
   ];
 
   return (

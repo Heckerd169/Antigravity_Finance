@@ -42,9 +42,105 @@ test("mobil: Monatsnavigation trägt den Monat in der URL und die Tab-Leiste beh
   );
 });
 
-test("/mobil leitet auf den Tab Zuordnen", async ({ page }) => {
+// v3-03: `/mobil` ist jetzt die Übersicht (Handoff §4, Tab 1). Bis v3-02 führte
+// die Route auf „Zuordnen", weil es den einzigen Tab gab.
+test("/mobil leitet auf die Übersicht", async ({ page }) => {
   await page.goto("/mobil");
-  await expect(page).toHaveURL(/\/mobil\/zuordnen/);
+  await expect(page).toHaveURL(/\/mobil\/uebersicht/);
+});
+
+// ── Die drei Sichten aus v3-03 (MB-6) ─────────────────────────────────────
+//
+// Auch hier gilt: Was der Smoke SIEHT, hängt vom Datenstand ab. Geprüft wird
+// der Rahmen — dass die Seite steht, die Tab-Leiste da ist und die tragenden
+// Stücke gerendert sind. Der Browser-Smoke des Users am iPhone bleibt der
+// eigentliche Gate.
+
+test("mobil/uebersicht rendert: Ring vor der Welle, drei Kacheln, Einstieg", async ({
+  page,
+}) => {
+  await page.goto("/mobil/uebersicht");
+
+  await expect(page.getByRole("navigation", { name: "Bereiche" })).toBeVisible();
+  // Der Ring bringt sein eigenes aria-label mit — er wird BENUTZT, nicht
+  // nachgebaut (LL-26).
+  await expect(page.getByRole("img", { name: /Singularity Ring/ })).toBeVisible();
+  await expect(page.getByText("SPARRATE", { exact: true })).toBeVisible();
+
+  for (const titel of ["FIXKOSTEN", "BUDGET", "EINNAHMEN"]) {
+    await expect(page.getByText(titel, { exact: true })).toBeVisible();
+  }
+
+  const offen = page.getByText(/\d+ Ums(atz|ätze) zuordnen/);
+  const fertig = page.getByText("Alles zugeordnet", { exact: true });
+  await expect(offen.or(fertig).first()).toBeVisible();
+
+  // Der Bogen wächst über eine Transition von 0,72 s aus dem Leeren heraus
+  // (`singularity-ring.module.css`). Ein Screenshot davor zeigt einen Stummel
+  // und sieht aus wie ein Fehler — genau so ist er beim optischen Smoke dieses
+  // Sprints einmal falsch gelesen worden. Gewartet wird auf das Ende der
+  // Animation, nicht auf eine Zahl: Der Zielwert hängt an den Live-Daten.
+  await page
+    .locator("svg circle")
+    .first()
+    .evaluate((el) =>
+      Promise.all(
+        el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => null)),
+      ).then(() => undefined),
+    );
+  await page.waitForTimeout(150);
+
+  await page.screenshot({ path: "test-results/mobil-uebersicht.png", fullPage: true });
+});
+
+test("mobil/karten rendert: Filter-Pillen und die Liste des Monats", async ({ page }) => {
+  await page.goto("/mobil/karten");
+
+  await expect(page.getByRole("navigation", { name: "Bereiche" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Karten ·/ })).toBeVisible();
+  for (const pille of ["Alle", "Fixkosten", "Budget", "Einmalig", "Einnahmen"]) {
+    await expect(page.getByRole("tab", { name: pille })).toBeVisible();
+  }
+  // „Alle" ist die Vorbelegung — der Nutzer sieht zuerst alles.
+  await expect(page.getByRole("tab", { name: "Alle" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+
+  await page.screenshot({ path: "test-results/mobil-karten.png", fullPage: true });
+});
+
+test("mobil/verlauf rendert: sechs Balken, Durchschnitt, Detailkarte", async ({ page }) => {
+  await page.goto("/mobil/verlauf");
+
+  await expect(page.getByRole("navigation", { name: "Bereiche" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Verlauf" })).toBeVisible();
+  await expect(page.getByText("Sparrate, 6 Monate")).toBeVisible();
+  await expect(page.getByText("Ø je Monat")).toBeVisible();
+  // Sechs Monate, keiner mehr und keiner weniger.
+  await expect(page.locator("button[aria-pressed]")).toHaveCount(6);
+  // Genau einer ist gewählt, und seine Detailkarte steht darunter.
+  await expect(page.locator('button[aria-pressed="true"]')).toHaveCount(1);
+  await expect(page.getByText(/^SPARRATE · /)).toBeVisible();
+
+  await page.screenshot({ path: "test-results/mobil-verlauf.png", fullPage: true });
+});
+
+test("mobil: die Tab-Leiste trägt den Monat in ALLE vier Ziele", async ({ page }) => {
+  // Ohne `?month=` spränge ein Tab-Wechsel zurück auf den laufenden Monat, und
+  // der Nutzer verlöre beim Blättern durch alte Monate seinen Platz.
+  await page.goto("/mobil/uebersicht?month=2026-03");
+  for (const [label, pfad] of [
+    ["Übersicht", "uebersicht"],
+    ["Zuordnen", "zuordnen"],
+    ["Karten", "karten"],
+    ["Verlauf", "verlauf"],
+  ]) {
+    await expect(page.getByRole("link", { name: label })).toHaveAttribute(
+      "href",
+      `/mobil/${pfad}?month=2026-03`,
+    );
+  }
 });
 
 // Nachzug 07.09.2026: Angemeldet ist die Anmeldeseite nicht erreichbar — mit
