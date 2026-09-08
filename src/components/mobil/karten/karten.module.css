@@ -1,0 +1,259 @@
+/* Tab „Karten" auf /mobil — Handoff-README §5.
+ *
+ * Farben, Flächen, Ränder, Radien: ausschließlich Tokens (LL-44).
+ * Typo-Stufen als px mit der README-Stufe daneben. Kein Hover: Touch. */
+
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px 0;
+}
+
+/* ── Kopf ───────────────────────────────────────────────────────────────── */
+
+.kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.titel {
+  margin: 0;
+  min-width: 0;
+  font-size: 17px; /* Stufe 17/600 */
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zaehler {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Filter-Pillen ──────────────────────────────────────────────────────── */
+
+.pillen {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  /* Scrollbar versteckt (Handoff §5) — am Handy gibt es keine, am
+     Schreibtisch würde sie die Pillenhöhe verändern. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 2px 2px;
+}
+
+.pillen::-webkit-scrollbar {
+  display: none;
+}
+
+.pille {
+  flex: 0 0 auto;
+  appearance: none;
+  margin: 0;
+  border: 0;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 20px;
+  background: var(--neutral-fill);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px; /* Stufe 13/500 */
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Aktiv: invertiert — heller Grund, dunkler Text (Handoff §5). */
+.pille[data-aktiv="true"] {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* ── Liste ──────────────────────────────────────────────────────────────── */
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.leer {
+  margin: 8px 2px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
+.karte {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.karteKopf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  /* 12 + 12 Padding plus drei Zeilen — deutlich über 44 px Tap-Fläche. */
+  padding: 12px 16px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.zeile1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.punkt {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+/* v3 Regel 2: Rot bedeutet ausschließlich Abweichung. „Offen" und „Laufend"
+   tragen deshalb Neutral, nicht Rot. */
+.punkt[data-farbe="teal"] {
+  background: var(--color-teal);
+}
+
+.punkt[data-farbe="rot"] {
+  background: var(--color-red);
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 14px; /* Stufe 14/500 */
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ausgegeben {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* ── Balken ─────────────────────────────────────────────────────────────── */
+
+.balkenTrack {
+  display: block;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--progress-track);
+  overflow: hidden;
+}
+
+.balkenFuellung {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--progress-neutral);
+  transition: width 0.4s ease;
+}
+
+.balkenFuellung[data-farbe="teal"] {
+  background: var(--color-teal);
+}
+
+.balkenFuellung[data-farbe="rot"] {
+  background: var(--color-red);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balkenFuellung {
+    transition: none;
+  }
+}
+
+/* ── Zeile 3 ────────────────────────────────────────────────────────────── */
+
+.zeile3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rechts {
+  flex: 0 0 auto;
+}
+
+/* ── Aufgeklappt ────────────────────────────────────────────────────────── */
+
+.aufgeklappt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 16px;
+  padding: 8px 0 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.buchung {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.buchungName {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buchungBetrag {
+  flex: 0 0 auto;
+}
+
+.keineBuchung {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
