@@ -3911,3 +3911,119 @@ Zwei Aufträge des Users am Abend nach dem Merge von v3-02, protokolliert in
 - **Die Annahme, die hier falsch war:** „Deploy erfolgreich" hieß nicht „Ansicht
   erreichbar". Ein Weg, der auf dem Schreibtisch nie auffiel, weil dort niemand eine
   andere Startseite als `/` erwartet.
+
+---
+
+### Sprint v3-03 · DONE 08. September 2026
+
+#### Komponente
+
+**Die drei fehlenden Sichten auf `/mobil`** (`MB-6`, Paket 20): **Übersicht** mit dem
+Singularity Ring vor der Jahres-Welle, drei Kacheln und der Einstiegskarte in den Stapel;
+**Karten** als Liste mit Filter-Pillen, Statuspunkt, Balken und aufklappbaren Buchungen
+des Monats; **Verlauf** als sechs Monate Sparrate mit Planlinie und Detailkarte. Die
+Tab-Leiste bekommt ihre drei fehlenden Ziele, `/mobil` wird zur Übersicht. **Paket 20 ist
+damit vollständig.**
+
+Kein Datenbank-Eingriff: Alle vier Sichten lesen `get_sparrate_series`,
+`get_cards_for_month` und `fragments_with_status`.
+
+#### Die tragenden Entscheidungen
+
+- **Der Ring-Bogen schließt bei 200 %, nicht bei 100 %** — die eine Frage, die vor dem Bau
+  offen war. Der Prototyp rechnet `clamp(sparrate/plan, 0, 1)`; Design-Doku §5 und die
+  bestehende Komponente schließen erst beim doppelten Plan. Entschieden vom User:
+  **§5 gewinnt** (CLAUDE.md §5). Die Komponente wurde deshalb **unverändert** eingesetzt —
+  ihre Maße (248 × 248, r 98, Strich 9, Punkte bei y 26 und 222) waren bereits exakt die
+  des Handoffs. Ein zweiter Modus hätte dieselbe Figur auf zwei Geräten Verschiedenes
+  bedeuten lassen.
+- **Die Welle bekam einen Parameter, keinen zweiten Zeichencode.** `drawWave` zeichnet
+  jetzt optional ohne Marker-Kreis (`showActiveMarker`, Standard `true`); alles andere —
+  Farben, Skala, Geometrie — bleibt. Die Paddings passten ohne Eingriff: `WAVE_PAD_L/R =
+  18` ergibt bei 430 px Breite exakt die Punktabstände des Entwurfs. **Rot lag bereits
+  nur zwischen Kurve und Nulllinie**, die Forderung des Records war schon erfüllt.
+- **`readWaveOpacity` wanderte nach `draw.ts`.** Zwei Bühnen zeichnen jetzt dieselbe
+  Welle; der Token-Wert ein zweites Mal hingeschrieben wäre LL-44 gewesen — an genau der
+  Datei, die diese Lehre erzeugt hat.
+- **Die Balken des Verlaufs messen im Betragsraum**, und das Skalenmaximum schließt alle
+  sechs Pläne ein. Sonst wäre ein Defizit-Monat der unauffälligste Balken, und das Feld
+  rechnete sich bei jedem Tippen neu.
+- **Kein Rundungs-Ausgleich in den Kacheln** (LL-43): Ihre Summe erscheint nirgends als
+  Sparrate, also gibt es nichts auszugleichen.
+
+#### Die Stellen, an denen eine Annahme nicht hielt
+
+- **Die beiden nicht angewendeten CLAUDE.md-Patches kollidierten dreifach.** v3-01 und
+  v3-02 waren **beide** gegen den Stand *vor* v3-01 geschrieben: beide nannten ihre neue
+  Stolperfalle „32" und hingen am selben Anker, beide fügten nach `LL-43` ein, beide
+  ersetzten dieselbe §9-Kopfzeile. Nacheinander angewendet hätte der zweite Patch ins
+  Leere gegriffen — sein Anker existierte nach dem ersten nicht mehr (`grep -c` = 0).
+  Zusammengeführt statt nacheinander: v3-01 wird Stolperfalle 32 (LL-44, LL-45), v3-02
+  wird 33 (LL-46). **Gefunden hat es die bestehende Regel**, jeden Anker einzeln per
+  `grep -c` zu prüfen. **Folge:** Die zwei Vorschläge aus dem v2-32-Review bekommen bei
+  Freigabe LL-47 und LL-48.
+- **Der §9-Stand beider Vorlagen war überholt.** Sie schreiben „v3-02 liegt als Pull
+  Request vor"; tatsächlich sind v3-02 und beide Nachzüge vom 07.09.2026 in `main`.
+  Nachgezogen auf den Stand vom 08.09.2026, geprüft gegen den Baum des Worktrees.
+- **Die Bühne ist 282 px hoch und nicht 260, weil `drawWave` seine Beschriftung selbst
+  zeichnet** — bei `h − 6`. Ein 260er Feld hätte die Monatsnamen auf 254 gelegt, mitten
+  unter den Ring, der bis 254 reicht. Der Entwurf zeigt sie bei 262; mit der vollen
+  Bühnenhöhe sitzen sie bei 276.
+- **`fragments_with_status` führt keinen Zeitpunkt der ZUORDNUNG.** Für die Fußzeile
+  „Zuletzt zugeordnet" wäre `imported_at` naheliegend gewesen und falsch — das ist der
+  Import des Fragments, nicht seine Zuordnung. Der Zeitstempel steht in
+  `card_fragment_links.created_at`; die Fußzeile kostet dafür eine achte Netzrunde.
+- **Git war den ganzen Sprint blockiert.** Der RTK-Hook schreibt jedes `git` zu `rtk git`
+  um, und der Worktree-Wächter lehnt genau diese Form ab, weil er nicht sehen kann, in
+  welchem Verzeichnis rtk arbeitet. Gebaut und geprüft ließ sich alles; committen nicht.
+  Abhilfe ist eine Zeile in der rtk-Konfiguration (`exclude_commands = ["git"]`).
+- **Fünf Dinge stimmten nicht, und alle Wächter waren grün.** Gefunden hat sie erst der
+  Vergleich der Render-Smoke-Bilder mit den Screenshots des Entwurfs: die Reihenfolge der
+  drei Kacheln (der README-Text nennt die Wortlaute, das Bild die Anordnung), Cent-Beträge,
+  die nicht in 105 px passen, das Jahr im Karten-Kopf, und eine Planlinien-Beschriftung,
+  die einen Messwert verdeckte. **Keiner dieser Fehler hätte eine Zahl falsch gemacht** —
+  dieselbe Klasse wie die zwei Funde aus v3-01, die ebenfalls nur das Bild fand.
+- **Der teuerste Fund war keiner: Der Ring-Bogen sah aus wie ein Stummel.** Er wächst über
+  eine Transition von **0,72 s** aus dem Leeren heraus, und der Screenshot entstand davor.
+  Ein Bild, das 300 ms zu früh entsteht, zeigt einen Zwischenzustand — und der sieht aus
+  wie eine kaputte Komponente. Der Smoke wartet jetzt auf `getAnimations().finished`.
+  **Wer dem zu frühen Bild glaubt, sucht in einer Komponente, die richtig rechnet.**
+  Verwandt mit der Log-Ingestion aus v2-24 und dem Timeout aus v2-27 (§6 Stolperfalle 25):
+  Ein zu früher Blick sieht wie ein Befund aus.
+- **Der Entwurf zeigt einen Zustand, den es nicht gibt.** `05-karten.png` stellt eine
+  Fixkosten-Karte als **„überschritten"** dar, rot. `resolveFixedCostState` kennt nur
+  `ghost`, `paid` und `open`; „überschritten" existiert ausschließlich bei BUDGET (LL-12).
+  Gebaut wurde nach der Logik. **Das ist §7 Regel 12 in Reinform:** Ein Entwurf
+  spezifiziert eine Erwartung, die die bestehende Logik nicht erfüllen kann — wer ihn
+  ungeprüft nachbaut, formuliert eine Zustandsregel ein zweites Mal, und die zweite ist
+  falsch.
+
+#### Verifikation
+
+- `tsc` **0** · ESLint **0/0** (Worktree-Umweg) · `pnpm build` **0**.
+- `test:visual` **276** (Baseline 225, **+51**) · `test:e2e` **301** (Baseline 243,
+  **+58**). Keine Zahl gesunken; alle drei neuen Dateien in der festen Liste in
+  `playwright.config.ts`.
+- **LL-40 dreimal:** In jedem der drei neuen Wächter wurde die geprüfte Regel einmal
+  absichtlich gebrochen — rot wurden genau 1, 2 und 1 Test, nie mehr. Der Marker-Test
+  vergleicht **Pixel**: Am aktiven Punkt müssen sich über 100 unterscheiden, elf Punkte
+  weiter kein einziges.
+- **Anker:** 24 Sparraten Ist und Plan **byte-identisch** vorher/nachher, Anker 1 und
+  Anker 2 je **0,00 € in 24/24**. Protokoll `sprints/sprint_v3-03_anker.md`.
+- **Anker 3:** Übersicht **8** Netzrunden je Aufbau, Karten **6**, Verlauf **5** (6 an
+  einer Jahresgrenze). Zum Vergleich: Zuordnen 11, Schreibtisch ~18.
+- Bundle: `/mobil/uebersicht` 1,16 kB (First Load 100 kB) · `/mobil/karten` 1,49 kB
+  (97,5 kB) · `/mobil/verlauf` 1,27 kB (97,3 kB).
+
+**Was nicht belegt ist:** der Browser-Smoke am iPhone. Er ist der Abnahme-Gate und stand
+zum Zeitpunkt dieses Eintrags aus.
+
+#### Offen nach v3-03
+
+- **Browser-Smoke am iPhone** durch den User, dann Merge.
+- **Git-Blockade im Worktree** — ohne die rtk-Ausnahme kann kein Worktree-Sprint
+  committen.
+- `MB-H1` („N × zuvor" gegen Konfidenz), Light-Mode-Abnahme (`RD-5`), Kartenmenü `M2`.
+- Die Handoff-README nennt für den Ring weiterhin `clamp(…, 0, 1)`. Sie beschreibt den
+  Prototyp korrekt — wer sie als Bauvorlage liest, baut die falsche Regel. Vermerk
+  ergänzt.
