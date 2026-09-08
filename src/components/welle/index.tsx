@@ -6,6 +6,7 @@ import {
   drawWave,
   fmtSignedEuro,
   graS,
+  readWaveOpacity,
   redS,
   tealS,
   type WavePoint,
@@ -15,15 +16,6 @@ import { getTop1Driver, type DriversByMonth } from "./drivers";
 import { WellePopup } from "./popup";
 import type { WelleData, WelleExtras, WelleStageProps } from "./welle.types";
 import styles from "./welle.module.css";
-
-const DEFAULT_WAVE_OPACITY = 0.8;
-
-/** Liest das Token --wave-opacity vom Feld (§9); Fallback nur Defense-in-Depth. */
-function readWaveOpacity(el: HTMLElement): number {
-  const raw = getComputedStyle(el).getPropertyValue("--wave-opacity");
-  const parsed = Number.parseFloat(raw);
-  return Number.isFinite(parsed) ? parsed : DEFAULT_WAVE_OPACITY;
-}
 
 /**
  * Die Bühne der M3-Komposition (§9): monatliche EUR-Welle (Canvas) als

@@ -19,6 +19,26 @@ export function eur(n: number, opts: { plus?: boolean } = {}): string {
   return `${sign}${abs}${NBSP}€`;
 }
 
+/** „1.593 €" — ohne Cent, für Stellen, an denen der Platz sie nicht trägt.
+ *
+ *  **Warum es das gibt, obwohl `eur()` die Regel ist:** Drei Kacheln teilen sich
+ *  die Breite des Bildschirms, jede bekommt rund 105 px. „2.841,87 € unbezahlt"
+ *  misst dort etwa 130 px und würde mit einer Ellipse enden — ausgerechnet auf
+ *  der Ziffer. Der Entwurf rechnet an diesen Stellen deshalb in ganzen Euro, und
+ *  der Design-Record hat gegen ganze Euro gemessen („1.593 € unbezahlt bei 11 px
+ *  passt einzeilig in 105 px"). Dasselbe im Verlauf: Sechs Werte über sechs
+ *  Balken teilen sich 430 px.
+ *
+ *  **Nur für Übersichts-Flächen.** Wo eine einzelne Zahl steht — Kopf-Sparrate,
+ *  Fokus-Karte, Kartenliste, Detailkarte, Toast — bleibt es bei `eur()` mit
+ *  Cent. Der Nutzer rechnet damit; eine gerundete Zahl an einer Stelle, wo Platz
+ *  ist, wäre ein Verlust ohne Gegenwert. (v3-03, LL-31/LL-45) */
+export function eurGanz(n: number): string {
+  const sign = n < 0 ? MINUS : "";
+  const abs = Math.abs(Math.round(n)).toLocaleString("de-DE");
+  return `${sign}${abs}${NBSP}€`;
+}
+
 const DATUM_LANG = new Intl.DateTimeFormat("de-DE", {
   day: "numeric",
   month: "long",
