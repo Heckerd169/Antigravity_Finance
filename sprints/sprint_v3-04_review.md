@@ -131,10 +131,30 @@ Lader wurde angefasst.**
 | A6 | Das Symbol ist der entschiedene Ring in 180 × 180 | ✅ | Wächter ⑥ liest die Maße aus dem PNG-Kopf; Bild angesehen, nicht nur gemessen |
 | A7 | Kein Zahlenwert bewegt | ✅ | §3 |
 | A8 | Jeder neue Wächter kann auslösen (LL-40) | ✅ | zwei Runden mit Gegenprobe, §5 |
-| **A9** | **Die App bleibt beim Tab-Wechsel im Vollbild** | **offen** | **Nur am Gerät prüfbar.** Prüfschritte S8–S11 |
+| **A9** | **Die App bleibt beim Tab-Wechsel im Vollbild** | ✅ | **Am iPhone abgenommen, 13.09.2026** — alle vier Tabs, kein Browser-Rahmen |
+| **A10** | Versatz und tote Tab-Leiste sind mit A9 verschwunden | ✅ | Derselbe Durchgang. **Nicht separat behoben** — an `.frame`, `100dvh` und den Safe Areas wurde nichts geändert |
 
-**A9 ist das eigentliche Ziel des Sprints, und es ist von hier aus nicht abnehmbar.**
+**A9 ist das eigentliche Ziel des Sprints, und es war von hier aus nicht abnehmbar.**
 Alles darüber sind notwendige Bedingungen dafür.
+
+> ### Nachtrag 13.09.2026 — die Abnahme hat die Arbeitshypothese vollständig bestätigt
+>
+> Der Sprint ist auf der Annahme geschnitten worden, es seien **nicht drei Fehler,
+> sondern einer mit drei Folgen** — und hat deshalb bewusst nur A behoben. Die Abnahme
+> belegt das: Mit dem Vollbild-Modus sind **auch der Versatz und die tote Tab-Leiste
+> verschwunden**, ohne dass eine einzige Zeile Layout-CSS angefasst wurde.
+>
+> **Das ist der Teil, der leicht anders ausgegangen wäre.** Drei sichtbare Symptome laden
+> dazu ein, drei Pflaster zu kleben; jedes davon hätte an `.frame`, `100dvh` oder den
+> Safe Areas gedreht, und genau dort bricht `position: fixed`, **während die Prüfstrecke
+> grün bleibt** (LL-6). Der Sprint wäre dann größer, riskanter und im Ergebnis
+> schlechter gewesen — mit zwei Änderungen, die nie nötig waren.
+>
+> **Was daran verallgemeinerbar ist:** Wenn mehrere Symptome gleichzeitig auftreten und
+> **eines davon zeitlich zuerst kommt**, lohnt es sich, die anderen als Folgen zu
+> behandeln und das zu **messen**, statt sie parallel zu reparieren. Der Preis ist eine
+> zweite Abnahmerunde, falls die Annahme nicht trägt. Der Gewinn ist, dass man nicht
+> repariert, was gar nicht kaputt ist.
 
 ---
 
@@ -181,7 +201,7 @@ suchen müssen.
 
 | | |
 |---|---|
-| **Die Abnahme am Gerät (A9)** | Steht aus. Ablauf S8–S11 im Briefing. **S8 ist nicht optional:** Das alte Symbol muss gelöscht werden, sonst testet man den alten Zustand und hält den Fix für wirkungslos. |
+| **Die Abnahme am Gerät (A9)** | ✅ **Erledigt am 13.09.2026** — alle vier Tabs bleiben im Vollbild. Gelaufen ist sie **gegen Produktion**, nicht gegen die Vorschau: Der Nutzer hat vor dem Löschen des Symbols gemergt. Das war unkritisch (der Sprint fasst weder Daten noch Rechenlogik an) und ersparte einen Schritt — das Symbol musste danach nicht noch einmal ausgetauscht werden. |
 | **Brechen „Karten" und „Verlauf" genauso?** | Die Diagnose sagt ja; beide liegen nicht auf der Startadresse. Nie geprüft — der Nutzer hatte nur „Zuordnen" getippt. Bricht **nur** Zuordnen, ist die Diagnose falsch. Nach dem Fix nur noch mit dem **alten** Symbol nachholbar. |
 | **Bleiben Versatz und tote Tab-Leiste?** | Erwartung: nein. Falls doch, ist das ein **eigener** Befund für einen eigenen Sprint. |
 | **`MB-H3` (Light-Mode)** | Das Manifest trägt genau eine Startfläche, und das ist die dunkle. Wird der Light Mode je abgenommen, ist das erneut zu entscheiden. |

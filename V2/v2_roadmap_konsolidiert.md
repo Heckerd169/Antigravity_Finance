@@ -3,7 +3,7 @@
 > **Was das hier ist:** die einzige Liste offener Themen. Sie ist nach **Sprint-Paketen**
 > geordnet — jedes Paket ist ein planbarer Sprint, nicht eine Themenkategorie.
 > **Stand:** 13. September 2026 (nach **v3-04** „Vollbild beim Navigieren" — `MB-7`
-> gebaut, **Abnahme am iPhone offen**).
+> erledigt und **am iPhone abgenommen**, Paket 20 wieder vollständig).
 > **Ergänzt am 07.09.2026 (Sprint v3-02, Phase 0):** Paket 20 „`/mobil`" neu, Kennung `MB`.
 > **Nach v3-02 (07.09.2026):** `MB-1`…`MB-5` erledigt; dazu `NB-3`, ein Sicherheitsbefund,
 > der im selben Sprint behoben ist.
@@ -44,21 +44,28 @@
 ## 0. Stand in Zahlen
 
 *Alle Zahlen am 13.09.2026 zeilengenau nachgezählt — nach Sprint **v3-04**
-(`MB-7` neu und auf 🟡, Paket 20 wieder offen).*
+(`MB-7` neu und nach der Abnahme auf ✅, Paket 20 wieder vollständig).*
 
 | | Anzahl | nach v3-03 | nach v3-02 | v3-02 P0 | nach v3-01 | nach v2-32 | nach v2-31 | nach v2-30 |
 |---|---|---|---|---|---|---|---|---|
-| Offene Pakete | **13** | 12 | 13 | 13 | 12 | 12 | 11 | 12 |
-| Themen darin | **43** | 42 | 43 | 48 | 42 | 42 | 37 | 39 |
+| Offene Pakete | **12** | 12 | 13 | 13 | 12 | 12 | 11 | 12 |
+| Themen darin | **42** | 42 | 43 | 48 | 42 | 42 | 37 | 39 |
 | Hausaufgaben ohne eigenen Sprint | **7** | 7 | 7 | 8 | 5 | 5 | 4 | 4 |
-| **Offen gesamt** | **50** | 49 | 50 | 56 | 47 | 47 | 41 | 43 |
-| Erledigt | **79** | 79 | 78 | 71 | 71 | 69 | 68 | 66 |
+| **Offen gesamt** | **49** | 49 | 50 | 56 | 47 | 47 | 41 | 43 |
+| Erledigt | **80** | 79 | 78 | 71 | 71 | 69 | 68 | 66 |
 | Hinfällig geworden | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
 
-> **Stand am 13.09.2026 (nach v3-04), zeilengenau ausgezählt.** Paket-Tabellen
-> **80** Zeilen, davon **37 ✅** → **43** offen. Genau **eine** Zeile ist dazugekommen:
-> `MB-7`, am Ende des Sprints auf **🟡** — gebaut, aber nicht abgenommen. **🟡 zählt als
-> offen**, die Zahlen bewegen sich dadurch nicht. Hausaufgaben **7**, alle ⬜. §4 Erledigt unverändert **79** Zeilen.
+> **Stand am 13.09.2026 (nach v3-04 und der Abnahme), zeilengenau ausgezählt.**
+> Paket-Tabellen **80** Zeilen, davon **38 ✅** → **42** offen. Genau **eine** Zeile ist
+> dazugekommen und im selben Sprint erledigt worden: `MB-7`. Hausaufgaben **7**, alle ⬜.
+> §4 Erledigt **80** Zeilen. §3 unverändert **4**. Pakete **20**, davon **8** vollständig
+> → **12** offen — **Paket 20 ist wieder vollständig.**
+>
+> **Es war einen Tag lang nicht vollständig, und das ist der Eintrag wert.** `MB-6` war
+> gebaut, geprüft und grün, als Paket 20 am 08.09. als fertig galt; der Fehler saß in
+> einer Eigenschaft, die kein Test dieses Projekts sehen kann. **Eine Paket-Zeile wird ✅,
+> wenn die Prüfstrecke grün ist — vollständig wird ein Paket erst, wenn es benutzt
+> wurde.** Hausaufgaben **7**, alle ⬜. §4 Erledigt unverändert **79** Zeilen.
 > §3 unverändert **4**. Pakete **20**, davon **7** vollständig erledigt → **13** offen.
 >
 > **Paket 20 war fünf Tage lang als vollständig ausgewiesen und war es nicht.** Das ist
@@ -936,7 +943,7 @@ im Scope") — der Patch kommt mit dem Abschluss von v3-02.
 | MB-4 | Sheet „Karte wählen" | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** Gruppen als benanntes Prädikat mit Vollständigkeits-Wächter (15 Kombinationen); rechte Spalte aus `card-state.ts`, nicht nachgebaut. Gruppen Fixkosten · Budget · Einmalig · Einnahmen; nur im Monat aktive Karten; rechts „unbezahlt" / „bezahlt" / „frei" / „Einnahme" (Record #11). „Einmalig" ist kein Kartentyp, sondern Rhythmus `ONCE` — benanntes Prädikat mit Vollständigkeits-Test. |
 | MB-5 | Offline-Zustand | Feature | nein | ✅ | **Erledigt in v3-02 (07.09.2026).** `navigator.onLine` plus Ereignisse; Uhrzeit des letzten Server-Aufbaus. Neutrale Pille „Stand von HH:MM · offline", Schreiben gesperrt, „Später" bleibt. **Nicht rot** (Record #4). |
 | MB-6 | Tabs Übersicht · Karten · Verlauf | Feature | nein | ✅ | **Erledigt in v3-03 (08.09.2026).** Drei Server-Seiten mit **8 · 6 · 5** Netzrunden je Aufbau (Zuordnen 11, Schreibtisch ~18); 50 neue Wächter, jeder einmal absichtlich rot gesehen (LL-40). **Die offene Frage ist entschieden: Der Ring-Bogen schließt bei 200 %** — §5 gewinnt, und `singularity-ring/` wird deshalb **unverändert** eingesetzt; ein zweiter Modus hätte dieselbe Figur auf zwei Geräten Verschiedenes bedeuten lassen. Die Welle bekam **einen Parameter** (`showActiveMarker`), keinen zweiten Zeichencode — Farben, Skala und Geometrie bleiben; die Paddings passten ohne Eingriff (18 links/rechts ergibt bei 430 px exakt die Punktabstände des Entwurfs), und **Rot lag bereits nur zwischen Kurve und Nulllinie**. Statuspunkt, Balken und Wortlaute kommen aus `card-state.ts`, nicht aus einer zweiten Formulierung. **Kein Zahlenwert bewegt:** 24 Sparraten byte-identisch, Anker 1 und 2 je 0,00 € in 24/24. Offen bleibt der Browser-Smoke am iPhone. |
-| MB-7 | **Vollbild beim Navigieren** — die App verlässt beim Tab-Wechsel den Vollbild-Modus | Fehler | nein | 🟡 | **Gebaut in v3-04 (13.09.2026), NICHT abgenommen.** Web-App-Manifest mit `scope: "/mobil"`, eigenes Symbol (geschlossener Ring), `webmanifest` im Middleware-Ausschluss. Sieben Wächter, jeder einmal absichtlich rot gesehen. Kein Zahlenwert bewegt (24/24 byte-identisch, Anker 1 und 2 je 0,00 €). **🟡 und nicht ✅, weil das Ziel von hier aus nicht prüfbar ist:** Chromium kennt den Vollbild-Modus nicht. Die Abnahme läuft am iPhone — und das alte Symbol muss vorher gelöscht werden, sonst zeigt es das alte Verhalten. Review: `sprints/sprint_v3-04_review.md`. **Ursprünglich neu am 13.09.2026, gefunden vom Nutzer am iPhone.** Als Symbol vom Home-Bildschirm gestartet, sitzt `/mobil` nach einem Tipp auf einen anderen Tab in einem Browser-Rahmen; beim Rücksprung hängt der Inhalt ~115 px zu tief und die Tab-Leiste nimmt keine Berührung an. **Gemessen und damit ausgeschlossen:** kein harter Seitenwechsel (0 Ladevorgänge, alle vier Tabs sind Client-Navigation), kein fehlendes Meta-Tag (alle vier Seiten identisch), kein Origin-Wechsel, kein Anmelde-Umweg. **Die Ursache ist eine fehlende Aussage:** Es gibt kein Web-App-Manifest, also entscheidet iOS selbst anhand der Startadresse, welche Seiten noch „zur App" gehören. Versatz und tote Tab-Leiste sind Folgen des Moduswechsels, keine eigenen Fehler — **erst A beheben, dann messen** (LL-6: wer an `100dvh` oder den Safe Areas dreht, bricht `position: fixed`, und die Prüfstrecke bleibt dabei grün). Befund: `V2/befunde_2026-09-13_mobil-vollbild.md`. Symbol entschieden: `V2/design_direktor_2026-09-13_mobil-symbol.md`. **Kein Test dieses Projekts kann das sehen** — Chromium kennt den Vollbild-Modus nicht; der Beweis ist die Abnahme am Gerät. |
+| MB-7 | **Vollbild beim Navigieren** — die App verlässt beim Tab-Wechsel den Vollbild-Modus | Fehler | nein | ✅ | **Erledigt in v3-04 (13.09.2026), am iPhone abgenommen — Paket 20 ist wieder vollständig.** Web-App-Manifest mit `scope: "/mobil"`, eigenes Symbol (geschlossener Ring), `webmanifest` im Middleware-Ausschluss. **Die Ursache war eine fehlende Aussage, kein fehlender Code:** Ohne Manifest entschied iOS anhand der Startadresse, welche Seiten zur App gehören — auch bei reiner Client-Navigation. **Gemessen und damit ausgeschlossen** war vorher ein harter Seitenwechsel (0 Ladeereignisse auf allen vier Tabs). Sieben Wächter, jeder einmal absichtlich rot gesehen; kein Zahlenwert bewegt (24/24 byte-identisch, Anker 1 und 2 je 0,00 €). **Die Abnahme hat die Arbeitshypothese vollständig bestätigt:** ein Fehler, drei Folgen — mit dem Vollbild-Modus sind auch der Versatz von ~115 px und die tote Tab-Leiste verschwunden, ohne dass an `.frame`, `100dvh` oder den Safe Areas etwas geändert wurde (LL-6). Lehre in CLAUDE.md §6 Stolperfalle 34 / LL-47. Review: `sprints/sprint_v3-04_review.md`. |
 
 > **Was dieses Paket vom Re-Design (Paket 19) unterscheidet:** Dort wurde die bestehende
 > Oberfläche neu gezeichnet, hier kommt eine **zweite** dazu — eigene Route, eigene
@@ -981,6 +988,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | V1 | **Die Altjahre gehören nicht in die App — entschieden durch Löschen.** 567 Zahlungen aus 2023/2024 (384 + 183, davon 91 Überträge, keine verknüpft) am 07.09.2026 auf Anweisung des Users gelöscht, als dokumentierte Daten-Migration mit Abbruch-Sicherung; 24 Sparraten byte-identisch. Der DKB-Export wird künftig auf 2025 und 2026 eingegrenzt. Protokoll: `sprints/doku_patch_2026-09-07_mobil-login-und-altjahre.md`. | Nachzug 07.09.2026 |
 | MB-1 | **Zahlungen zuordnen ohne Ziehen.** Route `/mobil/zuordnen` (430 px): eine Buchung im Fokus, der Vorschlag als einziger gefüllter Knopf, Toast mit dem **echten** Δ der Sparrate (vorher/nachher aus `calculate_sparrate_for_month`, rot nur bei Δ < 0), Rückgängig fünf Sekunden, „Später" ans Stapelende, Monatsnavigation mit Nachbar-Zählern. Elf Netzrunden je Aufbau. Eine Zuordnung vom Handy ist in der Datenbank von einer vom Schreibtisch ununterscheidbar (`lib/card-links.ts`). | v3-02 |
 | MB-6 | **Die drei anderen Sichten auf `/mobil` — Paket 20 ist vollständig.** Übersicht mit dem Ring vor der Jahres-Welle, drei Kacheln und der Einstiegskarte; Karten als Liste mit Filter-Pillen, Statuspunkt, Balken und aufklappbaren Buchungen; Verlauf als sechs Monate Sparrate mit Planlinie. **8 · 6 · 5** Netzrunden je Aufbau. **Die offene Frage ist entschieden: Der Ring schließt bei 200 %** (Design-Doku §5 schlägt den Prototyp), und die Komponente wird deshalb **unverändert** eingesetzt — ihre Maße waren bereits exakt die des Entwurfs. Die Welle bekam **einen Parameter** statt eines zweiten Zeichencodes; ihre Paddings ergaben bei 430 px ohne Eingriff die Punktabstände des Entwurfs, und Rot lag bereits nur zwischen Kurve und Nulllinie. 50 neue Wächter, jeder einmal absichtlich rot gesehen — der Marker wird als **Pixel** gemessen, nicht am Quelltext abgelesen. Kein Zahlenwert bewegt. | v3-03 |
+| MB-7 | **Die App bleibt beim Navigieren im Vollbild — und Paket 20 ist es wirklich.** `/mobil` erklärte seit v3-02, **dass** es im Vollbild laufen will, nie **welche Adressen** dazugehören; iOS nahm die Startadresse und öffnete jeden anderen Tab im eingebetteten Browser. Behoben mit einem Web-App-Manifest (`scope: "/mobil"`) und einem eigenen Symbol. **Kein Test des Projekts konnte das sehen** — Chromium kennt den Vollbild-Modus nicht; gefunden hat es das Benutzen, fünf Tage nach v3-03 bei 301 grünen Tests. | v3-04 |
 | MB-2 | **Die Datenbank sagt, auf welchen Karten ein Händler von Hand lag** — `get_open_fragment_candidates`, dieselbe Regel wie `history_match` Stufe 1 als Liste mit Zähler, nur Karten aktiv im Monat. Geprobt auf der Übungs-DB (T1–T7), byte-gleich in Produktion (`c48042ff…`), 4 ms unter der App-Rolle. | v3-02 |
 | MB-3 | **Der Zweifelsfall zeigt Kandidaten statt zu raten** — Konturen, nichts vorbelegt, Übernehmen gesperrt bis zur Wahl. Die alphabetische Vorbelegung (`ZO-8`) gilt auf `/mobil` nicht. | v3-02 |
 | MB-4 | **Sheet „Karte wählen"** mit vier Gruppen; „Einmalig" ist Rhythmus ONCE einer Ausgaben-Karte (Vollständigkeits-Wächter über 15 Kombinationen). | v3-02 |
@@ -1111,6 +1119,7 @@ An einen passenden Sprint anhängen, nie als eigenen schneiden.
 | RD-1 … RD-6 | Paket 19 |
 | MB-1 … MB-5 | §4 Erledigt (v3-02) |
 | MB-6 | §4 Erledigt (v3-03) |
+| MB-7 | §4 Erledigt (v3-04) |
 | NB-3 | §4 Erledigt (v3-02) — Befund beim Bau, im selben Sprint behoben |
 | MB-H1 … MB-H3 | §2 Hausaufgaben (an v3-02 oder v3-03 anhängen) |
 

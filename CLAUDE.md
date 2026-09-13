@@ -1234,12 +1234,12 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 v3-03 (`MB-6`, die drei Sichten), v3-02 (`/mobil` Zuordnen), v3-01 (Apple-Redesign),
 v2-32 (Aufräumen), v2-31 (`M7` `KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`).
 
-**Alles bis einschließlich v3-03 ist in `main`**, dazu die Nachzüge vom 07.09.2026 und
-die Fixes vom 03.09.2026. Geprüft **gegen den Baum**, **nicht** gegen den PR-Status —
-der beantwortet eine andere Frage. **v3-04 ist dieser Sprint** und liegt bis zur
-Abnahme am iPhone als Pull Request vor.
+**Alles bis einschließlich v3-04 ist in `main`** (PR #61, `b0597c3`), dazu die Nachzüge
+vom 07.09.2026 und die Fixes vom 03.09.2026. Geprüft **gegen den Baum**, **nicht** gegen
+den PR-Status — der beantwortet eine andere Frage. **v3-04 ist am 13.09.2026 am iPhone
+abgenommen:** alle vier Tabs bleiben im Vollbild.
 
-> **`/mobil` ist vollständig und noch nicht abgenommen.** v3-03 hat die drei fehlenden
+> **`/mobil` ist vollständig und abgenommen.** v3-03 hat die drei fehlenden
 > Sichten gebaut (Übersicht · Karten · Verlauf, 8 · 6 · 5 Netzrunden je Aufbau); v3-04
 > hat den Fehler behoben, der dabei durchgerutscht ist — **die App verließ beim
 > Tab-Wechsel den Vollbild-Modus**, weil nie ausgesprochen war, welche Adressen zu ihr
@@ -1248,6 +1248,11 @@ Abnahme am iPhone als Pull Request vor.
 > **Beide Sprints haben keinen Zahlenwert bewegt**, und beide Male hat **nicht die
 > Prüfstrecke** den teuersten Fund gemacht, sondern das Benutzen: 301 grüne Tests,
 > darunter elf Render-Prüfungen bei exakt 430 × 932 — und der Fehler war trotzdem da.
+>
+> **Die Abnahme hat zusätzlich eine Schnitt-Entscheidung bestätigt:** v3-04 hat von drei
+> Symptomen bewusst nur **eines** behandelt und die beiden anderen als Folgen — sie sind
+> mit verschwunden, ohne dass an `.frame`, `100dvh` oder den Safe Areas etwas geändert
+> wurde. Drei Pflaster hätten genau dort angesetzt, wo `position: fixed` bricht (LL-6).
 
 > **Was die einzelnen Sprints gebracht haben, steht in
 > `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
@@ -1261,7 +1266,7 @@ Abnahme am iPhone als Pull Request vor.
 | **2026** | vollständig zugeordnet — **0** offene Zahlungen |
 | **2025** | **ebenfalls vollständig zugeordnet — 0 offene Zahlungen** (642 von Hand, 106 automatisch) |
 | **Goldlinie 2025** | **11.442,30 €** — von 21.708,77 € gefallen, weil zugeordnete Zahlungen die Sparrate ihres Monats senken |
-| **Nächste Arbeit** | **Die Abnahme von v3-04 am iPhone** — und dafür muss das alte Symbol vom Home-Bildschirm **gelöscht und neu abgelegt** werden, sonst zeigt es das alte Verhalten. Danach: das Re-Design (Paket 19) oder `ZO-7`. |
+| **Nächste Arbeit** | Frei wählbar — **`/mobil` ist fertig und abgenommen**. Naheliegend: das Re-Design (Paket 19) oder `ZO-7` (die App kennt den Händler und zeigt ihn nicht). |
 | **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
 
 > **Die Kuratierung 2025 ist abgeschlossen** — gemessen am 31.08.2026: kein einziges

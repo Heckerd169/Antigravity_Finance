@@ -4131,3 +4131,40 @@ Testdatei, nicht nur hier.
   **alten** Symbol nachholbar.
 - **Bleiben Versatz und tote Tab-Leiste?** Erwartung: nein. Falls doch, eigener Befund.
 - Unverändert offen: `MB-H1`, `MB-H2`, `MB-H3`, `ZO-7`, `ZO-8`, `PF-9`.
+
+#### Nachtrag zu v3-04 · Abnahme am 13.09.2026
+
+**Alle vier Tabs bleiben im Vollbild.** Damit ist `MB-7` erledigt und Paket 20 wieder
+vollständig.
+
+**Die Arbeitshypothese hat gehalten — vollständig.** Der Sprint war auf der Annahme
+geschnitten, es seien **nicht drei Fehler, sondern einer mit drei Folgen**, und hat
+deshalb bewusst nur die Ursache behoben. Mit dem Vollbild-Modus sind **auch der Versatz
+von ~115 px und die tote Tab-Leiste verschwunden** — ohne dass eine einzige Zeile
+Layout-CSS angefasst wurde.
+
+**Das ist die Stelle, an der es leicht anders gelaufen wäre.** Drei sichtbare Symptome
+laden dazu ein, drei Pflaster zu kleben; jedes hätte an `.frame`, `100dvh` oder den Safe
+Areas gedreht, und genau dort bricht `position: fixed`, **während die Prüfstrecke grün
+bleibt** (LL-6). Der Sprint wäre größer und riskanter gewesen — mit zwei Änderungen, die
+nie nötig waren.
+
+**Zwei Dinge sind anders gelaufen als geplant, beide ohne Schaden:**
+
+- **Gemergt wurde vor dem Löschen des Symbols.** Die Abnahme lief damit gegen
+  **Produktion** statt gegen die Vorschau. Unkritisch — der Sprint fasst weder Daten noch
+  Rechenlogik an — und es ersparte einen Schritt: Das Symbol musste danach nicht noch
+  einmal von der echten Adresse neu abgelegt werden. **Vor der Ablage wurde geprüft, dass
+  Produktion den neuen Stand ausliefert** (Manifest, Symbol und Home-Symbol je 200);
+  ohne diese Prüfung hätte iOS sich erneut den alten Zustand gemerkt.
+- **Ungeprüft bleibt, ob „Karten" und „Verlauf" vorher genauso brachen wie „Zuordnen".**
+  Der Nutzer hatte nur „Zuordnen" getippt, und nach dem Fix ist die Frage nicht mehr
+  beantwortbar — das alte Symbol ist weg. Die Diagnose deckt beide Fälle ab; **belegt
+  ist es nicht**, und das bleibt hier stehen, statt stillschweigend als geprüft zu
+  gelten.
+
+**Was daran verallgemeinerbar ist:** Treten mehrere Symptome gleichzeitig auf und kommt
+**eines davon zeitlich zuerst**, lohnt es sich, die anderen als Folgen zu behandeln und
+das zu **messen**, statt sie parallel zu reparieren. Der Preis ist eine zweite
+Abnahmerunde, falls die Annahme nicht trägt. Der Gewinn ist, nicht zu reparieren, was
+gar nicht kaputt ist.
