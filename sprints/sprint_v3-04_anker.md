@@ -59,6 +59,53 @@ Oktober bis Dezember 2026 liefern keine Treiber, weil dort Ist = Plan gilt.
 
 ---
 
-## Nachher
+## Nachher — 13.09.2026, nach P2, in derselben Sitzung
 
-*(wird in P3 in derselben Sitzung nachgetragen)*
+| Anker | Vorher | Nachher |
+|---|---|---|
+| Sparrate Ist + Plan, 24 Monate | gemessen (Tabelle oben) | **24/24 byte-identisch** |
+| Anker 1 (Σ Ordner = Sparrate) | 0,00 € in 24/24 | **0,00 € in 24/24** |
+| Anker 2 (Σ delta = Ist − Plan) | 24/24 exakt | **24/24 exakt, größte Abweichung 0,00 €** |
+
+**Kein Zahlenwert hat sich bewegt** — wie erwartet. Gemessen wurde maschinell gegen die
+Vorher-Tabelle, nicht durch Ansehen: 24 von 24 Monaten in **Ist und Plan gleichzeitig**
+identisch, Abweichungsliste leer.
+
+### Anker 3 — Netzrunden je Aufbau
+
+Übersicht **8** · Karten **6** · Verlauf **5** · Zuordnen **11** — unverändert.
+
+**Der Beleg ist hier stärker als eine Zählung:** `git diff origin/main..HEAD` über
+`src/app/mobil/` und `src/components/` zeigt **zwei** Einträge — `layout.tsx`
+(Metadaten) und die neue Symboldatei. **Kein Lader wurde angefasst**, also kann sich
+auch keine Netzrunde bewegt haben.
+
+Manifest und Symbol kommen **nicht** je Aufbau dazu: Es sind statische Dateien, die das
+Gerät zwischenspeichert, und sie liegen außerhalb des Middleware-matchers — sie
+erzeugen also nicht einmal einen Auth-Aufruf.
+
+**Prüfsummen wurden bewusst NICHT gemessen.** Sie belegen, dass eine Rechenfunktion
+unverändert ist — dieser Sprint hat keine angefasst, keine Migration eingespielt und
+keine RPC berührt. Eine Messung ohne Eingriff belegt nichts, was die 24 identischen
+Sparraten nicht schon zeigen.
+
+---
+
+## Ein Nebenbefund aus der Prüfstrecke, der KEIN Fehler ist
+
+`test:e2e` meldet **307 bestanden und 1 übersprungen**; v3-03 meldete **301/301** ohne
+Übersprungenes. Die Differenz ist keine Regression:
+
+Der Test „sheet ‚Karte wählen': Kopf und Kontextzeile bleiben vollständig sichtbar"
+(`render-smoke-mobil.spec.ts`) überspringt sich selbst, wenn der laufende Monat keine
+offene Zahlung hat — dann gibt es den Knopf „Andere Karte …" gar nicht.
+
+**Gemessen am 13.09.2026:** September 2026 hat **0 offene Zahlungen** bei 40 Fragmenten,
+August 2026 ebenfalls 0. Am 08.09.2026 gab es dort noch welche. Der Nutzer hat in der
+Zwischenzeit zugeordnet — derselbe Vorgang, der auch die September-Sparrate bewegt hat.
+
+> **Wert dieser Beobachtung:** Ein datenabhängiger Test verliert seine Aussage
+> **lautlos**, sobald die Daten ihm die Voraussetzung entziehen. Hier meldet er den
+> Grund immerhin mit. Die Zahl im Review wäre trotzdem als „301 → 307, +6" gelesen
+> worden, obwohl sieben Wächter dazukamen und einer alter Bestand wegfiel.
+
