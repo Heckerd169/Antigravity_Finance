@@ -804,6 +804,30 @@ Gemeinsam-Attribution auf Budget-Karten bleibt verboten.)
     gemessen. **Regel:** Wer eine View anlegt oder liest, prüft `reloptions` — und
     misst als Fremder, nicht nur als Eigentümer. (v3-02, LL-46)
 
+34. **Wo wir nichts sagen, entscheidet die Laufzeitumgebung — plausibel und
+    gelegentlich falsch.** `/mobil` erklärte seit v3-02, **dass** es im Vollbild laufen
+    will (`appleWebApp.capable`), nie **welche Adressen** dazugehören: Es gab kein
+    Web-App-Manifest. iOS füllte die Lücke selbst und nahm die **Startadresse**. Ein
+    Tipp auf „Zuordnen" führte damit aus der App heraus in einen eingebetteten Browser
+    — **obwohl gar keine Seite neu geladen wird**; die Zugehörigkeit wird auch bei
+    reiner Client-Navigation geprüft.
+    **Kein Wächter dieses Projekts fängt das.** 301 grüne Tests, darunter elf
+    Render-Prüfungen bei exakt 430 × 932. Playwright läuft in Chromium und kennt weder
+    den Vollbild-Modus noch diese Prüfung. **Jede Zahl war richtig und jede Seite
+    rendert korrekt** — die App war nur nicht mehr die App.
+    **Die Suchrichtung ist neu.** Die fünf Gestalten von LL-26 (Stolperfalle 16) sitzen
+    alle in etwas, das **da ist**: eine Menge zu kurz, eine Regel zweimal formuliert,
+    ein Vergleich zu eng, ein Zeitbezug fehlt, der falsche Teil gezeigt. Diese sitzt in
+    etwas, das **gar nicht existiert** — und wonach man deshalb nicht greppt.
+    **Frage: Verlässt sich die Umgebung auf eine Angabe, die wir nie gemacht haben?**
+    **Und die Gegenprobe kostet nichts:** Beim Suchen war der erste Verdacht ein harter
+    Seitenwechsel. Eine in die Seite geschriebene Variable überlebte **alle vier**
+    Tab-Wechsel bei 0 Ladeereignissen — der Verdacht war damit in zwei Minuten erledigt,
+    und die Suche drehte sich um.
+    **Verwandt mit LL-30**, aber schärfer: Dort lebt ein Wert außerhalb des Repos und
+    ist deshalb unsichtbar; hier gibt es ihn **gar nicht**, und die Umgebung setzt
+    stillschweigend einen eigenen ein. (v3-04, LL-47)
+
 ### Typen neu erzeugen (nur bei Schema-Änderung)
 
 ```bash
@@ -1096,6 +1120,7 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 | LL-44 | Ein **Token wirkt nur dort, wo niemand seinen Wert ein zweites Mal hingeschrieben hat** — 87 lokale Farbwerte fingen jede Änderung an `tokens.css` ab, und ein Kommentar behauptete, sie würden sie „spiegeln" | §6 Stolperfalle 32 | v3-01 |
 | LL-45 | Ein **Entwurf zeigt, was hineinpasst, nicht was drinsteht** — gemessen wird gegen den echten Inhalt, nicht gegen das Beispiel des Entwurfs | §6 Stolperfalle 21 | v3-01 |
 | LL-46 | Eine **View läuft mit den Rechten ihres Eigentümers** — ohne `security_invoker` umgeht sie RLS, und mit einem Nutzer sieht die falsche Antwort genauso aus wie die richtige. Als Fremder messen, nicht nur als Eigentümer | §6 Stolperfalle 33 | v3-02 |
+| LL-47 | **Wo wir nichts sagen, entscheidet die Laufzeitumgebung** — ohne Manifest wählte iOS selbst, welche Adressen zur App gehören, und jeder Tab-Wechsel verließ den Vollbild-Modus. Die sechste Gestalt von LL-26, aber die erste, die in einer **fehlenden** Angabe sitzt statt in einer zu engen | §6 Stolperfalle 34 | v3-04 (`MB-7`) |
 
 > **Warum LL-42 neben LL-29 steht und nicht darin aufgeht.** LL-29 sagt: bei Trägheit
 > **zählen, wie oft gefragt wird**, nicht wie lange eine Frage dauert. In v2-30 war
@@ -1205,32 +1230,24 @@ steht in `sprints/projekt_historie.md` beim genannten Sprint.
 
 ## 9. Aktueller Stand
 
-**Letzter Sprint:** **v3-02** („`/mobil` — Zahlungen zuordnen ohne Ziehen", 07.09.2026)
-· **davor:** v3-01 (Apple-Redesign, 06.09.2026), v2-32 (Aufräumen), v2-31 (`M7`
-`KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`), v2-28 (`DA-3` `ZO-4` `NAV-1`), v2-27
-(`DA-1` `ZO-3`).
+**Letzter Sprint:** **v3-04** („Vollbild beim Navigieren", 13.09.2026) · **davor:**
+v3-03 (`MB-6`, die drei Sichten), v3-02 (`/mobil` Zuordnen), v3-01 (Apple-Redesign),
+v2-32 (Aufräumen), v2-31 (`M7` `KAT-4`), v2-30 (`PF-6`), v2-29 (`ZO-5`).
 
-**Alles bis einschließlich v3-02 ist in `main`**, dazu die beiden Nachzüge vom
-07.09.2026 (Login-Ziel und Altjahre-Löschung · Sheet-Kontextzeile) und die beiden
-Fixes vom 03.09.2026 (durchgehende Verlaufslinie · blockweiser CSV-Import). Geprüft
-**gegen den Baum**, **nicht** gegen den PR-Status — der beantwortet eine andere Frage.
-**v3-03 ist dieser Sprint.**
+**Alles bis einschließlich v3-03 ist in `main`**, dazu die Nachzüge vom 07.09.2026 und
+die Fixes vom 03.09.2026. Geprüft **gegen den Baum**, **nicht** gegen den PR-Status —
+der beantwortet eine andere Frage. **v3-04 ist dieser Sprint** und liegt bis zur
+Abnahme am iPhone als Pull Request vor.
 
-> **v3-01 und v3-02 in vier Sätzen.** Das Design-System **v3** ist umgesetzt — Optik
-> neu, Rechenlogik und Datenbank unberührt; die tragende Regel lautet: **Rot bedeutet
-> ab jetzt ausschließlich Abweichung.** Darauf folgte `/mobil` mit dem Tab
-> **Zuordnen**: 430 px, eine Zahlung nach der anderen, Ziel per **Tipp** — Wischen
-> wurde verworfen, der Schreibtisch bleibt unberührt.
+> **`/mobil` ist vollständig und noch nicht abgenommen.** v3-03 hat die drei fehlenden
+> Sichten gebaut (Übersicht · Karten · Verlauf, 8 · 6 · 5 Netzrunden je Aufbau); v3-04
+> hat den Fehler behoben, der dabei durchgerutscht ist — **die App verließ beim
+> Tab-Wechsel den Vollbild-Modus**, weil nie ausgesprochen war, welche Adressen zu ihr
+> gehören (§6 Stolperfalle 34).
 >
-> **Beide Sprints haben ihren teuersten Fund neben dem Auftrag gemacht.** v3-01 fand
-> **87 komponenten-lokale Farbwerte**, die jede Änderung an `tokens.css` abgefangen
-> hätten (LL-44); v3-02 fand eine View, die mit den Rechten ihres Eigentümers lief und
-> damit RLS umging — **2.219** Zeilen für einen Fremden statt 0 (LL-46). **Kein
-> Wächter hatte eines von beiden gesehen**, und in v3-01 haben zwei weitere Fehler nur
-> das Bild gefunden, nicht die Prüfstrecke.
->
-> **Kein Zahlenwert bewegt** — keine der beiden Runden hat eine Rechenfunktion berührt.
-> Prüfstrecke nach dem Nachzug vom 07.09.2026: `test:visual` 225 · `test:e2e` 243.
+> **Beide Sprints haben keinen Zahlenwert bewegt**, und beide Male hat **nicht die
+> Prüfstrecke** den teuersten Fund gemacht, sondern das Benutzen: 301 grüne Tests,
+> darunter elf Render-Prüfungen bei exakt 430 × 932 — und der Fehler war trotzdem da.
 
 > **Was die einzelnen Sprints gebracht haben, steht in
 > `sprints/projekt_historie.md`** — dort vollständig, mit Zahlen und den Stellen, an
@@ -1244,7 +1261,7 @@ Fixes vom 03.09.2026 (durchgehende Verlaufslinie · blockweiser CSV-Import). Gep
 | **2026** | vollständig zugeordnet — **0** offene Zahlungen |
 | **2025** | **ebenfalls vollständig zugeordnet — 0 offene Zahlungen** (642 von Hand, 106 automatisch) |
 | **Goldlinie 2025** | **11.442,30 €** — von 21.708,77 € gefallen, weil zugeordnete Zahlungen die Sparrate ihres Monats senken |
-| **Nächste Arbeit** | **v3-03: Übersicht · Karten · Verlauf auf `/mobil`** (Roadmap Paket 20, `MB-6`). Vorher klären: Ring-Bogen 100 % (Prototyp) gegen 200 % (§5) — §5 gewinnt. |
+| **Nächste Arbeit** | **Die Abnahme von v3-04 am iPhone** — und dafür muss das alte Symbol vom Home-Bildschirm **gelöscht und neu abgelegt** werden, sonst zeigt es das alte Verhalten. Danach: das Re-Design (Paket 19) oder `ZO-7`. |
 | **Übungs-Datenbank** | pausiert, Anker 2.200,00 € |
 
 > **Die Kuratierung 2025 ist abgeschlossen** — gemessen am 31.08.2026: kein einziges

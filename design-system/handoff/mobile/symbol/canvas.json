@@ -1,0 +1,16 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 900, "h": 620, "title": "Vier Varianten" },
+    { "file": "AufDemHomeBildschirm.dc.html", "x": 1000, "y": 0, "w": 430, "h": 700, "title": "Auf dem Home-Bildschirm" }
+  ],
+  "annotations": [
+    {
+      "id": "hinweis-groesse",
+      "x": 0,
+      "y": -150,
+      "w": 640,
+      "text": "Entschieden wird nur das Symbol.\nName bleibt „Antigravity\", Startfläche bleibt --bg-primary (#0D0D0F).\nDie obere Reihe ist die echte Größe — dort fällt die Entscheidung."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

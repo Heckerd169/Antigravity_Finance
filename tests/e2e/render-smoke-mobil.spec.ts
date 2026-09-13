@@ -143,6 +143,45 @@ test("mobil: die Tab-Leiste trägt den Monat in ALLE vier Ziele", async ({ page 
   }
 });
 
+// v3-04 (`MB-7`): Der Gegenstück-Wächter zu `mobil-vollbild.spec.ts`. Jener liest
+// Quelldateien; dieser hier prüft, was TATSÄCHLICH ausgeliefert wird — die
+// gerenderten Tab-Ziele gegen das über HTTP geholte Manifest. Damit hängt er an
+// keinem Muster in einer Datei, sondern am fertigen Ergebnis.
+//
+// Was er NICHT beweist: dass iOS sich an den Zugehörigkeitsbereich hält. Das kann
+// Chromium nicht zeigen; der Beweis ist die Abnahme am Gerät.
+test("mobil: jedes ausgelieferte Tab-Ziel liegt im Zugehörigkeitsbereich des Manifests", async ({
+  page,
+}) => {
+  await page.goto("/mobil/uebersicht?month=2026-03");
+
+  const verweis = await page
+    .locator("link[rel='manifest']")
+    .getAttribute("href");
+  expect(verweis, "Die Seite trägt keinen Manifest-Verweis").toBeTruthy();
+
+  const antwort = await page.request.get(verweis!);
+  expect(
+    antwort.status(),
+    "Das Manifest ist nicht erreichbar — läuft die Middleware darauf?",
+  ).toBe(200);
+  const manifest = (await antwort.json()) as { scope: string; start_url: string };
+
+  const ziele = await page
+    .getByRole("navigation", { name: "Bereiche" })
+    .getByRole("link")
+    .evaluateAll((as) => as.map((a) => new URL((a as HTMLAnchorElement).href).pathname));
+
+  expect(ziele.length, "Keine Tab-Ziele gerendert").toBe(4);
+  for (const pfad of ziele) {
+    expect(
+      pfad.startsWith(manifest.scope),
+      `Tab-Ziel ${pfad} liegt außerhalb von scope "${manifest.scope}" — iOS öffnet es im Browser-Rahmen`,
+    ).toBe(true);
+  }
+  expect(manifest.start_url.startsWith(manifest.scope)).toBe(true);
+});
+
 // Nachzug 07.09.2026: Angemeldet ist die Anmeldeseite nicht erreichbar — mit
 // einem geprüften Ziel führt sie dorthin, ohne Ziel aufs Dashboard.
 test("angemeldet: /login?next=/mobil/zuordnen führt zum Ziel", async ({ page }) => {

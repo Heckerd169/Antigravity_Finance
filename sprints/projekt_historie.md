@@ -4027,3 +4027,107 @@ zum Zeitpunkt dieses Eintrags aus.
 - Die Handoff-README nennt für den Ring weiterhin `clamp(…, 0, 1)`. Sie beschreibt den
   Prototyp korrekt — wer sie als Bauvorlage liest, baut die falsche Regel. Vermerk
   ergänzt.
+
+---
+
+### Sprint v3-04 · DONE 13. September 2026
+
+**Komponente:** `MB-7` — `/mobil` verlässt beim Navigieren den Vollbild-Modus.
+Als Symbol vom Home-Bildschirm gestartet, sitzt die App nach einem Tipp auf einen anderen
+Tab in einem Browser-Rahmen; beim Rücksprung hängt der Inhalt ~115 px zu tief und die
+Tab-Leiste nimmt keine Berührung an. Gefunden hat es der Nutzer, fünf Tage nach v3-03.
+
+**Der Eintrag zu v3-03 endet mit dem Satz: „Was nicht belegt ist: der Browser-Smoke am
+iPhone."** Genau dort ist dieser Fehler durchgerutscht — bei **301 grünen Tests**,
+darunter elf Render-Prüfungen bei exakt 430 × 932.
+
+#### Die tragenden Entscheidungen
+
+- **Erst gemessen, dann eine These gebildet.** Der naheliegende Verdacht war ein harter
+  Seitenwechsel, bei dem Next.js auf eine volle Navigation zurückfällt. **Er ist
+  widerlegt:** Eine in die Seite geschriebene Variable überlebt **alle vier**
+  Tab-Wechsel, 0 Ladeereignisse, gemessen gegen Produktion. Ebenfalls ausgeschlossen:
+  fehlendes Meta-Tag (alle vier Seiten identisch), Origin-Wechsel, Anmelde-Umweg. **Wer
+  ohne diese Messung gesucht hätte, hätte am falschen Ende angefangen** — und die
+  Vermutung klang gut genug, um Stunden zu kosten.
+- **Die Ursache ist eine fehlende Aussage, kein fehlender Code.** Ohne Web-App-Manifest
+  entscheidet iOS anhand der Startadresse, welche Seiten noch zur App gehören, und
+  öffnet alles andere im eingebetteten Browser — **auch bei reiner Client-Navigation.**
+  Die Startadresse war `/mobil/uebersicht` (nach der Weiterleitung von `/mobil`), also
+  blieb genau ein Tab drinnen.
+- **`scope: "/mobil"` ohne Schrägstrich am Ende.** Der Vergleich ist ein reiner
+  Zeichen-Präfix: `"/mobil/"` deckt `/mobil` **nicht** ab — und `/mobil` ist die
+  `start_url`. Ein Zeichen mehr legt den Einstieg der App nach draußen.
+- **`webmanifest` in den Middleware-Ausschluss.** `.webmanifest` stand in keiner
+  Endungsliste, weil es vor v3-04 keine solche Datei gab. Ohne den Ausschluss bekäme das
+  Gerät die **Anmeldeseite als HTML** statt des Manifests — und der Fehler sähe aus wie
+  „das Manifest wirkt nicht" statt wie „das Manifest kommt nie an".
+- **Nur A behoben, B und C bewusst nicht.** Versatz und tote Tab-Leiste sind Folgen des
+  Moduswechsels; der gemessene Versatz entspricht Statusleiste **plus** Adressleiste.
+  Ein Eingriff an `.frame`, `100dvh` oder den Safe Areas hätte drei Pflaster
+  übereinandergelegt — und LL-6 sagt, dass dort `position: fixed` bricht, **während die
+  Prüfstrecke grün bleibt**.
+- **Die Symbol-Quelle liegt als SVG im Repo.** Ein PNG allein ist im Diff nicht lesbar.
+  Verworfen wurde `apple-icon.tsx` mit `ImageResponse`: Die erzeugte Route trüge **keine
+  `.png`-Endung** und liefe damit durch den Middleware-matcher.
+
+#### Wo eine Annahme dieses Sprints falsch war
+
+- **Der Plan schrieb „Strichverhältnis wie der Ring der Übersicht" — das war falsch.**
+  Der Ring der Übersicht hat 9/98 = 0,092; bei 60 px Symbolgröße wären das 1,8 px, die
+  auf dem Home-Bildschirm nicht tragen. Gebaut ist 12/60 = 0,20 — **genau die Variante,
+  die im Vergleich vorlag und die der Nutzer gewählt hat.** Der Planungssatz beschrieb
+  etwas anderes als das Bild, über das entschieden wurde.
+- **Der Plan rechnete mit +6 Tests in `test:e2e`; es wurden +7**, weil beim Bauen ein
+  siebter dazukam: derselbe Scope-Vergleich, aber gegen die **gerenderte** Tab-Leiste
+  und das über HTTP geholte Manifest. Er hängt an keinem Textmuster.
+
+#### Verifikation
+
+- `tsc` **0** · ESLint `src` **0/0** (Worktree-Umweg, roher Exitcode geprüft) ·
+  `pnpm build` **0**. Bundle Zeile für Zeile unverändert gegenüber v3-03.
+- `test:visual` **282** (v3-03: 276, **+6**) · `test:e2e` **308** gesamt, **307
+  bestanden** (v3-03: 301, **+7**).
+- **LL-40 in zwei Runden mit Gegenprobe:** Runde 1 (Tab-Ziel auf `/handy/`, `webmanifest`
+  aus dem matcher) → ① und ④ rot, ②③⑤⑥ grün. Runde 2 (scope mit Schrägstrich, `display`
+  „browser", Verweis entfernt, Symbol 512 statt 180) → ②③⑤⑥ rot, ①④ grün. Der siebte
+  Wächter rot auf dem echten gerenderten Ziel. **Jeder löste auf genau seinen eigenen
+  Fehler aus.**
+- **Anker:** 24 Sparraten Ist und Plan **byte-identisch** vorher/nachher (maschinell
+  verglichen, Abweichungsliste leer), Anker 1 und Anker 2 je **0,00 € in 24/24**.
+  Protokoll `sprints/sprint_v3-04_anker.md`.
+- **Anker 3:** 8 · 6 · 5 · 11 unverändert — belegt nicht durch Zählen, sondern durch den
+  Diff: **kein Lader wurde angefasst**, nur `layout.tsx` und die Symboldatei.
+- **Live ohne Anmeldung geprüft:** `/mobil.webmanifest` → `200 application/manifest+json`;
+  Gegenprobe `/mobil/uebersicht` → `307` auf `/login`. Alle vier `/mobil`-Seiten tragen
+  Manifest und `apple-touch-icon`, die Schreibtisch-Ansicht **keines von beiden**.
+
+**Was nicht belegt ist — und diesmal ausdrücklich:** dass iOS sich an den
+Zugehörigkeitsbereich hält. **Kein Test dieses Projekts kann das zeigen**; Chromium kennt
+weder den Vollbild-Modus noch die Prüfung. Die sieben neuen Wächter prüfen die **Aussage**
+(vorhanden, vollständig, erreichbar), nicht das Verhalten. Der Vorbehalt steht im Kopf der
+Testdatei, nicht nur hier.
+
+#### Zwei Nebenbefunde aus der Prüfstrecke
+
+- **Ein bestehender Test überspringt sich seit heute selbst.** „sheet ‚Karte wählen'"
+  läuft nur, wenn der laufende Monat eine offene Zahlung hat. **Gemessen: September 2026
+  hat 0 offene Zahlungen** bei 40 Fragmenten, August ebenfalls 0 — der Nutzer hat seit
+  dem 08.09. zugeordnet. Ein flüchtiger Blick auf „301 → 307" hätte „+6" gelesen; es
+  kamen **sieben** dazu und **einer fiel weg**. **Die Differenz zweier Gesamtzahlen ist
+  keine Aussage über Zuwachs.**
+- **ESLint über `tests/` meldet 8 Fehler** (`no-assign-module-variable`), alle
+  **vorbestehend in `origin/main`** — das Muster der Logik-Wächter, die eine echte
+  Quelldatei transpilieren. Der kanonische Prüfbefehl prüft `src` und ist grün. Nicht
+  angefasst, fremder Umfang.
+
+#### Offen nach v3-04
+
+- **Die Abnahme am iPhone** — das eigentliche Ziel. **Das alte Symbol muss vorher
+  gelöscht werden**, sonst testet man den alten Zustand und hält den Fix für wirkungslos
+  (derselbe Mechanismus wie LL-30: Der entscheidende Zustand lebt außerhalb des Repos).
+- **Brechen „Karten" und „Verlauf" genauso wie „Zuordnen"?** Nie geprüft — der Nutzer
+  hatte nur „Zuordnen" getippt. Die Diagnose sagt ja. Nach dem Fix nur noch mit dem
+  **alten** Symbol nachholbar.
+- **Bleiben Versatz und tote Tab-Leiste?** Erwartung: nein. Falls doch, eigener Befund.
+- Unverändert offen: `MB-H1`, `MB-H2`, `MB-H3`, `ZO-7`, `ZO-8`, `PF-9`.

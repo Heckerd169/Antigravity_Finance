@@ -1,0 +1,20 @@
+<!-- Home-Bildschirm-Symbol von /mobil — Entscheidung 13.09.2026
+     (V2/design_direktor_2026-09-13_mobil-symbol.md, Variante A).
+
+     Der Ring ist GESCHLOSSEN. Ein offener Bogen läse sich als Füllstand, und das
+     Symbol kennt keine Zahl — es behauptete dann dauerhaft einen Stand, der nie
+     stimmt.
+
+     Die Strichstärke ist mit 12/60 = 0,20 bewusst KRÄFTIGER als beim Ring der
+     Übersicht (9/98 = 0,092). Bei 60 px Symbolgröße entspräche das dortige
+     Verhältnis 1,8 px — das trägt auf dem Home-Bildschirm nicht. So lag die
+     Variante auch im Vergleich vor, den der Nutzer gewählt hat.
+
+     Farben aus src/styles/tokens.css: --bg-primary #0D0D0F, --color-teal #3ECFAF.
+     Keine Transparenz: iOS füllt Alpha in Home-Symbolen mit Schwarz.
+
+     Die PNGs daneben entstehen hieraus über `erzeuge-png.mjs`. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" fill="#0D0D0F"/>
+  <circle cx="90" cy="90" r="60" fill="none" stroke="#3ECFAF" stroke-width="12"/>
+</svg>
