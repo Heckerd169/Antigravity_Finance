@@ -98,7 +98,13 @@ export default defineConfig({
     //        statt „unbezahlt", ein Marker-Punkt stünde hinter dem Ring, ein
     //        Filter zeigte die falsche Gruppe. Der Marker wird als PIXEL
     //        gemessen, nicht am Quelltext abgelesen (LL-40).
-    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen|mobil-uebersicht|mobil-karten|mobil-verlauf|login-ziel)\.spec\.ts/, use: DESKTOP },
+    // v3-04 (/mobil, MB-7): `mobil-vollbild` kommt dazu — die Zusage, WELCHE
+    //        Adressen zur Home-Bildschirm-App gehören. Dieser Wächter ist der
+    //        ehrlichste der Liste, weil er sagt, was er NICHT kann: Chromium
+    //        kennt den Vollbild-Modus nicht, also prüft er die Aussage, nicht
+    //        das Verhalten von iOS. Genau deshalb steht der Vorbehalt im Kopf
+    //        der Datei — ein grüner Lauf ist hier weniger wert als sonst.
+    { name: "visual", testMatch: /(visual-pixel|ring-subline|liquidity|fragment-showcase|consequence|kategorien|gehalt|loesch-tor|suggestion-visibility|doku-vollstaendigkeit|zuordnung|welle-driver-states|einkommen-monatsbezug|navigationsgrenze|vorschlagszeile|claude-md-umfang|verlauf|csv-blockbildung|karten-zustandsfarbe|rohmasse-stufen|mobil-zuordnen|mobil-uebersicht|mobil-karten|mobil-verlauf|mobil-vollbild|login-ziel)\.spec\.ts/, use: DESKTOP },
     { name: "unauth", testMatch: /unauth\.spec\.ts/, use: DESKTOP },
     ...(hasCreds
       ? [
